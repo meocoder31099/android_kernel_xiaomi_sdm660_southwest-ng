@@ -178,7 +178,7 @@ jobs:
           cd "$KERNEL_DIR"
           mkdir -p "$OUT_DIR"
 
-          DEFCONFIG="vendor/xiaomi/sdm660_defconfig ${{ github.event.inputs.defconfig }}"
+          DEFCONFIG="${{ github.event.inputs.defconfig }}"
           LTO_MODE="${{ github.event.inputs.lto_mode }}"
 
           CUSTOM_CFLAGS="-march=armv8-a -mno-outline"
@@ -219,7 +219,7 @@ jobs:
 
           LOG_FILE="${{ github.workspace }}/build.log"
 
-          make O="$OUT_DIR" "${TOOLCHAIN_ARGS[@]}" "$DEFCONFIG" 2>&1 | tee "$LOG_FILE"
+          make O="$OUT_DIR" "${TOOLCHAIN_ARGS[@]}" vendor/xiaomi/sdm660_defconfig "$DEFCONFIG" 2>&1 | tee "$LOG_FILE"
           make -j"$(nproc --all)" O="$OUT_DIR" "${TOOLCHAIN_ARGS[@]}" 2>&1 | tee -a "$LOG_FILE"
           BUILD_EXIT=${PIPESTATUS[0]}
 
