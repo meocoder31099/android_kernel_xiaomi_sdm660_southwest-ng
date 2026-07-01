@@ -49,7 +49,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x0>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1024>;
+			capacity-dmips-mhz = <636>;
 			sched-energy-costs = <&CPU_COST_0>;
 			qcom,lmh-dcvs = <&lmh_dcvs0>;
 			efficiency = <636>;
@@ -76,7 +76,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x1>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1024>;
+			capacity-dmips-mhz = <636>;
 			sched-energy-costs = <&CPU_COST_0>;
 			qcom,lmh-dcvs = <&lmh_dcvs0>;
 			#cooling-cells = <2>;
@@ -95,7 +95,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x2>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1024>;
+			capacity-dmips-mhz = <636>;
 			sched-energy-costs = <&CPU_COST_0>;
 			qcom,lmh-dcvs = <&lmh_dcvs0>;
 			efficiency = <636>;
@@ -114,7 +114,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x3>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1024>;
+			capacity-dmips-mhz = <636>;
 			sched-energy-costs = <&CPU_COST_0>;
 			qcom,lmh-dcvs = <&lmh_dcvs0>;
 			efficiency = <636>;
@@ -133,7 +133,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x100>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1638>;
+			capacity-dmips-mhz = <1024>;
 			sched-energy-costs = <&CPU_COST_1>;
 			qcom,lmh-dcvs = <&lmh_dcvs1>;
 			efficiency = <1024>;
@@ -156,7 +156,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x101>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1638>;
+			capacity-dmips-mhz = <1024>;
 			sched-energy-costs = <&CPU_COST_1>;
 			qcom,lmh-dcvs = <&lmh_dcvs1>;
 			#cooling-cells = <2>;
@@ -175,7 +175,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x102>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1638>;
+			capacity-dmips-mhz = <1024>;
 			sched-energy-costs = <&CPU_COST_1>;
 			qcom,lmh-dcvs = <&lmh_dcvs1>;
 			#cooling-cells = <2>;
@@ -194,7 +194,7 @@
 			compatible = "arm,armv8";
 			reg = <0x0 0x103>;
 			enable-method = "psci";
-			capacity-dmips-mhz = <1638>;
+			capacity-dmips-mhz = <1024>;
 			sched-energy-costs = <&CPU_COST_1>;
 			qcom,lmh-dcvs = <&lmh_dcvs1>;
 			#cooling-cells = <2>;
@@ -252,24 +252,24 @@
 
 		CPU_COST_0: core-cost0 {
 			busy-cost-data = <
-				633600	50
-				902400	77
-				1113600	90
-				1401600	128
-				1536000	171
+				633600	53
+				902400	68
+				1113600	99
+				1401600	129
+				1536000	163
 				1747200	196
-				1843200	221
+				1843200	224
 			>;
 		};
 
 		CPU_COST_1: core-cost1 {
 			busy-cost-data = <
-				1113600	253
-				1401600	365
-				1747200	514
-				1958400	632
-				2150400	795
-				2208000	896
+				1113600 254
+				1401600	342
+				1747200	516
+				1958400	641
+				2150400	783
+				2208000	915
 			>;
 		};
 	};
