@@ -3,12 +3,20 @@ name: Build Kernel 4.19 SDM660
 on:
   workflow_dispatch:
     inputs:
+      toolchain:
+        description: 'Clang Toolchain / Compiler'
+        required: false
+        default: 'aosp'
+        type: choice
+        options:
+          - aosp
+          - neutron
       defconfig:
-        description: 'Defconfig yang dipakai'
+        description: 'Defconfig file to use'
         required: false
         default: 'vendor/xiaomi/lavender.config'
       lto_mode:
-        description: 'Mode LTO (thin/full/none)'
+        description: 'LTO Mode (thin/full/none)'
         required: false
         default: 'thin'
         type: choice
@@ -17,36 +25,37 @@ on:
           - full
           - none
       artifact_scope:
-        description: 'File yang diupload sebagai artifact'
+        description: 'Files to upload as artifacts'
         required: false
-        default: 'ringkas'
+        default: 'compact'
         type: choice
         options:
-          - ringkas
-          - lengkap
+          - compact
+          - complete
   # push:
   #   branches:
   #     - main-dynamic
 env:
   KERNEL_DIR: ${{ github.workspace }}/kernel
-  TC_DIR: ${{ github.workspace }}/toolchain/aosp-clang
+  TC_AOSP_DIR: ${{ github.workspace }}/toolchain/aosp-clang
+  TC_NEUTRON_DIR: ${{ github.workspace }}/toolchain/neutron-clang
   OUT_DIR: ${{ github.workspace }}/kernel/out
   AOSP_CLANG_TAG: r547379
   AOSP_CLANG_URL: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
-  # Hapus tanda # di baris bawah ini jika ingin set tanggal build manual/custom.
-  # Jika tetap dikomentari (default), kernel pakai timestamp build asli dari runner.
+  # Uncomment the line below to set a custom/manual build date.
+  # If left commented out (default), the kernel will use the runner's build timestamp.
   # KBUILD_BUILD_TIMESTAMP="Sun June 21 16:02:52 WIB 2026"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 350  # batas runner free 6 jam, beri margin
+    timeout-minutes: 350  # Limit for free runner is 6 hours; provided with safety margin
 
     steps:
       # ------------------------------------------------------------------
       # 1. CHECKOUT SOURCE
-      #    Lebih idiomatik dari git clone manual: otomatis pakai branch/commit
-      #    yang memicu workflow ini, dan shallow clone secara default.
+      #    More idiomatic than manual git clone: automatically uses the branch/commit
+      #    triggering this workflow, and uses shallow clone by default.
       # ------------------------------------------------------------------
       - name: Checkout kernel source
         uses: actions/checkout@v6
@@ -54,23 +63,23 @@ jobs:
           path: kernel
 
       # ------------------------------------------------------------------
-      # 2. CEK SISA DISK
-      #    Kernel + toolchain + ccache bisa mendekati batas ~14GB disk
-      #    kosong di runner free. Tampilkan saja di log sebagai peringatan dini.
+      # 2. CHECK REMAINING DISK SPACE
+      #    Kernel + toolchain + ccache can approach the ~14GB free disk limit.
+      #    This printout serves as an early log check.
       # ------------------------------------------------------------------
-      - name: Cek sisa disk
+      - name: Check disk space
         run: df -h /
 
       # ------------------------------------------------------------------
-      # 3. SWAP TAMBAHAN (selalu aktif, ukuran menyesuaikan mode LTO)
-      #    Cara menonaktifkan swap KHUSUS untuk thin/none (full tetap pakai):
-      #    Tambahkan baris "if:" ini tepat di bawah "- name: Setup swap tambahan":
+      # 3. SETUP EXTRA SWAP SPACE (adjusts size based on LTO mode)
+      #    To disable swap specifically for thin/none (while keeping it for full):
+      #    Add this "if:" conditional right below the step name:
       #        if: ${{ (github.event.inputs.lto_mode || 'thin') == 'full' }}
       #
-      #    Cara menonaktifkan swap TOTAL untuk semua mode (termasuk full):
-      #    Beri tanda # di setiap baris pada step ini (dari "- name:" sampai "free -h").
+      #    To disable swap completely for all modes:
+      #    Comment out all lines in this step (from "- name:" to "free -h").
       # ------------------------------------------------------------------
-      - name: Setup swap tambahan
+      - name: Setup additional swap
         run: |
           LTO_MODE="${{ github.event.inputs.lto_mode || 'thin' }}"
 
@@ -80,7 +89,7 @@ jobs:
             SWAP_SIZE="4G"
           fi
 
-          echo "Menambahkan swap ${SWAP_SIZE} (mode LTO: ${LTO_MODE})..."
+          echo "Adding ${SWAP_SIZE} swap (LTO mode: ${LTO_MODE})..."
           sudo fallocate -l "$SWAP_SIZE" /swapfile_ci
           sudo chmod 600 /swapfile_ci
           sudo mkswap /swapfile_ci
@@ -88,7 +97,7 @@ jobs:
           free -h
 
       # ------------------------------------------------------------------
-      # 4. INSTALL DEPENDENCIES BUILD
+      # 4. INSTALL BUILD DEPENDENCIES
       # ------------------------------------------------------------------
       - name: Install dependencies
         run: |
@@ -100,36 +109,62 @@ jobs:
             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       # ------------------------------------------------------------------
-      # 5. CACHE TOOLCHAIN AOSP CLANG
-      #    (supaya tidak download ulang setiap run)
+      # 5. CACHE & DOWNLOAD TOOLCHAIN (AOSP OR NEUTRON)
       # ------------------------------------------------------------------
+      # AOSP Clang Configuration
       - name: Cache AOSP Clang toolchain
-        id: cache-toolchain
+        if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' }}
+        id: cache-aosp
         uses: actions/cache@v5
         with:
-          path: ${{ env.TC_DIR }}
+          path: ${{ env.TC_AOSP_DIR }}
           key: aosp-clang-${{ env.AOSP_CLANG_TAG }}
 
       - name: Download AOSP Clang toolchain
-        if: steps.cache-toolchain.outputs.cache-hit != 'true'
+        if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' && steps.cache-aosp.outputs.cache-hit != 'true' }}
         run: |
-          mkdir -p "$TC_DIR"
+          mkdir -p "$TC_AOSP_DIR"
           curl -L --fail \
             "${AOSP_CLANG_URL}/+archive/refs/heads/main/clang-${AOSP_CLANG_TAG}.tar.gz" \
             -o /tmp/clang.tar.gz
-          tar -xzf /tmp/clang.tar.gz -C "$TC_DIR"
+          tar -xzf /tmp/clang.tar.gz -C "$TC_AOSP_DIR"
           rm -f /tmp/clang.tar.gz
 
+      # Neutron Clang Configuration
+      - name: Get current week (for Neutron cache validation)
+        if: ${{ github.event.inputs.toolchain == 'neutron' }}
+        id: get-date
+        run: echo "date=$(date +'%Y-%U')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Neutron Clang toolchain
+        if: ${{ github.event.inputs.toolchain == 'neutron' }}
+        id: cache-neutron
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.TC_NEUTRON_DIR }}
+          key: neutron-clang-${{ steps.get-date.outputs.date }}
+          restore-keys: |
+            neutron-clang-
+
+      - name: Download Neutron Clang toolchain
+        if: ${{ github.event.inputs.toolchain == 'neutron' && steps.cache-neutron.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p "$TC_NEUTRON_DIR"
+          cd "$TC_NEUTRON_DIR"
+          curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
+          chmod +x antman
+          ./antman -S
+
       # ------------------------------------------------------------------
-      # 6. CACHE CCACHE (mempercepat rebuild berikutnya)
+      # 6. CACHE CCACHE (To speed up subsequent builds)
       # ------------------------------------------------------------------
       - name: Cache ccache
         uses: actions/cache@v5
         with:
           path: ~/.ccache
-          key: ccache-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
+          key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
           restore-keys: |
-            ccache-${{ github.event.inputs.defconfig }}-
+            ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-
 
       - name: Setup ccache
         run: |
@@ -141,7 +176,15 @@ jobs:
       # 7. SETUP TOOLCHAIN ENV
       # ------------------------------------------------------------------
       - name: Setup toolchain PATH
-        run: echo "$TC_DIR/bin" >> "$GITHUB_PATH"
+        run: |
+          TOOLCHAIN_CHOICE="${{ github.event.inputs.toolchain || 'aosp' }}"
+          if [ "$TOOLCHAIN_CHOICE" = "neutron" ]; then
+            echo "Using Neutron Clang"
+            echo "$TC_NEUTRON_DIR/bin" >> "$GITHUB_PATH"
+          else
+            echo "Using AOSP Clang"
+            echo "$TC_AOSP_DIR/bin" >> "$GITHUB_PATH"
+          fi
 
       - name: Show toolchain info
         run: |
@@ -149,26 +192,24 @@ jobs:
           clang --version
 
       # ------------------------------------------------------------------
-      # 7.5. SIAPKAN NAMA ARTIFACT
-      #      Format: kernel-4.19-{branch}-{run_number}-{tanggal}
-      #      Contoh: kernel-4.19-cp-st-7-22062026
-      #      Slash di nama branch (mis. release/v1) diganti jadi "-" karena
-      #      nama artifact tidak boleh mengandung "/".
-      #      Ditaruh sebelum step Build & pakai always() supaya nama ini
-      #      tetap tersedia walau build/verify gagal di tengah jalan -
-      #      dengan begitu log build tetap bisa terupload dengan nama yang benar.
+      # 7.5. PREPARE ARTIFACT NAME
+      #      Format: kernel-4.19-{toolchain}-{branch}-{run_number}-{date}
+      #      Example: kernel-4.19-neutron-main-7-22062026
+      #      Slashes in branch names (e.g., release/v1) are converted to "-"
+      #      as artifact names cannot contain slashes.
       # ------------------------------------------------------------------
-      - name: Siapkan nama artifact
+      - name: Prepare artifact name
         id: meta
         if: always()
         run: |
           BRANCH_NAME="${{ github.ref_name }}"
           BRANCH_SAFE="${BRANCH_NAME//\//-}"
-          TANGGAL=$(date +'%d%m%Y')
-          echo "artifact_name=kernel-4.19-${BRANCH_SAFE}-${{ github.run_number }}-${TANGGAL}" >> "$GITHUB_OUTPUT"
+          DATE_STR=$(date +'%d%m%Y')
+          TOOLCHAIN_LABEL="${{ github.event.inputs.toolchain || 'aosp' }}"
+          echo "artifact_name=kernel-4.19-${TOOLCHAIN_LABEL}-${BRANCH_SAFE}-${{ github.run_number }}-${DATE_STR}" >> "$GITHUB_OUTPUT"
 
       # ------------------------------------------------------------------
-      # 8. BUILD KERNEL (dengan timer)
+      # 8. BUILD KERNEL (with timer)
       # ------------------------------------------------------------------
       - name: Build kernel
         id: build
@@ -210,7 +251,7 @@ jobs:
             TOOLCHAIN_ARGS+=(LTO="$LTO_MODE")
           fi
 
-          # Pakai timestamp custom hanya jika KBUILD_BUILD_TIMESTAMP di-set di atas (env:)
+          # Apply custom timestamp only if KBUILD_BUILD_TIMESTAMP is set in env
           if [ -n "${KBUILD_BUILD_TIMESTAMP:-}" ]; then
             TOOLCHAIN_ARGS+=(KBUILD_BUILD_TIMESTAMP="$KBUILD_BUILD_TIMESTAMP")
           fi
@@ -231,10 +272,10 @@ jobs:
           SEC=$((DURATION % 60))
 
           echo "-----------------------------------------------------"
-          echo "Waktu total kompilasi: ${MIN} menit ${SEC} detik"
+          echo "Total compilation time: ${MIN} minutes ${SEC} seconds"
           echo "-----------------------------------------------------"
 
-          # Simpan sebagai output step agar bisa dipakai di step summary/step lain
+          # Save output variables to be used in step summaries or subsequent steps
           echo "duration_min=${MIN}" >> "$GITHUB_OUTPUT"
           echo "duration_sec=${SEC}" >> "$GITHUB_OUTPUT"
           echo "defconfig=${DEFCONFIG}" >> "$GITHUB_OUTPUT"
@@ -243,26 +284,25 @@ jobs:
           exit "$BUILD_EXIT"
 
       # ------------------------------------------------------------------
-      # 9. CEK HASIL BUILD
+      # 9. VERIFY BUILD OUTPUT
       # ------------------------------------------------------------------
       - name: Verify build output
         run: |
           if [ -f "$OUT_DIR/arch/arm64/boot/Image.gz-dtb" ] || [ -f "$OUT_DIR/arch/arm64/boot/Image.gz" ]; then
-            echo "BUILD BERHASIL"
+            echo "BUILD SUCCESSFUL"
           else
-            echo "BUILD GAGAL - file Image.gz tidak ditemukan"
+            echo "BUILD FAILED - Image.gz file not found"
             exit 1
           fi
 
       # ------------------------------------------------------------------
-      # 10. UPLOAD ARTIFACT
-      #     "ringkas"  -> semua file hasil build atau semua yang ada di out/arch/arm64/boot/ (Image, Image.gz,
-      #                   Image.gz-dtb, dan folder dts/.../*.dtb di dalamnya)
-      #     "lengkap"  -> seluruh isi out/ seperti hasil build local (vmlinux,
-      #                   System.map, semua .o, dll). Bisa beberapa GB & lebih lama diupload.
+      # 10. UPLOAD ARTIFACTS
+      #     "compact"  -> Only essential build outputs from the out/arch/arm64/boot/ folder
+      #                   (Image, Image.gz, Image.gz-dtb, and DTS DTBs)
+      #     "complete" -> The entire out/ output directory. Can be several GBs and takes longer to upload.
       # ------------------------------------------------------------------
-      - name: Upload kernel image (ringkas - folder boot)
-        if: ${{ (github.event.inputs.artifact_scope || 'ringkas') == 'ringkas' }}
+      - name: Upload kernel image (compact - boot folder)
+        if: ${{ (github.event.inputs.artifact_scope || 'compact') == 'compact' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.meta.outputs.artifact_name }}
@@ -270,8 +310,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload kernel build (lengkap, seluruh folder out / seperti build local)
-        if: ${{ github.event.inputs.artifact_scope == 'lengkap' }}
+      - name: Upload kernel build (complete - entire out directory)
+        if: ${{ github.event.inputs.artifact_scope == 'complete' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.meta.outputs.artifact_name }}-out
@@ -280,12 +320,11 @@ jobs:
           retention-days: 7
 
       # ------------------------------------------------------------------
-      # 10.5. UPLOAD LOG BUILD
-      #       Selalu jalan (always()) baik build sukses maupun gagal, supaya
-      #       log tetap bisa dicek kalau ada error. File log terpisah dari
-      #       zip kernel, jadi tidak mempengaruhi ukuran/isi artifact kernel.
+      # 10.5. UPLOAD BUILD LOG
+      #       Always executes regardless of build status (success/failure)
+      #       to aid debugging. Uploaded as a separate artifact.
       # ------------------------------------------------------------------
-      - name: Upload log build
+      - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -296,20 +335,19 @@ jobs:
 
       # ------------------------------------------------------------------
       # 11. STEP SUMMARY
-      #     Tampilkan ringkasan build (waktu, defconfig, LTO) langsung di
-      #     halaman run GitHub Actions
+      #     Renders the build summary markdown inside the GitHub Actions run page
       # ------------------------------------------------------------------
       - name: Build summary
         if: always()
         run: |
           {
-            echo "## Ringkasan Build Kernel"
+            echo "## Kernel Build Summary"
             echo ""
-            echo "| Item | Nilai |"
+            echo "| Item | Value |"
             echo "|---|---|"
             echo "| Defconfig | \`${{ steps.build.outputs.defconfig }}\` |"
-            echo "| Mode LTO | \`${{ steps.build.outputs.lto_mode }}\` |"
-            echo "| Waktu kompilasi | **${{ steps.build.outputs.duration_min }} menit ${{ steps.build.outputs.duration_sec }} detik** |"
+            echo "| Toolchain | \`${{ github.event.inputs.toolchain || 'aosp' }}\` |"
+            echo "| LTO Mode | \`${{ steps.build.outputs.lto_mode }}\` |"
+            echo "| Compilation Time | **${{ steps.build.outputs.duration_min }} minutes ${{ steps.build.outputs.duration_sec }} seconds** |"
             echo "| Status | ${{ job.status }} |"
           } >> "$GITHUB_STEP_SUMMARY"
-          
