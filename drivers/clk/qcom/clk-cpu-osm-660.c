@@ -3189,7 +3189,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	if (pwrcl_clk.vbases[EFUSE_BASE]) {
 		/* Read custom-pwrcl-speedbin value from device tree node */
-		rc = of_property_read_u32(node, "qcom,custom-pwrcl-speedbin", &custom_speedbin);
+		rc = of_property_read_u32(pdev->dev.of_node, "qcom,custom-pwrcl-speedbin", &custom_speedbin);
 		/* Multiple speed-bins are supported */
 		if (rc == 0 && (custom_speedbin == 0 || custom_speedbin == 1 || custom_speedbin == 3 || custom_speedbin == 4)) {
 			/*
@@ -3221,7 +3221,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	if (perfcl_clk.vbases[EFUSE_BASE]) {
 		/* Read qcom,custom-perfcl-speedbin value from device tree node */
-		rc = of_property_read_u32(node, "qcom,custom-perfcl-speedbin", &custom_speedbin);
+		rc = of_property_read_u32(pdev->dev.of_node, "qcom,custom-perfcl-speedbin", &custom_speedbin);
 		/* Multiple speed-bins are supported */
 		if (rc == 0 && (custom_speedbin == 0 || custom_speedbin == 1 || custom_speedbin == 3 || custom_speedbin == 4)) {
 			/*
