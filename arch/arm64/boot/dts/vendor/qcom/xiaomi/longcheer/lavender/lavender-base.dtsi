@@ -129,7 +129,7 @@
 	};
 };
 
-/* sdm660-gpu.dtsi lavender specific diff */gpu
+/* sdm660-gpu.dtsi lavender specific diff */
 &msm_gpu {
 	qcom,custom-gpu-oc-enabled = <1>;
 };
