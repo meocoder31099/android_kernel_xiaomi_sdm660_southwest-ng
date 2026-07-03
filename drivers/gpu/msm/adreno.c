@@ -993,7 +993,21 @@ static int adreno_of_get_pwrlevels(struct adreno_device *adreno_dev,
 	unsigned int bin = 0;
 	u32 is_gpu_oc_enabled = 0;
 
-	node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-bins");
+
+	of_property_read_u32(parent, "qcom,custom-gpu-oc-enabled", &is_gpu_oc_enabled);
+	if(is_gpu_oc_enabled && adreno_dev->speed_bin == 135) {
+		dev_info(KGSL_DEVICE(adreno_dev)->dev, "GPU overclock enabled\n");
+
+		node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-binsoc");
+
+		dev_err(KGSL_DEVICE(adreno_dev)->dev, "GPU overclock: cannot find pwrlevel node\n");
+
+		if (node == NULL)
+			node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-bins");
+	} else {
+		node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-bins");
+	}
+	
 	if (node == NULL)
 		return adreno_of_get_legacy_pwrlevels(adreno_dev, parent);
 
@@ -1005,38 +1019,20 @@ static int adreno_of_get_pwrlevels(struct adreno_device *adreno_dev,
 		if (bin == adreno_dev->speed_bin) {
 			int ret;
 
-			struct device_node *pwrlevels_node = child;
-			struct device_node *pwrlevels_oc_node = NULL;
-			of_property_read_u32(parent, "qcom,custom-gpu-oc-enabled", &is_gpu_oc_enabled);
-			if(is_gpu_oc_enabled) {
-				pwrlevels_oc_node = of_get_child_by_name(child, "qcom,gpu-custom-pwrlevels-oc");
-				if(pwrlevels_oc_node != NULL) {
-					pwrlevels_node = pwrlevels_oc_node;
-				}
-			}
-
-			ret = adreno_of_parse_pwrlevels(adreno_dev, pwrlevels_node);
-			if (ret) {
-				if (pwrlevels_oc_node != NULL) {
-					of_node_put(pwrlevels_oc_node);
-				}
+			ret = adreno_of_parse_pwrlevels(adreno_dev, child);
+			if (ret)
 				return ret;
-			}
 
-			adreno_of_get_initial_pwrlevel(adreno_dev, pwrlevels_node);
+			adreno_of_get_initial_pwrlevel(adreno_dev, child);
 
-			adreno_of_get_bimc_iface_clk(adreno_dev, pwrlevels_node);
+			adreno_of_get_bimc_iface_clk(adreno_dev, child);
 
 			/*
 			 * Check for global throttle-pwrlevel first and override
 			 * with speedbin specific one if found.
 			 */
 			adreno_of_get_limits(adreno_dev, parent);
-			adreno_of_get_limits(adreno_dev, pwrlevels_node);
-
-			if (pwrlevels_oc_node != NULL) {
-				of_node_put(pwrlevels_oc_node);
-			}
+			adreno_of_get_limits(adreno_dev, child);
 
 			return 0;
 		}
