@@ -3220,6 +3220,9 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 		return rc;
 	}
 
+	pr_err("DEBUG_OSM: pwrcl eFuse address is: %px\n", pwrcl_clk.vbases[EFUSE_BASE]);
+	pr_err("DEBUG_OSM: perfcl eFuse address is: %px\n", perfcl_clk.vbases[EFUSE_BASE]);
+
 	if (perfcl_clk.vbases[EFUSE_BASE]) {
 		/* Read qcom,custom-perfcl-speedbin value from device tree node */
 		rc = of_property_read_u32(pdev->dev.of_node, "qcom,custom-perfcl-speedbin", &custom_speedbin);
