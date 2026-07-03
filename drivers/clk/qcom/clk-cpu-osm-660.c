@@ -8,6 +8,7 @@
 #include <linux/debugfs.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/of.h>
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/delay.h>
@@ -3140,6 +3141,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	struct cpu_cycle_counter_cb cb = {
 		.get_cpu_cycle_counter = clk_osm_get_cpu_cycle_counter,
 	};
+	u32 custom_speedbin = 1;
 
 	/*
 	 * Require the RPM-XO clock and GCC-HMSS-GPLL0 clocks to be registererd
@@ -3186,10 +3188,23 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	}
 
 	if (pwrcl_clk.vbases[EFUSE_BASE]) {
+		/* Read custom-pwrcl-speedbin value from device tree node */
+		rc = of_property_read_u32(pdev->dev.of_node, "qcom,custom-pwrcl-speedbin", &custom_speedbin);
 		/* Multiple speed-bins are supported */
-		pte_efuse = readl_relaxed(pwrcl_clk.vbases[EFUSE_BASE]);
-		speedbin = ((pte_efuse >> PWRCL_EFUSE_SHIFT) &
-						    PWRCL_EFUSE_MASK);
+		if (rc == 0 && (custom_speedbin == 0 || custom_speedbin == 1 || custom_speedbin == 3 || custom_speedbin == 4)) {
+			/*
+			* Custom Speedbin mapping for the LITTLE (Power) cluster:
+			* - Speedbin 0: Max 1.84 Ghz (Stock profile)
+			* - Speedbin 1: Max 1.84 Ghz (Stock profile)
+			* - Speedbin 3: Max 1.61 Ghz (Light Underclock)
+			* - Speedbin 4: Max 1.25 Ghz (Deep Underclock)
+			*/
+			speedbin = custom_speedbin;
+		} else {
+			pte_efuse = readl_relaxed(pwrcl_clk.vbases[EFUSE_BASE]);
+			speedbin = ((pte_efuse >> PWRCL_EFUSE_SHIFT) & PWRCL_EFUSE_MASK);
+		}
+		
 		snprintf(pwrclspeedbinstr, ARRAY_SIZE(pwrclspeedbinstr),
 			 "qcom,pwrcl-speedbin%d-v%d", speedbin, pvs_ver);
 	}
@@ -3205,10 +3220,22 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	}
 
 	if (perfcl_clk.vbases[EFUSE_BASE]) {
+		/* Read qcom,custom-perfcl-speedbin value from device tree node */
+		rc = of_property_read_u32(pdev->dev.of_node, "qcom,custom-perfcl-speedbin", &custom_speedbin);
 		/* Multiple speed-bins are supported */
-		pte_efuse = readl_relaxed(perfcl_clk.vbases[EFUSE_BASE]);
-		speedbin = ((pte_efuse >> PERFCL_EFUSE_SHIFT) &
-							PERFCL_EFUSE_MASK);
+		if (rc == 0 && (custom_speedbin == 0 || custom_speedbin == 1 || custom_speedbin == 3 || custom_speedbin == 4)) {
+			/*
+			* Custom Speedbin mapping for the BIG (Performance) cluster:
+			* - Speedbin 0: Max 2.45 Ghz (Boost profile)
+			* - Speedbin 1: Max 2.20 Ghz (Stock profile)
+			* - Speedbin 3: Max 1.80 Ghz (Light Underclock)
+			* - Speedbin 4: Max 1.40 Ghz (Deep Underclock)
+			*/
+			speedbin = custom_speedbin;
+		} else {
+			pte_efuse = readl_relaxed(perfcl_clk.vbases[EFUSE_BASE]);
+			speedbin = ((pte_efuse >> PERFCL_EFUSE_SHIFT) & PERFCL_EFUSE_MASK);
+		}
 		snprintf(perfclspeedbinstr, ARRAY_SIZE(perfclspeedbinstr),
 			 "qcom,perfcl-speedbin%d-v%d", speedbin, pvs_ver);
 	}

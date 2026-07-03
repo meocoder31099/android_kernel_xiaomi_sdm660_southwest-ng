@@ -1099,11 +1099,12 @@ static int cprh_kbss_calculate_open_loop_voltages(struct cpr3_regulator *vreg)
 		vreg->corner[i].ceiling_volt -= custom_voltage_reduce;
 		vreg->corner[i].ceiling_volt += custom_voltage_increase;
 
-		/* SDM660 speed bin #3 does not support TURBO_L1/L2 */
-		if (soc_revision == SDM660_SOC_ID && vreg->speed_bin_fuse == 3
-		    && (id == CPRH_KBSS_PERFORMANCE_CLUSTER_ID)
-		    && (i == CPRH_SDM660_PERF_KBSS_FUSE_CORNER_TURBO_L2))
-			continue;
+		// Commented out to unlock overclocking on Speedbin 3 devices.
+		// /* SDM660 speed bin #3 does not support TURBO_L1/L2 */
+		// if (soc_revision == SDM660_SOC_ID && vreg->speed_bin_fuse == 3
+		//     && (id == CPRH_KBSS_PERFORMANCE_CLUSTER_ID)
+		//     && (i == CPRH_SDM660_PERF_KBSS_FUSE_CORNER_TURBO_L2))
+		// 	continue;
 
 		/* Log fused open-loop voltage values for debugging purposes. */
 		cpr3_info(vreg, "fused %8s: open-loop=%7d uV\n", corner_name[i],

@@ -79,6 +79,11 @@
 };
 
 /* sdm660.dtsi lavender specific diff */
+&clock_cpu {
+	qcom,custom-pwrcl-speedbin = <1>;
+	qcom,custom-perfcl-speedbin = <1>;
+};
+
 &firmware {
 	android {
 		vbmeta {
