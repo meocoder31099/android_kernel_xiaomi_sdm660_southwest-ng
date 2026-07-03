@@ -991,6 +991,7 @@ static int adreno_of_get_pwrlevels(struct adreno_device *adreno_dev,
 {
 	struct device_node *node, *child;
 	unsigned int bin = 0;
+	u32 is_gpu_oc_enabled = 0;
 
 	node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-bins");
 	if (node == NULL)
@@ -1004,20 +1005,38 @@ static int adreno_of_get_pwrlevels(struct adreno_device *adreno_dev,
 		if (bin == adreno_dev->speed_bin) {
 			int ret;
 
-			ret = adreno_of_parse_pwrlevels(adreno_dev, child);
-			if (ret)
+			struct device_node *pwrlevels_node = child;
+			struct device_node *pwrlevels_oc_node = NULL;
+			of_property_read_u32(parent, "qcom,custom-gpu-oc-enabled", &is_gpu_oc_enabled);
+			if(is_gpu_oc_enabled) {
+				pwrlevels_oc_node = of_get_child_by_name(child, "qcom,gpu-custom-pwrlevels-oc");
+				if(pwrlevels_oc_node != NULL) {
+					pwrlevels_node = pwrlevels_oc_node;
+				}
+			}
+
+			ret = adreno_of_parse_pwrlevels(adreno_dev, pwrlevels_node);
+			if (ret) {
+				if (pwrlevels_oc_node != NULL) {
+					of_node_put(pwrlevels_oc_node);
+				}
 				return ret;
+			}
 
-			adreno_of_get_initial_pwrlevel(adreno_dev, child);
+			adreno_of_get_initial_pwrlevel(adreno_dev, pwrlevels_node);
 
-			adreno_of_get_bimc_iface_clk(adreno_dev, child);
+			adreno_of_get_bimc_iface_clk(adreno_dev, pwrlevels_node);
 
 			/*
 			 * Check for global throttle-pwrlevel first and override
 			 * with speedbin specific one if found.
 			 */
 			adreno_of_get_limits(adreno_dev, parent);
-			adreno_of_get_limits(adreno_dev, child);
+			adreno_of_get_limits(adreno_dev, pwrlevels_node);
+
+			if (pwrlevels_oc_node != NULL) {
+				of_node_put(pwrlevels_oc_node);
+			}
 
 			return 0;
 		}
