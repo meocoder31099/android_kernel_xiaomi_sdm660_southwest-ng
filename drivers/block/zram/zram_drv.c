@@ -53,6 +53,8 @@ static unsigned int num_devices = 1;
  */
 static size_t huge_class_size;
 
+#define CUSTOM_ZRAM_SIZE_LIMIT 8
+
 static void zram_free_page(struct zram *zram, size_t index);
 static int zram_bvec_read(struct zram *zram, struct bio_vec *bvec,
 				u32 index, int offset, struct bio *bio);
@@ -1788,6 +1790,8 @@ static ssize_t disksize_store(struct device *dev,
         if (of_property_read_u32(chosen, "custom-zram-size-gb", &zram_size_gb)) {
 			disksize = memparse(buf, NULL);
 		} else {
+			if (zram_size_gb > CUSTOM_ZRAM_SIZE_LIMIT)
+				zram_size_gb = CUSTOM_ZRAM_SIZE_LIMIT;
 			disksize = (u64)SZ_1G * (u64)zram_size_gb;
 		}
 		of_node_put(chosen);
