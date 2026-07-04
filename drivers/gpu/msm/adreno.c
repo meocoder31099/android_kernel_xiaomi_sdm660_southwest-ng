@@ -997,13 +997,12 @@ static int adreno_of_get_pwrlevels(struct adreno_device *adreno_dev,
 	of_property_read_u32(parent, "qcom,custom-gpu-oc-enabled", &is_gpu_oc_enabled);
 	if(is_gpu_oc_enabled && adreno_dev->speed_bin == 135) {
 		dev_info(KGSL_DEVICE(adreno_dev)->dev, "GPU overclock enabled\n");
-
 		node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-binsoc");
 
-		dev_err(KGSL_DEVICE(adreno_dev)->dev, "GPU overclock: cannot find pwrlevel node\n");
-
-		if (node == NULL)
+		if (node == NULL) {
 			node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-bins");
+			dev_err(KGSL_DEVICE(adreno_dev)->dev, "GPU overclock: cannot find pwrlevel node\n");
+		}
 	} else {
 		node = of_find_node_by_name(parent, "qcom,gpu-pwrlevel-bins");
 	}
