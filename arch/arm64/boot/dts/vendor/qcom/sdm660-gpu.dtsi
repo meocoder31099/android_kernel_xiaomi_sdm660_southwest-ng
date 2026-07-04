@@ -695,5 +695,3 @@
 		};
 	};
 };
-
-#include "sdm660-gpu-oc.dtsi"
