@@ -30,7 +30,9 @@ void sulog_init_heap(void)
 	if (!sulog_buf_ptr)
 		return;
 	
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("sulog_init: allocated %lu bytes on 0x%p \n", SULOG_BUFSIZ, sulog_buf_ptr);
+#endif
 }
 
 /*

@@ -24,7 +24,9 @@ uint32_t ksuver_override = 0;
 
 static int anon_ksu_release(struct inode *inode, struct file *filp)
 {
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksu fd released\n");
+#endif
 	return 0;
 }
 
@@ -63,7 +65,9 @@ int ksu_install_fd(void)
 	// Install fd
 	fd_install(fd, filp);
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+#endif
 
 	return fd;
 }
@@ -75,8 +79,10 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		return 0;
 
 #ifdef CONFIG_KSU_DEBUG
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1,
 		magic2);
+#endif
 #endif
 
 	// Check if this is a request to install KSU fd
@@ -102,12 +108,16 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		if (current_uid().val != 0)
 			return 0;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("sys_reboot: ksu_set_manager_appid to: %d\n", cmd);
+#endif
 		ksu_set_manager_appid(cmd);
 
 		if (cmd == ksu_get_manager_appid()) {
 			if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("sys_reboot: reply fail\n");
+#endif
 		}
 
 		return 0;
@@ -131,7 +141,9 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		if (current_uid().val != 0)
 			return 0;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("sys_reboot: ksu_change_ksuver to: %d\n", cmd);
+#endif
 		ksuver_override = cmd;
 
 		if (copy_to_user((void __user *)*arg, &reply, sizeof(reply) ))
@@ -158,13 +170,17 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		uint64_t u_pptr = 0;
 		uint64_t u_ptr = 0;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("sys_reboot: ppptr: 0x%lx \n", ppptr);
+#endif
 
 		// arg here is ***, dereference to pull out **
 		if (copy_from_user(&u_pptr, (void __user *)*ppptr, sizeof(u_pptr)))
 			return 0;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("sys_reboot: u_pptr: 0x%lx \n", u_pptr);
+#endif
 
 		// now we got the __user **
 		// we cannot dereference this as this is __user
@@ -172,7 +188,9 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		if (copy_from_user(&u_ptr, (void __user *)u_pptr, sizeof(u_ptr)))
 			return 0;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("sys_reboot: u_ptr: 0x%lx \n", u_ptr);
+#endif
 
 		// for release
 		if (strncpy_from_user(release_buf, (char __user *)u_ptr, sizeof(release_buf)) < 0)
@@ -194,7 +212,9 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 			strlcpy(original_release_buf, u_curr->release, sizeof(original_release_buf));
 			strlcpy(original_version_buf, u_curr->version, sizeof(original_version_buf));
 #endif
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("sys_reboot: original uname saved: %s %s\n", original_release_buf, original_version_buf);
+#endif
 		}
 
 		// so user can reset
@@ -203,7 +223,9 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 			memcpy(version_buf, original_version_buf, sizeof(version_buf));
 		}
 
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("sys_reboot: spoofing kernel to: %s - %s\n", release_buf, version_buf);
+#endif
 
 		struct new_utsname *u = utsname();
 
@@ -255,7 +277,9 @@ void __init ksu_supercalls_init(void)
 	if (rc) {
 		pr_err("reboot kprobe failed: %d\n", rc);
 	} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("reboot kprobe registered successfully\n");
+#endif
 	}
 #endif
 

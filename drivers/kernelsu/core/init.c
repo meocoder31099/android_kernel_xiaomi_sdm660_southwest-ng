@@ -103,7 +103,9 @@ int __init kernelsu_init(void)
 	
 
 	if (ksu_late_loaded) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("late load mode, skipping kprobe hooks\n");
+#endif
 
 		apply_kernelsu_rules();
 		cache_sid();
@@ -128,7 +130,9 @@ int __init kernelsu_init(void)
 		track_throne(false);
 
 		if (!getenforce()) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("Permissive SELinux, enforcing\n");
+#endif
 			setenforce(true);
 		}
 

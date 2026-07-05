@@ -154,7 +154,9 @@ static bool add_rule(struct policydb *db, const char *s, const char *t,
     if (s) {
         src = symtab_search(&db->p_types, s);
         if (src == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("source type %s does not exist\n", s);
+#endif
             return false;
         }
     }
@@ -162,7 +164,9 @@ static bool add_rule(struct policydb *db, const char *s, const char *t,
     if (t) {
         tgt = symtab_search(&db->p_types, t);
         if (tgt == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("target type %s does not exist\n", t);
+#endif
             return false;
         }
     }
@@ -170,14 +174,18 @@ static bool add_rule(struct policydb *db, const char *s, const char *t,
     if (c) {
         cls = symtab_search(&db->p_classes, c);
         if (cls == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("class %s does not exist\n", c);
+#endif
             return false;
         }
     }
 
     if (p) {
         if (c == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("No class is specified, cannot add perm [%s] \n", p);
+#endif
             return false;
         }
 
@@ -186,7 +194,9 @@ static bool add_rule(struct policydb *db, const char *s, const char *t,
             perm = symtab_search(&cls->comdatum->permissions, p);
         }
         if (perm == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("perm %s does not exist in class %s\n", p, c);
+#endif
             return false;
         }
     }
@@ -366,7 +376,9 @@ static bool add_xperm_rule(struct policydb *db, const char *s, const char *t,
     if (s) {
         src = symtab_search(&db->p_types, s);
         if (src == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("source type %s does not exist\n", s);
+#endif
             return false;
         }
     }
@@ -374,7 +386,9 @@ static bool add_xperm_rule(struct policydb *db, const char *s, const char *t,
     if (t) {
         tgt = symtab_search(&db->p_types, t);
         if (tgt == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("target type %s does not exist\n", t);
+#endif
             return false;
         }
     }
@@ -382,7 +396,9 @@ static bool add_xperm_rule(struct policydb *db, const char *s, const char *t,
     if (c) {
         cls = symtab_search(&db->p_classes, c);
         if (cls == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("class %s does not exist\n", c);
+#endif
             return false;
         }
     }
@@ -413,22 +429,30 @@ static bool add_type_rule(struct policydb *db, const char *s, const char *t,
 
     src = symtab_search(&db->p_types, s);
     if (src == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("source type %s does not exist\n", s);
+#endif
         return false;
     }
     tgt = symtab_search(&db->p_types, t);
     if (tgt == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("target type %s does not exist\n", t);
+#endif
         return false;
     }
     cls = symtab_search(&db->p_classes, c);
     if (cls == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("class %s does not exist\n", c);
+#endif
         return false;
     }
     def = symtab_search(&db->p_types, d);
     if (def == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("default type %s does not exist\n", d);
+#endif
         return false;
     }
 
@@ -847,16 +871,22 @@ static bool set_type_state(struct policydb *db, const char *type_name,
         {
             type = (struct type_datum *)(node->datum);
             if (ebitmap_set_bit(&db->permissive_map, type->value, permissive))
+#ifdef CONFIG_KSU_PRINT_INFO
                 pr_info("Could not set bit in permissive map\n");
+#endif
         };
     } else {
         type = (struct type_datum *)symtab_search(&db->p_types, type_name);
         if (type == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("type %s does not exist\n", type_name);
+#endif
             return false;
         }
         if (ebitmap_set_bit(&db->permissive_map, type->value, permissive)) {
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("Could not set bit in permissive map\n");
+#endif
             return false;
         }
     }
@@ -902,19 +932,27 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 {
     struct type_datum *type_d = symtab_search(&db->p_types, type);
     if (type_d == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("type %s does not exist\n", type);
+#endif
         return false;
     } else if (type_d->attribute) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("type %s is an attribute\n", attr);
+#endif
         return false;
     }
 
     struct type_datum *attr_d = symtab_search(&db->p_types, attr);
     if (attr_d == NULL) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("attribute %s does not exist\n", type);
+#endif
         return false;
     } else if (!attr_d->attribute) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("type %s is not an attribute \n", attr);
+#endif
         return false;
     }
 

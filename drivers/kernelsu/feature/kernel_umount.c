@@ -34,7 +34,9 @@ static int kernel_umount_feature_set(u64 value)
 {
 	bool enable = value != 0;
 	ksu_kernel_umount_enabled = enable;
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("kernel_umount: set to %d\n", enable);
+#endif
 	return 0;
 }
 
@@ -52,7 +54,9 @@ static void ksu_umount_mnt(const char *mnt, struct path *path, int flags)
 {
 	int err = path_umount(path, flags);
 	if (err) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("umount %s failed: %d\n", mnt, err);
+#endif
 	}
 }
 #else
@@ -107,7 +111,9 @@ static void umount_tw_func(struct callback_head *cb)
     struct mount_entry *entry;
     down_read(&mount_list_lock);
     list_for_each_entry(entry, &mount_list, list) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("%s: unmounting: %s flags: 0x%x\n", __func__, entry->umountable, entry->flags);
+#endif
         try_umount(entry->umountable, entry->flags);
     }
     up_read(&mount_list_lock);
@@ -155,11 +161,15 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 	// also handle case 4 and 5
 	bool is_zygote_child = is_zygote(current_cred());
 	if (!is_zygote_child) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("handle umount ignore non zygote child: %d\n", current->pid);
+#endif
 		return 0;
 	}
 	// umount the target mnt
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("handle umount for uid: %d, pid: %d\n", new_uid, current->pid);
+#endif
 
 	tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
 	if (!tw)

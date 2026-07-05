@@ -192,7 +192,9 @@ void apply_kernelsu_rules()
 	struct policydb *db;
 
 	if (!getenforce()) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("SELinux permissive or disabled, apply rules!\n");
+#endif
 	}
 
 #ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
@@ -571,7 +573,9 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	}
 
 	if (!getenforce()) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("SELinux permissive or disabled when handle policy!\n");
+#endif
 	}
 
 	mutex_lock(&selinux_state.policy_mutex);
@@ -732,7 +736,9 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	}
 
 	if (!getenforce()) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("SELinux permissive or disabled when handle policy!\n");
+#endif
 	}
 
 	struct handle_sepolicy_args ctx = { 0 };

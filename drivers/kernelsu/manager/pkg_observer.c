@@ -30,7 +30,9 @@ static KSU_DECL_FSNOTIFY_OPS(ksu_handle_inode_event)
 		return 0;
 	if (ksu_fname_len(file_name) == 13 &&
 	    !memcmp(ksu_fname_arg(file_name), "packages.list", 13)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("packages.list detected: %d\n", mask);
+#endif
 		track_throne(false);
 	}
 	return 0;
@@ -87,7 +89,9 @@ static int watch_one_dir(struct watch_dir *wd)
 {
 	int ret = kern_path(wd->path, LOOKUP_FOLLOW, &wd->kpath);
 	if (ret) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("path not ready: %s (%d)\n", wd->path, ret);
+#endif
 		return ret;
 	}
 	wd->inode = d_inode(wd->kpath.dentry);
@@ -101,7 +105,9 @@ static int watch_one_dir(struct watch_dir *wd)
 		wd->inode = NULL;
 		return ret;
 	}
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("watching %s\n", wd->path);
+#endif
 	return 0;
 }
 
@@ -138,7 +144,9 @@ int ksu_observer_init(void)
 		return PTR_ERR(g);
 
 	ret = watch_one_dir(&g_watch);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("observer init done\n");
+#endif
 	return 0;
 }
 
@@ -146,5 +154,7 @@ void __exit ksu_observer_exit(void)
 {
 	unwatch_one_dir(&g_watch);
 	fsnotify_put_group(g);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("observer exit done\n");
+#endif
 }

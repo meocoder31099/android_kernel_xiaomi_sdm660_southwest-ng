@@ -290,3 +290,6 @@ ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-mis
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable
 
 # Keep a new line here!! Because someone may append config
+ifeq ($(CONFIG_KSU_PRINT_INFO),y)
+ccflags-y += -DCONFIG_KSU_PRINT_INFO=1
+endif
