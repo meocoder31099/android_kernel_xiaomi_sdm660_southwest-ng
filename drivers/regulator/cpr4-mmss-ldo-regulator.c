@@ -298,16 +298,16 @@ static int cpr4_sdm660_mmss_calculate_open_loop_voltages(
 			rc);
 
 	// Debug
-	pr_info("GPU_CPR_DEBUG: Custom UV Applied: %d uV\n", custom_voltage_reduce);
-	pr_info("GPU_CPR_DEBUG: Corner | Freq (Hz)  | Floor (uV) | Open-Loop (uV) | Ceiling (uV)\n");
-	for (i = 0; i < vreg->corner_count; i++) {
-		pr_info("GPU_CPR_DEBUG: [%2d]   | %10u | %10d | %14d | %12d\n",
-			i,
-			vreg->corner[i].proc_freq,
-			vreg->corner[i].floor_volt,
-			vreg->corner[i].open_loop_volt,
-			vreg->corner[i].ceiling_volt);
-	}
+	// pr_info("GPU_CPR_DEBUG: Custom UV Applied: %d uV\n", custom_voltage_reduce);
+	// pr_info("GPU_CPR_DEBUG: Corner | Freq (Hz)  | Floor (uV) | Open-Loop (uV) | Ceiling (uV)\n");
+	// for (i = 0; i < vreg->corner_count; i++) {
+	// 	pr_info("GPU_CPR_DEBUG: [%2d]   | %10u | %10d | %14d | %12d\n",
+	// 		i,
+	// 		vreg->corner[i].proc_freq,
+	// 		vreg->corner[i].floor_volt,
+	// 		vreg->corner[i].open_loop_volt,
+	// 		vreg->corner[i].ceiling_volt);
+	// }
 
 done:
 	kfree(fuse_volt);
