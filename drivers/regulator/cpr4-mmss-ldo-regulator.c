@@ -131,8 +131,8 @@ static const int sdm660_mmss_fuse_ref_volt[SDM660_MMSS_FUSE_CORNERS] = {
 
 #define SDM660_MMSS_CPR_CLOCK_RATE		19200000
 
-/* For safety, the "custom voltage reduce" must <= 160mV */
-#define CUSTOM_VOLTAGE_REDUCE_LIMIT 160000
+/* For safety and stability, the "custom voltage reduce" must <= 80mV */
+#define CUSTOM_VOLTAGE_REDUCE_LIMIT 80000
 
 enum {
 	SDM660_SOC_ID,
