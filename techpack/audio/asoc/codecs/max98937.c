@@ -1357,7 +1357,7 @@ static int max98927_set_clock(struct max989xx_priv *max98927,
 					return -EINVAL;
 			}
 
-			pr_info("%s: BLCK fix to %d\n", __func__, blr_clk_ratio);
+			// pr_info("%s: BLCK fix to %d\n", __func__, blr_clk_ratio);
 			regmap_update_bits(max98927->regmap[j], pcm_clock_setup,
 					MAX98927_PCM_Clock_setup_PCM_BSEL_Mask, value);
 		}
@@ -1383,10 +1383,11 @@ static int max98927_dai_hw_params(struct snd_pcm_substream *substream,
 				pcm_mode_config = MAX98937_PCM_Mode_Config;
 				pcm_sample_rate_setup_1 = MAX98937_PCM_Sample_rate_setup_1;
 				pcm_sample_rate_setup_2 = MAX98937_PCM_Sample_rate_setup_2;
- 				pr_info("max98937 %s: format supported", __func__);
-			} else {
-				pr_info("max98927 %s: format supported", __func__);
-			}
+ 				// pr_info("max98937 %s: format supported", __func__);
+			} 
+			// else {
+			// 	pr_info("max98927 %s: format supported", __func__);
+			// }
 			switch (snd_pcm_format_width(params_format(params))) {
 					case 16:
 						regmap_update_bits(max98927->regmap[i],
@@ -1461,9 +1462,9 @@ static int max98927_dai_hw_params(struct snd_pcm_substream *substream,
 						goto err;
 				}
 
-				pr_info("%s: %s stream, format: %d, ch: %d, sampling_rate: %d\n", __func__,
-						stream ? "Capture" : "Playback", max98927->ch_size, params_channels(params),
-						params_rate(params));
+				// pr_info("%s: %s stream, format: %d, ch: %d, sampling_rate: %d\n", __func__,
+				// 		stream ? "Capture" : "Playback", max98927->ch_size, params_channels(params),
+				// 		params_rate(params));
 
 				/* set DAI_SR to correct LRCLK frequency */
 				regmap_update_bits(max98927->regmap[i], pcm_sample_rate_setup_1,
@@ -1515,7 +1516,7 @@ static int max98927_stream_mute(struct snd_soc_dai *component_dai, int mute, int
 	unsigned int spk_gain = MAX98927_Speaker_Gain;
 	int i, rc;
 
-	pr_info("%s--- stream %d, mute %d \n", __func__, stream, mute);
+	// pr_info("%s--- stream %d, mute %d \n", __func__, stream, mute);
 	if (!max98927) {
 		pr_err("%s ------ priv data null pointer\n", __func__);
 		return 0;
@@ -1526,7 +1527,7 @@ static int max98927_stream_mute(struct snd_soc_dai *component_dai, int mute, int
 			if (max98927_can_use_dsm(max98927)){
 				afe_dsm_ramp_dn_cfg((uint8_t*) payload, 25);
 			}
-			pr_info("%s ------ disable max98927 \n", __func__);
+			// pr_info("%s ------ disable max98927 \n", __func__);
 			if (max98927->mono_stereo != 0x3){
 				for (i = 0; i < MAX_CHANNEL_NUM; i++) {
 					if(i2c_states & (0x1 << i)) {
@@ -1576,7 +1577,7 @@ static int max98927_stream_mute(struct snd_soc_dai *component_dai, int mute, int
 						regmap_write(max98927->regmap[i], MAX98927_Measurement_enables, 0x0);
 				}
 			}
-			pr_info("%s ------ disable max98927 capture\n", __func__);
+			// pr_info("%s ------ disable max98927 capture\n", __func__);
 		} else {
 			for (i = 0; i < MAX_CHANNEL_NUM; i++) {
 				if(i2c_states & (0x1 << i)) {
@@ -1591,7 +1592,7 @@ static int max98927_stream_mute(struct snd_soc_dai *component_dai, int mute, int
 					rc = max989xx_calib_get(&impedance, MAX98927L);
 					if (rdc_check_valid(impedance, MAX98927L) || impedance == SPK_MUTE_VALUE) {
 						max98927->ref_RDC[MAX98927L] = impedance;
-						pr_info("%s: ref_RDC left =%d \n", __func__,  max98927->ref_RDC[MAX98927L]);
+						// pr_info("%s: ref_RDC left =%d \n", __func__,  max98927->ref_RDC[MAX98927L]);
 					}
 				}
 			}
@@ -1601,7 +1602,7 @@ static int max98927_stream_mute(struct snd_soc_dai *component_dai, int mute, int
 					rc = max989xx_calib_get(&impedance, MAX98927R);
 					if (rdc_check_valid(impedance, MAX98927R) || impedance == SPK_MUTE_VALUE) {
 						max98927->ref_RDC[MAX98927R] = impedance;
-						pr_info("%s: ref_RDC right=%d \n", __func__, max98927->ref_RDC[MAX98927R]);
+						// pr_info("%s: ref_RDC right=%d \n", __func__, max98927->ref_RDC[MAX98927R]);
 					}
 				}
 			}
@@ -1612,7 +1613,7 @@ static int max98927_stream_mute(struct snd_soc_dai *component_dai, int mute, int
 			afe_dsm_set_calib((uint8_t *)payload);
 
 			mutex_unlock(&dsm_lock);
-			pr_info("%s ------ enable max98927 capture\n", __func__);
+			// pr_info("%s ------ enable max98927 capture\n", __func__);
 		}
 	}
 	return 0;
@@ -1638,7 +1639,7 @@ static int max98927_feedforward_event(struct snd_soc_dapm_widget *w,
 		pr_err("%s------priv data null pointer\n", __func__);
 		return ret;
 	}
-	pr_info("%s---feedforward event %d\n", __func__, event);
+	// pr_info("%s---feedforward event %d\n", __func__, event);
 	switch(event){
 	case SND_SOC_DAPM_POST_PMU:
 		break;
@@ -1667,7 +1668,7 @@ static int max98927_feedback_event(struct snd_soc_dapm_widget *w,
 		pr_err("%s------priv data null pointer\n", __func__);
 		return ret;
 	}
-	pr_info("%s---feedback event %d\n", __func__, event);
+	// pr_info("%s---feedback event %d\n", __func__, event);
 	switch(event){
 	case SND_SOC_DAPM_POST_PMU:
 		break;
