@@ -38,7 +38,7 @@ static int transive_to_domain(const char *domain, struct cred *cred)
 
     error = security_secctx_to_secid(domain, strlen(domain), &sid);
     if (error) {
-        pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
+        pr_debug("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
                 sid, error);
     }
     if (!error) {
@@ -159,7 +159,7 @@ void cache_sid(void)
         pr_warn("Failed to cache kernel su domain SID: %d\n", err);
         cached_su_sid = 0;
     } else {
-        pr_info("Cached su SID: %u\n", cached_su_sid);
+        pr_debug("Cached su SID: %u\n", cached_su_sid);
     }
 
     err = security_secctx_to_secid(ZYGOTE_CONTEXT, strlen(ZYGOTE_CONTEXT),
@@ -168,7 +168,7 @@ void cache_sid(void)
         pr_warn("Failed to cache zygote SID: %d\n", err);
         cached_zygote_sid = 0;
     } else {
-        pr_info("Cached zygote SID: %u\n", cached_zygote_sid);
+        pr_debug("Cached zygote SID: %u\n", cached_zygote_sid);
     }
 
     err = security_secctx_to_secid(INIT_CONTEXT, strlen(INIT_CONTEXT),
@@ -177,7 +177,7 @@ void cache_sid(void)
         pr_warn("Failed to cache init SID: %d\n", err);
         cached_init_sid = 0;
     } else {
-        pr_info("Cached init SID: %u\n", cached_init_sid);
+        pr_debug("Cached init SID: %u\n", cached_init_sid);
     }
 
     err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
@@ -186,7 +186,7 @@ void cache_sid(void)
         pr_warn("Failed to cache ksu_file SID: %d\n", err);
         ksu_file_sid = 0;
     } else {
-        pr_info("Cached ksu_file SID: %u\n", ksu_file_sid);
+        pr_debug("Cached ksu_file SID: %u\n", ksu_file_sid);
     }
 }
 
@@ -301,7 +301,7 @@ static void initialize_fake_status(void)
 	}
 
 	WRITE_ONCE(fake_status, new_page);
-	pr_info("ksu_selinux_hide: fake status ready: sequence=%d policyload=%d enforcing=%d\n",
+	pr_debug("ksu_selinux_hide: fake status ready: sequence=%d policyload=%d enforcing=%d\n",
 		new_status->sequence, new_status->policyload,
 		new_status->enforcing);
 out:
@@ -346,7 +346,7 @@ static void hook_selinux_status_open(void)
 
 	orig_sel_open_handle_status = ops->open;
 	ops->open = my_sel_open_handle_status;
-	pr_info("ksu_selinux_hide: hooked sel_handle_status_ops->open\n");
+	pr_debug("ksu_selinux_hide: hooked sel_handle_status_ops->open\n");
 }
 
 static void unhook_selinux_status_open(void)
@@ -364,7 +364,7 @@ static void unhook_selinux_status_open(void)
 
 	ops->open = orig_sel_open_handle_status;
 	orig_sel_open_handle_status = NULL;
-	pr_info("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
+	pr_debug("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
 }
 
 static int selinux_hide_status_feature_get(u64 *value)
@@ -377,11 +377,11 @@ static int selinux_hide_status_feature_set(u64 value)
 {
 	bool enable = !!value;
 	if (enable == ksu_selinux_hide_status_enabled) {
-		pr_info("ksu_selinux_hide: no need to change\n");
+		pr_debug("ksu_selinux_hide: no need to change\n");
 		return 0;
 	}
 	ksu_selinux_hide_status_enabled = enable;
-	pr_info("ksu_selinux_hide: set to %d\n", enable);
+	pr_debug("ksu_selinux_hide: set to %d\n", enable);
 	return 0;
 }
 

@@ -28,7 +28,7 @@ static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 		return 0;
 	}
 	init_session_keyring = cred->session_keyring;
-	pr_info("kernel_compat: got init_session_keyring\n");
+	pr_debug("kernel_compat: got init_session_keyring\n");
 	return 0;
 }
 #endif
@@ -156,7 +156,7 @@ void __init ksu_lsm_hook_init(void)
 	// https://elixir.bootlin.com/linux/v4.10.17/source/include/linux/lsm_hooks.h#L1892
 	security_add_hooks(ksu_hooks, ARRAY_SIZE(ksu_hooks));
 #endif
-	pr_info("LSM hooks initialized.\n");
+	pr_debug("LSM hooks initialized.\n");
 }
 #else
 void __init ksu_lsm_hook_init(void)

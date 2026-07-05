@@ -48,7 +48,7 @@ static int su_compat_feature_set(u64 value)
 {
 	bool enable = value != 0;
 	ksu_su_compat_enabled = enable;
-	pr_info("su_compat: set to %d\n", enable);
+	pr_debug("su_compat: set to %d\n", enable);
 	return 0;
 }
 
@@ -101,7 +101,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		write_sulog('a');
-		pr_info("faccessat su->sh!\n");
+		pr_debug("faccessat su->sh!\n");
 		*filename_user = sh_user_path();
 	}
 
@@ -127,7 +127,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
 		write_sulog('s');
-		pr_info("newfstatat su->sh!\n");
+		pr_debug("newfstatat su->sh!\n");
 		*filename_user = sh_user_path();
 	}
 
@@ -168,7 +168,7 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 
     write_sulog('x');
 
-    pr_info("sys_execve su found\n");
+    pr_debug("sys_execve su found\n");
     *filename_user = ksud_user_path();
 
 	ret = escape_with_root_profile();
@@ -213,7 +213,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	if (likely(memcmp(filename->name, su, sizeof(su))))
 		return 0;
 
-	pr_info("do_execveat_common su found\n");
+	pr_debug("do_execveat_common su found\n");
 	memcpy((void *)filename->name, ksud_path, sizeof(ksud_path));
 
 	escape_with_root_profile();

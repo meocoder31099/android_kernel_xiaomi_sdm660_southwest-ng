@@ -57,7 +57,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         ksu_set_task_tracepoint_flag(current);
 #endif
 
-        pr_info("install fd for manager: %d\n", new_uid);
+        pr_debug("install fd for manager: %d\n", new_uid);
         struct callback_head *cb = kzalloc(sizeof(*cb), GFP_ATOMIC);
         if (!cb)
             return 0;
@@ -101,6 +101,6 @@ void __init ksu_setuid_hook_init(void)
 
 void __exit ksu_setuid_hook_exit(void)
 {
-	pr_info("ksu_core_exit\n");
+	pr_debug("ksu_core_exit\n");
 	ksu_kernel_umount_exit();
 }

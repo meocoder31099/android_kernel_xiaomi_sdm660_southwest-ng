@@ -51,13 +51,13 @@ static void handle_process_mark(bool mark)
 void ksu_mark_all_process(void)
 {
 	handle_process_mark(true);
-	pr_info("hook_manager: mark all user process done!\n");
+	pr_debug("hook_manager: mark all user process done!\n");
 }
 
 void ksu_unmark_all_process(void)
 {
 	handle_process_mark(false);
-	pr_info("hook_manager: unmark all user process done!\n");
+	pr_debug("hook_manager: unmark all user process done!\n");
 }
 
 static void ksu_mark_running_process_locked()
@@ -80,11 +80,11 @@ static void ksu_mark_running_process_locked()
 		if (ksu_root_process || is_zygote_process  || is_shell || is_init
 			|| ksu_is_allow_uid(uid)) {
 			ksu_set_task_tracepoint_flag(t);
-			pr_info("hook_manager: mark process: pid:%d, uid: %d, comm:%s\n",
+			pr_debug("hook_manager: mark process: pid:%d, uid: %d, comm:%s\n",
 					t->pid, uid, t->comm);
 		} else {
 			ksu_clear_task_tracepoint_flag(t);
-			pr_info("hook_manager: unmark process: pid:%d, uid: %d, comm:%s\n",
+			pr_debug("hook_manager: unmark process: pid:%d, uid: %d, comm:%s\n",
 					t->pid, uid, t->comm);
 		}
 		put_cred(cred);
@@ -101,7 +101,7 @@ void ksu_mark_running_process()
 	if (tracepoint_reg_count <= 1) {
 		should_mark = true;
 	} else {
-		pr_info("hook_manager: not mark running process since syscall tracepoint is in use\n");
+		pr_debug("hook_manager: not mark running process since syscall tracepoint is in use\n");
 	}
 	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 	
@@ -150,10 +150,10 @@ int ksu_set_task_mark(pid_t pid, bool mark)
 		rcu_read_unlock();
 		if (mark) {
 			ksu_set_task_tracepoint_flag(task);
-			pr_info("hook_manager: marked task pid=%d comm=%s\n", pid, task->comm);
+			pr_debug("hook_manager: marked task pid=%d comm=%s\n", pid, task->comm);
 		} else {
 			ksu_clear_task_tracepoint_flag(task);
-			pr_info("hook_manager: unmarked task pid=%d comm=%s\n", pid, task->comm);
+			pr_debug("hook_manager: unmarked task pid=%d comm=%s\n", pid, task->comm);
 		}
 		put_task_struct(task);
 		ret = 0;
@@ -178,7 +178,7 @@ static struct kretprobe *init_kretprobe(const char *name,
 	rp->maxactive = 0;
 
 	int ret = register_kretprobe(rp);
-	pr_info("hook_manager: register_%s kretprobe: %d\n", name, ret);
+	pr_debug("hook_manager: register_%s kretprobe: %d\n", name, ret);
 	if (ret) {
 		kfree(rp);
 		return NULL;
@@ -289,10 +289,10 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
 	}
 
 	if (unlikely(strcmp(path, KSUD_PATH) == 0)) {
-		pr_info("hook_manager: escape to root for init executing ksud: %d\n", current->pid);
+		pr_debug("hook_manager: escape to root for init executing ksud: %d\n", current->pid);
 		escape_to_root_for_init();
 	} else if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
-		pr_info("hook_manager: unmark %d exec %s\n", current->pid, path);
+		pr_debug("hook_manager: unmark %d exec %s\n", current->pid, path);
 		ksu_clear_task_tracepoint_flag_if_needed(current);
 	}
 
@@ -361,7 +361,7 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 void __init ksu_syscall_hook_manager_init(void)
 {
 	int ret;
-	pr_info("hook_manager: ksu_hook_manager_init called\n");
+	pr_debug("hook_manager: ksu_hook_manager_init called\n");
 
 #ifdef CONFIG_KRETPROBES
 	// Register kretprobe for syscall_regfunc
@@ -378,7 +378,7 @@ void __init ksu_syscall_hook_manager_init(void)
 	if (ret) {
 		pr_err("hook_manager: failed to register sys_enter tracepoint: %d\n", ret);
 	} else {
-		pr_info("hook_manager: sys_enter tracepoint registered\n");
+		pr_debug("hook_manager: sys_enter tracepoint registered\n");
 	}
 #endif
 
@@ -390,11 +390,11 @@ void __init ksu_syscall_hook_manager_init(void)
 
 void __exit ksu_syscall_hook_manager_exit(void)
 {
-	pr_info("hook_manager: ksu_hook_manager_exit called\n");
+	pr_debug("hook_manager: ksu_hook_manager_exit called\n");
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 	unregister_trace_sys_enter(ksu_sys_enter_handler, NULL);
 	tracepoint_synchronize_unregister();
-	pr_info("hook_manager: sys_enter tracepoint unregistered\n");
+	pr_debug("hook_manager: sys_enter tracepoint unregistered\n");
 #endif
 
 #ifdef CONFIG_KRETPROBES
@@ -415,7 +415,7 @@ void __exit ksu_syscall_hook_manager_exit(void)
 
 void __init ksu_syscall_hook_manager_init(void)
 {
-	pr_info("hook_manager: initializing..\n");
+	pr_debug("hook_manager: initializing..\n");
 	ksu_setuid_hook_init();
 	ksu_sucompat_init();
 	ksu_avc_spoof_init();
@@ -424,7 +424,7 @@ void __init ksu_syscall_hook_manager_init(void)
 
 void __exit ksu_syscall_hook_manager_exit(void)
 {
-	pr_info("hook_manager: exiting..\n");
+	pr_debug("hook_manager: exiting..\n");
 	ksu_sucompat_exit();
 	ksu_setuid_hook_exit();
 	ksu_avc_spoof_exit();

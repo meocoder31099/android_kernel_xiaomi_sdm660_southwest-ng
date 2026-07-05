@@ -219,7 +219,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		char buf[16];
 		if (!init_second_stage_executed &&
 		    check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
-			pr_info("/system/bin/init second_stage executed\n");
+			pr_debug("/system/bin/init second_stage executed\n");
 			struct callback_head *cb = kzalloc(sizeof(*cb), GFP_ATOMIC);
 			if (cb) {
 				cb->func = ksu_initialize_selinux_tw_func;
@@ -240,7 +240,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		if (!init_second_stage_executed &&
 		    check_argv(*argv, 1, "--second-stage", buf, sizeof(buf))) {
 			/* This applies to versions between Android 6 ~ 7 */
-			pr_info("/init second_stage executed\n");
+			pr_debug("/init second_stage executed\n");
 			apply_kernelsu_rules();
 			setup_ksu_cred();
 			init_second_stage_executed = true;
@@ -271,7 +271,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					if (!strcmp(env_name, "INIT_SECOND_STAGE") &&
 					    (!strcmp(env_value, "1") ||
 					     !strcmp(env_value, "true"))) {
-						pr_info("/init second_stage executed\n");
+						pr_debug("/init second_stage executed\n");
 						apply_kernelsu_rules();
 						setup_ksu_cred();
 						init_second_stage_executed = true;
@@ -285,7 +285,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     sizeof(app_process) - 1) && argv)) {
 		char buf[16];
 		if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
-			pr_info("exec zygote, /data prepared, second_stage: %d\n",
+			pr_debug("exec zygote, /data prepared, second_stage: %d\n",
 				init_second_stage_executed);
 			rcu_read_lock();
 			struct task_struct *init_task =
@@ -324,7 +324,7 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
 	if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
 		return ret;
 	} else {
-		pr_info("read_proxy: orig read finished, start append rc\n");
+		pr_debug("read_proxy: orig read finished, start append rc\n");
 	}
 append_ksu_rc:
 	append_count = ksu_rc_len - ksu_rc_pos;
@@ -332,13 +332,13 @@ append_ksu_rc:
 		append_count = count - ret;
 	// copy_to_user returns the number of not copied
 	if (copy_to_user(buf + ret, KERNEL_SU_RC + ksu_rc_pos, append_count)) {
-		pr_info("read_proxy: append error, totally appended %ld\n", ksu_rc_pos);
+		pr_debug("read_proxy: append error, totally appended %ld\n", ksu_rc_pos);
 	} else {
-		pr_info("read_proxy: append %ld\n", append_count);
+		pr_debug("read_proxy: append %ld\n", append_count);
 
 		ksu_rc_pos += append_count;
 		if (ksu_rc_pos == ksu_rc_len) {
-			pr_info("read_proxy: append done\n");
+			pr_debug("read_proxy: append done\n");
 		}
 		ret += append_count;
 	}
@@ -357,21 +357,21 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 	if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
 		return ret;
 	} else {
-		pr_info("read_iter_proxy: orig read finished, start append rc\n");
+		pr_debug("read_iter_proxy: orig read finished, start append rc\n");
 	}
 append_ksu_rc:
 	// copy_to_iter returns the number of copied bytes
 	append_count =
 		copy_to_iter(KERNEL_SU_RC + ksu_rc_pos, ksu_rc_len - ksu_rc_pos, to);
 	if (!append_count) {
-		pr_info("read_iter_proxy: append error, totally appended %ld\n",
+		pr_debug("read_iter_proxy: append error, totally appended %ld\n",
 			ksu_rc_pos);
 	} else {
-		pr_info("read_iter_proxy: append %ld\n", append_count);
+		pr_debug("read_iter_proxy: append %ld\n", append_count);
 
 		ksu_rc_pos += append_count;
 		if (ksu_rc_pos == ksu_rc_len) {
-			pr_info("read_iter_proxy: append done\n");
+			pr_debug("read_iter_proxy: append done\n");
 		}
 		ret += append_count;
 	}
@@ -398,7 +398,7 @@ static bool check_init_path(char *dpath)
 		return false;
 	}
 
-	pr_info("vfs_read: got init.rc path: %s\n", dpath);
+	pr_debug("vfs_read: got init.rc path: %s\n", dpath);
 	return true;
 }
 
@@ -446,7 +446,7 @@ static void ksu_apply_init_rc_proxy(struct file *file)
     // now we can sure that the init process is reading
     // `/system/etc/init/init.rc`
 
-    pr_info("read init.rc, comm: %s, rc_count: %zu\n", current->comm,
+    pr_debug("read init.rc, comm: %s, rc_count: %zu\n", current->comm,
             ksu_rc_len);
 
     // Now we need to proxy the read and modify the result!
@@ -494,7 +494,7 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 #endif
 	if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
 		int val = *value;
-		pr_info("KEY_VOLUMEDOWN val: %d\n", val);
+		pr_debug("KEY_VOLUMEDOWN val: %d\n", val);
 		if (val) {
 			// key pressed, count it
 			volumedown_pressed_count += 1;
@@ -522,10 +522,10 @@ bool ksu_is_safe_mode()
 	// stop hook first!
 	stop_input_hook();
 
-	pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
+	pr_debug("volumedown_pressed_count: %d\n", volumedown_pressed_count);
 	if (is_volumedown_enough(volumedown_pressed_count)) {
 		// pressed over 3 times
-		pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
+		pr_debug("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
 		safe_mode = true;
 		return true;
 	}
@@ -594,7 +594,7 @@ static int sys_fstat_handler_pre(struct kretprobe_instance *p,
 	if (!file)
 		return 1;
 	if (is_init_rc(file)) {
-		pr_info("stat init.rc");
+		pr_debug("stat init.rc");
 		fput(file);
 		*(void **)&p->data = statbuf;
 		return 0;
@@ -635,11 +635,11 @@ static int sys_fstat_handler_post(struct kretprobe_instance *p,
 
 	if (!ksu_copy_from_user_nofault(&size, st_size_ptr, size_bytes)) {
 		new_size = size + ksu_rc_len;
-		pr_info("adding ksu_rc_len: %ld -> %ld", size, new_size);
+		pr_debug("adding ksu_rc_len: %ld -> %ld", size, new_size);
 
 		// Attempt to overwrite the file size in userspace safely
 		if (!copy_to_user(st_size_ptr, &new_size, size_bytes)) {
-			pr_info("added ksu_rc_len");
+			pr_debug("added ksu_rc_len");
 		} else {
 			pr_err("add ksu_rc_len failed: statbuf 0x%lx",
 					(unsigned long)st_size_ptr);
@@ -778,7 +778,7 @@ static noinline void ksu_common_newfstat_ret(unsigned int fd_int, void **statbuf
 	}
 	fput(file);
 
-	pr_info("%s: stat init.rc \n", syscall_name);
+	pr_debug("%s: stat init.rc \n", syscall_name);
 
 	uintptr_t statbuf_ptr_local = (uintptr_t)*(void **)statbuf_ptr;
 	void __user *statbuf = (void __user *)statbuf_ptr_local;
@@ -800,17 +800,17 @@ static noinline void ksu_common_newfstat_ret(unsigned int fd_int, void **statbuf
 #endif
 
 	if (copy_from_user(&size, st_size_ptr, len)) {
-		pr_info("%s: read statbuf 0x%lx failed \n", syscall_name, (unsigned long)st_size_ptr);
+		pr_debug("%s: read statbuf 0x%lx failed \n", syscall_name, (unsigned long)st_size_ptr);
 		return;
 	}
 
 	new_size = size + ksu_rc_len;
-	pr_info("%s: adding ksu_rc_len: %ld -> %ld \n", syscall_name, size, new_size);
+	pr_debug("%s: adding ksu_rc_len: %ld -> %ld \n", syscall_name, size, new_size);
 		
 	if (!copy_to_user(st_size_ptr, &new_size, len))
-		pr_info("%s: added ksu_rc_len \n", syscall_name);
+		pr_debug("%s: added ksu_rc_len \n", syscall_name);
 	else
-		pr_info("%s: add ksu_rc_len failed: statbuf 0x%lx \n", syscall_name, (unsigned long)st_size_ptr);
+		pr_debug("%s: add ksu_rc_len failed: statbuf 0x%lx \n", syscall_name, (unsigned long)st_size_ptr);
 	
 	return;
 }
@@ -841,10 +841,10 @@ void stop_init_rc_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	bool ret = schedule_work(&stop_init_rc_hook_work);
-    pr_info("unregister init_rc_hook kprobe: %d!\n", ret);
+    pr_debug("unregister init_rc_hook kprobe: %d!\n", ret);
 #else
 	ksu_init_rc_hook = false;
-	pr_info("stop init_rc_hook\n");
+	pr_debug("stop init_rc_hook\n");
 #endif
 }
 
@@ -852,9 +852,9 @@ void stop_execve_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	bool ret = schedule_work(&stop_execve_hook_work);
-	pr_info("unregister execve kprobe: %d!\n", ret);
+	pr_debug("unregister execve kprobe: %d!\n", ret);
 #else
-	pr_info("stop execve_hook\n");
+	pr_debug("stop execve_hook\n");
 	ksu_execveat_hook = false;
 #endif
 }
@@ -868,13 +868,13 @@ void stop_input_hook()
 	}
 	input_hook_stopped = true;
 	bool ret = schedule_work(&stop_input_hook_work);
-	pr_info("unregister input kprobe: %d!\n", ret);
+	pr_debug("unregister input kprobe: %d!\n", ret);
 #else
 	if (!ksu_input_hook) {
 		return;
 	}
 	ksu_input_hook = false;
-	pr_info("stop input_hook\n");
+	pr_debug("stop input_hook\n");
 #endif
 }
 
@@ -886,16 +886,16 @@ void __init ksu_ksud_init()
 	int ret;
 
 	ret = register_kprobe(&execve_kp);
-	pr_info("ksud: execve_kp: %d\n", ret);
+	pr_debug("ksud: execve_kp: %d\n", ret);
 
 	ret = register_kprobe(&sys_read_kp);
-	pr_info("ksud: sys_read_kp: %d\n", ret);
+	pr_debug("ksud: sys_read_kp: %d\n", ret);
 
 	ret = register_kretprobe(&sys_fstat_kp);
-	pr_info("ksud: sys_fstat_kp: %d\n", ret);
+	pr_debug("ksud: sys_fstat_kp: %d\n", ret);
 
 	ret = register_kprobe(&input_event_kp);
-	pr_info("ksud: input_event_kp: %d\n", ret);
+	pr_debug("ksud: input_event_kp: %d\n", ret);
 
 	INIT_WORK(&stop_init_rc_hook_work, do_stop_init_rc_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
