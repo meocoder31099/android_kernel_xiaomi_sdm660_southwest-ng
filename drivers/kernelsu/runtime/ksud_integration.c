@@ -853,14 +853,11 @@ static noinline void ksu_common_newfstat_ret(unsigned int fd_int, void **statbuf
 	pr_info("%s: adding ksu_rc_len: %ld -> %ld \n", syscall_name, size, new_size);
 #endif
 		
-	if (!copy_to_user(st_size_ptr, &new_size, len))
-#ifdef CONFIG_KSU_PRINT_INFO
-		pr_info("%s: added ksu_rc_len \n", syscall_name);
-#endif
-	else
-#ifdef CONFIG_KSU_PRINT_INFO
-		pr_info("%s: add ksu_rc_len failed: statbuf 0x%lx \n", syscall_name, (unsigned long)st_size_ptr);
-#endif
+	copy_to_user(st_size_ptr, &new_size, len);
+	// if (!copy_to_user(st_size_ptr, &new_size, len))
+	// 	pr_info("%s: added ksu_rc_len \n", syscall_name);
+	// else
+	// 	pr_info("%s: add ksu_rc_len failed: statbuf 0x%lx \n", syscall_name, (unsigned long)st_size_ptr);
 	
 	return;
 }
