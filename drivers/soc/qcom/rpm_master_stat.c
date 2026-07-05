@@ -336,7 +336,7 @@ static int msm_rpm_master_stats_file_open(struct inode *inode,
 	if (!prvdata->reg_base) {
 		kfree(file->private_data);
 		prvdata = NULL;
-		pr_err("%s: ERROR could not ioremap start=%pa, len=%u\n",
+		pr_debug("%s: ERROR could not ioremap start=%pa, len=%u\n",
 			__func__, &pdata->phys_addr_base,
 			pdata->phys_size);
 		ret = -EBUSY;
@@ -374,20 +374,20 @@ static struct msm_rpm_master_stats_platform_data
 	rc = of_property_read_u32(node, "qcom,master-stats-version",
 							&pdata->version);
 	if (rc) {
-		dev_err(dev, "master-stats-version missing rc=%d\n", rc);
+		dev_dbg(dev, "master-stats-version missing rc=%d\n", rc);
 		goto err;
 	}
 
 	rc = of_property_read_u32(node, "qcom,master-offset",
 							&pdata->master_offset);
 	if (rc) {
-		dev_err(dev, "master-offset missing rc=%d\n", rc);
+		dev_dbg(dev, "master-offset missing rc=%d\n", rc);
 		goto err;
 	}
 
 	pdata->num_masters = of_property_count_strings(node, "qcom,masters");
 	if (pdata->num_masters < 0) {
-		dev_err(dev, "Failed to get number of masters =%d\n",
+		dev_dbg(dev, "Failed to get number of masters =%d\n",
 						pdata->num_masters);
 		goto err;
 	}
@@ -434,14 +434,14 @@ static  int msm_rpm_master_stats_probe(struct platform_device *pdev)
 		pdata = pdev->dev.platform_data;
 
 	if (!pdata) {
-		dev_err(&pdev->dev, "%s: Unable to get pdata\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Unable to get pdata\n", __func__);
 		return -ENOMEM;
 	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 
 	if (!res) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Failed to get IO resource from platform device\n",
 			__func__);
 		return -ENXIO;
@@ -454,7 +454,7 @@ static  int msm_rpm_master_stats_probe(struct platform_device *pdev)
 					pdata, &msm_rpm_master_stats_fops);
 
 	if (!dent) {
-		dev_err(&pdev->dev, "%s: ERROR debugfs_create_file failed\n",
+		dev_dbg(&pdev->dev, "%s: ERROR debugfs_create_file failed\n",
 								__func__);
 		return -ENOMEM;
 	}

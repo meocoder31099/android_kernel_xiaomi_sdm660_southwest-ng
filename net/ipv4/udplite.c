@@ -130,7 +130,7 @@ void __init udplite4_register(void)
 	inet_register_protosw(&udplite4_protosw);
 
 	if (udplite4_proc_init())
-		pr_err("%s: Cannot register /proc!\n", __func__);
+		pr_debug("%s: Cannot register /proc!\n", __func__);
 	return;
 
 out_unregister_proto:

@@ -165,7 +165,7 @@ static bool profile_valid(struct app_profile *profile)
 	}
 
 	if (strnlen(profile->key, sizeof(profile->key)) >= sizeof(profile->key)) {
-		pr_err("invalid app_profile key\n");
+		pr_debug("invalid app_profile key\n");
 		return false;
 	}
 
@@ -177,7 +177,7 @@ static bool profile_valid(struct app_profile *profile)
 	if (profile->allow_su) {
 #ifndef CONFIG_KSU_DISABLE_POLICY
 		if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
-			pr_err("invalid groups_count in app_profile: %s\n", profile->key);
+			pr_debug("invalid groups_count in app_profile: %s\n", profile->key);
 			return false;
 		}
 
@@ -192,7 +192,7 @@ static bool profile_valid(struct app_profile *profile)
 		size_t len = strnlen(domain, domain_len);
 
 		if (len == 0 || len >= domain_len) {
-			pr_err("invalid selinux_domain in app_profile: %s\n", profile->key);
+			pr_debug("invalid selinux_domain in app_profile: %s\n", profile->key);
 			return false;
 		}
 #endif
@@ -208,7 +208,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     u16 count = 0;
 
     if (!profile_valid(profile)) {
-        pr_err("Failed to set app profile: invalid profile!\n");
+        pr_debug("Failed to set app profile: invalid profile!\n");
         return -EINVAL;
     }
 
@@ -245,7 +245,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     }
 
     if (unlikely(count == U16_MAX)) {
-        pr_err("too many app profile\n");
+        pr_debug("too many app profile\n");
         result = -E2BIG;
         goto out_unlock;
     }
@@ -253,7 +253,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     // not found, alloc a new node!
     p = (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
     if (!p) {
-        pr_err("ksu_set_app_profile alloc failed\n");
+        pr_debug("ksu_set_app_profile alloc failed\n");
         result = -ENOMEM;
         goto out_unlock;
     }
@@ -301,7 +301,7 @@ out:
              * registered to request superuser?
              */
             if (allow_list_pointer >= ARRAY_SIZE(allow_list_arr)) {
-                pr_err("too many apps registered\n");
+                pr_debug("too many apps registered\n");
                 WARN_ON(1);
             } else {
                 allow_list_arr[allow_list_pointer++] = profile->current_uid;
@@ -463,18 +463,18 @@ static void do_persistent_allow_list(struct work_struct *work)
     struct file *fp =
         ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
-        pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
+        pr_debug("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
         goto out;
     }
 
 	// store magic and version
 	if (ksu_kernel_write_compat(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
-		pr_err("save_allow_list write magic failed.\n");
+		pr_debug("save_allow_list write magic failed.\n");
 		goto close_file;
 	}
 
 	if (ksu_kernel_write_compat(fp, &version, sizeof(version), &off) != sizeof(version)) {
-		pr_err("save_allow_list write version failed.\n");
+		pr_debug("save_allow_list write version failed.\n");
 		goto close_file;
 	}
 
@@ -518,19 +518,19 @@ void ksu_load_allow_list()
 	// load allowlist now!
 	fp = ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
+		pr_debug("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
 		return;
 	}
 
 	// verify magic
 	if (ksu_kernel_read_compat(fp, &magic, sizeof(magic), &off) != sizeof(magic) ||
 	    magic != FILE_MAGIC) {
-		pr_err("allowlist file invalid: %d!\n", magic);
+		pr_debug("allowlist file invalid: %d!\n", magic);
 		goto exit;
 	}
 
 	if (ksu_kernel_read_compat(fp, &version, sizeof(version), &off) != sizeof(version)) {
-		pr_err("allowlist read version: %d failed\n", version);
+		pr_debug("allowlist read version: %d failed\n", version);
 		goto exit;
 	}
 

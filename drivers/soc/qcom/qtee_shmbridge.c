@@ -119,22 +119,22 @@ static int32_t qtee_shmbridge_enable(bool enable)
 
 	qtee_shmbridge_enabled = false;
 	if (!enable) {
-		pr_warn("shmbridge isn't enabled\n");
+		pr_debug("shmbridge isn't enabled\n");
 		return ret;
 	}
 
 	desc.arginfo = TZ_SHM_BRIDGE_ENABLE_PARAM_ID;
 	ret = scm_call2(TZ_SHM_BRIDGE_ENABLE, &desc);
 	if (ret || desc.ret[0]) {
-		pr_err("Failed to enable shmbridge, rsp = %lld, ret = %d\n",
+		pr_debug("Failed to enable shmbridge, rsp = %lld, ret = %d\n",
 			desc.ret[0], ret);
 		if (ret == -EOPNOTSUPP ||
 			desc.ret[0] == SHMBRIDGE_E_NOT_SUPPORTED)
-			pr_warn("shmbridge is not supported by this target\n");
+			pr_debug("shmbridge is not supported by this target\n");
 		return ret | desc.ret[0];
 	}
 	qtee_shmbridge_enabled = true;
-	pr_warn("shmbridge is enabled\n");
+	pr_debug("shmbridge is enabled\n");
 	return ret;
 }
 
@@ -217,7 +217,7 @@ int32_t qtee_shmbridge_register(
 
 	if (!handle || !ns_vmid_list || !ns_vm_perm_list ||
 				ns_vmid_num > MAXSHMVMS) {
-		pr_err("invalid input parameters\n");
+		pr_debug("invalid input parameters\n");
 		return -EINVAL;
 	}
 
@@ -242,7 +242,7 @@ int32_t qtee_shmbridge_register(
 			desc.args[1], desc.args[2], desc.args[3]);
 	ret = scm_call2(TZ_SHM_BRIDGE_CREATE, &desc);
 	if (ret || desc.ret[0]) {
-		pr_err("create shmbridge failed, ret = %d, status = %llx\n",
+		pr_debug("create shmbridge failed, ret = %d, status = %llx\n",
 				ret, desc.ret[0]);
 		ret = -EINVAL;
 		goto exit;
@@ -270,7 +270,7 @@ int32_t qtee_shmbridge_deregister(uint64_t handle)
 	desc.args[0] = handle;
 	ret = scm_call2(TZ_SHM_BRIDGE_DELETE, &desc);
 	if (ret) {
-		pr_err("Failed to del bridge %lld, ret = %d\n", handle, ret);
+		pr_debug("Failed to del bridge %lld, ret = %d\n", handle, ret);
 		goto exit;
 	}
 	qtee_shmbridge_list_del_nolock(handle);
@@ -289,14 +289,14 @@ int32_t qtee_shmbridge_allocate_shm(size_t size, struct qtee_shm *shm)
 	unsigned long va;
 
 	if (size > DEFAULT_BRIDGE_SIZE) {
-		pr_err("requestd size %zu is larger than bridge size %d\n",
+		pr_debug("requestd size %zu is larger than bridge size %d\n",
 			size, DEFAULT_BRIDGE_SIZE);
 		ret = -EINVAL;
 		goto exit;
 	}
 
 	if (IS_ERR_OR_NULL(shm)) {
-		pr_err("qtee_shm is NULL\n");
+		pr_debug("qtee_shm is NULL\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -304,7 +304,7 @@ int32_t qtee_shmbridge_allocate_shm(size_t size, struct qtee_shm *shm)
 
 	va = gen_pool_alloc(default_bridge.genpool, size);
 	if (!va) {
-		pr_err("failed to sub-allocate %zu bytes from bridge\n", size);
+		pr_debug("failed to sub-allocate %zu bytes from bridge\n", size);
 		ret = -ENOMEM;
 		goto exit;
 	}
@@ -344,7 +344,7 @@ static int __init qtee_shmbridge_init(void)
 	uint32_t ns_vm_perms[] = {VM_PERM_R|VM_PERM_W};
 
 	if (default_bridge.vaddr) {
-		pr_warn("qtee shmbridge is already initialized\n");
+		pr_debug("qtee shmbridge is already initialized\n");
 		return 0;
 	}
 
@@ -361,7 +361,7 @@ static int __init qtee_shmbridge_init(void)
 	default_bridge.genpool = gen_pool_create(
 					default_bridge.min_alloc_order, -1);
 	if (!default_bridge.genpool) {
-		pr_err("gen_pool_add_virt() failed\n");
+		pr_debug("gen_pool_add_virt() failed\n");
 		ret = -ENOMEM;
 		goto exit_freebuf;
 	}
@@ -371,7 +371,7 @@ static int __init qtee_shmbridge_init(void)
 			(uintptr_t)default_bridge.vaddr,
 				default_bridge.paddr, default_bridge.size, -1);
 	if (ret) {
-		pr_err("gen_pool_add_virt() failed, ret = %d\n", ret);
+		pr_debug("gen_pool_add_virt() failed, ret = %d\n", ret);
 		goto exit_destroy_pool;
 	}
 
@@ -392,7 +392,7 @@ static int __init qtee_shmbridge_init(void)
 			ns_vm_perms, 1, VM_PERM_R|VM_PERM_W,
 			&default_bridge.handle);
 	if (ret) {
-		pr_err("Failed to register default bridge, size %zu\n",
+		pr_debug("Failed to register default bridge, size %zu\n",
 			default_bridge.size);
 		goto exit;
 	}

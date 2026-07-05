@@ -327,7 +327,7 @@ static int __init do_name(void)
 
 	/* name_len > 0 && name_len <= PATH_MAX checked in do_header */
 	if (collected[name_len - 1] != '\0') {
-		pr_err("initramfs name without nulterm: %.*s\n",
+		pr_debug("initramfs name without nulterm: %.*s\n",
 		       (int)name_len, collected);
 		error("malformed archive");
 		return 1;
@@ -396,7 +396,7 @@ static int __init do_copy(void)
 static int __init do_symlink(void)
 {
 	if (collected[name_len - 1] != '\0') {
-		pr_err("initramfs symlink without nulterm: %.*s\n",
+		pr_debug("initramfs symlink without nulterm: %.*s\n",
 		       (int)name_len, collected);
 		error("malformed archive");
 		return 1;
@@ -647,7 +647,7 @@ static void __init populate_initrd_image(char *err)
 	written = xwrite(file, (char *)initrd_start, initrd_end - initrd_start,
 			&pos);
 	if (written != initrd_end - initrd_start)
-		pr_err("/initrd.image: incomplete write (%zd != %ld)\n",
+		pr_debug("/initrd.image: incomplete write (%zd != %ld)\n",
 		       written, initrd_end - initrd_start);
 	fput(file);
 }

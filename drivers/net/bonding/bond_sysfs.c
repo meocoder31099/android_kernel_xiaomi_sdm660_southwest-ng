@@ -108,13 +108,13 @@ static ssize_t bonding_store_bonds(struct class *cls,
 		goto err_no_cmd;
 
 	if (command[0] == '+') {
-		pr_info("%s is being created...\n", ifname);
+		pr_debug("%s is being created...\n", ifname);
 		rv = bond_create(bn->net, ifname);
 		if (rv) {
 			if (rv == -EEXIST)
-				pr_info("%s already exists\n", ifname);
+				pr_debug("%s already exists\n", ifname);
 			else
-				pr_info("%s creation failed\n", ifname);
+				pr_debug("%s creation failed\n", ifname);
 			res = rv;
 		}
 	} else if (command[0] == '-') {
@@ -123,10 +123,10 @@ static ssize_t bonding_store_bonds(struct class *cls,
 		rtnl_lock();
 		bond_dev = bond_get_by_name(bn, ifname);
 		if (bond_dev) {
-			pr_info("%s is being deleted...\n", ifname);
+			pr_debug("%s is being deleted...\n", ifname);
 			unregister_netdevice(bond_dev);
 		} else {
-			pr_err("unable to delete non-existent %s\n", ifname);
+			pr_debug("unable to delete non-existent %s\n", ifname);
 			res = -ENODEV;
 		}
 		rtnl_unlock();
@@ -139,7 +139,7 @@ static ssize_t bonding_store_bonds(struct class *cls,
 	return res;
 
 err_no_cmd:
-	pr_err("no command found in bonding_masters - use +ifname or -ifname\n");
+	pr_debug("no command found in bonding_masters - use +ifname or -ifname\n");
 	return -EPERM;
 }
 
@@ -794,7 +794,7 @@ int bond_create_sysfs(struct bond_net *bn)
 		/* Is someone being kinky and naming a device bonding_master? */
 		if (__dev_get_by_name(bn->net,
 				      class_attr_bonding_masters.attr.name))
-			pr_err("network device named %s already exists in sysfs\n",
+			pr_debug("network device named %s already exists in sysfs\n",
 			       class_attr_bonding_masters.attr.name);
 		ret = 0;
 	}

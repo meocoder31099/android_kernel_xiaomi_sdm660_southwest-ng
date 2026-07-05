@@ -3603,7 +3603,7 @@ static int __init fault_around_debugfs(void)
 	ret = debugfs_create_file_unsafe("fault_around_bytes", 0644, NULL, NULL,
 			&fault_around_bytes_fops);
 	if (!ret)
-		pr_warn("Failed to create fault_around_bytes in debugfs");
+		pr_debug("Failed to create fault_around_bytes in debugfs");
 	return 0;
 }
 late_initcall(fault_around_debugfs);

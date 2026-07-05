@@ -421,7 +421,7 @@ struct kgsl_context {
  */
 
 #define pr_context(_d, _c, fmt, args...) \
-		dev_err((_d)->dev, "%s[%d]: " fmt, \
+		dev_dbg((_d)->dev, "%s[%d]: " fmt, \
 		_context_comm((_c)), \
 		pid_nr((_c)->proc_priv->pid), ##args)
 
@@ -909,7 +909,7 @@ static inline int kgsl_sysfs_store(const char *buf, unsigned int *ptr)
  * the number of strings in the binary
  */
 #define SNAPSHOT_ERR_NOMEM(_d, _s) \
-	dev_err((_d)->dev, \
+	dev_dbg((_d)->dev, \
 	"snapshot: not enough snapshot memory for section %s\n", (_s))
 
 /**

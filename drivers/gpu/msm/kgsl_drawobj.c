@@ -101,7 +101,7 @@ void kgsl_dump_syncpoints(struct kgsl_device *device,
 				event->context, KGSL_TIMESTAMP_RETIRED,
 				&retired);
 
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"  [timestamp] context %u timestamp %u (retired %u)\n",
 				event->context->id, event->timestamp,
 				retired);
@@ -112,7 +112,7 @@ void kgsl_dump_syncpoints(struct kgsl_device *device,
 			struct event_timeline_info *info = event->priv;
 
 			for (j = 0; info && info[j].timeline; j++)
-				dev_err(device->dev, "[%d]  timeline: %d seqno %lld\n",
+				dev_dbg(device->dev, "[%d]  timeline: %d seqno %lld\n",
 					i, info[j].timeline, info[j].seqno);
 			break;
 		}
@@ -143,7 +143,7 @@ static void syncobj_timer(struct timer_list *t)
 
 	device = drawobj->context->device;
 
-	dev_err(device->dev,
+	dev_dbg(device->dev,
 		"kgsl: possible gpu syncpoint deadlock for context %u timestamp %u\n",
 		drawobj->context->id, drawobj->timestamp);
 
@@ -151,7 +151,7 @@ static void syncobj_timer(struct timer_list *t)
 	kgsl_context_dump(drawobj->context);
 	clear_bit(ADRENO_CONTEXT_FENCE_LOG, &drawobj->context->priv);
 
-	dev_err(device->dev, "      pending events:\n");
+	dev_dbg(device->dev, "      pending events:\n");
 
 	for (i = 0; i < syncobj->numsyncs; i++) {
 		event = &syncobj->synclist[i];
@@ -161,19 +161,19 @@ static void syncobj_timer(struct timer_list *t)
 
 		switch (event->type) {
 		case KGSL_CMD_SYNCPOINT_TYPE_TIMESTAMP:
-			dev_err(device->dev, "       [%u] TIMESTAMP %u:%u\n",
+			dev_dbg(device->dev, "       [%u] TIMESTAMP %u:%u\n",
 				i, event->context->id, event->timestamp);
 			break;
 		case KGSL_CMD_SYNCPOINT_TYPE_TIMELINE: {
 			int j;
 			struct event_timeline_info *info = event->priv;
 
-			dev_err(device->dev, "       [%u] FENCE %s\n",
+			dev_dbg(device->dev, "       [%u] FENCE %s\n",
 				i, dma_fence_is_signaled(event->fence) ?
 					"signaled" : "not signaled");
 
 			for (j = 0; info && info[j].timeline; j++)
-				dev_err(device->dev, "       TIMELINE %d SEQNO %lld\n",
+				dev_dbg(device->dev, "       TIMELINE %d SEQNO %lld\n",
 					info[j].timeline, info[j].seqno);
 			break;
 		}
@@ -181,7 +181,7 @@ static void syncobj_timer(struct timer_list *t)
 	}
 
 	kgsl_drawobj_put(drawobj);
-	dev_err(device->dev, "--gpu syncpoint deadlock print end--\n");
+	dev_dbg(device->dev, "--gpu syncpoint deadlock print end--\n");
 }
 
 /*
@@ -591,7 +591,7 @@ static int drawobj_add_sync_timestamp(struct kgsl_device *device,
 			&queued);
 
 		if (timestamp_cmp(timestamp->timestamp, queued) > 0) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "Cannot create syncpoint for future timestamp %d (current %d)\n",
 				     timestamp->timestamp, queued);
 			goto done;
@@ -670,7 +670,7 @@ int kgsl_drawobj_sync_add_sync(struct kgsl_device *device,
 		return drawobj_add_sync_timeline(device,
 			syncobj, sync->priv, sync->size);
 
-	dev_err(device->dev, "bad syncpoint type %d for ctxt %d\n",
+	dev_dbg(device->dev, "bad syncpoint type %d for ctxt %d\n",
 		sync->type, drawobj->context->id);
 
 	return -EINVAL;
@@ -714,7 +714,7 @@ static void add_profiling_buffer(struct kgsl_device *device,
 	}
 
 	if (entry == NULL) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"ignore bad profile buffer ctxt %d id %d offset %lld gpuaddr %llx size %lld\n",
 			drawobj->context->id, id, offset, gpuaddr, size);
 		return;
@@ -1271,7 +1271,7 @@ int kgsl_drawobj_cmd_add_cmdlist(struct kgsl_device *device,
 
 		/* Sanity check the flags */
 		if (!(obj.flags & CMDLIST_FLAGS)) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "invalid cmdobj ctxt %d flags %d id %d offset %lld addr %lld size %lld\n",
 				     baseobj->context->id, obj.flags, obj.id,
 				     obj.offset, obj.gpuaddr, obj.size);
@@ -1312,7 +1312,7 @@ int kgsl_drawobj_cmd_add_memlist(struct kgsl_device *device,
 			return ret;
 
 		if (!(obj.flags & KGSL_OBJLIST_MEMOBJ)) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "invalid memobj ctxt %d flags %d id %d offset %lld addr %lld size %lld\n",
 				     DRAWOBJ(cmdobj)->context->id, obj.flags,
 				     obj.id, obj.offset, obj.gpuaddr,

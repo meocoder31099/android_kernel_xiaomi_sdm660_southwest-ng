@@ -64,7 +64,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         cb->func = ksu_install_manager_fd_tw_func;
         if (task_work_add(current, cb, TWA_RESUME)) {
             kfree(cb);
-            pr_warn("install manager fd add task_work failed\n");
+            pr_debug("install manager fd add task_work failed\n");
         }
         return 0;
     }

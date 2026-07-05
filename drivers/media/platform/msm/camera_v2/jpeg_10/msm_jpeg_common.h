@@ -16,7 +16,7 @@
 
 #define JPEG_DBG(fmt, args...) pr_debug(fmt, ##args)
 
-#define JPEG_PR_ERR   pr_err
+#define JPEG_PR_ERR   pr_debug
 #define JPEG_DBG_HIGH   pr_debug
 
 #define JPEG_BUS_VOTED(pgmn_dev) (pgmn_dev->jpeg_bus_vote = 1)

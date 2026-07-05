@@ -328,7 +328,7 @@ static inline void irq_setup_timings(struct irq_desc *desc, struct irqaction *ac
 	 */
 	ret = irq_timings_alloc(irq);
 	if (ret) {
-		pr_warn("Failed to allocate irq timing stats for irq%d (%d)",
+		pr_debug("Failed to allocate irq timing stats for irq%d (%d)",
 			irq, ret);
 		return;
 	}

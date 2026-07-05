@@ -68,10 +68,10 @@
 	func(dev, "%s (line %d): " log, __func__, __LINE__, ##__VA_ARGS__)
 
 #define LOGD(dev, log, ...) LOGx(dev_dbg, dev, log, ##__VA_ARGS__)
-#define LOGI(dev, log, ...) LOGx(dev_info, dev, log, ##__VA_ARGS__)
+#define LOGI(dev, log, ...) LOGx(dev_dbg, dev, log, ##__VA_ARGS__)
 #define LOGN(dev, log, ...) LOGx(dev_notice, dev, log, ##__VA_ARGS__)
-#define LOGW(dev, log, ...) LOGy(dev_warn, dev, log, ##__VA_ARGS__)
-#define LOGE(dev, log, ...) LOGy(dev_err, dev, log, ##__VA_ARGS__)
+#define LOGW(dev, log, ...) LOGy(dev_dbg, dev, log, ##__VA_ARGS__)
+#define LOGE(dev, log, ...) LOGy(dev_dbg, dev, log, ##__VA_ARGS__)
 
 #if 1
 #define LOGV(log, ...) \
@@ -557,7 +557,7 @@ static inline int syna_tcm_write(struct syna_tcm_hcd *tcm_hcd,
 static inline ssize_t syna_tcm_show_error(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
-	pr_err("%s: Attribute not readable\n",
+	pr_debug("%s: Attribute not readable\n",
 			__func__);
 
 	return -EPERM;
@@ -566,7 +566,7 @@ static inline ssize_t syna_tcm_show_error(struct device *dev,
 static inline ssize_t syna_tcm_store_error(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t count)
 {
-	pr_err("%s: Attribute not writable\n",
+	pr_debug("%s: Attribute not writable\n",
 			__func__);
 
 	return -EPERM;
@@ -580,7 +580,7 @@ static inline int secure_memcpy(unsigned char *dest, unsigned int dest_size,
 		return -EINVAL;
 
 	if (count > dest_size || count > src_size) {
-		pr_err("%s: src_size = %d, dest_size = %d, count = %d\n",
+		pr_debug("%s: src_size = %d, dest_size = %d, count = %d\n",
 				__func__, src_size, dest_size, count);
 		return -EINVAL;
 	}
@@ -601,7 +601,7 @@ static inline int syna_tcm_realloc_mem(struct syna_tcm_hcd *tcm_hcd,
 
 		buffer->buf = kmalloc(size, GFP_KERNEL);
 		if (!(buffer->buf)) {
-			dev_err(tcm_hcd->pdev->dev.parent,
+			dev_dbg(tcm_hcd->pdev->dev.parent,
 					"%s: Failed to allocate memory\n",
 					__func__);
 			kfree(temp);
@@ -615,7 +615,7 @@ static inline int syna_tcm_realloc_mem(struct syna_tcm_hcd *tcm_hcd,
 				buffer->buf_size,
 				buffer->buf_size);
 		if (retval < 0) {
-			dev_err(tcm_hcd->pdev->dev.parent,
+			dev_dbg(tcm_hcd->pdev->dev.parent,
 					"%s: Failed to copy data\n",
 					__func__);
 			kfree(temp);
@@ -638,10 +638,10 @@ static inline int syna_tcm_alloc_mem(struct syna_tcm_hcd *tcm_hcd,
 		kfree(buffer->buf);
 		buffer->buf = kmalloc(size, GFP_KERNEL);
 		if (!(buffer->buf)) {
-			dev_err(tcm_hcd->pdev->dev.parent,
+			dev_dbg(tcm_hcd->pdev->dev.parent,
 					"%s: Failed to allocate memory\n",
 					__func__);
-			dev_err(tcm_hcd->pdev->dev.parent,
+			dev_dbg(tcm_hcd->pdev->dev.parent,
 					"%s: Allocation size = %d\n",
 					__func__, size);
 			buffer->buf_size = 0;

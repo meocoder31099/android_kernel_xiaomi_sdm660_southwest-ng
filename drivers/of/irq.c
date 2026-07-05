@@ -516,7 +516,7 @@ int of_irq_to_resource(struct device_node *dev, int index, struct resource *r)
 
 		if (!trigger_type &&
 			of_device_is_compatible(oirq.np, "arm,gic-v3"))
-			pr_err("IRQ TYPE should not be NONE for %s\n",
+			pr_debug("IRQ TYPE should not be NONE for %s\n",
 							dev->full_name);
 
 		r->start = r->end = irq;
@@ -711,7 +711,7 @@ void __init of_irq_init(const struct of_device_id *matches)
 		desc = list_first_entry_or_null(&intc_parent_list,
 						typeof(*desc), list);
 		if (!desc) {
-			pr_err("of_irq_init: children remain, but no parents\n");
+			pr_debug("of_irq_init: children remain, but no parents\n");
 			break;
 		}
 		list_del(&desc->list);

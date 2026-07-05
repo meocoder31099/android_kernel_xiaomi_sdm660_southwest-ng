@@ -255,7 +255,7 @@ static int init_uevent_argv(struct kobj_uevent_env *env, const char *subsystem)
 
 	len = strlcpy(&env->buf[env->buflen], subsystem, buffer_size);
 	if (len >= buffer_size) {
-		pr_warn("init_uevent_argv: buffer size of %d too small, needed %d\n",
+		pr_debug("init_uevent_argv: buffer size of %d too small, needed %d\n",
 			buffer_size, len);
 		return -ENOMEM;
 	}

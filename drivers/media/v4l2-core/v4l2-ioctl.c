@@ -670,10 +670,10 @@ static void v4l_print_decoder_cmd(const void *arg, bool write_only)
 	pr_cont("cmd=%d, flags=0x%x\n", p->cmd, p->flags);
 
 	if (p->cmd == V4L2_DEC_CMD_START)
-		pr_info("speed=%d, format=%u\n",
+		pr_debug("speed=%d, format=%u\n",
 				p->start.speed, p->start.format);
 	else if (p->cmd == V4L2_DEC_CMD_STOP)
-		pr_info("pts=%llu\n", p->stop.pts);
+		pr_debug("pts=%llu\n", p->stop.pts);
 }
 
 static void v4l_print_dbg_chip_info(const void *arg, bool write_only)
@@ -2412,11 +2412,11 @@ static int v4l_log_status(const struct v4l2_ioctl_ops *ops,
 	int ret;
 
 	if (vfd->v4l2_dev)
-		pr_info("%s: =================  START STATUS  =================\n",
+		pr_debug("%s: =================  START STATUS  =================\n",
 			vfd->v4l2_dev->name);
 	ret = ops->vidioc_log_status(file, fh);
 	if (vfd->v4l2_dev)
-		pr_info("%s: ==================  END STATUS  ==================\n",
+		pr_debug("%s: ==================  END STATUS  ==================\n",
 			vfd->v4l2_dev->name);
 	return ret;
 }
@@ -2892,7 +2892,7 @@ static long __video_do_ioctl(struct file *file,
 	long ret = -ENOTTY;
 
 	if (ops == NULL) {
-		pr_warn("%s: has no ioctl_ops.\n",
+		pr_debug("%s: has no ioctl_ops.\n",
 				video_device_node_name(vfd));
 		return ret;
 	}

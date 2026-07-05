@@ -525,7 +525,7 @@ static bool vli_mmod_fast(u64 *result, u64 *product,
 		vli_mmod_fast_256(result, product, curve_prime, tmp);
 		break;
 	default:
-		pr_err("unsupports digits size!\n");
+		pr_debug("unsupports digits size!\n");
 		return false;
 	}
 

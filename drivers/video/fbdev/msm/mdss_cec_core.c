@@ -41,25 +41,25 @@ static struct cec_ctl *cec_get_ctl(struct device *dev)
 	struct mdss_panel_info *pinfo;
 
 	if (!dev) {
-		pr_err("invalid device\n");
+		pr_debug("invalid device\n");
 		goto error;
 	}
 
 	fbi = dev_get_drvdata(dev);
 	if (!fbi) {
-		pr_err("invalid fbi\n");
+		pr_debug("invalid fbi\n");
 		goto error;
 	}
 
 	mfd = fbi->par;
 	if (!mfd) {
-		pr_err("invalid mfd\n");
+		pr_debug("invalid mfd\n");
 		goto error;
 	}
 
 	pinfo = mfd->panel_info;
 	if (!pinfo) {
-		pr_err("invalid pinfo\n");
+		pr_debug("invalid pinfo\n");
 		goto error;
 	}
 
@@ -75,12 +75,12 @@ static int cec_msg_send(struct cec_ctl *ctl, struct cec_msg *msg)
 	struct cec_ops *ops;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		goto end;
 	}
 
 	if (!msg) {
-		pr_err("invalid cec message\n");
+		pr_debug("invalid cec message\n");
 		goto end;
 	}
 
@@ -98,12 +98,12 @@ static void cec_dump_msg(struct cec_ctl *ctl, struct cec_msg *msg)
 	unsigned long flags;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		return;
 	}
 
 	if (!msg) {
-		pr_err("invalid cec message\n");
+		pr_debug("invalid cec message\n");
 		return;
 	}
 
@@ -137,7 +137,7 @@ static int cec_disable(struct cec_ctl *ctl)
 	struct cec_ops *ops;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		goto end;
 	}
 
@@ -166,7 +166,7 @@ static int cec_enable(struct cec_ctl *ctl)
 	struct cec_ops *ops;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		goto end;
 	}
 
@@ -191,12 +191,12 @@ static int cec_send_abort_opcode(struct cec_ctl *ctl,
 	struct cec_msg out_msg;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		return -EINVAL;
 	}
 
 	if (!in_msg) {
-		pr_err("invalid cec message\n");
+		pr_debug("invalid cec message\n");
 		return -EINVAL;
 	}
 
@@ -216,12 +216,12 @@ static int cec_msg_parser(struct cec_ctl *ctl, struct cec_msg *in_msg)
 	struct cec_msg out_msg;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		return -EINVAL;
 	}
 
 	if (!in_msg) {
-		pr_err("invalid cec message\n");
+		pr_debug("invalid cec message\n");
 		return -EINVAL;
 	}
 
@@ -355,13 +355,13 @@ static int cec_msg_recv(void *data, struct cec_msg *msg)
 	int ret = 0;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
 	if (!ctl->enabled) {
-		pr_err("cec not enabled\n");
+		pr_debug("cec not enabled\n");
 		ret = -ENODEV;
 		goto end;
 	}
@@ -383,7 +383,7 @@ static int cec_msg_recv(void *data, struct cec_msg *msg)
 
 		ret = cec_msg_parser(ctl, &msg_node->msg);
 		if (ret)
-			pr_err("msg parsing failed\n");
+			pr_debug("msg parsing failed\n");
 
 		kfree(msg_node);
 	} else {
@@ -405,7 +405,7 @@ static ssize_t enable_show(struct device *dev,
 	struct cec_ctl *ctl = cec_get_ctl(dev);
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -415,7 +415,7 @@ static ssize_t enable_show(struct device *dev,
 		pr_debug("cec is enabled\n");
 		ret = scnprintf(buf, PAGE_SIZE, "%d\n", 1);
 	} else {
-		pr_err("cec is disabled\n");
+		pr_debug("cec is disabled\n");
 		ret = scnprintf(buf, PAGE_SIZE, "%d\n", 0);
 	}
 	spin_unlock_irqrestore(&ctl->lock, flags);
@@ -433,7 +433,7 @@ static ssize_t enable_store(struct device *dev,
 	struct cec_ops *ops;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -442,7 +442,7 @@ static ssize_t enable_store(struct device *dev,
 
 	ret = kstrtoint(buf, 10, &val);
 	if (ret) {
-		pr_err("kstrtoint failed.\n");
+		pr_debug("kstrtoint failed.\n");
 		goto end;
 	}
 
@@ -485,7 +485,7 @@ static ssize_t enable_compliance_show(struct device *dev,
 	struct cec_ctl *ctl = cec_get_ctl(dev);
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		return -EINVAL;
 	}
 
@@ -507,7 +507,7 @@ static ssize_t enable_compliance_store(struct device *dev,
 	struct cec_ops *ops;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -516,7 +516,7 @@ static ssize_t enable_compliance_store(struct device *dev,
 
 	ret = kstrtoint(buf, 10, &val);
 	if (ret) {
-		pr_err("kstrtoint failed.\n");
+		pr_debug("kstrtoint failed.\n");
 		goto end;
 	}
 
@@ -553,7 +553,7 @@ static ssize_t logical_addr_show(struct device *dev,
 	struct cec_ctl *ctl = cec_get_ctl(dev);
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		return -EINVAL;
 	}
 
@@ -574,7 +574,7 @@ static ssize_t logical_addr_store(struct device *dev,
 	struct cec_ops *ops;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -583,12 +583,12 @@ static ssize_t logical_addr_store(struct device *dev,
 
 	ret = kstrtoint(buf, 10, &logical_addr);
 	if (ret) {
-		pr_err("kstrtoint failed\n");
+		pr_debug("kstrtoint failed\n");
 		goto end;
 	}
 
 	if (logical_addr < 0 || logical_addr > 15) {
-		pr_err("invalid logical address\n");
+		pr_debug("invalid logical address\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -614,13 +614,13 @@ static ssize_t rd_msg_show(struct device *dev,
 	ssize_t ret;
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
 	if (!ctl->enabled) {
-		pr_err("cec not enabled\n");
+		pr_debug("cec not enabled\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -629,14 +629,14 @@ static ssize_t rd_msg_show(struct device *dev,
 
 	if (ctl->compliance_enabled) {
 		spin_unlock_irqrestore(&ctl->lock, flags);
-		pr_err("Read no allowed in compliance mode\n");
+		pr_debug("Read no allowed in compliance mode\n");
 		ret = -EPERM;
 		goto end;
 	}
 
 	if (list_empty_careful(&ctl->msg_head)) {
 		spin_unlock_irqrestore(&ctl->lock, flags);
-		pr_err("CEC message queue is empty\n");
+		pr_debug("CEC message queue is empty\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -670,7 +670,7 @@ static ssize_t wr_msg_store(struct device *dev,
 	struct cec_ctl *ctl = cec_get_ctl(dev);
 
 	if (!ctl) {
-		pr_err("invalid cec ctl\n");
+		pr_debug("invalid cec ctl\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -678,27 +678,27 @@ static ssize_t wr_msg_store(struct device *dev,
 	spin_lock_irqsave(&ctl->lock, flags);
 	if (ctl->compliance_enabled) {
 		spin_unlock_irqrestore(&ctl->lock, flags);
-		pr_err("Write not allowed in compliance mode\n");
+		pr_debug("Write not allowed in compliance mode\n");
 		ret = -EPERM;
 		goto end;
 	}
 
 	if (!ctl->enabled) {
 		spin_unlock_irqrestore(&ctl->lock, flags);
-		pr_err("CEC is not configed.\n");
+		pr_debug("CEC is not configed.\n");
 		ret = -EPERM;
 		goto end;
 	}
 	spin_unlock_irqrestore(&ctl->lock, flags);
 
 	if (msg->frame_size > MAX_CEC_FRAME_SIZE) {
-		pr_err("msg frame too big!\n");
+		pr_debug("msg frame too big!\n");
 		ret = -EINVAL;
 		goto end;
 	}
 	ret = cec_msg_send(ctl, msg);
 	if (ret) {
-		pr_err("cec_msg_send failed\n");
+		pr_debug("cec_msg_send failed\n");
 		goto end;
 	}
 
@@ -770,7 +770,7 @@ void *cec_abstract_init(struct cec_abstract_init_data *init_data)
 	int ret = 0;
 
 	if (!init_data) {
-		pr_err("invalid cec abstract init data\n");
+		pr_debug("invalid cec abstract init data\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -786,7 +786,7 @@ void *cec_abstract_init(struct cec_abstract_init_data *init_data)
 
 	ret = sysfs_create_group(ctl->init_data.kobj, &cec_fs_attr_group);
 	if (ret) {
-		pr_err("cec sysfs group creation failed\n");
+		pr_debug("cec sysfs group creation failed\n");
 		goto end;
 	}
 

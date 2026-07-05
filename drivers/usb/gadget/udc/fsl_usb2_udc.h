@@ -549,9 +549,9 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
 #define VDBG(stuff...)	do{}while(0)
 #endif
 
-#define ERR(stuff...)		pr_err("udc: " stuff)
-#define WARNING(stuff...)	pr_warn("udc: " stuff)
-#define INFO(stuff...)		pr_info("udc: " stuff)
+#define ERR(stuff...)		pr_debug("udc: " stuff)
+#define WARNING(stuff...)	pr_debug("udc: " stuff)
+#define INFO(stuff...)		pr_debug("udc: " stuff)
 
 /*-------------------------------------------------------------------------*/
 

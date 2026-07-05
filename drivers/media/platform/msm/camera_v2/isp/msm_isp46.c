@@ -143,7 +143,7 @@ static int32_t msm_vfe46_init_dt_parms(struct vfe_device *vfe_dev,
 	rc = of_property_read_u32(of_node, dt_parms->entries,
 		&num_dt_entries);
 	if (rc < 0 || !num_dt_entries) {
-		pr_err("%s: NO QOS entries found\n", __func__);
+		pr_debug("%s: NO QOS entries found\n", __func__);
 		return -EINVAL;
 	}
 	dt_settings = kcalloc(num_dt_entries, sizeof(uint32_t),
@@ -159,7 +159,7 @@ static int32_t msm_vfe46_init_dt_parms(struct vfe_device *vfe_dev,
 	rc = of_property_read_u32_array(of_node, dt_parms->regs,
 		dt_regs, num_dt_entries);
 	if (rc < 0) {
-		pr_err("%s: NO QOS BUS BDG info\n", __func__);
+		pr_debug("%s: NO QOS BUS BDG info\n", __func__);
 		kfree(dt_settings);
 		kfree(dt_regs);
 		return -EINVAL;
@@ -169,7 +169,7 @@ static int32_t msm_vfe46_init_dt_parms(struct vfe_device *vfe_dev,
 			dt_parms->settings,
 			dt_settings, num_dt_entries);
 		if (rc < 0) {
-			pr_err("%s: NO QOS settings\n",
+			pr_debug("%s: NO QOS settings\n",
 				__func__);
 			kfree(dt_settings);
 			kfree(dt_regs);
@@ -274,12 +274,12 @@ static void msm_vfe46_process_violation_status(
 	uint32_t violation_status = vfe_dev->error_info.violation_status;
 
 	if (violation_status > 39) {
-		pr_err("%s: invalid violation status %d\n",
+		pr_debug("%s: invalid violation status %d\n",
 			__func__, violation_status);
 		return;
 	}
 
-	pr_err("%s: VFE pipeline violation status %d\n", __func__,
+	pr_debug("%s: VFE pipeline violation status %d\n", __func__,
 		violation_status);
 }
 
@@ -288,56 +288,56 @@ static void msm_vfe46_process_error_status(struct vfe_device *vfe_dev)
 	uint32_t error_status1 = vfe_dev->error_info.error_mask1;
 
 	if (error_status1 & (1 << 0)) {
-		pr_err("%s: camif error status: 0x%x\n",
+		pr_debug("%s: camif error status: 0x%x\n",
 			__func__, vfe_dev->error_info.camif_status);
 		msm_camera_io_dump(vfe_dev->vfe_base + 0x3A8, 0x30, 1);
 	}
 	if (error_status1 & (1 << 1))
-		pr_err("%s: stats bhist overwrite\n", __func__);
+		pr_debug("%s: stats bhist overwrite\n", __func__);
 	if (error_status1 & (1 << 2))
-		pr_err("%s: stats cs overwrite\n", __func__);
+		pr_debug("%s: stats cs overwrite\n", __func__);
 	if (error_status1 & (1 << 3))
-		pr_err("%s: stats ihist overwrite\n", __func__);
+		pr_debug("%s: stats ihist overwrite\n", __func__);
 	if (error_status1 & (1 << 4))
-		pr_err("%s: realign buf y overflow\n", __func__);
+		pr_debug("%s: realign buf y overflow\n", __func__);
 	if (error_status1 & (1 << 5))
-		pr_err("%s: realign buf cb overflow\n", __func__);
+		pr_debug("%s: realign buf cb overflow\n", __func__);
 	if (error_status1 & (1 << 6))
-		pr_err("%s: realign buf cr overflow\n", __func__);
+		pr_debug("%s: realign buf cr overflow\n", __func__);
 	if (error_status1 & (1 << 7))
 		msm_vfe46_process_violation_status(vfe_dev);
 	if (error_status1 & (1 << 9))
-		pr_err("%s: image master 0 bus overflow\n", __func__);
+		pr_debug("%s: image master 0 bus overflow\n", __func__);
 	if (error_status1 & (1 << 10))
-		pr_err("%s: image master 1 bus overflow\n", __func__);
+		pr_debug("%s: image master 1 bus overflow\n", __func__);
 	if (error_status1 & (1 << 11))
-		pr_err("%s: image master 2 bus overflow\n", __func__);
+		pr_debug("%s: image master 2 bus overflow\n", __func__);
 	if (error_status1 & (1 << 12))
-		pr_err("%s: image master 3 bus overflow\n", __func__);
+		pr_debug("%s: image master 3 bus overflow\n", __func__);
 	if (error_status1 & (1 << 13))
-		pr_err("%s: image master 4 bus overflow\n", __func__);
+		pr_debug("%s: image master 4 bus overflow\n", __func__);
 	if (error_status1 & (1 << 14))
-		pr_err("%s: image master 5 bus overflow\n", __func__);
+		pr_debug("%s: image master 5 bus overflow\n", __func__);
 	if (error_status1 & (1 << 15))
-		pr_err("%s: image master 6 bus overflow\n", __func__);
+		pr_debug("%s: image master 6 bus overflow\n", __func__);
 	if (error_status1 & (1 << 16))
-		pr_err("%s: status hdr be bus overflow\n", __func__);
+		pr_debug("%s: status hdr be bus overflow\n", __func__);
 	if (error_status1 & (1 << 17))
-		pr_err("%s: status bg bus overflow\n", __func__);
+		pr_debug("%s: status bg bus overflow\n", __func__);
 	if (error_status1 & (1 << 18))
-		pr_err("%s: status bf bus overflow\n", __func__);
+		pr_debug("%s: status bf bus overflow\n", __func__);
 	if (error_status1 & (1 << 19))
-		pr_err("%s: status hdr bhist bus overflow\n", __func__);
+		pr_debug("%s: status hdr bhist bus overflow\n", __func__);
 	if (error_status1 & (1 << 20))
-		pr_err("%s: status rs bus overflow\n", __func__);
+		pr_debug("%s: status rs bus overflow\n", __func__);
 	if (error_status1 & (1 << 21))
-		pr_err("%s: status cs bus overflow\n", __func__);
+		pr_debug("%s: status cs bus overflow\n", __func__);
 	if (error_status1 & (1 << 22))
-		pr_err("%s: status ihist bus overflow\n", __func__);
+		pr_debug("%s: status ihist bus overflow\n", __func__);
 	if (error_status1 & (1 << 23))
-		pr_err("%s: status skin bhist bus overflow\n", __func__);
+		pr_debug("%s: status skin bhist bus overflow\n", __func__);
 	if (error_status1 & (1 << 24))
-		pr_err("%s: status bf scale bus overflow\n", __func__);
+		pr_debug("%s: status bf scale bus overflow\n", __func__);
 }
 
 static void msm_vfe46_read_and_clear_irq_status(struct vfe_device *vfe_dev,
@@ -424,7 +424,7 @@ static void msm_vfe46_process_reg_update(struct vfe_device *vfe_dev,
 						MSM_ISP_COMP_IRQ_EPOCH, ts);
 				break;
 			default:
-				pr_err("%s: Error case\n", __func__);
+				pr_debug("%s: Error case\n", __func__);
 				return;
 			}
 		}
@@ -472,7 +472,7 @@ static void msm_vfe46_reg_update(struct vfe_device *vfe_dev,
 
 	/* This HW supports upto VFE_RAW_2 */
 	if (frame_src > VFE_RAW_2 && frame_src != VFE_SRC_MAX) {
-		pr_err("%s Error case\n", __func__);
+		pr_debug("%s Error case\n", __func__);
 		return;
 	}
 
@@ -495,7 +495,7 @@ static void msm_vfe46_reg_update(struct vfe_device *vfe_dev,
 	if ((vfe_dev->is_split && vfe_dev->pdev->id == ISP_VFE1) &&
 		((frame_src == VFE_PIX_0) || (frame_src == VFE_SRC_MAX))) {
 		if (!vfe_dev->common_data->dual_vfe_res->vfe_base[ISP_VFE0]) {
-			pr_err("%s vfe_base for ISP_VFE0 is NULL\n", __func__);
+			pr_debug("%s vfe_base for ISP_VFE0 is NULL\n", __func__);
 			spin_unlock_irqrestore(&vfe_dev->reg_update_lock,
 				flags);
 			return;
@@ -541,7 +541,7 @@ static long msm_vfe46_reset_hardware(struct vfe_device *vfe_dev,
 		rc = wait_for_completion_timeout(
 			&vfe_dev->reset_complete, msecs_to_jiffies(50));
 		if (rc <= 0) {
-			pr_err("%s:%d failed: reset timeout\n", __func__,
+			pr_debug("%s:%d failed: reset timeout\n", __func__,
 				__LINE__);
 			vfe_dev->reset_pending = 0;
 		}
@@ -686,7 +686,7 @@ static int32_t msm_vfe46_convert_bpp_to_reg(int32_t bpp, uint32_t *bpp_reg)
 		*bpp_reg = 0x3;
 		break;
 	default:
-		pr_err("%s:%d invalid bpp %d\n", __func__, __LINE__, bpp);
+		pr_debug("%s:%d invalid bpp %d\n", __func__, __LINE__, bpp);
 		return -EINVAL;
 	}
 
@@ -718,7 +718,7 @@ static int32_t msm_vfe46_convert_io_fmt_to_reg(
 		*pack_reg = 0x5;
 		break;
 	default:
-		pr_err("%s: invalid pack fmt %d!\n", __func__, pack_format);
+		pr_debug("%s: invalid pack fmt %d!\n", __func__, pack_format);
 		return -EINVAL;
 	}
 
@@ -744,7 +744,7 @@ static int32_t msm_vfe46_cfg_io_format(struct vfe_device *vfe_dev,
 			vfe_dev->axi_data.src_info[VFE_PIX_0].input_format);
 		rc = msm_vfe46_convert_bpp_to_reg(read_bpp, &read_bpp_reg);
 		if (rc < 0) {
-			pr_err("%s: convert_bpp_to_reg err! in_bpp %d rc %d\n",
+			pr_debug("%s: convert_bpp_to_reg err! in_bpp %d rc %d\n",
 				__func__, read_bpp, rc);
 			return rc;
 	}
@@ -754,7 +754,7 @@ static int32_t msm_vfe46_cfg_io_format(struct vfe_device *vfe_dev,
 		rc = msm_vfe46_convert_io_fmt_to_reg(
 			read_pack_fmt, &read_pack_reg);
 		if (rc < 0) {
-			pr_err("%s: convert_io_fmt_to_reg err! rc = %d\n",
+			pr_debug("%s: convert_io_fmt_to_reg err! rc = %d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -766,7 +766,7 @@ static int32_t msm_vfe46_cfg_io_format(struct vfe_device *vfe_dev,
 	bpp = msm_isp_get_bit_per_pixel(io_format);
 	rc = msm_vfe46_convert_bpp_to_reg(bpp, &bpp_reg);
 	if (rc < 0) {
-		pr_err("%s: convert_bpp_to_reg err! bpp %d rc = %d\n",
+		pr_debug("%s: convert_bpp_to_reg err! bpp %d rc = %d\n",
 			__func__, bpp, rc);
 		return rc;
 	}
@@ -784,7 +784,7 @@ static int32_t msm_vfe46_cfg_io_format(struct vfe_device *vfe_dev,
 		pack_fmt = msm_isp_get_pack_format(io_format);
 		rc = msm_vfe46_convert_io_fmt_to_reg(pack_fmt, &pack_reg);
 		if (rc < 0) {
-			pr_err("%s: convert_io_fmt_to_reg err! rc = %d\n",
+			pr_debug("%s: convert_io_fmt_to_reg err! rc = %d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -795,7 +795,7 @@ static int32_t msm_vfe46_cfg_io_format(struct vfe_device *vfe_dev,
 	case RDI_INTF_1:
 	case RDI_INTF_2:
 	default:
-		pr_err("%s: Invalid stream source\n", __func__);
+		pr_debug("%s: Invalid stream source\n", __func__);
 		return -EINVAL;
 	}
 	msm_camera_io_w(io_format_reg, vfe_dev->vfe_base + 0x88);
@@ -812,7 +812,7 @@ static int msm_vfe46_start_fetch_engine(struct vfe_device *vfe_dev,
 	struct msm_isp_buffer_mapped_info mapped_info;
 
 	if (vfe_dev->fetch_engine_info.is_busy == 1) {
-		pr_err("%s: fetch engine busy\n", __func__);
+		pr_debug("%s: fetch engine busy\n", __func__);
 		return -EINVAL;
 	}
 
@@ -835,7 +835,7 @@ static int msm_vfe46_start_fetch_engine(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->get_buf_by_index(
 			vfe_dev->buf_mgr, bufq_handle, fe_cfg->buf_idx, &buf);
 		if (rc < 0 || !buf) {
-			pr_err("%s: No fetch buffer rc= %d buf= %pK\n",
+			pr_debug("%s: No fetch buffer rc= %d buf= %pK\n",
 				__func__, rc, buf);
 			mutex_unlock(&vfe_dev->buf_mgr->lock);
 			return -EINVAL;
@@ -847,7 +847,7 @@ static int msm_vfe46_start_fetch_engine(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->map_buf(vfe_dev->buf_mgr,
 			&mapped_info, fe_cfg->fd);
 		if (rc < 0) {
-			pr_err("%s: can not map buffer\n", __func__);
+			pr_debug("%s: can not map buffer\n", __func__);
 			return -EINVAL;
 		}
 	}
@@ -915,7 +915,7 @@ static void msm_vfe46_cfg_fetch_engine(struct vfe_device *vfe_dev,
 		msm_camera_io_w(temp, vfe_dev->vfe_base + 0x50);
 
 	} else {
-		pr_err("%s: Invalid mux configuration - mux: %d\n", __func__,
+		pr_debug("%s: Invalid mux configuration - mux: %d\n", __func__,
 			pix_cfg->input_mux);
 	}
 }
@@ -947,7 +947,7 @@ static void msm_vfe46_cfg_testgen(struct vfe_device *vfe_dev,
 		bpp_reg = 0x11;
 		break;
 	default:
-		pr_err("%s: invalid bpp %d\n", __func__, bit_per_pixel);
+		pr_debug("%s: invalid bpp %d\n", __func__, bit_per_pixel);
 		break;
 	}
 
@@ -979,7 +979,7 @@ static void msm_vfe46_cfg_testgen(struct vfe_device *vfe_dev,
 		bayer_pix_pattern_reg = 0x11;
 		break;
 	default:
-		pr_err("%s: invalid pix pattern %d\n",
+		pr_debug("%s: invalid pix pattern %d\n",
 			__func__, bit_per_pixel);
 		break;
 	}
@@ -1014,7 +1014,7 @@ static void msm_vfe46_cfg_testgen(struct vfe_device *vfe_dev,
 			unicolorbar_reg = 0x111;
 			break;
 		default:
-			pr_err("%s: invalid colorbar %d\n",
+			pr_debug("%s: invalid colorbar %d\n",
 				__func__, testgen_cfg->color_bar_pattern);
 			break;
 		}
@@ -1124,7 +1124,7 @@ static void msm_vfe46_cfg_input_mux(struct vfe_device *vfe_dev,
 		msm_vfe46_cfg_fetch_engine(vfe_dev, pix_cfg);
 		break;
 	default:
-		pr_err("%s: Unsupported input mux %d\n",
+		pr_debug("%s: Unsupported input mux %d\n",
 			__func__, pix_cfg->input_mux);
 		break;
 	}
@@ -1180,7 +1180,7 @@ static void msm_vfe46_update_camif_state(struct vfe_device *vfe_dev,
 				vfe_dev->vfe_base + 0x3A8);
 		if (readl_poll_timeout_atomic(vfe_dev->vfe_base + 0x3D0,
 			poll_val, poll_val & 0x80000000, 1000, 2000000))
-			pr_err("%s: camif disable failed %x\n",
+			pr_debug("%s: camif disable failed %x\n",
 				__func__, poll_val);
 		vfe_dev->axi_data.src_info[VFE_PIX_0].active = 0;
 		/* testgen OFF*/
@@ -1321,7 +1321,7 @@ static void msm_vfe46_axi_cfg_wm_xbar_reg(
 		xbar_cfg = 0xE00;
 		break;
 	default:
-		pr_err("%s: Invalid stream src\n", __func__);
+		pr_debug("%s: Invalid stream src\n", __func__);
 		break;
 	}
 	xbar_reg_cfg =
@@ -1395,7 +1395,7 @@ static int msm_vfe46_axi_halt(struct vfe_device *vfe_dev,
 		rc = wait_for_completion_timeout(
 			&vfe_dev->halt_complete, msecs_to_jiffies(500));
 		if (rc <= 0)
-			pr_err("%s:VFE%d halt timeout rc=%d\n", __func__,
+			pr_debug("%s:VFE%d halt timeout rc=%d\n", __func__,
 				vfe_dev->pdev->id, rc);
 	} else {
 		/* Halt AXI Bus Bridge */
@@ -1473,7 +1473,7 @@ static int msm_vfe46_get_stats_idx(enum msm_isp_stats_type stats_type)
 	case MSM_ISP_STATS_BF_SCALE:
 		return STATS_IDX_BF_SCALE;
 	default:
-		pr_err("%s: Invalid stats type\n", __func__);
+		pr_debug("%s: Invalid stats type\n", __func__);
 		return -EINVAL;
 	}
 }
@@ -1485,7 +1485,7 @@ static int msm_vfe46_stats_check_streams(
 		STATS_AVAILABLE &&
 		stream_info[STATS_IDX_BF_SCALE].state !=
 		STATS_AVAILABLE) {
-		pr_err("%s: does not support BF_SCALE while BF is disabled\n",
+		pr_debug("%s: does not support BF_SCALE while BF is disabled\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -1493,7 +1493,7 @@ static int msm_vfe46_stats_check_streams(
 		stream_info[STATS_IDX_BF_SCALE].state != STATS_AVAILABLE &&
 		stream_info[STATS_IDX_BF].composite_flag !=
 		stream_info[STATS_IDX_BF_SCALE].composite_flag) {
-		pr_err("%s: Different composite flag for BF and BF_SCALE\n",
+		pr_debug("%s: Different composite flag for BF and BF_SCALE\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -1512,7 +1512,7 @@ static void msm_vfe46_stats_cfg_comp_mask(
 		return;
 
 	if (request_comp_index >= MAX_NUM_STATS_COMP_MASK) {
-		pr_err("%s: num of comp masks %d exceed max %d\n",
+		pr_debug("%s: num of comp masks %d exceed max %d\n",
 			__func__, request_comp_index,
 			MAX_NUM_STATS_COMP_MASK);
 		return;
@@ -1520,7 +1520,7 @@ static void msm_vfe46_stats_cfg_comp_mask(
 
 	if (vfe_dev->hw_info->stats_hw_info->num_stats_comp_mask >
 			MAX_NUM_STATS_COMP_MASK) {
-		pr_err("%s: num of comp masks %d exceed max %d\n",
+		pr_debug("%s: num of comp masks %d exceed max %d\n",
 			__func__,
 			vfe_dev->hw_info->stats_hw_info->num_stats_comp_mask,
 			MAX_NUM_STATS_COMP_MASK);
@@ -1671,7 +1671,7 @@ static void msm_vfe46_stats_cfg_ub(struct vfe_device *vfe_dev)
 	else if (vfe_dev->pdev->id == ISP_VFE0)
 		ub_offset = VFE46_UB_SIZE_VFE0;
 	else
-		pr_err("%s: incorrect VFE device\n", __func__);
+		pr_debug("%s: incorrect VFE device\n", __func__);
 
 	for (i = 0; i < VFE46_NUM_STATS_TYPE; i++) {
 		ub_offset -= ub_size[i];
@@ -1719,7 +1719,7 @@ static void msm_vfe46_stats_update_cgc_override(struct vfe_device *vfe_dev,
 				cgc_mask |= (1 << 2);
 				break;
 			default:
-				pr_err("%s: Invalid stats mask\n", __func__);
+				pr_debug("%s: Invalid stats mask\n", __func__);
 				return;
 			}
 		}
@@ -1778,7 +1778,7 @@ static void msm_vfe46_stats_enable_module(struct vfe_device *vfe_dev,
 				stats_cfg_mask |= 1 << 5;
 				break;
 			default:
-				pr_err("%s: Invalid stats mask\n", __func__);
+				pr_debug("%s: Invalid stats mask\n", __func__);
 				return;
 			}
 		}

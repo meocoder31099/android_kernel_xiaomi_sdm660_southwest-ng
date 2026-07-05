@@ -63,7 +63,7 @@ static void _a5xx_preemption_done(struct adreno_device *adreno_dev)
 	adreno_readreg(adreno_dev, ADRENO_REG_CP_PREEMPT, &status);
 
 	if (status != 0) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "Preemption not complete: status=%X cur=%d R/W=%X/%X next=%d R/W=%X/%X\n",
 			     status, adreno_dev->cur_rb->id,
 			     adreno_get_rptr(adreno_dev->cur_rb),
@@ -120,7 +120,7 @@ static void _a5xx_preemption_fault(struct adreno_device *adreno_dev)
 		}
 	}
 
-	dev_err(device->dev,
+	dev_dbg(device->dev,
 		     "Preemption timed out: cur=%d R/W=%X/%X, next=%d R/W=%X/%X\n",
 		     adreno_dev->cur_rb->id,
 		     adreno_get_rptr(adreno_dev->cur_rb),
@@ -288,7 +288,7 @@ void a5xx_preempt_callback(struct adreno_device *adreno_dev, int bit)
 	adreno_readreg(adreno_dev, ADRENO_REG_CP_PREEMPT, &status);
 
 	if (status != 0) {
-		dev_err(KGSL_DEVICE(adreno_dev)->dev,
+		dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 			     "preempt interrupt with non-zero status: %X\n",
 			     status);
 

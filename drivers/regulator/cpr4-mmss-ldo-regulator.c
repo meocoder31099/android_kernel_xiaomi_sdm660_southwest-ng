@@ -298,10 +298,10 @@ static int cpr4_sdm660_mmss_calculate_open_loop_voltages(
 			rc);
 
 	// Debug
-	// pr_info("GPU_CPR_DEBUG: Custom UV Applied: %d uV\n", custom_voltage_reduce);
-	// pr_info("GPU_CPR_DEBUG: Corner | Freq (Hz)  | Floor (uV) | Open-Loop (uV) | Ceiling (uV)\n");
+	// pr_debug("GPU_CPR_DEBUG: Custom UV Applied: %d uV\n", custom_voltage_reduce);
+	// pr_debug("GPU_CPR_DEBUG: Corner | Freq (Hz)  | Floor (uV) | Open-Loop (uV) | Ceiling (uV)\n");
 	// for (i = 0; i < vreg->corner_count; i++) {
-	// 	pr_info("GPU_CPR_DEBUG: [%2d]   | %10u | %10d | %14d | %12d\n",
+	// 	pr_debug("GPU_CPR_DEBUG: [%2d]   | %10u | %10d | %14d | %12d\n",
 	// 		i,
 	// 		vreg->corner[i].proc_freq,
 	// 		vreg->corner[i].floor_volt,
@@ -686,7 +686,7 @@ static int cpr4_mmss_regulator_probe(struct platform_device *pdev)
 	int rc;
 
 	if (!dev->of_node) {
-		dev_err(dev, "Device tree node is missing\n");
+		dev_dbg(dev, "Device tree node is missing\n");
 		return -EINVAL;
 	}
 

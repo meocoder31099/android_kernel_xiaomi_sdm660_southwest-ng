@@ -23,7 +23,7 @@ int msm_slim_rx_enqueue(struct msm_slim_ctrl *dev, u32 *buf, u8 len)
 	spin_lock(&dev->rx_lock);
 	if ((dev->tail + 1) % MSM_CONCUR_MSG == dev->head) {
 		spin_unlock(&dev->rx_lock);
-		dev_err(dev->dev, "RX QUEUE full!\n");
+		dev_dbg(dev->dev, "RX QUEUE full!\n");
 		return -EXFULL;
 	}
 	memcpy((u8 *)dev->rx_msgs[dev->tail], (u8 *)buf, len);
@@ -136,14 +136,14 @@ int msm_slim_init_endpoint(struct msm_slim_ctrl *dev, struct msm_slim_endp *ep)
 	/* Allocate the endpoint */
 	endpoint = sps_alloc_endpoint();
 	if (!endpoint) {
-		dev_err(dev->dev, "sps_alloc_endpoint failed\n");
+		dev_dbg(dev->dev, "sps_alloc_endpoint failed\n");
 		return -ENOMEM;
 	}
 
 	/* Get default connection configuration for an endpoint */
 	ret = sps_get_config(endpoint, config);
 	if (ret) {
-		dev_err(dev->dev, "sps_get_config failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "sps_get_config failed 0x%x\n", ret);
 		goto sps_config_failed;
 	}
 
@@ -174,7 +174,7 @@ int msm_slim_sps_mem_alloc(
 		dma_alloc_coherent(dma_dev, mem->size, &phys, GFP_KERNEL);
 
 	if (!mem->base) {
-		dev_err(dma_dev, "dma_alloc_coherent (%d) failed\n", len);
+		dev_dbg(dma_dev, "dma_alloc_coherent (%d) failed\n", len);
 		return -ENOMEM;
 	}
 
@@ -198,7 +198,7 @@ msm_slim_sps_mem_free(struct msm_slim_ctrl *dev, struct sps_mem_buffer *mem)
 			dma_free_coherent(dev->dev, mem->size, mem->base,
 							mem->phys_base);
 		else
-			dev_err(dev->dev, "Cannot free DMA as it is NULL\n");
+			dev_dbg(dev->dev, "Cannot free DMA as it is NULL\n");
 	}
 
 	mem->size = 0;
@@ -215,11 +215,11 @@ void msm_hw_set_port(struct msm_slim_ctrl *dev, u8 pipenum, u8 portnum)
 	struct slim_port_cfg cfg = dev->ctrl.ports[portnum].cfg;
 
 	if (!dev) {
-		pr_err("%s:Dev node is null\n", __func__);
+		pr_debug("%s:Dev node is null\n", __func__);
 		return;
 	}
 	if (portnum >= dev->port_nums) {
-		pr_err("%s:Invalid port\n", __func__);
+		pr_debug("%s:Invalid port\n", __func__);
 		return;
 	}
 	ctrl = &dev->ctrl;
@@ -323,7 +323,7 @@ int msm_slim_connect_pipe_port(struct msm_slim_ctrl *dev, u8 pn)
 	endpoint = &dev->pipes[pn];
 	ret = sps_get_config(dev->pipes[pn].sps, cfg);
 	if (ret) {
-		dev_err(dev->dev, "sps pipe-port get config error%x\n", ret);
+		dev_dbg(dev->dev, "sps pipe-port get config error%x\n", ret);
 		return ret;
 	}
 	cfg->options = SPS_O_DESC_DONE | SPS_O_ERROR |
@@ -374,7 +374,7 @@ int msm_slim_connect_pipe_port(struct msm_slim_ctrl *dev, u8 pn)
 	ret = msm_slim_sps_mem_alloc(dev, &cfg->desc,
 				MSM_SLIM_DESC_NUM * sizeof(struct sps_iovec));
 	if (ret)
-		pr_err("mem alloc for descr failed:%d\n", ret);
+		pr_debug("mem alloc for descr failed:%d\n", ret);
 	else
 		ret = sps_connect(dev->pipes[pn].sps, cfg);
 
@@ -479,7 +479,7 @@ static void msm_slim_port_cb(struct sps_event_notify *ev)
 			iovec->addr, iovec->size, iovec->flags);
 
 	} else {
-		pr_err("%s: ERR event %d\n",
+		pr_debug("%s: ERR event %d\n",
 					__func__, ev->event_id);
 	}
 	if (dev)
@@ -504,7 +504,7 @@ int msm_slim_port_xfer(struct slim_controller *ctrl, u8 pn, void *buf,
 
 	dma_buf =  msm_slim_iommu_map(dev, buf, len);
 	if (dma_buf == DMA_ERROR_CODE) {
-		dev_err(dev->dev, "error DMA mapping buffers\n");
+		dev_dbg(dev->dev, "error DMA mapping buffers\n");
 		return -ENOMEM;
 	}
 
@@ -556,7 +556,7 @@ static int msm_slim_post_tx_msgq(struct msm_slim_ctrl *dev, u8 *buf, int len)
 	ret = sps_transfer_one(pipe, phys_addr, ((len + 3) & 0xFC), NULL,
 				SPS_IOVEC_FLAG_EOT);
 	if (ret)
-		dev_err(dev->dev, "transfer_one() failed 0x%x, %d\n", ret, ix);
+		dev_dbg(dev->dev, "transfer_one() failed 0x%x, %d\n", ret, ix);
 
 	return ret;
 }
@@ -586,7 +586,7 @@ void msm_slim_tx_msg_return(struct msm_slim_ctrl *dev, int err)
 		addr = DESC_FULL_ADDR(iovec.flags, iovec.addr);
 		if (ret || addr == 0) {
 			if (ret)
-				pr_err("SLIM TX get IOVEC failed:%d\n", ret);
+				pr_debug("SLIM TX get IOVEC failed:%d\n", ret);
 			return;
 		}
 		if (addr == dev->bulk.wr_dma) {
@@ -732,7 +732,7 @@ msm_slim_rx_msgq_event(struct msm_slim_ctrl *dev, struct sps_event_notify *ev)
 	if (ev->event_id == SPS_EVENT_DESC_DONE)
 		complete(&dev->rx_msgq_notify);
 	else
-		dev_err(dev->dev, "%s: unknown event %d\n",
+		dev_dbg(dev->dev, "%s: unknown event %d\n",
 					__func__, ev->event_id);
 }
 
@@ -745,7 +745,7 @@ msm_slim_handle_rx(struct msm_slim_ctrl *dev, struct sps_event_notify *ev)
 	u8 msg_len = 0;
 
 	if (ev->event_id != SPS_EVENT_EOT) {
-		dev_err(dev->dev, "%s: unknown event %d\n",
+		dev_dbg(dev->dev, "%s: unknown event %d\n",
 					__func__, ev->event_id);
 		return;
 	}
@@ -803,7 +803,7 @@ static int msm_slim_post_rx_msgq(struct msm_slim_ctrl *dev, int ix)
 
 	ret = sps_transfer_one(pipe, phys_addr, 4, virt_addr, 0);
 	if (ret)
-		dev_err(dev->dev, "transfer_one() failed 0x%x, %d\n", ret, ix);
+		dev_dbg(dev->dev, "transfer_one() failed 0x%x, %d\n", ret, ix);
 
 	return ret;
 }
@@ -820,7 +820,7 @@ int msm_slim_rx_msgq_get(struct msm_slim_ctrl *dev, u32 *data, int offset)
 
 	ret = sps_get_iovec(pipe, &iovec);
 	if (ret) {
-		dev_err(dev->dev, "sps_get_iovec() failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "sps_get_iovec() failed 0x%x\n", ret);
 		goto err_exit;
 	}
 
@@ -858,7 +858,7 @@ int msm_slim_connect_endp(struct msm_slim_ctrl *dev,
 
 	ret = sps_connect(endpoint->sps, config);
 	if (ret) {
-		dev_err(dev->dev, "sps_connect failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "sps_connect failed 0x%x\n", ret);
 		return ret;
 	}
 
@@ -873,7 +873,7 @@ int msm_slim_connect_endp(struct msm_slim_ctrl *dev,
 
 		ret = sps_register_event(endpoint->sps, &sps_descr_event);
 		if (ret) {
-			dev_err(dev->dev, "sps_connect() failed 0x%x\n", ret);
+			dev_dbg(dev->dev, "sps_connect() failed 0x%x\n", ret);
 			goto sps_reg_event_failed;
 		}
 	}
@@ -887,7 +887,7 @@ int msm_slim_connect_endp(struct msm_slim_ctrl *dev,
 
 	ret = sps_register_event(endpoint->sps, &sps_error_event);
 	if (ret) {
-		dev_err(dev->dev, "sps_connect() failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "sps_connect() failed 0x%x\n", ret);
 		goto sps_reg_event_failed;
 	}
 
@@ -901,7 +901,7 @@ int msm_slim_connect_endp(struct msm_slim_ctrl *dev,
 		for (i = 0; i < (MSM_SLIM_DESC_NUM - 1); i++) {
 			ret = msm_slim_post_rx_msgq(dev, i);
 			if (ret) {
-				dev_err(dev->dev,
+				dev_dbg(dev->dev,
 					"post_rx_msgq() failed 0x%x\n", ret);
 				goto sps_transfer_failed;
 			}
@@ -941,7 +941,7 @@ static int msm_slim_init_rx_msgq(struct msm_slim_ctrl *dev, u32 pipe_reg)
 	/* Allocate the endpoint */
 	ret = msm_slim_init_endpoint(dev, endpoint);
 	if (ret) {
-		dev_err(dev->dev, "init_endpoint failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "init_endpoint failed 0x%x\n", ret);
 		goto sps_init_endpoint_failed;
 	}
 
@@ -960,14 +960,14 @@ static int msm_slim_init_rx_msgq(struct msm_slim_ctrl *dev, u32 pipe_reg)
 	ret = msm_slim_sps_mem_alloc(dev, descr,
 				MSM_SLIM_DESC_NUM * sizeof(struct sps_iovec));
 	if (ret) {
-		dev_err(dev->dev, "unable to allocate SPS descriptors\n");
+		dev_dbg(dev->dev, "unable to allocate SPS descriptors\n");
 		goto alloc_descr_failed;
 	}
 
 	/* Allocate memory for the message buffer(s), N descrs, 4-byte mesg */
 	ret = msm_slim_sps_mem_alloc(dev, mem, MSM_SLIM_DESC_NUM * 4);
 	if (ret) {
-		dev_err(dev->dev, "dma_alloc_coherent failed\n");
+		dev_dbg(dev->dev, "dma_alloc_coherent failed\n");
 		goto alloc_buffer_failed;
 	}
 
@@ -1001,7 +1001,7 @@ static int msm_slim_init_tx_msgq(struct msm_slim_ctrl *dev, u32 pipe_reg)
 	/* Allocate the endpoint */
 	ret = msm_slim_init_endpoint(dev, endpoint);
 	if (ret) {
-		dev_err(dev->dev, "init_endpoint failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "init_endpoint failed 0x%x\n", ret);
 		goto sps_init_endpoint_failed;
 	}
 
@@ -1023,7 +1023,7 @@ static int msm_slim_init_tx_msgq(struct msm_slim_ctrl *dev, u32 pipe_reg)
 	ret = msm_slim_sps_mem_alloc(dev, descr,
 				(MSM_TX_BUFS + 1) * sizeof(struct sps_iovec));
 	if (ret) {
-		dev_err(dev->dev, "unable to allocate SPS descriptors\n");
+		dev_dbg(dev->dev, "unable to allocate SPS descriptors\n");
 		goto alloc_descr_failed;
 	}
 
@@ -1031,7 +1031,7 @@ static int msm_slim_init_tx_msgq(struct msm_slim_ctrl *dev, u32 pipe_reg)
 	ret = msm_slim_sps_mem_alloc(dev, mem, ((MSM_TX_BUFS + 1) *
 					SLIM_MSGQ_BUF_LEN));
 	if (ret) {
-		dev_err(dev->dev, "dma_alloc_coherent failed\n");
+		dev_dbg(dev->dev, "dma_alloc_coherent failed\n");
 		goto alloc_buffer_failed;
 	}
 	ret = msm_slim_connect_endp(dev, endpoint);
@@ -1118,7 +1118,7 @@ int msm_slim_sps_init(struct msm_slim_ctrl *dev, struct resource *bam_mem,
 	/* Register the BAM device with the SPS driver */
 	ret = sps_register_bam_device(&bam_props, &bam_handle);
 	if (ret) {
-		dev_err(dev->dev, "disabling BAM: reg-bam failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "disabling BAM: reg-bam failed 0x%x\n", ret);
 		dev->use_rx_msgqs = MSM_MSGQ_DISABLED;
 		dev->use_tx_msgqs = MSM_MSGQ_DISABLED;
 		return ret;
@@ -1136,7 +1136,7 @@ init_pipes:
 		dev->pipes = kcalloc(dev->port_nums,
 				     sizeof(struct msm_slim_endp), GFP_KERNEL);
 		if (IS_ERR_OR_NULL(dev->pipes)) {
-			dev_err(dev->dev, "no memory for data ports\n");
+			dev_dbg(dev->dev, "no memory for data ports\n");
 			sps_deregister_bam_device(bam_handle);
 			return PTR_ERR(dev->pipes);
 		}
@@ -1148,13 +1148,13 @@ init_msgq:
 
 	ret = msm_slim_init_rx_msgq(dev, pipe_reg);
 	if (ret)
-		dev_err(dev->dev, "msm_slim_init_rx_msgq failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "msm_slim_init_rx_msgq failed 0x%x\n", ret);
 	if (ret && bam_handle)
 		dev->use_rx_msgqs = MSM_MSGQ_DISABLED;
 
 	ret = msm_slim_init_tx_msgq(dev, pipe_reg);
 	if (ret)
-		dev_err(dev->dev, "msm_slim_init_tx_msgq failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "msm_slim_init_tx_msgq failed 0x%x\n", ret);
 	if (ret && bam_handle)
 		dev->use_tx_msgqs = MSM_MSGQ_DISABLED;
 
@@ -1187,7 +1187,7 @@ static int msm_slim_discard_rx_data(struct msm_slim_ctrl *dev,
 
 	ret = sps_get_unused_desc_num(endpoint->sps, &desc_num);
 	if (ret) {
-		dev_err(dev->dev, "sps_get_iovec() failed 0x%x\n", ret);
+		dev_dbg(dev->dev, "sps_get_iovec() failed 0x%x\n", ret);
 		return ret;
 	}
 	while (desc_num--)
@@ -1590,12 +1590,12 @@ static void msm_slim_qmi_power_resp_cb(struct qmi_handle *handle,
 				(struct slimbus_power_resp_msg_v01 *)data;
 
 	if (!txn) {
-		pr_err("%s: with a NULL txn\n", __func__);
+		pr_debug("%s: with a NULL txn\n", __func__);
 		return;
 	}
 
 	if (resp->resp.result != QMI_RESULT_SUCCESS_V01) {
-		pr_err("%s: QMI power request failed 0x%x (%s)\n", __func__,
+		pr_debug("%s: QMI power request failed 0x%x (%s)\n", __func__,
 				resp->resp.result, get_qmi_error(&resp->resp));
 	}
 
@@ -1665,7 +1665,7 @@ int msm_slim_qmi_init(struct msm_slim_ctrl *dev, bool apps_is_master)
 	rc = qmi_handle_init(handle, SLIMBUS_QMI_POWER_REQ_MAX_MSG_LEN,
 				NULL, msm_slim_qmi_msg_handlers);
 	if (rc < 0) {
-		pr_err("%s: QMI client init failed: %d\n", __func__, rc);
+		pr_debug("%s: QMI client init failed: %d\n", __func__, rc);
 		goto qmi_handle_init_failed;
 	}
 
@@ -1691,7 +1691,7 @@ int msm_slim_qmi_init(struct msm_slim_ctrl *dev, bool apps_is_master)
 
 	rc = msm_slim_qmi_send_select_inst_req(dev, &req);
 	if (rc) {
-		pr_err("%s: failed to select h/w instance\n", __func__);
+		pr_debug("%s: failed to select h/w instance\n", __func__);
 		goto qmi_select_instance_failed;
 	}
 

@@ -156,7 +156,7 @@ static void __exit devfreq_simple_ondemand_exit(void)
 
 	ret = devfreq_remove_governor(&devfreq_simple_ondemand);
 	if (ret)
-		pr_err("%s: failed remove governor %d\n", __func__, ret);
+		pr_debug("%s: failed remove governor %d\n", __func__, ret);
 
 	return;
 }

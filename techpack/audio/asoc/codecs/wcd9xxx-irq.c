@@ -68,11 +68,11 @@ static void wcd9xxx_irq_sync_unlock(struct irq_data *data)
 	     WCD9XXX_MAX_IRQ_REGS) ||
 	     (ARRAY_SIZE(wcd9xxx_res->irq_masks_cache) >
 	      WCD9XXX_MAX_IRQ_REGS)) {
-		pr_err("%s: Array Size out of bound\n", __func__);
+		pr_debug("%s: Array Size out of bound\n", __func__);
 		return;
 	}
 	if (!wcd9xxx_res->wcd_core_regmap) {
-		pr_err("%s: Codec core regmap not defined\n",
+		pr_debug("%s: Codec core regmap not defined\n",
 			__func__);
 		return;
 	}
@@ -107,7 +107,7 @@ static void wcd9xxx_irq_enable(struct irq_data *data)
 		wcd9xxx_res->irq_masks_cur[byte] &=
 			~(BYTE_BIT_MASK(wcd9xxx_irq));
 	} else {
-		pr_err("%s: Array size is %d but index is %d: Out of range\n",
+		pr_debug("%s: Array size is %d but index is %d: Out of range\n",
 			__func__, size, byte);
 	}
 }
@@ -124,7 +124,7 @@ static void wcd9xxx_irq_disable(struct irq_data *data)
 		wcd9xxx_res->irq_masks_cur[byte]
 			|= BYTE_BIT_MASK(wcd9xxx_irq);
 	} else {
-		pr_err("%s: Array size is %d but index is %d: Out of range\n",
+		pr_debug("%s: Array size is %d but index is %d: Out of range\n",
 			__func__, size, byte);
 	}
 }
@@ -136,7 +136,7 @@ static void wcd9xxx_irq_ack(struct irq_data *data)
 			irq_data_get_irq_chip_data(data);
 
 	if (wcd9xxx_res == NULL) {
-		pr_err("%s: wcd9xxx_res is NULL\n", __func__);
+		pr_debug("%s: wcd9xxx_res is NULL\n", __func__);
 		return;
 	}
 	wcd9xxx_irq = virq_to_phyirq(wcd9xxx_res, data->irq);
@@ -193,7 +193,7 @@ bool wcd9xxx_lock_sleep(
 					(os == WCD9XXX_PM_AWAKE)),
 				msecs_to_jiffies(
 					WCD9XXX_SYSTEM_RESUME_TIMEOUT_MS))) {
-		pr_warn("%s: system didn't resume within %dms, s %d, w %d\n",
+		pr_debug("%s: system didn't resume within %dms, s %d, w %d\n",
 			__func__,
 			WCD9XXX_SYSTEM_RESUME_TIMEOUT_MS, wcd9xxx_res->pm_state,
 			wcd9xxx_res->wlock_holders);
@@ -244,7 +244,7 @@ static void wcd9xxx_irq_dispatch(struct wcd9xxx_core_resource *wcd9xxx_res,
 	int irqbit = irqdata->intr_num;
 
 	if (!wcd9xxx_res->wcd_core_regmap) {
-		pr_err("%s: codec core regmap not defined\n",
+		pr_debug("%s: codec core regmap not defined\n",
 			__func__);
 		return;
 	}
@@ -291,12 +291,12 @@ static irqreturn_t wcd9xxx_irq_thread(int irq, void *data)
 	u8 status[4], status1[4] = {0}, unmask_status[4] = {0};
 
 	if (unlikely(wcd9xxx_lock_sleep(wcd9xxx_res) == false)) {
-		dev_err(wcd9xxx_res->dev, "Failed to hold suspend\n");
+		dev_dbg(wcd9xxx_res->dev, "Failed to hold suspend\n");
 		return IRQ_NONE;
 	}
 
 	if (!wcd9xxx_res->wcd_core_regmap) {
-		dev_err(wcd9xxx_res->dev,
+		dev_dbg(wcd9xxx_res->dev,
 			"%s: Codec core regmap not supplied\n",
 			   __func__);
 		goto err_disable_irq;
@@ -304,7 +304,7 @@ static irqreturn_t wcd9xxx_irq_thread(int irq, void *data)
 
 	wcd9xxx = (struct wcd9xxx *)wcd9xxx_res->parent;
 	if (!wcd9xxx) {
-		dev_err(wcd9xxx_res->dev,
+		dev_dbg(wcd9xxx_res->dev,
 			"%s: Codec core not supplied\n", __func__);
 		goto err_disable_irq;
 	}
@@ -325,7 +325,7 @@ static irqreturn_t wcd9xxx_irq_thread(int irq, void *data)
 		status, num_irq_regs);
 
 	if (ret < 0) {
-		dev_err(wcd9xxx_res->dev,
+		dev_dbg(wcd9xxx_res->dev,
 				"Failed to read interrupt status: %d\n", ret);
 		goto err_disable_irq;
 	}
@@ -384,13 +384,13 @@ static irqreturn_t wcd9xxx_irq_thread(int irq, void *data)
 	 */
 	if (unlikely(!memcmp(status, status1, sizeof(status)))) {
 		if (__ratelimit(&ratelimit)) {
-			pr_warn("%s: Unhandled irq found\n", __func__);
+			pr_debug("%s: Unhandled irq found\n", __func__);
 			hex_dump_to_buffer(status, sizeof(status), 16, 1,
 					   linebuf, sizeof(linebuf), false);
-			pr_warn("%s: status0 : %s\n", __func__, linebuf);
+			pr_debug("%s: status0 : %s\n", __func__, linebuf);
 			hex_dump_to_buffer(status1, sizeof(status1), 16, 1,
 					   linebuf, sizeof(linebuf), false);
-			pr_warn("%s: status1 : %s\n", __func__, linebuf);
+			pr_debug("%s: status1 : %s\n", __func__, linebuf);
 		}
 		/*
 		 * unmask_status contains unhandled interrupts, hence clear all
@@ -409,7 +409,7 @@ static irqreturn_t wcd9xxx_irq_thread(int irq, void *data)
 	return IRQ_HANDLED;
 
 err_disable_irq:
-		dev_err(wcd9xxx_res->dev,
+		dev_dbg(wcd9xxx_res->dev,
 				"Disable irq %d\n", wcd9xxx_res->irq);
 
 		disable_irq_wake(wcd9xxx_res->irq);
@@ -488,14 +488,14 @@ static int wcd9xxx_irq_setup_downstream_irq(
 		virq = wcd9xxx_map_irq(wcd9xxx_res, irq);
 		pr_debug("%s: irq %d -> %d\n", __func__, irq, virq);
 		if (virq == NO_IRQ) {
-			pr_err("%s, No interrupt specifier for irq %d\n",
+			pr_debug("%s, No interrupt specifier for irq %d\n",
 			       __func__, irq);
 			return NO_IRQ;
 		}
 
 		ret = irq_set_chip_data(virq, wcd9xxx_res);
 		if (ret) {
-			pr_err("%s: Failed to configure irq %d (%d)\n",
+			pr_debug("%s: Failed to configure irq %d (%d)\n",
 			       __func__, irq, ret);
 			return ret;
 		}
@@ -544,7 +544,7 @@ int wcd9xxx_irq_init(struct wcd9xxx_core_resource *wcd9xxx_res)
 
 	wcd9xxx_res->irq = wcd9xxx_irq_get_upstream_irq(wcd9xxx_res);
 	if (!wcd9xxx_res->irq) {
-		pr_warn("%s: irq driver is not yet initialized\n", __func__);
+		pr_debug("%s: irq driver is not yet initialized\n", __func__);
 		mutex_destroy(&wcd9xxx_res->irq_lock);
 		mutex_destroy(&wcd9xxx_res->nested_irq_lock);
 		return -EPROBE_DEFER;
@@ -554,7 +554,7 @@ int wcd9xxx_irq_init(struct wcd9xxx_core_resource *wcd9xxx_res)
 	/* Setup downstream IRQs */
 	ret = wcd9xxx_irq_setup_downstream_irq(wcd9xxx_res);
 	if (ret) {
-		pr_err("%s: Failed to setup downstream IRQ\n", __func__);
+		pr_debug("%s: Failed to setup downstream IRQ\n", __func__);
 		goto fail_irq_level;
 		return ret;
 	}
@@ -576,7 +576,7 @@ int wcd9xxx_irq_init(struct wcd9xxx_core_resource *wcd9xxx_res)
 	}
 
 	if (!wcd9xxx_res->wcd_core_regmap) {
-		dev_err(wcd9xxx_res->dev,
+		dev_dbg(wcd9xxx_res->dev,
 			"%s: Codec core regmap not defined\n",
 			   __func__);
 		ret = -EINVAL;
@@ -597,12 +597,12 @@ int wcd9xxx_irq_init(struct wcd9xxx_core_resource *wcd9xxx_res)
 				   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
 				   "wcd9xxx", wcd9xxx_res);
 	if (ret != 0)
-		dev_err(wcd9xxx_res->dev, "Failed to request IRQ %d: %d\n",
+		dev_dbg(wcd9xxx_res->dev, "Failed to request IRQ %d: %d\n",
 			wcd9xxx_res->irq, ret);
 	else {
 		ret = enable_irq_wake(wcd9xxx_res->irq);
 		if (ret)
-			dev_err(wcd9xxx_res->dev,
+			dev_dbg(wcd9xxx_res->dev,
 				"Failed to set wake interrupt on IRQ %d: %d\n",
 				wcd9xxx_res->irq, ret);
 		if (ret)
@@ -616,7 +616,7 @@ int wcd9xxx_irq_init(struct wcd9xxx_core_resource *wcd9xxx_res)
 	return ret;
 
 fail_irq_init:
-	dev_err(wcd9xxx_res->dev,
+	dev_dbg(wcd9xxx_res->dev,
 			"%s: Failed to init wcd9xxx irq\n", __func__);
 	kfree(irq_level);
 fail_irq_level:
@@ -737,7 +737,7 @@ static int phyirq_to_virq(struct wcd9xxx_core_resource *wcd9xxx_res, int offset)
 
 	data = wcd9xxx_get_irq_drv_d(wcd9xxx_res);
 	if (!data) {
-		pr_warn("%s: not registered to interrupt controller\n",
+		pr_debug("%s: not registered to interrupt controller\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -749,7 +749,7 @@ static int virq_to_phyirq(struct wcd9xxx_core_resource *wcd9xxx_res, int virq)
 	struct irq_data *irq_data = irq_get_irq_data(virq);
 
 	if (unlikely(!irq_data)) {
-		pr_err("%s: irq_data is NULL", __func__);
+		pr_debug("%s: irq_data is NULL", __func__);
 		return -EINVAL;
 	}
 	return irq_data->hwirq;
@@ -762,7 +762,7 @@ static unsigned int wcd9xxx_irq_get_upstream_irq(
 
 	data = wcd9xxx_get_irq_drv_d(wcd9xxx_res);
 	if (!data) {
-		pr_err("%s: interrupt controller is not registered\n",
+		pr_debug("%s: interrupt controller is not registered\n",
 			__func__);
 		return 0;
 	}
@@ -787,7 +787,7 @@ static void wcd9xxx_irq_put_downstream_irq(
 		pr_debug("%s: irq %d -> %d\n", __func__, irq, virq);
 		ret = irq_set_chip_data(virq, NULL);
 		if (ret) {
-			pr_err("%s: Failed to configure irq %d (%d)\n",
+			pr_debug("%s: Failed to configure irq %d (%d)\n",
 				__func__, irq, ret);
 			return;
 		}
@@ -818,7 +818,7 @@ static int wcd9xxx_irq_probe(struct platform_device *pdev)
 		dir_apps_irq = platform_get_irq_byname(pdev, "wcd_irq");
 
 	if (!gpio_is_valid(irq) && dir_apps_irq < 0) {
-		dev_err(&pdev->dev, "TLMM connect gpio not found\n");
+		dev_dbg(&pdev->dev, "TLMM connect gpio not found\n");
 		return -EPROBE_DEFER;
 	}
 	if (dir_apps_irq > 0) {
@@ -826,14 +826,14 @@ static int wcd9xxx_irq_probe(struct platform_device *pdev)
 	} else {
 		irq = gpio_to_irq(irq);
 		if (irq < 0) {
-			dev_err(&pdev->dev, "Unable to configure irq\n");
+			dev_dbg(&pdev->dev, "Unable to configure irq\n");
 			return irq;
 		}
 	}
 	dev_dbg(&pdev->dev, "%s: virq = %d\n", __func__, irq);
 	data = wcd9xxx_irq_add_domain(node, node->parent);
 	if (!data) {
-		pr_err("%s: irq_add_domain failed\n", __func__);
+		pr_debug("%s: irq_add_domain failed\n", __func__);
 		return -EINVAL;
 	}
 	data->irq = irq;
@@ -852,7 +852,7 @@ static int wcd9xxx_irq_remove(struct platform_device *pdev)
 
 	domain = irq_find_host(pdev->dev.of_node);
 	if (unlikely(!domain)) {
-		pr_err("%s: domain is NULL", __func__);
+		pr_debug("%s: domain is NULL", __func__);
 		return -EINVAL;
 	}
 	data = (struct wcd9xxx_irq_drv_data *)domain->host_data;

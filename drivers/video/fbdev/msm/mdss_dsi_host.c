@@ -101,7 +101,7 @@ void mdss_dsi_ctrl_init(struct device *ctrl_dev,
 	ctrl_list[ctrl->ndx] = ctrl;	/* keep it */
 
 	if (ctrl->mdss_util->register_irq(ctrl->dsi_hw))
-		pr_err("%s: mdss_register_irq failed.\n", __func__);
+		pr_debug("%s: mdss_register_irq failed.\n", __func__);
 
 	pr_debug("%s: ndx=%d base=%pK\n", __func__, ctrl->ndx, ctrl->ctrl_base);
 
@@ -189,7 +189,7 @@ void mdss_dsi_pll_relock(struct mdss_dsi_ctrl_pdata *ctrl)
 
 	rc = mdss_dsi_clk_force_toggle(ctrl->dsi_clk_handle, MDSS_DSI_LINK_CLK);
 	if (rc)
-		pr_err("clock toggle failed, rc = %d\n", rc);
+		pr_debug("clock toggle failed, rc = %d\n", rc);
 }
 
 void mdss_dsi_enable_irq(struct mdss_dsi_ctrl_pdata *ctrl, u32 term)
@@ -353,7 +353,7 @@ void mdss_dsi_host_init(struct mdss_panel_data *pdata)
 	struct mipi_panel_info *pinfo = NULL;
 
 	if (pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -413,7 +413,7 @@ void mdss_dsi_host_init(struct mdss_panel_data *pdata)
 			data |= BIT(16);
 		MIPI_OUTP((ctrl_pdata->ctrl_base) + 0x0044, data);
 	} else
-		pr_err("%s: Unknown DSI mode=%d\n", __func__, pinfo->mode);
+		pr_debug("%s: Unknown DSI mode=%d\n", __func__, pinfo->mode);
 
 	dsi_ctrl = BIT(8) | BIT(2);	/* clock enable & cmd mode */
 	intr_ctrl = 0;
@@ -503,7 +503,7 @@ void mdss_dsi_set_tx_power_mode(int mode, struct mdss_panel_data *pdata)
 	u32 data;
 
 	if (pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -526,7 +526,7 @@ void mdss_dsi_sw_reset(struct mdss_dsi_ctrl_pdata *ctrl, bool restore)
 	unsigned long flag;
 
 	if (!ctrl) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -580,7 +580,7 @@ int mdss_dsi_wait_for_lane_idle(struct mdss_dsi_ctrl_pdata *ctrl)
 	u32 const timeout_us = 100;
 
 	if (!ctrl) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
@@ -608,7 +608,7 @@ int mdss_dsi_wait_for_lane_idle(struct mdss_dsi_ctrl_pdata *ctrl)
 	rc = readl_poll_timeout(ctrl->ctrl_base + FIFO_STATUS, val,
 		(val & fifo_empty_mask), sleep_us, timeout_us);
 	if (rc) {
-		pr_err("%s: fifo not empty, FIFO_STATUS=0x%08x\n",
+		pr_debug("%s: fifo not empty, FIFO_STATUS=0x%08x\n",
 			__func__, val);
 		goto error;
 	}
@@ -653,7 +653,7 @@ static inline bool mdss_dsi_poll_clk_lane(struct mdss_dsi_ctrl_pdata *ctrl)
 				clk,
 				(clk & 0x0010),
 				10, 1000)) {
-		pr_err("%s: ndx=%d clk lane NOT stopped, clk=%x\n",
+		pr_debug("%s: ndx=%d clk lane NOT stopped, clk=%x\n",
 					__func__, ctrl->ndx, clk);
 
 		return false;
@@ -672,7 +672,7 @@ static void mdss_dsi_wait_clk_lane_to_stop(struct mdss_dsi_ctrl_pdata *ctrl)
 	mdss_dsi_cfg_lane_ctrl(ctrl, BIT(20), 1);
 
 	if (!mdss_dsi_poll_clk_lane(ctrl))
-		pr_err("%s: clk lane recovery failed\n", __func__);
+		pr_debug("%s: clk lane recovery failed\n", __func__);
 
 	/* clear clk lane tx stop -- bit 20 */
 	mdss_dsi_cfg_lane_ctrl(ctrl, BIT(20), 0);
@@ -695,7 +695,7 @@ static void mdss_dsi_start_hs_clk_lane(struct mdss_dsi_ctrl_pdata *ctrl)
 	mdss_dsi_clk_ctrl(ctrl, ctrl->dsi_clk_handle, MDSS_DSI_ALL_CLKS,
 			  MDSS_DSI_CLK_ON);
 	if (ctrl->clk_lane_cnt) {
-		pr_err("%s: ndx=%d do-wait, cnt=%d\n",
+		pr_debug("%s: ndx=%d do-wait, cnt=%d\n",
 				__func__, ctrl->ndx, ctrl->clk_lane_cnt);
 		mdss_dsi_wait_clk_lane_to_stop(ctrl);
 	}
@@ -731,7 +731,7 @@ static void mdss_dsi_stop_hs_clk_lane(struct mdss_dsi_ctrl_pdata *ctrl)
 			   fifo,
 			   ((fifo & 0x11110000) == 0x11110000),
 			       10, 1000)) {
-		pr_err("%s: fifo NOT empty, fifo=%x\n",
+		pr_debug("%s: fifo NOT empty, fifo=%x\n",
 					__func__, fifo);
 		goto end;
 	}
@@ -741,7 +741,7 @@ static void mdss_dsi_stop_hs_clk_lane(struct mdss_dsi_ctrl_pdata *ctrl)
 			   lane,
 			   ((lane & 0x000f) == 0x000f),
 			       100, 2000)) {
-		pr_err("%s: datalane NOT stopped, lane=%x\n",
+		pr_debug("%s: datalane NOT stopped, lane=%x\n",
 					__func__, lane);
 	}
 end:
@@ -809,7 +809,7 @@ static void mdss_dsi_ctl_phy_reset(struct mdss_dsi_ctrl_pdata *ctrl, u32 event)
 					__func__, ctrl->ndx);
 
 	if (ctrl->panel_mode == DSI_CMD_MODE) {
-		pr_warn("ctl_phy_reset not applicable for cmd mode\n");
+		pr_debug("ctl_phy_reset not applicable for cmd mode\n");
 		return;
 	}
 
@@ -903,7 +903,7 @@ static void mdss_dsi_ctl_phy_reset(struct mdss_dsi_ctrl_pdata *ctrl, u32 event)
 			}
 			MDSS_XLOG(ctrl0->ndx, ln0, 0x1f1f);
 			MDSS_XLOG(ctrl1->ndx, ln1, 0x1f1f);
-			pr_err("%s: Clock lane still in stop state\n",
+			pr_debug("%s: Clock lane still in stop state\n",
 					__func__);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl", "dsi0_phy",
 				"dsi1_ctrl", "dsi1_phy", "panic");
@@ -1000,7 +1000,7 @@ static void mdss_dsi_ctl_phy_reset(struct mdss_dsi_ctrl_pdata *ctrl, u32 event)
 				return;
 			}
 			MDSS_XLOG(ctrl->ndx, ln0, 0x1f1f);
-			pr_err("%s: Clock lane still in stop state\n",
+			pr_debug("%s: Clock lane still in stop state\n",
 					__func__);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl", "dsi0_phy",
 				"dsi1_ctrl", "dsi1_phy", "panic");
@@ -1064,7 +1064,7 @@ void mdss_dsi_controller_cfg(int enable,
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 
 	if (pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -1076,14 +1076,14 @@ void mdss_dsi_controller_cfg(int enable,
 			   status,
 			   ((status & 0x02) == 0),
 			       sleep_us, timeout_us))
-		pr_info("%s: DSI status=%x failed\n", __func__, status);
+		pr_debug("%s: DSI status=%x failed\n", __func__, status);
 
 	/* Check for x_HS_FIFO_EMPTY */
 	if (readl_poll_timeout(((ctrl_pdata->ctrl_base) + 0x000c),
 			   status,
 			   ((status & 0x11111000) == 0x11111000),
 			       sleep_us, timeout_us))
-		pr_info("%s: FIFO status=%x failed\n", __func__, status);
+		pr_debug("%s: FIFO status=%x failed\n", __func__, status);
 
 	/* Check for VIDEO_MODE_ENGINE_BUSY */
 	if (readl_poll_timeout(((ctrl_pdata->ctrl_base) + 0x0008),
@@ -1123,7 +1123,7 @@ void mdss_dsi_op_mode_config(int mode,
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 
 	if (pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -1168,7 +1168,7 @@ void mdss_dsi_cmd_bta_sw_trigger(struct mdss_panel_data *pdata)
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 
 	if (pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -1182,7 +1182,7 @@ void mdss_dsi_cmd_bta_sw_trigger(struct mdss_panel_data *pdata)
 	if (readl_poll_timeout(((ctrl_pdata->ctrl_base) + 0x0008),
 				status, ((status & 0x0010) == 0),
 				0, timeout_us))
-		pr_info("%s: DSI status=%x failed\n", __func__, status);
+		pr_debug("%s: DSI status=%x failed\n", __func__, status);
 
 	mdss_dsi_ack_err_status(ctrl_pdata);
 
@@ -1199,7 +1199,7 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 	lenp = ctrl->status_valid_params ?: ctrl->status_cmds_rlen;
 
 	if (!lenp || !ctrl->status_cmds_rlen) {
-		pr_err("invalid dsi read params!\n");
+		pr_debug("invalid dsi read params!\n");
 		return 0;
 	}
 
@@ -1221,7 +1221,7 @@ static int mdss_dsi_read_status(struct mdss_dsi_ctrl_pdata *ctrl)
 		if (rc <= 0) {
 			if (!mdss_dsi_sync_wait_enable(ctrl) ||
 				mdss_dsi_sync_wait_trigger(ctrl))
-				pr_err("%s: get status: fail\n", __func__);
+				pr_debug("%s: get status: fail\n", __func__);
 			return rc;
 		}
 
@@ -1254,7 +1254,7 @@ int mdss_dsi_reg_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	struct mdss_dsi_ctrl_pdata *sctrl_pdata = NULL;
 
 	if (ctrl_pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return 0;
 	}
 
@@ -1298,7 +1298,7 @@ int mdss_dsi_reg_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 		else if (sctrl_pdata)
 			ret = ctrl_pdata->check_read_status(sctrl_pdata);
 	} else {
-		pr_err("%s: Read status register returned error\n", __func__);
+		pr_debug("%s: Read status register returned error\n", __func__);
 #ifdef CONFIG_MACH_LONGCHEER
 		if ((strstr(g_lcd_id, "nt36672") != NULL) || (strstr(g_lcd_id, "nt36672a") != NULL) || (strstr(g_lcd_id, "td4320") != NULL))
 			ESD_TE_status = true;
@@ -1326,7 +1326,7 @@ void mdss_dsi_dsc_config(struct mdss_dsi_ctrl_pdata *ctrl, struct dsc_desc *dsc)
 	}
 
 	if (dsc->pkt_per_line <= 0) {
-		pr_err("%s: Error: pkt_per_line cannot be negative or 0\n",
+		pr_debug("%s: Error: pkt_per_line cannot be negative or 0\n",
 			__func__);
 		return;
 	}
@@ -1654,7 +1654,7 @@ int mdss_dsi_bta_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	int ignore_underflow = 0;
 
 	if (ctrl_pdata == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 
 		/*
 		 * This should not return error otherwise
@@ -1703,10 +1703,10 @@ int mdss_dsi_bta_status_check(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 			mdss_dsi_disable_irq(ctrl_pdata, DSI_BTA_TERM);
 			complete(&ctrl_pdata->bta_comp);
 			ret = 1;
-			pr_warn("%s: bta done but irq not triggered\n",
+			pr_debug("%s: bta done but irq not triggered\n",
 				__func__);
 		} else {
-			pr_err("%s: DSI BTA error: %i\n", __func__, ret);
+			pr_debug("%s: DSI BTA error: %i\n", __func__, ret);
 			/*
 			 * For 12nm DSI PHY, BTA_TO interrupt may not trigger.
 			 * Treat software timer timeout as BTA_TO.
@@ -1790,7 +1790,7 @@ static int mdss_dsi_cmd_dma_tpg_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 	}
 
 	if (ctrl->shared_data->hw_rev < MDSS_DSI_HW_REV_103) {
-		pr_err("CMD DMA TPG not supported for this DSI version\n");
+		pr_debug("CMD DMA TPG not supported for this DSI version\n");
 		return -EINVAL;
 	}
 
@@ -1891,7 +1891,7 @@ static int mdss_dsi_cmds2buf_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 		mdss_dsi_buf_reserve(tp, len);
 		len = mdss_dsi_cmd_dma_add(tp, cm);
 		if (!len) {
-			pr_err("%s: failed to add cmd = 0x%x\n",
+			pr_debug("%s: failed to add cmd = 0x%x\n",
 				__func__,  cm->payload[0]);
 			return 0;
 		}
@@ -1908,7 +1908,7 @@ static int mdss_dsi_cmds2buf_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 				len = mdss_dsi_cmd_dma_tx(ctrl, tp);
 			if (IS_ERR_VALUE((unsigned long) len)) {
 				mdss_dsi_disable_irq(ctrl, DSI_CMD_TERM);
-				pr_err("%s: failed to call cmd_dma_tx for cmd = 0x%x\n",
+				pr_debug("%s: failed to call cmd_dma_tx for cmd = 0x%x\n",
 					__func__,  cm->payload[0]);
 				return 0;
 			}
@@ -1981,7 +1981,7 @@ int mdss_dsi_cmds_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 		if (mdss_dsi_sync_wait_trigger(ctrl)) {
 			mctrl = mdss_dsi_get_other_ctrl(ctrl);
 			if (!mctrl) {
-				pr_warn("%s: sync_wait, NULL at other control\n",
+				pr_debug("%s: sync_wait, NULL at other control\n",
 							__func__);
 				goto do_send;
 			}
@@ -2003,7 +2003,7 @@ do_send:
 
 	len = mdss_dsi_cmds2buf_tx(ctrl, cmds, cnt, use_dma_tpg);
 	if (!len)
-		pr_err("%s: failed to call\n", __func__);
+		pr_debug("%s: failed to call\n", __func__);
 
 	if (!ctrl->do_unicast) {
 		if (mctrl && mctrl->cmd_cfg_restore) {
@@ -2052,7 +2052,7 @@ int mdss_dsi_cmds_rx(struct mdss_dsi_ctrl_pdata *ctrl,
 
 
 	if (ctrl->panel_data.panel_info.panel_ack_disabled) {
-		pr_err("%s: ACK from Client not supported\n", __func__);
+		pr_debug("%s: ACK from Client not supported\n", __func__);
 		return rlen;
 	}
 
@@ -2070,7 +2070,7 @@ int mdss_dsi_cmds_rx(struct mdss_dsi_ctrl_pdata *ctrl,
 		if (mdss_dsi_sync_wait_trigger(ctrl)) {
 			mctrl = mdss_dsi_get_other_ctrl(ctrl);
 			if (!mctrl) {
-				pr_warn("%s: sync_wait, NULL at other control\n",
+				pr_debug("%s: sync_wait, NULL at other control\n",
 							__func__);
 				goto do_send;
 			}
@@ -2122,7 +2122,7 @@ do_send:
 		mdss_dsi_buf_init(tp);
 		ret = mdss_dsi_cmd_dma_add(tp, &pkt_size_cmd);
 		if (!ret) {
-			pr_err("%s: failed to add max_pkt_size\n",
+			pr_debug("%s: failed to add max_pkt_size\n",
 				__func__);
 			rp->len = 0;
 			rp->read_cnt = 0;
@@ -2138,7 +2138,7 @@ do_send:
 			ret = mdss_dsi_cmd_dma_tx(ctrl, tp);
 		if (IS_ERR_VALUE((unsigned long) ret)) {
 			mdss_dsi_disable_irq(ctrl, DSI_CMD_TERM);
-			pr_err("%s: failed to tx max_pkt_size\n",
+			pr_debug("%s: failed to tx max_pkt_size\n",
 				__func__);
 			rp->len = 0;
 			rp->read_cnt = 0;
@@ -2152,7 +2152,7 @@ skip_max_pkt_size:
 		mdss_dsi_buf_init(tp);
 		ret = mdss_dsi_cmd_dma_add(tp, cmds);
 		if (!ret) {
-			pr_err("%s: failed to add cmd = 0x%x\n",
+			pr_debug("%s: failed to add cmd = 0x%x\n",
 				__func__,  cmds->payload[0]);
 			rp->len = 0;
 			rp->read_cnt = 0;
@@ -2176,7 +2176,7 @@ skip_max_pkt_size:
 			ret = mdss_dsi_cmd_dma_tx(ctrl, tp);
 		if (IS_ERR_VALUE((unsigned long) ret)) {
 			mdss_dsi_disable_irq(ctrl, DSI_CMD_TERM);
-			pr_err("%s: failed to tx cmd = 0x%x\n",
+			pr_debug("%s: failed to tx cmd = 0x%x\n",
 				__func__,  cmds->payload[0]);
 			rp->len = 0;
 			rp->read_cnt = 0;
@@ -2252,7 +2252,7 @@ skip_max_pkt_size:
 		mdss_dsi_long_read_resp(rp);
 		break;
 	default:
-		pr_warn("%s:Invalid response cmd\n", __func__);
+		pr_debug("%s:Invalid response cmd\n", __func__);
 		rp->len = 0;
 		rp->read_cnt = 0;
 	}
@@ -2269,7 +2269,7 @@ end:
 	}
 
 	if (rp->len && (rp->len != rp->read_cnt))
-		pr_err("Bytes read: %d requested:%d mismatch\n",
+		pr_debug("Bytes read: %d requested:%d mismatch\n",
 					rp->read_cnt, rp->len);
 
 	return rp->read_cnt;
@@ -2294,7 +2294,7 @@ static int mdss_dsi_cmd_dma_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 		ret = mdss_smmu_dsi_map_buffer(tp->dmap, domain, ctrl->dma_size,
 			&(ctrl->dma_addr), tp->start, DMA_TO_DEVICE);
 		if (IS_ERR_VALUE((unsigned long) ret)) {
-			pr_err("unable to map dma memory to iommu(%d)\n", ret);
+			pr_debug("unable to map dma memory to iommu(%d)\n", ret);
 			ctrl->mdss_util->iommu_unlock();
 			return -ENOMEM;
 		}
@@ -2364,7 +2364,7 @@ static int mdss_dsi_cmd_dma_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 			mdss_dsi_disable_irq(ctrl, DSI_CMD_TERM);
 			complete(&ctrl->dma_comp);
 
-			pr_warn("%s: dma tx done but irq not triggered\n",
+			pr_debug("%s: dma tx done but irq not triggered\n",
 				__func__);
 		} else {
 			ret = -ETIMEDOUT;
@@ -2443,7 +2443,7 @@ static int mdss_dsi_cmd_dma_rx(struct mdss_dsi_ctrl_pdata *ctrl,
 		if (ack_error)
 			rp->read_cnt -= 4; /* 4 byte read err report */
 		if (!rp->read_cnt) {
-			pr_err("%s: Errors detected, no data rxed\n", __func__);
+			pr_debug("%s: Errors detected, no data rxed\n", __func__);
 			return 0;
 		}
 	} else if (rx_byte == 4) {
@@ -2522,7 +2522,7 @@ static int mdss_dsi_bus_bandwidth_vote(struct dsi_shared_data *sdata, bool on)
 			if (sdata->bus_refcount == 0)
 				changed = true;
 		} else {
-			pr_warn("%s: bus bw votes are not balanced\n",
+			pr_debug("%s: bus bw votes are not balanced\n",
 				__func__);
 		}
 	}
@@ -2531,7 +2531,7 @@ static int mdss_dsi_bus_bandwidth_vote(struct dsi_shared_data *sdata, bool on)
 		rc = msm_bus_scale_client_update_request(sdata->bus_handle,
 							 on ? 1 : 0);
 		if (rc)
-			pr_err("%s: Bus bandwidth vote failed\n", __func__);
+			pr_debug("%s: Bus bandwidth vote failed\n", __func__);
 	}
 
 	return rc;
@@ -2592,7 +2592,7 @@ int mdss_dsi_en_wait4dynamic_done(struct mdss_dsi_ctrl_pdata *ctrl)
 			pr_warn_ratelimited("%s: dfps done but irq not triggered\n",
 				__func__);
 		} else {
-			pr_err("Dynamic interrupt timedout\n");
+			pr_debug("Dynamic interrupt timedout\n");
 			rc = -ETIMEDOUT;
 		}
 	}
@@ -2667,7 +2667,7 @@ static int mdss_dsi_mdp_busy_tout_check(struct mdss_dsi_ctrl_pdata *ctrl)
 
 	isr = MIPI_INP(ctrl->ctrl_base + 0x0110);
 	if (isr & DSI_INTR_CMD_MDP_DONE) {
-		pr_warn("INTR_CMD_MDP_DONE set but isr not fired\n");
+		pr_debug("INTR_CMD_MDP_DONE set but isr not fired\n");
 		isr &= DSI_INTR_MASK_ALL;
 		isr |= DSI_INTR_CMD_MDP_DONE; /* clear this isr only */
 		MIPI_OUTP(ctrl->ctrl_base + 0x0110, isr);
@@ -2720,7 +2720,7 @@ void mdss_dsi_cmd_mdp_busy(struct mdss_dsi_ctrl_pdata *ctrl)
 			rc = 1;
 		spin_unlock_irqrestore(&ctrl->mdp_lock, flags);
 		if (!rc && mdss_dsi_mdp_busy_tout_check(ctrl))
-			pr_err("%s: timeout error\n", __func__);
+			pr_debug("%s: timeout error\n", __func__);
 	}
 	pr_debug("%s: done pid=%d\n", __func__, current->pid);
 	MDSS_XLOG(ctrl->ndx, ctrl->mdp_busy, current->pid, XLOG_FUNC_EXIT);
@@ -2760,7 +2760,7 @@ int mdss_dsi_cmdlist_rx(struct mdss_dsi_ctrl_pdata *ctrl,
 		memcpy(req->rbuf, rp->data, rp->len);
 		ctrl->rx_len = len;
 	} else {
-		pr_err("%s: No rx buffer provided\n", __func__);
+		pr_debug("%s: No rx buffer provided\n", __func__);
 	}
 
 	if (req->cb)
@@ -2906,7 +2906,7 @@ int mdss_dsi_cmdlist_commit(struct mdss_dsi_ctrl_pdata *ctrl, int from_mdp)
 		 */
 		rc = mdss_dsi_bus_bandwidth_vote(ctrl->shared_data, true);
 		if (rc) {
-			pr_err("%s: Bus bw vote failed\n", __func__);
+			pr_debug("%s: Bus bw vote failed\n", __func__);
 			if (from_mdp)
 				mutex_unlock(&ctrl->cmd_mutex);
 			return rc;
@@ -2915,7 +2915,7 @@ int mdss_dsi_cmdlist_commit(struct mdss_dsi_ctrl_pdata *ctrl, int from_mdp)
 		if (ctrl->mdss_util->iommu_ctrl) {
 			rc = ctrl->mdss_util->iommu_ctrl(1);
 			if (IS_ERR_VALUE((unsigned long) rc)) {
-				pr_err("IOMMU attach failed\n");
+				pr_debug("IOMMU attach failed\n");
 				mutex_unlock(&ctrl->cmd_mutex);
 				return rc;
 			}
@@ -3046,7 +3046,7 @@ static int dsi_event_thread(void *data)
 	param.sched_priority = 16;
 	ret = sched_setscheduler_nocheck(current, SCHED_FIFO, &param);
 	if (ret)
-		pr_err("%s: set priority failed\n", __func__);
+		pr_debug("%s: set priority failed\n", __func__);
 
 	ev = (struct mdss_dsi_event *)data;
 	/* event */
@@ -3193,7 +3193,7 @@ bool mdss_dsi_ack_err_status(struct mdss_dsi_ctrl_pdata *ctrl)
 			 (status & 0x1008000))
 			return false;
 
-		pr_err("%s: status=%x\n", __func__, status);
+		pr_debug("%s: status=%x\n", __func__, status);
 		ret = true;
 	}
 
@@ -3218,7 +3218,7 @@ static bool mdss_dsi_timeout_status(struct mdss_dsi_ctrl_pdata *ctrl)
 				(BIT(5) | BIT(7)), (BIT(5) | BIT(7)));
 			dsi_send_events(ctrl, DSI_EV_LP_RX_TIMEOUT, 0);
 		}
-		pr_err("%s: status=%x\n", __func__, status);
+		pr_debug("%s: status=%x\n", __func__, status);
 		ret = true;
 	}
 
@@ -3238,7 +3238,7 @@ bool mdss_dsi_dln0_phy_err(struct mdss_dsi_ctrl_pdata *ctrl, bool print_en)
 	if (status & 0x011111) {
 		MIPI_OUTP(base + 0x00b4, status);
 		if (print_en)
-			pr_err("%s: status=%x\n", __func__, status);
+			pr_debug("%s: status=%x\n", __func__, status);
 		ctrl->err_cont.phy_err_cnt++;
 		ret = true;
 	}
@@ -3260,7 +3260,7 @@ static bool mdss_dsi_fifo_status(struct mdss_dsi_ctrl_pdata *ctrl)
 	if (status & 0xcccc4409) {
 		MIPI_OUTP(base + 0x000c, status);
 
-		pr_err("%s: status=%x\n", __func__, status);
+		pr_debug("%s: status=%x\n", __func__, status);
 
 		/*
 		 * if DSI FIFO overflow is masked,
@@ -3297,7 +3297,7 @@ static bool mdss_dsi_status(struct mdss_dsi_ctrl_pdata *ctrl)
 
 	if (status & 0x80000000) { /* INTERLEAVE_OP_CONTENTION */
 		MIPI_OUTP(base + 0x0008, status);
-		pr_err("%s: status=%x\n", __func__, status);
+		pr_debug("%s: status=%x\n", __func__, status);
 		ret = true;
 	}
 
@@ -3320,7 +3320,7 @@ static bool mdss_dsi_clk_status(struct mdss_dsi_ctrl_pdata *ctrl)
 			return false;
 
 		dsi_send_events(ctrl, DSI_EV_PLL_UNLOCKED, 0);
-		pr_err("%s: status=%x\n", __func__, status);
+		pr_debug("%s: status=%x\n", __func__, status);
 		ret = true;
 	}
 
@@ -3344,7 +3344,7 @@ static void __dsi_error_counter(struct dsi_err_container *err_container)
 
 	if (prev_time &&
 		((curr_time - prev_time) < err_container->err_time_delta)) {
-		pr_err("%s: panic in WQ as dsi error intrs within:%dms\n",
+		pr_debug("%s: panic in WQ as dsi error intrs within:%dms\n",
 				__func__, err_container->err_time_delta);
 		MDSS_XLOG_TOUT_HANDLER_WQ("mdp", "dsi0_ctrl", "dsi0_phy",
 			"dsi1_ctrl", "dsi1_phy", "dsi_dbg_bus", "panic");
@@ -3395,7 +3395,7 @@ irqreturn_t mdss_dsi_isr(int irq, void *ptr)
 			(struct mdss_dsi_ctrl_pdata *)ptr;
 
 	if (!ctrl->ctrl_base) {
-		pr_err("%s:%d DSI base adr no Initialized\n",
+		pr_debug("%s:%d DSI base adr no Initialized\n",
 						__func__, __LINE__);
 		return IRQ_HANDLED;
 	}

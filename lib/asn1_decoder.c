@@ -375,7 +375,7 @@ next_op:
 
 	case ASN1_OP_COMPLETE:
 		if (unlikely(jsp != 0 || csp != 0)) {
-			pr_err("ASN.1 decoder error: Stacks not empty at completion (%u, %u)\n",
+			pr_debug("ASN.1 decoder error: Stacks not empty at completion (%u, %u)\n",
 			       jsp, csp);
 			return -EBADMSG;
 		}
@@ -469,7 +469,7 @@ next_op:
 	}
 
 	/* Shouldn't reach here */
-	pr_err("ASN.1 decoder error: Found reserved opcode (%u) pc=%zu\n",
+	pr_debug("ASN.1 decoder error: Found reserved opcode (%u) pc=%zu\n",
 	       op, pc);
 	return -EBADMSG;
 

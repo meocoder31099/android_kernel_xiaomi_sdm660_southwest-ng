@@ -311,7 +311,7 @@ static int __init cpuinfo_regs_init(void)
 	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "arm64/cpuinfo:online",
 				cpuid_cpu_online, cpuid_cpu_offline);
 	if (ret < 0) {
-		pr_err("cpuinfo: failed to register hotplug callbacks.\n");
+		pr_debug("cpuinfo: failed to register hotplug callbacks.\n");
 		return ret;
 	}
 	return 0;

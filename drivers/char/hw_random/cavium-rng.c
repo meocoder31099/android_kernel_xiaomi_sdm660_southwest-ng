@@ -36,7 +36,7 @@ static int cavium_rng_probe(struct pci_dev *pdev,
 	/*Map the RNG control */
 	rng->control_status = pcim_iomap(pdev, 0, 0);
 	if (!rng->control_status) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Error iomap failed retrieving control_status.\n");
 		return -ENOMEM;
 	}
@@ -52,7 +52,7 @@ static int cavium_rng_probe(struct pci_dev *pdev,
 	if (iov_err != 0) {
 		/* Disable the RNG hardware and entropy source */
 		writeq(0, rng->control_status);
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Error initializing RNG virtual function,(%i).\n",
 			iov_err);
 		return iov_err;

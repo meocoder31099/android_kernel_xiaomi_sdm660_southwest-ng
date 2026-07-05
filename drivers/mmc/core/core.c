@@ -261,7 +261,7 @@ EXPORT_SYMBOL(mmc_cqe_clk_scaling_stop_busy);
 bool mmc_can_scale_clk(struct mmc_host *host)
 {
 	if (!host) {
-		pr_err("bad host parameter\n");
+		pr_debug("bad host parameter\n");
 		WARN_ON(1);
 		return false;
 	}
@@ -278,7 +278,7 @@ static int mmc_devfreq_get_dev_status(struct device *dev,
 	unsigned long flags;
 
 	if (!host) {
-		pr_err("bad host parameter\n");
+		pr_debug("bad host parameter\n");
 		WARN_ON(1);
 		return -EINVAL;
 	}
@@ -337,7 +337,7 @@ static bool mmc_is_valid_state_for_clk_scaling(struct mmc_host *host)
 		return false;
 
 	if (mmc_send_status(card, &status)) {
-		pr_err("%s: Get card status fail\n", mmc_hostname(card->host));
+		pr_debug("%s: Get card status fail\n", mmc_hostname(card->host));
 		return false;
 	}
 
@@ -350,7 +350,7 @@ int mmc_clk_update_freq_deferred(struct mmc_host *host,
 	int err = 0;
 
 	if (!host) {
-		pr_err("bad host parameter\n");
+		pr_debug("bad host parameter\n");
 		WARN_ON(1);
 		return -EINVAL;
 	}
@@ -358,14 +358,14 @@ int mmc_clk_update_freq_deferred(struct mmc_host *host,
 	/* make sure the card supports the frequency we want */
 	if (unlikely(freq > host->card->clk_scaling_highest)) {
 		freq = host->card->clk_scaling_highest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
+		pr_debug("%s: %s: frequency was overridden to %lu\n",
 				mmc_hostname(host), __func__,
 				host->card->clk_scaling_highest);
 	}
 
 	if (unlikely(freq < host->card->clk_scaling_lowest)) {
 		freq = host->card->clk_scaling_lowest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
+		pr_debug("%s: %s: frequency was overridden to %lu\n",
 			mmc_hostname(host), __func__,
 			host->card->clk_scaling_lowest);
 	}
@@ -376,7 +376,7 @@ int mmc_clk_update_freq_deferred(struct mmc_host *host,
 	if (host->ops->notify_load) {
 		err = host->ops->notify_load(host, state);
 		if (err) {
-			pr_err("%s: %s: fail on notify_load\n",
+			pr_debug("%s: %s: fail on notify_load\n",
 				mmc_hostname(host), __func__);
 			goto out;
 		}
@@ -385,7 +385,7 @@ int mmc_clk_update_freq_deferred(struct mmc_host *host,
 	if (host->cqe_on) {
 		err = host->cqe_ops->cqe_wait_for_idle(host);
 		if (err) {
-			pr_err("%s: %s: CQE went in recovery path.\n",
+			pr_debug("%s: %s: CQE went in recovery path.\n",
 				mmc_hostname(host), __func__);
 			goto error;
 		}
@@ -402,7 +402,7 @@ int mmc_clk_update_freq_deferred(struct mmc_host *host,
 	if (!err)
 		host->clk_scaling.curr_freq = freq;
 	else
-		pr_err("%s: %s: failed (%d) at freq=%lu\n",
+		pr_debug("%s: %s: failed (%d) at freq=%lu\n",
 			mmc_hostname(host), __func__, err, freq);
 
 	mmc_log_string(host,
@@ -419,7 +419,7 @@ error:
 		if (host->ops->notify_load)
 			if (host->ops->notify_load(host,
 				host->clk_scaling.state))
-				pr_err("%s: %s: fail on notify_load restore\n",
+				pr_debug("%s: %s: fail on notify_load restore\n",
 					mmc_hostname(host), __func__);
 	}
 out:
@@ -434,7 +434,7 @@ int mmc_clk_update_freq(struct mmc_host *host,
 	int err = 0;
 
 	if (!host) {
-		pr_err("bad host parameter\n");
+		pr_debug("bad host parameter\n");
 		WARN_ON(1);
 		return -EINVAL;
 	}
@@ -442,14 +442,14 @@ int mmc_clk_update_freq(struct mmc_host *host,
 	/* make sure the card supports the frequency we want */
 	if (unlikely(freq > host->card->clk_scaling_highest)) {
 		freq = host->card->clk_scaling_highest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
+		pr_debug("%s: %s: frequency was overridden to %lu\n",
 				mmc_hostname(host), __func__,
 				host->card->clk_scaling_highest);
 	}
 
 	if (unlikely(freq < host->card->clk_scaling_lowest)) {
 		freq = host->card->clk_scaling_lowest;
-		pr_warn("%s: %s: frequency was overridden to %lu\n",
+		pr_debug("%s: %s: frequency was overridden to %lu\n",
 			mmc_hostname(host), __func__,
 			host->card->clk_scaling_lowest);
 	}
@@ -460,7 +460,7 @@ int mmc_clk_update_freq(struct mmc_host *host,
 	if (host->ops->notify_load) {
 		err = host->ops->notify_load(host, state);
 		if (err) {
-			pr_err("%s: %s: fail on notify_load\n",
+			pr_debug("%s: %s: fail on notify_load\n",
 				mmc_hostname(host), __func__);
 			goto out;
 		}
@@ -469,7 +469,7 @@ int mmc_clk_update_freq(struct mmc_host *host,
 	if (host->cqe_on) {
 		err = host->cqe_ops->cqe_wait_for_idle(host);
 		if (err) {
-			pr_err("%s: %s: CQE went in recovery path\n",
+			pr_debug("%s: %s: CQE went in recovery path\n",
 				mmc_hostname(host), __func__);
 			goto error;
 		}
@@ -486,7 +486,7 @@ int mmc_clk_update_freq(struct mmc_host *host,
 	if (!err)
 		host->clk_scaling.curr_freq = freq;
 	else
-		pr_err("%s: %s: failed (%d) at freq=%lu\n",
+		pr_debug("%s: %s: failed (%d) at freq=%lu\n",
 			mmc_hostname(host), __func__, err, freq);
 	mmc_log_string(host, "clock scale state %d freq %lu done with err %d\n",
 			state, freq, err);
@@ -501,7 +501,7 @@ error:
 		if (host->ops->notify_load)
 			if (host->ops->notify_load(host,
 				host->clk_scaling.state))
-				pr_err("%s: %s: fail on notify_load restore\n",
+				pr_debug("%s: %s: fail on notify_load restore\n",
 					mmc_hostname(host), __func__);
 	}
 out:
@@ -523,7 +523,7 @@ static int mmc_devfreq_set_target(struct device *dev,
 	current->flags |= PF_MEMALLOC;
 
 	if (!(host && freq)) {
-		pr_err("%s: unexpected host/freq parameter\n", __func__);
+		pr_debug("%s: unexpected host/freq parameter\n", __func__);
 		err = -EINVAL;
 		goto out;
 	}
@@ -566,7 +566,7 @@ static int mmc_devfreq_set_target(struct device *dev,
 
 	err = mmc_clk_update_freq(host, *freq, clk_scaling->state);
 	if (err && err != -EAGAIN)
-		pr_err("%s: clock scale to %lu failed with error %d\n",
+		pr_debug("%s: clock scale to %lu failed with error %d\n",
 			mmc_hostname(host), *freq, err);
 	else
 		pr_debug("%s: clock change to %lu finished successfully (%s)\n",
@@ -622,7 +622,7 @@ void mmc_deferred_scaling(struct mmc_host *host)
 	err = mmc_clk_update_freq_deferred(host, target_freq,
 		clk_scaling.state);
 	if (err && err != -EAGAIN)
-		pr_err("%s: failed on deferred scale clocks (%d)\n",
+		pr_debug("%s: failed on deferred scale clocks (%d)\n",
 			mmc_hostname(host), err);
 	else
 		pr_debug("%s: clocks were successfully scaled to %lu (%s)\n",
@@ -739,7 +739,7 @@ int mmc_init_clk_scaling(struct mmc_host *host)
 	struct devfreq *devfreq;
 
 	if (!host || !host->card) {
-		pr_err("%s: unexpected host/card parameters\n",
+		pr_debug("%s: unexpected host/card parameters\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -756,7 +756,7 @@ int mmc_init_clk_scaling(struct mmc_host *host)
 		mmc_classdev(host));
 
 	if (host->clk_scaling.devfreq) {
-		pr_err("%s: dev is already registered for dev %pK\n",
+		pr_debug("%s: dev is already registered for dev %pK\n",
 			mmc_hostname(host),
 			mmc_dev(host));
 		return -EPERM;
@@ -782,7 +782,7 @@ int mmc_init_clk_scaling(struct mmc_host *host)
 
 	err = mmc_devfreq_create_freq_table(host);
 	if (err) {
-		pr_err("%s: fail to create devfreq frequency table\n",
+		pr_debug("%s: fail to create devfreq frequency table\n",
 			mmc_hostname(host));
 		return err;
 	}
@@ -805,7 +805,7 @@ int mmc_init_clk_scaling(struct mmc_host *host)
 		&host->clk_scaling.ondemand_gov_data);
 
 	if (IS_ERR(devfreq)) {
-		pr_err("%s: unable to register with devfreq\n",
+		pr_debug("%s: unable to register with devfreq\n",
 			mmc_hostname(host));
 		dev_pm_opp_remove(mmc_classdev(host),
 			host->clk_scaling.devfreq_profile.freq_table[0]);
@@ -852,7 +852,7 @@ int mmc_suspend_clk_scaling(struct mmc_host *host)
 		return 0;
 
 	if (!host->clk_scaling.devfreq) {
-		pr_err("%s: %s: no devfreq is assosiated with this device\n",
+		pr_debug("%s: %s: no devfreq is assosiated with this device\n",
 			mmc_hostname(host), __func__);
 		return -EPERM;
 	}
@@ -861,7 +861,7 @@ int mmc_suspend_clk_scaling(struct mmc_host *host)
 	wake_up(&host->wq);
 	err = devfreq_suspend_device(host->clk_scaling.devfreq);
 	if (err) {
-		pr_err("%s: %s: failed to suspend devfreq\n",
+		pr_debug("%s: %s: failed to suspend devfreq\n",
 			mmc_hostname(host), __func__);
 		return err;
 	}
@@ -904,7 +904,7 @@ int mmc_resume_clk_scaling(struct mmc_host *host)
 	 * API calling this.
 	 */
 	if (!host->clk_scaling.devfreq) {
-		pr_warn("%s: %s: no devfreq is assosiated with this device\n",
+		pr_debug("%s: %s: no devfreq is assosiated with this device\n",
 			mmc_hostname(host), __func__);
 		return 0;
 	}
@@ -922,7 +922,7 @@ int mmc_resume_clk_scaling(struct mmc_host *host)
 
 	err = devfreq_resume_device(host->clk_scaling.devfreq);
 	if (err) {
-		pr_err("%s: %s: failed to resume devfreq (%d)\n",
+		pr_debug("%s: %s: failed to resume devfreq (%d)\n",
 			mmc_hostname(host), __func__, err);
 	} else {
 		host->clk_scaling.is_suspended = false;
@@ -944,7 +944,7 @@ int mmc_exit_clk_scaling(struct mmc_host *host)
 	int err;
 
 	if (!host) {
-		pr_err("%s: bad host parameter\n", __func__);
+		pr_debug("%s: bad host parameter\n", __func__);
 		WARN_ON(1);
 		return -EINVAL;
 	}
@@ -953,21 +953,21 @@ int mmc_exit_clk_scaling(struct mmc_host *host)
 		return 0;
 
 	if (!host->clk_scaling.devfreq) {
-		pr_err("%s: %s: no devfreq is assosiated with this device\n",
+		pr_debug("%s: %s: no devfreq is assosiated with this device\n",
 			mmc_hostname(host), __func__);
 		return -EPERM;
 	}
 
 	err = mmc_suspend_clk_scaling(host);
 	if (err) {
-		pr_err("%s: %s: fail to suspend clock scaling (%d)\n",
+		pr_debug("%s: %s: fail to suspend clock scaling (%d)\n",
 			mmc_hostname(host), __func__,  err);
 		return err;
 	}
 
 	err = devfreq_remove_device(host->clk_scaling.devfreq);
 	if (err) {
-		pr_err("%s: remove devfreq failed (%d)\n",
+		pr_debug("%s: remove devfreq failed (%d)\n",
 			mmc_hostname(host), err);
 		return err;
 	}
@@ -1301,12 +1301,12 @@ void mmc_wait_for_req_done(struct mmc_host *host, struct mmc_request *mrq)
 		 */
 		if (cmd->sanitize_busy && cmd->error == -ETIMEDOUT) {
 			if (!mmc_interrupt_hpi(host->card)) {
-				pr_warn("%s: %s: Interrupted sanitize\n",
+				pr_debug("%s: %s: Interrupted sanitize\n",
 					mmc_hostname(host), __func__);
 				cmd->error = 0;
 				break;
 			} else {
-				pr_err("%s: %s: Failed to interrupt sanitize\n",
+				pr_debug("%s: %s: Failed to interrupt sanitize\n",
 				       mmc_hostname(host), __func__);
 			}
 		}
@@ -1449,7 +1449,7 @@ int mmc_cqe_recovery(struct mmc_host *host)
 	 * Recovery is expected seldom, if at all, but it reduces performance,
 	 * so make sure it is not completely silent.
 	 */
-	pr_warn("%s: running CQE recovery\n", mmc_hostname(host));
+	pr_debug("%s: running CQE recovery\n", mmc_hostname(host));
 
 	host->cqe_ops->cqe_recovery_start(host);
 
@@ -1908,7 +1908,7 @@ int mmc_execute_tuning(struct mmc_card *card)
 	err = host->ops->execute_tuning(host, opcode);
 
 	if (err) {
-		pr_err("%s: tuning execution failed: %d\n",
+		pr_debug("%s: tuning execution failed: %d\n",
 			mmc_hostname(host), err);
 	} else {
 		host->retune_now = 0;
@@ -2065,7 +2065,7 @@ int mmc_of_parse_voltage(struct device_node *np, u32 *mask)
 		return 0;
 	}
 	if (!num_ranges) {
-		pr_err("%pOF: voltage-ranges empty\n", np);
+		pr_debug("%pOF: voltage-ranges empty\n", np);
 		return -EINVAL;
 	}
 
@@ -2077,7 +2077,7 @@ int mmc_of_parse_voltage(struct device_node *np, u32 *mask)
 				be32_to_cpu(voltage_ranges[j]),
 				be32_to_cpu(voltage_ranges[j + 1]));
 		if (!ocr_mask) {
-			pr_err("%pOF: voltage-range #%d is invalid\n",
+			pr_debug("%pOF: voltage-range #%d is invalid\n",
 				np, i);
 			return -EINVAL;
 		}
@@ -2232,7 +2232,7 @@ int mmc_regulator_set_ocr(struct mmc_host *mmc,
 	}
 
 	if (result)
-		dev_err(mmc_dev(mmc),
+		dev_dbg(mmc_dev(mmc),
 			"could not set regulator OCR (%d)\n", result);
 	return result;
 }
@@ -2345,7 +2345,7 @@ int mmc_regulator_get_supply(struct mmc_host *mmc)
 		if (ret > 0)
 			mmc->ocr_avail = ret;
 		else
-			dev_warn(dev, "Failed getting OCR mask: %d\n", ret);
+			dev_dbg(dev, "Failed getting OCR mask: %d\n", ret);
 	}
 
 	if (IS_ERR(mmc->supply.vqmmc)) {
@@ -2371,14 +2371,14 @@ u32 mmc_select_voltage(struct mmc_host *host, u32 ocr)
 	 * support.
 	 */
 	if (ocr & 0x7F) {
-		dev_warn(mmc_dev(host),
+		dev_dbg(mmc_dev(host),
 		"card claims to support voltages below defined range\n");
 		ocr &= ~0x7F;
 	}
 
 	ocr &= host->ocr_avail;
 	if (!ocr) {
-		dev_warn(mmc_dev(host), "no support for card's volts\n");
+		dev_dbg(mmc_dev(host), "no support for card's volts\n");
 		return 0;
 	}
 
@@ -2396,7 +2396,7 @@ u32 mmc_select_voltage(struct mmc_host *host, u32 ocr)
 		 */
 		ocr &= 3 << (bit - 1);
 		if (bit != host->ios.vdd)
-			dev_warn(mmc_dev(host), "exceeding card's volts\n");
+			dev_dbg(mmc_dev(host), "exceeding card's volts\n");
 	}
 
 	return ocr;
@@ -2468,7 +2468,7 @@ int mmc_set_uhs_voltage(struct mmc_host *host, u32 ocr)
 	if (!host->ops->start_signal_voltage_switch)
 		return -EPERM;
 	if (!host->ops->card_busy)
-		pr_warn("%s: cannot verify signal voltage switch\n",
+		pr_debug("%s: cannot verify signal voltage switch\n",
 			mmc_hostname(host));
 
 	cmd.opcode = SD_SWITCH_VOLTAGE;
@@ -2702,7 +2702,7 @@ int mmc_resume_bus(struct mmc_host *host)
 	if (host->ops->get_cd) {
 		card_present = host->ops->get_cd(host);
 		if (!card_present) {
-			pr_err("%s: Card removed - card_present:%d\n",
+			pr_debug("%s: Card removed - card_present:%d\n",
 			       mmc_hostname(host), card_present);
 			mmc_card_set_removed(host->card);
 		}
@@ -2713,11 +2713,11 @@ int mmc_resume_bus(struct mmc_host *host)
 		BUG_ON(!host->bus_ops->deferred_resume);
 		err = host->bus_ops->deferred_resume(host);
 		if (err && (err != -ENOMEDIUM)) {
-			pr_err("%s: bus resume: failed: %d\n",
+			pr_debug("%s: bus resume: failed: %d\n",
 			       mmc_hostname(host), err);
 			err = mmc_hw_reset(host);
 			if (err) {
-				pr_err("%s: reset: failed: %d\n",
+				pr_debug("%s: reset: failed: %d\n",
 				       mmc_hostname(host), err);
 				goto err_reset;
 			} else {
@@ -2727,7 +2727,7 @@ int mmc_resume_bus(struct mmc_host *host)
 		if (host->card->ext_csd.cmdq_en && !host->cqe_enabled) {
 			err = host->cqe_ops->cqe_enable(host, host->card);
 			if (err)
-				pr_err("%s: %s: cqe enable failed: %d\n",
+				pr_debug("%s: %s: cqe enable failed: %d\n",
 				       mmc_hostname(host), __func__, err);
 			else
 				host->cqe_enabled = true;
@@ -3020,7 +3020,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 	cmd.flags = MMC_RSP_SPI_R1 | MMC_RSP_R1 | MMC_CMD_AC;
 	err = mmc_wait_for_cmd(card->host, &cmd, 0);
 	if (err) {
-		pr_err("mmc_erase: group start error %d, "
+		pr_debug("mmc_erase: group start error %d, "
 		       "status %#x\n", err, cmd.resp[0]);
 		err = -EIO;
 		goto out;
@@ -3035,7 +3035,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 	cmd.flags = MMC_RSP_SPI_R1 | MMC_RSP_R1 | MMC_CMD_AC;
 	err = mmc_wait_for_cmd(card->host, &cmd, 0);
 	if (err) {
-		pr_err("mmc_erase: group end error %d, status %#x\n",
+		pr_debug("mmc_erase: group end error %d, status %#x\n",
 		       err, cmd.resp[0]);
 		err = -EIO;
 		goto out;
@@ -3065,7 +3065,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 
 	err = mmc_wait_for_cmd(card->host, &cmd, 0);
 	if (err) {
-		pr_err("mmc_erase: erase error %d, status %#x\n",
+		pr_debug("mmc_erase: erase error %d, status %#x\n",
 		       err, cmd.resp[0]);
 		err = -EIO;
 		goto out;
@@ -3090,7 +3090,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 		/* Do not retry else we can't see errors */
 		err = mmc_wait_for_cmd(card->host, &cmd, 0);
 		if (err || R1_STATUS(cmd.resp[0])) {
-			pr_err("error %d requesting status %#x\n",
+			pr_debug("error %d requesting status %#x\n",
 				err, cmd.resp[0]);
 			err = -EIO;
 			goto out;
@@ -3100,7 +3100,7 @@ static int mmc_do_erase(struct mmc_card *card, unsigned int from,
 		 * never leaves the program state.
 		 */
 		if (time_after(jiffies, timeout)) {
-			pr_err("%s: Card stuck in programming state! %s\n",
+			pr_debug("%s: Card stuck in programming state! %s\n",
 				mmc_hostname(card->host), __func__);
 			err =  -EIO;
 			goto out;
@@ -3468,7 +3468,7 @@ int mmc_hw_reset(struct mmc_host *host)
 	mmc_bus_put(host);
 
 	if (ret)
-		pr_warn("%s: tried to HW reset card, got error %d\n",
+		pr_debug("%s: tried to HW reset card, got error %d\n",
 			mmc_hostname(host), ret);
 
 	return ret;
@@ -3492,7 +3492,7 @@ int mmc_sw_reset(struct mmc_host *host)
 	mmc_bus_put(host);
 
 	if (ret)
-		pr_warn("%s: tried to SW reset card, got error %d\n",
+		pr_debug("%s: tried to SW reset card, got error %d\n",
 			mmc_hostname(host), ret);
 
 	return ret;
@@ -3789,7 +3789,7 @@ static int mmc_pm_notify(struct notifier_block *notify_block,
 			break;
 
 		if (!mmc_card_is_removable(host)) {
-			dev_warn(mmc_dev(host),
+			dev_dbg(mmc_dev(host),
 				 "pre_suspend failed for non-removable host: "
 				 "%d\n", err);
 			/* Avoid removing non-removable hosts */

@@ -111,7 +111,7 @@ struct qbam_channel {
 };
 #define DMA_TO_QBAM_CHAN(dma_chan) \
 			container_of(dma_chan, struct qbam_channel, chan)
-#define qbam_err(qbam_dev, fmt ...) dev_err(qbam_dev->dma_dev.dev, fmt)
+#define qbam_err(qbam_dev, fmt ...) dev_dbg(qbam_dev->dma_dev.dev, fmt)
 
 /*  qbam_disconnect_chan - disconnect a channel */
 static int qbam_disconnect_chan(struct qbam_channel *qbam_chan)

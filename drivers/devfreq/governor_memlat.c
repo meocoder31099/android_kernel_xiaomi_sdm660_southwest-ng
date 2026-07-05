@@ -150,7 +150,7 @@ static int start_monitor(struct devfreq *df)
 	ret = hw->start_hwmon(hw);
 
 	if (ret) {
-		dev_err(dev, "Unable to start HW monitor! (%d)\n", ret);
+		dev_dbg(dev, "Unable to start HW monitor! (%d)\n", ret);
 		return ret;
 	}
 
@@ -184,7 +184,7 @@ static int gov_start(struct devfreq *df)
 
 	node = find_memlat_node(df);
 	if (!node) {
-		dev_err(dev, "Unable to find HW monitor!\n");
+		dev_dbg(dev, "Unable to find HW monitor!\n");
 		return -ENODEV;
 	}
 	hw = node->hw;
@@ -388,7 +388,7 @@ static int devfreq_memlat_ev_handler(struct devfreq *df,
 	case DEVFREQ_GOV_SUSPEND:
 		ret = gov_suspend(df);
 		if (ret) {
-			dev_err(df->dev.parent,
+			dev_dbg(df->dev.parent,
 				"Unable to suspend memlat governor (%d)\n",
 				ret);
 			return ret;
@@ -400,7 +400,7 @@ static int devfreq_memlat_ev_handler(struct devfreq *df,
 	case DEVFREQ_GOV_RESUME:
 		ret = gov_resume(df);
 		if (ret) {
-			dev_err(df->dev.parent,
+			dev_dbg(df->dev.parent,
 				"Unable to resume memlat governor (%d)\n",
 				ret);
 			return ret;
@@ -510,7 +510,7 @@ static struct memlat_node *register_common(struct device *dev,
 					"qcom,core-dev-table");
 	}
 	if (!hw->freq_map) {
-		dev_err(dev, "Couldn't find the core-dev freq table!\n");
+		dev_dbg(dev, "Couldn't find the core-dev freq table!\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -544,9 +544,9 @@ int register_compute(struct device *dev, struct memlat_hwmon *hw)
 
 out:
 	if (!ret)
-		dev_info(dev, "Compute governor registered.\n");
+		dev_dbg(dev, "Compute governor registered.\n");
 	else
-		dev_err(dev, "Compute governor registration failed!\n");
+		dev_dbg(dev, "Compute governor registration failed!\n");
 
 	return ret;
 }
@@ -574,9 +574,9 @@ int register_memlat(struct device *dev, struct memlat_hwmon *hw)
 
 out:
 	if (!ret)
-		dev_info(dev, "Memory Latency governor registered.\n");
+		dev_dbg(dev, "Memory Latency governor registered.\n");
 	else
-		dev_err(dev, "Memory Latency governor registration failed!\n");
+		dev_dbg(dev, "Memory Latency governor registration failed!\n");
 
 	return ret;
 }

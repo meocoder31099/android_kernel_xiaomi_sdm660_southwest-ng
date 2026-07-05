@@ -170,7 +170,7 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 	int err = task_work_add(current, &tw->cb, TWA_RESUME);
 	if (err) {
 		kfree(tw);
-		pr_warn("unmount add task_work failed\n");
+		pr_debug("unmount add task_work failed\n");
 	}
 
 	return 0;
@@ -179,7 +179,7 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 void __init ksu_kernel_umount_init(void)
 {
 	if (ksu_register_feature_handler(&kernel_umount_handler)) {
-		pr_err("Failed to register kernel_umount feature handler\n");
+		pr_debug("Failed to register kernel_umount feature handler\n");
 	}
 }
 

@@ -154,7 +154,7 @@ static int msm_hsphy_config_vdd(struct msm_hsphy *phy, int high)
 	ret = regulator_set_voltage(phy->vdd, phy->vdd_levels[min],
 				    phy->vdd_levels[2]);
 	if (ret) {
-		dev_err(phy->phy.dev, "unable to set voltage for hsusb vdd\n");
+		dev_dbg(phy->phy.dev, "unable to set voltage for hsusb vdd\n");
 		return ret;
 	}
 
@@ -181,54 +181,54 @@ static int msm_hsphy_enable_power(struct msm_hsphy *phy, bool on)
 
 	ret = msm_hsphy_config_vdd(phy, true);
 	if (ret) {
-		dev_err(phy->phy.dev, "Unable to config VDD:%d\n",
+		dev_dbg(phy->phy.dev, "Unable to config VDD:%d\n",
 							ret);
 		goto err_vdd;
 	}
 
 	ret = regulator_enable(phy->vdd);
 	if (ret) {
-		dev_err(phy->phy.dev, "Unable to enable VDD\n");
+		dev_dbg(phy->phy.dev, "Unable to enable VDD\n");
 		goto unconfig_vdd;
 	}
 
 	ret = regulator_set_load(phy->vdda18, USB_HSPHY_1P8_HPM_LOAD);
 	if (ret < 0) {
-		dev_err(phy->phy.dev, "Unable to set HPM of vdda18:%d\n", ret);
+		dev_dbg(phy->phy.dev, "Unable to set HPM of vdda18:%d\n", ret);
 		goto disable_vdd;
 	}
 
 	ret = regulator_set_voltage(phy->vdda18, USB_HSPHY_1P8_VOL_MIN,
 						USB_HSPHY_1P8_VOL_MAX);
 	if (ret) {
-		dev_err(phy->phy.dev,
+		dev_dbg(phy->phy.dev,
 				"Unable to set voltage for vdda18:%d\n", ret);
 		goto put_vdda18_lpm;
 	}
 
 	ret = regulator_enable(phy->vdda18);
 	if (ret) {
-		dev_err(phy->phy.dev, "Unable to enable vdda18:%d\n", ret);
+		dev_dbg(phy->phy.dev, "Unable to enable vdda18:%d\n", ret);
 		goto unset_vdda18;
 	}
 
 	ret = regulator_set_load(phy->vdda33, USB_HSPHY_3P3_HPM_LOAD);
 	if (ret < 0) {
-		dev_err(phy->phy.dev, "Unable to set HPM of vdda33:%d\n", ret);
+		dev_dbg(phy->phy.dev, "Unable to set HPM of vdda33:%d\n", ret);
 		goto disable_vdda18;
 	}
 
 	ret = regulator_set_voltage(phy->vdda33, USB_HSPHY_3P3_VOL_MIN,
 						USB_HSPHY_3P3_VOL_MAX);
 	if (ret) {
-		dev_err(phy->phy.dev,
+		dev_dbg(phy->phy.dev,
 				"Unable to set voltage for vdda33:%d\n", ret);
 		goto put_vdda33_lpm;
 	}
 
 	ret = regulator_enable(phy->vdda33);
 	if (ret) {
-		dev_err(phy->phy.dev, "Unable to enable vdda33:%d\n", ret);
+		dev_dbg(phy->phy.dev, "Unable to enable vdda33:%d\n", ret);
 		goto unset_vdd33;
 	}
 
@@ -240,45 +240,45 @@ static int msm_hsphy_enable_power(struct msm_hsphy *phy, bool on)
 disable_vdda33:
 	ret = regulator_disable(phy->vdda33);
 	if (ret)
-		dev_err(phy->phy.dev, "Unable to disable vdda33:%d\n", ret);
+		dev_dbg(phy->phy.dev, "Unable to disable vdda33:%d\n", ret);
 
 unset_vdd33:
 	ret = regulator_set_voltage(phy->vdda33, 0, USB_HSPHY_3P3_VOL_MAX);
 	if (ret)
-		dev_err(phy->phy.dev,
+		dev_dbg(phy->phy.dev,
 			"Unable to set (0) voltage for vdda33:%d\n", ret);
 
 put_vdda33_lpm:
 	ret = regulator_set_load(phy->vdda33, 0);
 	if (ret < 0)
-		dev_err(phy->phy.dev, "Unable to set (0) HPM of vdda33\n");
+		dev_dbg(phy->phy.dev, "Unable to set (0) HPM of vdda33\n");
 
 disable_vdda18:
 	ret = regulator_disable(phy->vdda18);
 	if (ret)
-		dev_err(phy->phy.dev, "Unable to disable vdda18:%d\n", ret);
+		dev_dbg(phy->phy.dev, "Unable to disable vdda18:%d\n", ret);
 
 unset_vdda18:
 	ret = regulator_set_voltage(phy->vdda18, 0, USB_HSPHY_1P8_VOL_MAX);
 	if (ret)
-		dev_err(phy->phy.dev,
+		dev_dbg(phy->phy.dev,
 			"Unable to set (0) voltage for vdda18:%d\n", ret);
 
 put_vdda18_lpm:
 	ret = regulator_set_load(phy->vdda18, 0);
 	if (ret < 0)
-		dev_err(phy->phy.dev, "Unable to set LPM of vdda18\n");
+		dev_dbg(phy->phy.dev, "Unable to set LPM of vdda18\n");
 
 disable_vdd:
 	ret = regulator_disable(phy->vdd);
 	if (ret)
-		dev_err(phy->phy.dev, "Unable to disable vdd:%d\n",
+		dev_dbg(phy->phy.dev, "Unable to disable vdd:%d\n",
 								ret);
 
 unconfig_vdd:
 	ret = msm_hsphy_config_vdd(phy, false);
 	if (ret)
-		dev_err(phy->phy.dev, "Unable unconfig VDD:%d\n",
+		dev_dbg(phy->phy.dev, "Unable unconfig VDD:%d\n",
 								ret);
 	/* Return from here based on power_enabled. If it is not set
 	 * then return -EINVAL since either set_voltage or
@@ -307,7 +307,7 @@ static void msm_usb_write_readback(void __iomem *base, u32 offset,
 	tmp &= mask;		/* clear other bits */
 
 	if (tmp != val)
-		pr_err("%s: write: %x to QSCRATCH: %x FAILED\n",
+		pr_debug("%s: write: %x to QSCRATCH: %x FAILED\n",
 			__func__, val, offset);
 }
 
@@ -317,13 +317,13 @@ static void msm_hsphy_reset(struct msm_hsphy *phy)
 
 	ret = reset_control_assert(phy->phy_reset);
 	if (ret)
-		dev_err(phy->phy.dev, "%s: phy_reset assert failed\n",
+		dev_dbg(phy->phy.dev, "%s: phy_reset assert failed\n",
 								__func__);
 	usleep_range(100, 150);
 
 	ret = reset_control_deassert(phy->phy_reset);
 	if (ret)
-		dev_err(phy->phy.dev, "%s: phy_reset deassert failed\n",
+		dev_dbg(phy->phy.dev, "%s: phy_reset deassert failed\n",
 							__func__);
 }
 
@@ -350,7 +350,7 @@ static int msm_hsphy_init(struct usb_phy *uphy)
 	dev_dbg(uphy->dev, "%s\n", __func__);
 
 	if (phy->eud_enable_reg && readl_relaxed(phy->eud_enable_reg)) {
-		dev_err(phy->phy.dev, "eud is enabled\n");
+		dev_dbg(phy->phy.dev, "eud is enabled\n");
 		return 0;
 	}
 
@@ -600,7 +600,7 @@ static int msm_hsphy_dpdm_regulator_enable(struct regulator_dev *rdev)
 
 	msm_hsphy_enable_clocks(phy, true);
 	if (phy->eud_enable_reg && readl_relaxed(phy->eud_enable_reg)) {
-		dev_err(phy->phy.dev, "eud is enabled\n");
+		dev_dbg(phy->phy.dev, "eud is enabled\n");
 		goto exit;
 	}
 
@@ -738,14 +738,14 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						"hsusb_phy_base");
 	if (!res) {
-		dev_err(dev, "missing memory base resource\n");
+		dev_dbg(dev, "missing memory base resource\n");
 		ret = -ENODEV;
 		goto err_ret;
 	}
 
 	phy->base = devm_ioremap_resource(dev, res);
 	if (IS_ERR(phy->base)) {
-		dev_err(dev, "ioremap failed\n");
+		dev_dbg(dev, "ioremap failed\n");
 		ret = -ENODEV;
 		goto err_ret;
 	}
@@ -756,12 +756,12 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 		phy->phy_rcal_reg = devm_ioremap_nocache(dev,
 					res->start, resource_size(res));
 		if (IS_ERR(phy->phy_rcal_reg)) {
-			dev_err(dev, "couldn't ioremap phy_rcal_reg\n");
+			dev_dbg(dev, "couldn't ioremap phy_rcal_reg\n");
 			phy->phy_rcal_reg = NULL;
 		}
 		if (of_property_read_u32(dev->of_node,
 					"qcom,rcal-mask", &phy->rcal_mask)) {
-			dev_err(dev, "unable to read phy rcal mask\n");
+			dev_dbg(dev, "unable to read phy rcal mask\n");
 			phy->phy_rcal_reg = NULL;
 		}
 		dev_dbg(dev, "rcal_mask:%08x reg:%pK\n", phy->rcal_mask,
@@ -773,7 +773,7 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 	if (res) {
 		phy->eud_enable_reg = devm_ioremap_resource(dev, res);
 		if (IS_ERR(phy->eud_enable_reg)) {
-			dev_err(dev, "err getting eud_enable_reg address\n");
+			dev_dbg(dev, "err getting eud_enable_reg address\n");
 			return PTR_ERR(phy->eud_enable_reg);
 		}
 	}
@@ -792,7 +792,7 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 		if (IS_ERR(phy->cfg_ahb_clk)) {
 			ret = PTR_ERR(phy->cfg_ahb_clk);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev,
+				dev_dbg(dev,
 				"clk get failed for cfg_ahb_clk ret %d\n", ret);
 			return ret;
 		}
@@ -815,7 +815,7 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 			return -ENOMEM;
 
 		if (phy->param_override_seq_cnt % 2) {
-			dev_err(dev, "invalid param_override_seq_len\n");
+			dev_dbg(dev, "invalid param_override_seq_len\n");
 			return -EINVAL;
 		}
 
@@ -824,7 +824,7 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 				phy->param_override_seq,
 				phy->param_override_seq_cnt);
 		if (ret) {
-			dev_err(dev, "qcom,param-override-seq read failed %d\n",
+			dev_dbg(dev, "qcom,param-override-seq read failed %d\n",
 				ret);
 			return ret;
 		}
@@ -834,28 +834,28 @@ static int msm_hsphy_probe(struct platform_device *pdev)
 					 (u32 *) phy->vdd_levels,
 					 ARRAY_SIZE(phy->vdd_levels));
 	if (ret) {
-		dev_err(dev, "error reading qcom,vdd-voltage-level property\n");
+		dev_dbg(dev, "error reading qcom,vdd-voltage-level property\n");
 		goto err_ret;
 	}
 
 
 	phy->vdd = devm_regulator_get(dev, "vdd");
 	if (IS_ERR(phy->vdd)) {
-		dev_err(dev, "unable to get vdd supply\n");
+		dev_dbg(dev, "unable to get vdd supply\n");
 		ret = PTR_ERR(phy->vdd);
 		goto err_ret;
 	}
 
 	phy->vdda33 = devm_regulator_get(dev, "vdda33");
 	if (IS_ERR(phy->vdda33)) {
-		dev_err(dev, "unable to get vdda33 supply\n");
+		dev_dbg(dev, "unable to get vdda33 supply\n");
 		ret = PTR_ERR(phy->vdda33);
 		goto err_ret;
 	}
 
 	phy->vdda18 = devm_regulator_get(dev, "vdda18");
 	if (IS_ERR(phy->vdda18)) {
-		dev_err(dev, "unable to get vdda18 supply\n");
+		dev_dbg(dev, "unable to get vdda18 supply\n");
 		ret = PTR_ERR(phy->vdda18);
 		goto err_ret;
 	}

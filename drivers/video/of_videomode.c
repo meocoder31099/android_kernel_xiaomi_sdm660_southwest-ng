@@ -35,7 +35,7 @@ int of_get_videomode(struct device_node *np, struct videomode *vm,
 
 	disp = of_get_display_timings(np);
 	if (!disp) {
-		pr_err("%pOF: no timings specified\n", np);
+		pr_debug("%pOF: no timings specified\n", np);
 		return -EINVAL;
 	}
 

@@ -97,7 +97,7 @@ static int is_targeted(struct usb_device *dev)
 
 
 	/* OTG MESSAGE: report errors here, customize to match your product */
-	dev_err(&dev->dev, "device v%04x p%04x is not supported\n",
+	dev_dbg(&dev->dev, "device v%04x p%04x is not supported\n",
 		le16_to_cpu(dev->descriptor.idVendor),
 		le16_to_cpu(dev->descriptor.idProduct));
 

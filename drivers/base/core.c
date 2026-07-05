@@ -1708,7 +1708,7 @@ static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 	rc = kobject_synth_uevent(&dev->kobj, buf, count);
 
 	if (rc) {
-		dev_err(dev, "uevent: failed to send synthetic uevent\n");
+		dev_dbg(dev, "uevent: failed to send synthetic uevent\n");
 		return rc;
 	}
 
@@ -2356,7 +2356,7 @@ static int device_add_class_symlinks(struct device *dev)
 	if (of_node && of_node_kobj(of_node)) {
 		error = sysfs_create_link(&dev->kobj, of_node_kobj(of_node), "of_node");
 		if (error)
-			dev_warn(dev, "Error %d creating of_node link\n",error);
+			dev_dbg(dev, "Error %d creating of_node link\n",error);
 		/* An error here doesn't warrant bringing down the device */
 	}
 
@@ -3641,16 +3641,16 @@ void device_shutdown(void)
 
 		if (dev->class && dev->class->shutdown_pre) {
 			if (initcall_debug)
-				dev_info(dev, "shutdown_pre\n");
+				dev_dbg(dev, "shutdown_pre\n");
 			dev->class->shutdown_pre(dev);
 		}
 		if (dev->bus && dev->bus->shutdown) {
 			if (initcall_debug)
-				dev_info(dev, "shutdown\n");
+				dev_dbg(dev, "shutdown\n");
 			dev->bus->shutdown(dev);
 		} else if (dev->driver && dev->driver->shutdown) {
 			if (initcall_debug)
-				dev_info(dev, "shutdown\n");
+				dev_dbg(dev, "shutdown\n");
 			dev->driver->shutdown(dev);
 		}
 
@@ -3821,7 +3821,7 @@ define_dev_printk_level(_dev_info, KERN_INFO);
  * -EPROBE_DEFER and propagate error upwards.
  * It replaces code sequence::
  * 	if (err != -EPROBE_DEFER)
- * 		dev_err(dev, ...);
+ * 		dev_dbg(dev, ...);
  * 	else
  * 		dev_dbg(dev, ...);
  * 	return err;
@@ -3843,7 +3843,7 @@ int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 	vaf.va = &args;
 
 	if (err != -EPROBE_DEFER)
-		dev_err(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
 	else
 		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
 

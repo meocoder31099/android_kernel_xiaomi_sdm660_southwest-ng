@@ -76,7 +76,7 @@ static void __snd_device_disconnect(struct snd_device *dev)
 	if (dev->state == SNDRV_DEV_REGISTERED) {
 		if (dev->ops->dev_disconnect &&
 		    dev->ops->dev_disconnect(dev))
-			dev_err(dev->card->dev, "device disconnect failure\n");
+			dev_dbg(dev->card->dev, "device disconnect failure\n");
 		dev->state = SNDRV_DEV_DISCONNECTED;
 	}
 }
@@ -89,7 +89,7 @@ static void __snd_device_free(struct snd_device *dev)
 	__snd_device_disconnect(dev);
 	if (dev->ops->dev_free) {
 		if (dev->ops->dev_free(dev))
-			dev_err(dev->card->dev, "device free failure\n");
+			dev_dbg(dev->card->dev, "device free failure\n");
 	}
 	kfree(dev);
 }

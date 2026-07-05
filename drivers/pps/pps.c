@@ -237,7 +237,7 @@ static long pps_cdev_ioctl(struct file *file,
 
 		/* Check for supported capabilities */
 		if ((bind_args.edge & ~pps->info.mode) != 0) {
-			dev_err(&pps->dev, "unsupported capabilities (%x)\n",
+			dev_dbg(&pps->dev, "unsupported capabilities (%x)\n",
 					bind_args.edge);
 			return -EINVAL;
 		}
@@ -246,7 +246,7 @@ static long pps_cdev_ioctl(struct file *file,
 		if (bind_args.tsformat != PPS_TSFMT_TSPEC ||
 				(bind_args.edge & ~PPS_CAPTUREBOTH) != 0 ||
 				bind_args.consumer != PPS_KC_HARDPPS) {
-			dev_err(&pps->dev, "invalid kernel consumer bind"
+			dev_dbg(&pps->dev, "invalid kernel consumer bind"
 					" parameters (%x)\n", bind_args.edge);
 			return -EINVAL;
 		}
@@ -385,7 +385,7 @@ int pps_register_cdev(struct pps_device *pps)
 	err = idr_alloc(&pps_idr, pps, 0, PPS_MAX_SOURCES, GFP_KERNEL);
 	if (err < 0) {
 		if (err == -ENOSPC) {
-			pr_err("%s: too many PPS sources in the system\n",
+			pr_debug("%s: too many PPS sources in the system\n",
 			       pps->info.name);
 			err = -EBUSY;
 		}
@@ -483,7 +483,7 @@ static int __init pps_init(void)
 {
 	pps_class = class_create(THIS_MODULE, "pps");
 	if (IS_ERR(pps_class)) {
-		pr_err("failed to allocate class\n");
+		pr_debug("failed to allocate class\n");
 		return PTR_ERR(pps_class);
 	}
 	pps_class->dev_groups = pps_groups;
@@ -491,12 +491,12 @@ static int __init pps_init(void)
 	pps_major = __register_chrdev(0, 0, PPS_MAX_SOURCES, "pps",
 				      &pps_cdev_fops);
 	if (pps_major < 0) {
-		pr_err("failed to allocate char device region\n");
+		pr_debug("failed to allocate char device region\n");
 		goto remove_class;
 	}
 
-	pr_info("LinuxPPS API ver. %d registered\n", PPS_API_VERS);
-	pr_info("Software ver. %s - Copyright 2005-2007 Rodolfo Giometti "
+	pr_debug("LinuxPPS API ver. %d registered\n", PPS_API_VERS);
+	pr_debug("Software ver. %s - Copyright 2005-2007 Rodolfo Giometti "
 		"<giometti@linux.it>\n", PPS_VERSION);
 
 	return 0;

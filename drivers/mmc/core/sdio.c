@@ -117,7 +117,7 @@ static int sdio_read_cccr(struct mmc_card *card, u32 ocr)
 	cccr_vsn = data & 0x0f;
 
 	if (cccr_vsn > SDIO_CCCR_REV_3_00) {
-		pr_err("%s: unrecognised CCCR structure version %d\n",
+		pr_debug("%s: unrecognised CCCR structure version %d\n",
 			mmc_hostname(card->host), cccr_vsn);
 		return -EINVAL;
 	}
@@ -284,7 +284,7 @@ static int sdio_enable_wide(struct mmc_card *card)
 		return ret;
 
 	if ((ctrl & SDIO_BUS_WIDTH_MASK) == SDIO_BUS_WIDTH_RESERVED)
-		pr_warn("%s: SDIO_CCCR_IF is invalid: 0x%02x\n",
+		pr_debug("%s: SDIO_CCCR_IF is invalid: 0x%02x\n",
 			mmc_hostname(card->host), ctrl);
 
 	/* set as 4-bit bus width */
@@ -653,7 +653,7 @@ static int mmc_sdio_init_card(struct mmc_host *host, u32 ocr,
 
 try_again:
 	if (!retries) {
-		pr_warn("%s: Skipping voltage switch\n", mmc_hostname(host));
+		pr_debug("%s: Skipping voltage switch\n", mmc_hostname(host));
 		ocr &= ~R4_18V_PRESENT;
 	}
 
@@ -876,7 +876,7 @@ try_again:
 
 	if (host->caps2 & MMC_CAP2_AVOID_3_3V &&
 	    host->ios.signal_voltage == MMC_SIGNAL_VOLTAGE_330) {
-		pr_err("%s: Host failed to negotiate down from 3.3V\n",
+		pr_debug("%s: Host failed to negotiate down from 3.3V\n",
 			mmc_hostname(host));
 		err = -EINVAL;
 		goto remove;
@@ -1320,7 +1320,7 @@ remove_added:
 err:
 	mmc_detach_bus(host);
 
-	pr_err("%s: error %d whilst initialising SDIO card\n",
+	pr_debug("%s: error %d whilst initialising SDIO card\n",
 		mmc_hostname(host), err);
 
 	return err;

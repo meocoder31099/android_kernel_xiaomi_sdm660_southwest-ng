@@ -1197,7 +1197,7 @@ static inline bool is_valid_pu_dual_roi(struct mdss_panel_info *pinfo,
 				first_roi->w, first_roi->h) &&
 			!is_lm_configs_dsc_compatible(pinfo,
 				second_roi->w, second_roi->h))) {
-		pr_err("Invalid multiple PU ROIs, roi0:{%d,%d,%d,%d}, roi1{%d,%d,%d,%d}\n",
+		pr_debug("Invalid multiple PU ROIs, roi0:{%d,%d,%d,%d}, roi1{%d,%d,%d,%d}\n",
 				first_roi->x, first_roi->y, first_roi->w,
 				first_roi->h, second_roi->x, second_roi->y,
 				second_roi->w, second_roi->h);

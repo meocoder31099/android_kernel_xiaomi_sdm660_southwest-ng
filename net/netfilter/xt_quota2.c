@@ -94,14 +94,14 @@ static void quota2_log(unsigned int hooknum,
 	size = max(size, (size_t)NLMSG_GOODSIZE);
 	log_skb = alloc_skb(size, GFP_ATOMIC);
 	if (!log_skb) {
-		pr_err("xt_quota2: cannot alloc skb for logging\n");
+		pr_debug("xt_quota2: cannot alloc skb for logging\n");
 		return;
 	}
 
 	nlh = nlmsg_put(log_skb, /*pid*/0, /*seq*/0, qlog_nl_event,
 			sizeof(*pm), 0);
 	if (!nlh) {
-		pr_err("xt_quota2: nlmsg_put failed\n");
+		pr_debug("xt_quota2: nlmsg_put failed\n");
 		kfree_skb(log_skb);
 		return;
 	}

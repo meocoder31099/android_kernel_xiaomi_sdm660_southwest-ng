@@ -360,7 +360,7 @@ void device_wakeup_attach_irq(struct device *dev,
 		return;
 
 	if (ws->wakeirq)
-		dev_err(dev, "Leftover wakeup IRQ found, overriding\n");
+		dev_dbg(dev, "Leftover wakeup IRQ found, overriding\n");
 
 	ws->wakeirq = wakeirq;
 }
@@ -474,7 +474,7 @@ void device_set_wakeup_capable(struct device *dev, bool capable)
 			int ret = wakeup_sysfs_add(dev);
 
 			if (ret)
-				dev_info(dev, "Wakeup sysfs attributes not added\n");
+				dev_dbg(dev, "Wakeup sysfs attributes not added\n");
 		} else {
 			wakeup_sysfs_remove(dev);
 		}
@@ -940,7 +940,7 @@ bool pm_wakeup_pending(void)
 		pm_get_active_wakeup_sources(suspend_abort,
 					     MAX_SUSPEND_ABORT_LEN);
 		log_suspend_abort_reason(suspend_abort);
-		pr_info("PM: %s\n", suspend_abort);
+		pr_debug("PM: %s\n", suspend_abort);
 	}
 
 	return ret || atomic_read(&pm_abort_suspend) > 0;
@@ -978,7 +978,7 @@ void pm_system_irq_wakeup(unsigned int irq_number)
 			name = desc->action->name;
 
 		log_irq_wakeup_reason(irq_number);
-		pr_warn("%s: %d triggered %s\n", __func__, irq_number, name);
+		pr_debug("%s: %d triggered %s\n", __func__, irq_number, name);
 
 		pm_wakeup_irq = irq_number;
 		pm_system_wakeup();

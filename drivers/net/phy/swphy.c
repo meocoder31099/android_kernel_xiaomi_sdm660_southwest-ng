@@ -103,7 +103,7 @@ int swphy_validate_state(const struct fixed_phy_status *state)
 	if (state->link) {
 		err = swphy_decode_speed(state->speed);
 		if (err < 0) {
-			pr_warn("swphy: unknown speed\n");
+			pr_debug("swphy: unknown speed\n");
 			return -EINVAL;
 		}
 	}

@@ -131,7 +131,7 @@ static int rpmsg_eptdev_open(struct inode *inode, struct file *filp)
 
 	ept = rpmsg_create_ept(rpdev, rpmsg_ept_cb, eptdev, eptdev->chinfo);
 	if (!ept) {
-		dev_err(dev, "failed to open %s\n", eptdev->chinfo.name);
+		dev_dbg(dev, "failed to open %s\n", eptdev->chinfo.name);
 		put_device(dev);
 		return -EINVAL;
 	}
@@ -512,7 +512,7 @@ static void rpmsg_chrdev_remove(struct rpmsg_device *rpdev)
 	/* Destroy all endpoints */
 	ret = device_for_each_child(&ctrldev->dev, NULL, rpmsg_eptdev_destroy);
 	if (ret)
-		dev_warn(&rpdev->dev, "failed to nuke endpoints: %d\n", ret);
+		dev_dbg(&rpdev->dev, "failed to nuke endpoints: %d\n", ret);
 
 	cdev_device_del(&ctrldev->cdev, &ctrldev->dev);
 	put_device(&ctrldev->dev);
@@ -532,20 +532,20 @@ static int rpmsg_char_init(void)
 
 	ret = alloc_chrdev_region(&rpmsg_major, 0, RPMSG_DEV_MAX, "rpmsg");
 	if (ret < 0) {
-		pr_err("rpmsg: failed to allocate char dev region\n");
+		pr_debug("rpmsg: failed to allocate char dev region\n");
 		return ret;
 	}
 
 	rpmsg_class = class_create(THIS_MODULE, "rpmsg");
 	if (IS_ERR(rpmsg_class)) {
-		pr_err("failed to create rpmsg class\n");
+		pr_debug("failed to create rpmsg class\n");
 		unregister_chrdev_region(rpmsg_major, RPMSG_DEV_MAX);
 		return PTR_ERR(rpmsg_class);
 	}
 
 	ret = register_rpmsg_driver(&rpmsg_chrdev_driver);
 	if (ret < 0) {
-		pr_err("rpmsgchr: failed to register rpmsg driver\n");
+		pr_debug("rpmsgchr: failed to register rpmsg driver\n");
 		class_destroy(rpmsg_class);
 		unregister_chrdev_region(rpmsg_major, RPMSG_DEV_MAX);
 	}

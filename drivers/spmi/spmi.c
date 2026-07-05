@@ -65,7 +65,7 @@ int spmi_device_add(struct spmi_device *sdev)
 
 	err = device_add(&sdev->dev);
 	if (err < 0) {
-		dev_err(&sdev->dev, "Can't add %s, status %d\n",
+		dev_dbg(&sdev->dev, "Can't add %s, status %d\n",
 			dev_name(&sdev->dev), err);
 		goto err_device_add;
 	}
@@ -432,7 +432,7 @@ struct spmi_controller *spmi_controller_alloc(struct device *parent,
 
 	id = ida_simple_get(&ctrl_ida, 0, 0, GFP_KERNEL);
 	if (id < 0) {
-		dev_err(parent,
+		dev_dbg(parent,
 			"unable to allocate SPMI controller identifier.\n");
 		spmi_controller_put(ctrl);
 		return NULL;
@@ -462,21 +462,21 @@ static void of_spmi_register_devices(struct spmi_controller *ctrl)
 
 		err = of_property_read_u32_array(node, "reg", reg, 2);
 		if (err) {
-			dev_err(&ctrl->dev,
+			dev_dbg(&ctrl->dev,
 				"node %pOF err (%d) does not have 'reg' property\n",
 				node, err);
 			continue;
 		}
 
 		if (reg[1] != SPMI_USID) {
-			dev_err(&ctrl->dev,
+			dev_dbg(&ctrl->dev,
 				"node %pOF contains unsupported 'reg' entry\n",
 				node);
 			continue;
 		}
 
 		if (reg[0] >= SPMI_MAX_SLAVE_ID) {
-			dev_err(&ctrl->dev, "invalid usid on node %pOF\n", node);
+			dev_dbg(&ctrl->dev, "invalid usid on node %pOF\n", node);
 			continue;
 		}
 
@@ -491,7 +491,7 @@ static void of_spmi_register_devices(struct spmi_controller *ctrl)
 
 		err = spmi_device_add(sdev);
 		if (err) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"failure adding device. status %d\n", err);
 			spmi_device_put(sdev);
 		}

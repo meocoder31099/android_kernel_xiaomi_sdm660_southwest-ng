@@ -236,7 +236,7 @@ static void diag_update_pid_and_serial_num(struct diag_context *ctxt)
 	list_for_each_entry(uc, &cdev->gstrings, list) {
 		table = (struct usb_gadget_strings **)uc->stash;
 		if (!table) {
-			pr_err("%s: can't update dload cookie\n", __func__);
+			pr_debug("%s: can't update dload cookie\n", __func__);
 			break;
 		}
 
@@ -521,7 +521,7 @@ int usb_diag_read(struct usb_diag_ch *ch, struct diag_request *d_req)
 
 	if (list_empty(&ctxt->read_pool)) {
 		spin_unlock_irqrestore(&ctxt->lock, flags);
-		pr_err("%s: no requests available\n", __func__);
+		pr_debug("%s: no requests available\n", __func__);
 		return -EAGAIN;
 	}
 
@@ -547,7 +547,7 @@ int usb_diag_read(struct usb_diag_ch *ch, struct diag_request *d_req)
 		list_add_tail(&req->list, &ctxt->read_pool);
 		/* 1 error message for every 10 sec */
 		if (__ratelimit(&rl))
-			pr_err("%s: cannot queue read request\n", __func__);
+			pr_debug("%s: cannot queue read request\n", __func__);
 
 		if (kref_put(&ctxt->kref, diag_context_release))
 			/* diag_context_release called spin_unlock already */
@@ -596,7 +596,7 @@ int usb_diag_write(struct usb_diag_ch *ch, struct diag_request *d_req)
 
 	if (list_empty(&ctxt->write_pool)) {
 		spin_unlock_irqrestore(&ctxt->lock, flags);
-		pr_err("%s: no requests available\n", __func__);
+		pr_debug("%s: no requests available\n", __func__);
 		return -EAGAIN;
 	}
 
@@ -624,7 +624,7 @@ int usb_diag_write(struct usb_diag_ch *ch, struct diag_request *d_req)
 		ctxt->dpkts_tolaptop_pending--;
 		/* 1 error message for every 10 sec */
 		if (__ratelimit(&rl))
-			pr_err("%s: cannot queue read request\n", __func__);
+			pr_debug("%s: cannot queue read request\n", __func__);
 
 		if (kref_put(&ctxt->kref, diag_context_release))
 			/* diag_context_release called spin_unlock already */
@@ -827,7 +827,7 @@ static struct diag_context *diag_context_init(const char *name)
 	}
 
 	if (!found) {
-		pr_warn("%s: unable to get diag usb channel\n", __func__);
+		pr_debug("%s: unable to get diag usb channel\n", __func__);
 
 		_ch = kzalloc(sizeof(*_ch), GFP_KERNEL);
 		if (_ch == NULL)
@@ -1050,7 +1050,7 @@ static int __init diag_init(void)
 
 	ret = usb_function_register(&diagusb_func);
 	if (ret) {
-		pr_err("%s: failed to register diag %d\n", __func__, ret);
+		pr_debug("%s: failed to register diag %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -1059,7 +1059,7 @@ static int __init diag_init(void)
 		np = of_find_compatible_node(NULL, NULL, "qcom,android-usb");
 
 	if (!np)
-		pr_warn("diag: failed to find diag_dload imem node\n");
+		pr_debug("diag: failed to find diag_dload imem node\n");
 
 	diag_dload  = np ? of_iomap(np, 0) : NULL;
 

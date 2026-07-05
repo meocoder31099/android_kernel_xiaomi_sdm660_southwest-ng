@@ -53,14 +53,14 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 						audio->pcm_cfg.sample_rate,
 						audio->pcm_cfg.channel_count);
 			if (rc < 0) {
-				pr_err("pcm output block config failed\n");
+				pr_debug("pcm output block config failed\n");
 				break;
 			}
 		}
 		/* turn on both sbr and ps */
 		rc = q6asm_enable_sbrps(audio->ac, sbr_ps);
 		if (rc < 0)
-			pr_err("sbr-ps enable failed\n");
+			pr_debug("sbr-ps enable failed\n");
 		aac_config = (struct msm_audio_aac_config *)audio->codec_cfg;
 		if (aac_config->sbr_ps_on_flag)
 			aac_cfg.aot = AAC_ENC_MODE_EAAC_P;
@@ -107,7 +107,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		/* Configure Media format block */
 		rc = q6asm_media_format_block_aac(audio->ac, &aac_cfg);
 		if (rc < 0) {
-			pr_err("cmd media format block failed\n");
+			pr_debug("cmd media format block failed\n");
 			break;
 		}
 		rc = audio_aio_enable(audio);
@@ -116,16 +116,16 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		if (!rc) {
 			rc = enable_volume_ramp(audio);
 			if (rc < 0) {
-				pr_err("%s: Failed to enable volume ramp\n",
+				pr_debug("%s: Failed to enable volume ramp\n",
 					__func__);
 			}
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("Audio Start procedure failed rc=%d\n", rc);
+			pr_debug("Audio Start procedure failed rc=%d\n", rc);
 			break;
 		}
-		pr_info("%s: AUDIO_START sessionid[%d]enable[%d]\n", __func__,
+		pr_debug("%s: AUDIO_START sessionid[%d]enable[%d]\n", __func__,
 						audio->ac->session,
 						audio->enabled);
 		if (audio->stopped == 1)
@@ -139,7 +139,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		pr_debug("%s: AUDIO_SET_AAC_CONFIG\n", __func__);
 		aac_config = (struct msm_audio_aac_config *)arg;
 		if (aac_config == NULL) {
-			pr_err("%s: Invalid config pointer\n", __func__);
+			pr_debug("%s: Invalid config pointer\n", __func__);
 			rc = -EINVAL;
 			break;
 		}
@@ -148,7 +148,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		/* PL_PR is 0 only need to check PL_SR */
 		if (aac_config->dual_mono_mode >
 		    AUDIO_AAC_DUAL_MONO_PL_SR) {
-			pr_err("%s:Invalid dual_mono mode =%d\n", __func__,
+			pr_debug("%s:Invalid dual_mono mode =%d\n", __func__,
 			aac_config->dual_mono_mode);
 		} else {
 			/* convert the data from user into sce_left
@@ -178,13 +178,13 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			rc = q6asm_cfg_dual_mono_aac(audio->ac,
 						sce_left, sce_right);
 			if (rc < 0)
-				pr_err("%s:asm cmd dualmono failed rc=%d\n",
+				pr_debug("%s:asm cmd dualmono failed rc=%d\n",
 					 __func__, rc);
 		}
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		break;
 	}
 	return rc;
@@ -203,7 +203,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_GET_AAC_CONFIG: {
 		if (copy_to_user((void *)arg, audio->codec_cfg,
 			sizeof(struct msm_audio_aac_config))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AAC_CONFIG failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AAC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -216,14 +216,14 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		pr_debug("%s: AUDIO_SET_AAC_CONFIG\n", __func__);
 		if (copy_from_user(&aac_config, (void *)arg,
 			sizeof(aac_config))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_AAC_CONFIG failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_AAC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
 		}
 		rc = audio_ioctl_shared(file, cmd, &aac_config);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AAC_CONFIG failed. Rc= %d\n",
+			pr_debug("%s:AUDIO_SET_AAC_CONFIG failed. Rc= %d\n",
 						__func__, rc);
 		break;
 	}
@@ -294,7 +294,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_to_user((void *)arg, &aac_config_32,
 			sizeof(aac_config_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AAC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AAC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -308,7 +308,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 		pr_debug("%s: AUDIO_SET_AAC_CONFIG\n", __func__);
 		if (copy_from_user(&aac_config_32, (void *)arg,
 			sizeof(aac_config_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_AAC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_AAC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -332,7 +332,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 		cmd = AUDIO_SET_AAC_CONFIG;
 		rc = audio_ioctl_shared(file, cmd, &aac_config);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AAC_CONFIG failed. Rc= %d\n",
+			pr_debug("%s:AUDIO_SET_AAC_CONFIG failed. Rc= %d\n",
 				__func__, rc);
 		break;
 	}
@@ -386,7 +386,7 @@ static int audio_open(struct inode *inode, struct file *file)
 					     (void *)audio);
 
 	if (!audio->ac) {
-		pr_err("Could not allocate memory for audio client\n");
+		pr_debug("Could not allocate memory for audio client\n");
 		kfree(audio->codec_cfg);
 		kfree(audio);
 		return -ENOMEM;
@@ -402,7 +402,7 @@ static int audio_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_LINEAR_PCM,
 					   FORMAT_MPEG4_AAC);
 		if (rc < 0) {
-			pr_err("NT mode Open failed rc=%d\n", rc);
+			pr_debug("NT mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
@@ -415,14 +415,14 @@ static int audio_open(struct inode *inode, struct file *file)
 			!(file->f_mode & FMODE_READ)) {
 		rc = q6asm_open_write(audio->ac, FORMAT_MPEG4_AAC);
 		if (rc < 0) {
-			pr_err("T mode Open failed rc=%d\n", rc);
+			pr_debug("T mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->feedback = TUNNEL_MODE;
 		audio->buf_cfg.meta_info_enable = 0x00;
 	} else {
-		pr_err("Not supported mode\n");
+		pr_debug("Not supported mode\n");
 		rc = -EACCES;
 		goto fail;
 	}
@@ -436,7 +436,7 @@ static int audio_open(struct inode *inode, struct file *file)
 	if (IS_ERR(audio->dentry))
 		pr_debug("debugfs_create_file failed\n");
 #endif
-	pr_info("%s:aacdec success mode[%d]session[%d]\n", __func__,
+	pr_debug("%s:aacdec success mode[%d]session[%d]\n", __func__,
 						audio->feedback,
 						audio->ac->session);
 	return rc;

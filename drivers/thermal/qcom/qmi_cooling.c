@@ -199,7 +199,7 @@ static int qmi_tmd_send_state_request(struct qmi_cooling_device *qmi_cdev,
 	ret = qmi_txn_init(&tmd->handle, &txn,
 		tmd_set_mitigation_level_resp_msg_v01_ei, &tmd_resp);
 	if (ret < 0) {
-		pr_err("qmi set state:%d txn init failed for %s ret:%d\n",
+		pr_debug("qmi set state:%d txn init failed for %s ret:%d\n",
 			state, qmi_cdev->cdev_name, ret);
 		goto qmi_send_exit;
 	}
@@ -209,7 +209,7 @@ static int qmi_tmd_send_state_request(struct qmi_cooling_device *qmi_cdev,
 			TMD_SET_MITIGATION_LEVEL_REQ_MSG_V01_MAX_MSG_LEN,
 			tmd_set_mitigation_level_req_msg_v01_ei, &req);
 	if (ret < 0) {
-		pr_err("qmi set state:%d txn send failed for %s ret:%d\n",
+		pr_debug("qmi set state:%d txn send failed for %s ret:%d\n",
 			state, qmi_cdev->cdev_name, ret);
 		qmi_txn_cancel(&txn);
 		goto qmi_send_exit;
@@ -217,13 +217,13 @@ static int qmi_tmd_send_state_request(struct qmi_cooling_device *qmi_cdev,
 
 	ret = qmi_txn_wait(&txn, QMI_TMD_RESP_TOUT);
 	if (ret < 0) {
-		pr_err("qmi set state:%d txn wait failed for %s ret:%d\n",
+		pr_debug("qmi set state:%d txn wait failed for %s ret:%d\n",
 			state, qmi_cdev->cdev_name, ret);
 		goto qmi_send_exit;
 	}
 	if (tmd_resp.resp.result != QMI_RESULT_SUCCESS_V01) {
 		ret = tmd_resp.resp.result;
-		pr_err("qmi set state:%d NOT success for %s ret:%d\n",
+		pr_debug("qmi set state:%d NOT success for %s ret:%d\n",
 			state, qmi_cdev->cdev_name, ret);
 		goto qmi_send_exit;
 	}
@@ -333,7 +333,7 @@ static int qmi_register_cooling_device(struct qmi_cooling_device *qmi_cdev)
 					qmi_cdev,
 					&qmi_device_ops);
 	if (IS_ERR(qmi_cdev->cdev)) {
-		pr_err("Cooling register failed for %s, ret:%ld\n",
+		pr_debug("Cooling register failed for %s, ret:%ld\n",
 			qmi_cdev->cdev_name, PTR_ERR(qmi_cdev->cdev));
 		return PTR_ERR(qmi_cdev->cdev);
 	}
@@ -359,7 +359,7 @@ static int verify_devices_and_register(struct qmi_tmd_instance *tmd)
 	ret = qmi_txn_init(&tmd->handle, &txn,
 		tmd_get_mitigation_device_list_resp_msg_v01_ei, tmd_resp);
 	if (ret < 0) {
-		pr_err("Transaction Init error for inst_id:0x%x ret:%d\n",
+		pr_debug("Transaction Init error for inst_id:0x%x ret:%d\n",
 			tmd->inst_id, ret);
 		goto reg_exit;
 	}
@@ -376,13 +376,13 @@ static int verify_devices_and_register(struct qmi_tmd_instance *tmd)
 
 	ret = qmi_txn_wait(&txn, QMI_TMD_RESP_TOUT);
 	if (ret < 0) {
-		pr_err("Transaction wait error for inst_id:0x%x ret:%d\n",
+		pr_debug("Transaction wait error for inst_id:0x%x ret:%d\n",
 			tmd->inst_id, ret);
 		goto reg_exit;
 	}
 	if (tmd_resp->resp.result != QMI_RESULT_SUCCESS_V01) {
 		ret = tmd_resp->resp.result;
-		pr_err("Get device list NOT success for inst_id:0x%x ret:%d\n",
+		pr_debug("Get device list NOT success for inst_id:0x%x ret:%d\n",
 			tmd->inst_id, ret);
 		goto reg_exit;
 	}
@@ -516,7 +516,7 @@ static int of_get_qmi_tmd_platform_data(struct device *dev)
 
 	subsys_cnt = of_get_available_child_count(np);
 	if (!subsys_cnt) {
-		dev_err(dev, "No child node to process\n");
+		dev_dbg(dev, "No child node to process\n");
 		return -EFAULT;
 	}
 
@@ -531,7 +531,7 @@ static int of_get_qmi_tmd_platform_data(struct device *dev)
 		ret = of_property_read_u32(subsys_np, "qcom,instance-id",
 				&tmd[idx].inst_id);
 		if (ret) {
-			dev_err(dev, "error reading qcom,insance-id. ret:%d\n",
+			dev_dbg(dev, "error reading qcom,insance-id. ret:%d\n",
 				ret);
 			return ret;
 		}
@@ -560,7 +560,7 @@ static int of_get_qmi_tmd_platform_data(struct device *dev)
 				strlcpy(qmi_cdev->qmi_name, qmi_name,
 						QMI_CLIENT_NAME_LENGTH);
 			} else {
-				dev_err(dev, "Fail to parse dev name for %s\n",
+				dev_dbg(dev, "Fail to parse dev name for %s\n",
 					cdev_np->name);
 				break;
 			}
@@ -572,7 +572,7 @@ static int of_get_qmi_tmd_platform_data(struct device *dev)
 			}
 
 			if (i >= ARRAY_SIZE(device_clients)) {
-				dev_err(dev, "Not supported dev name for %s\n",
+				dev_dbg(dev, "Not supported dev name for %s\n",
 					cdev_np->name);
 				break;
 			}
@@ -600,7 +600,7 @@ static int qmi_device_probe(struct platform_device *pdev)
 		goto probe_err;
 
 	if (!tmd_instances || !tmd_inst_cnt) {
-		dev_err(dev, "Empty tmd instances\n");
+		dev_dbg(dev, "Empty tmd instances\n");
 		return -EINVAL;
 	}
 
@@ -614,7 +614,7 @@ static int qmi_device_probe(struct platform_device *pdev)
 			TMD_GET_MITIGATION_DEVICE_LIST_RESP_MSG_V01_MAX_MSG_LEN,
 			&thermal_qmi_event_ops, NULL);
 		if (ret < 0) {
-			dev_err(dev, "QMI[0x%x] handle init failed. err:%d\n",
+			dev_dbg(dev, "QMI[0x%x] handle init failed. err:%d\n",
 					tmd->inst_id, ret);
 			goto probe_err;
 		}
@@ -622,7 +622,7 @@ static int qmi_device_probe(struct platform_device *pdev)
 					TMD_SERVICE_VERS_V01,
 					tmd->inst_id);
 		if (ret < 0) {
-			dev_err(dev, "QMI register failed for 0x%x, ret:%d\n",
+			dev_dbg(dev, "QMI register failed for 0x%x, ret:%d\n",
 				tmd->inst_id, ret);
 			goto probe_err;
 		}

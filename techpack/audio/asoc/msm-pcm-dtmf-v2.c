@@ -210,7 +210,7 @@ static void dtmf_rx_detected_cb(uint8_t *pkt,
 		snd_pcm_period_elapsed(prtd->capture_substream);
 	} else {
 		spin_unlock_irqrestore(&prtd->dsp_lock, dsp_flags);
-		pr_err("DTMF detection pkt in Rx  dropped, no free node available\n");
+		pr_debug("DTMF detection pkt in Rx  dropped, no free node available\n");
 	}
 
 	wake_up(&prtd->out_wait);
@@ -241,7 +241,7 @@ static int msm_pcm_capture_copy(struct snd_pcm_substream *substream,
 					   &buf_node->dtmf_det_pkt,
 					   fbytes);
 			if (ret) {
-				pr_err("%s: Copy to user returned %d\n",
+				pr_debug("%s: Copy to user returned %d\n",
 					__func__, ret);
 				ret = -EFAULT;
 			}
@@ -251,15 +251,15 @@ static int msm_pcm_capture_copy(struct snd_pcm_substream *substream,
 			spin_unlock_irqrestore(&prtd->dsp_lock, dsp_flags);
 
 		} else {
-			pr_err("%s: Read count %lu > DTMF_PKT_SIZE\n",
+			pr_debug("%s: Read count %lu > DTMF_PKT_SIZE\n",
 				__func__, fbytes);
 			ret = -ENOMEM;
 		}
 	} else if (ret == 0) {
-		pr_err("%s: No UL data available\n", __func__);
+		pr_debug("%s: No UL data available\n", __func__);
 		ret = -ETIMEDOUT;
 	} else {
-		pr_err("%s: Read was interrupted\n", __func__);
+		pr_debug("%s: Read was interrupted\n", __func__);
 		ret = -ERESTARTSYS;
 	}
 	return ret;
@@ -303,7 +303,7 @@ static int msm_pcm_open(struct snd_pcm_substream *substream)
 		ret = snd_pcm_hw_constraint_integer(runtime,
 						    SNDRV_PCM_HW_PARAM_PERIODS);
 		if (ret < 0)
-			pr_info("snd_pcm_hw_constraint_integer failed\n");
+			pr_debug("snd_pcm_hw_constraint_integer failed\n");
 
 		prtd->capture_substream = substream;
 		prtd->capture_instance++;
@@ -411,7 +411,7 @@ static int msm_pcm_hw_params(struct snd_pcm_substream *substream,
 						runtime->hw.buffer_bytes_max,
 						&dma_buf->addr, GFP_KERNEL);
 		if (!dma_buf->area) {
-			pr_err("%s:MSM DTMF dma_alloc failed\n", __func__);
+			pr_debug("%s:MSM DTMF dma_alloc failed\n", __func__);
 			mutex_unlock(&prtd->lock);
 			return -ENOMEM;
 		}
@@ -460,7 +460,7 @@ static int msm_pcm_prepare(struct snd_pcm_substream *substream)
 		msm_pcm_capture_prepare(substream);
 
 		if (runtime->format != FORMAT_S16_LE) {
-			pr_err("format:%u doesn't match %d\n",
+			pr_debug("format:%u doesn't match %d\n",
 			       (uint32_t)runtime->format, FORMAT_S16_LE);
 			mutex_unlock(&prtd->lock);
 			return -EINVAL;

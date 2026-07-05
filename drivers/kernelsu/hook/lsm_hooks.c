@@ -67,7 +67,7 @@ static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 	char path[128];
 	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
 	if (IS_ERR(buf)) {
-		pr_err("dentry_path_raw failed.\n");
+		pr_debug("dentry_path_raw failed.\n");
 		return 0;
 	}
 

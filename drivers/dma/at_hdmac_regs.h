@@ -363,13 +363,13 @@ static void vdbg_dump_regs(struct at_dma_chan *atchan)
 {
 	struct at_dma	*atdma = to_at_dma(atchan->chan_common.device);
 
-	dev_err(chan2dev(&atchan->chan_common),
+	dev_dbg(chan2dev(&atchan->chan_common),
 		"  channel %d : imr = 0x%x, chsr = 0x%x\n",
 		atchan->chan_common.chan_id,
 		dma_readl(atdma, EBCIMR),
 		dma_readl(atdma, CHSR));
 
-	dev_err(chan2dev(&atchan->chan_common),
+	dev_dbg(chan2dev(&atchan->chan_common),
 		"  channel: s0x%x d0x%x ctrl0x%x:0x%x cfg0x%x l0x%x\n",
 		channel_readl(atchan, SADDR),
 		channel_readl(atchan, DADDR),

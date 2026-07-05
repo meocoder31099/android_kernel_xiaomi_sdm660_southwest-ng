@@ -44,7 +44,7 @@ static long g711_in_ioctl_shared(struct file *file,
 		}
 		rc = audio_in_buf_alloc(audio);
 		if (rc < 0) {
-			pr_err("%s:session id %d: buffer allocation failed rc=%d\n",
+			pr_debug("%s:session id %d: buffer allocation failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			break;
 		}
@@ -54,7 +54,7 @@ static long g711_in_ioctl_shared(struct file *file,
 			enc_cfg->sample_rate);
 
 		if (rc < 0) {
-			pr_err("%s:session id %d: cmd g711 media format block failed rc=%d\n",
+			pr_debug("%s:session id %d: cmd g711 media format block failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 			break;
 		}
@@ -64,7 +64,7 @@ static long g711_in_ioctl_shared(struct file *file,
 				audio->pcm_cfg.channel_count);
 
 			if (rc < 0) {
-				pr_err("%s:session id %d: media format block failed rc=%d\n",
+				pr_debug("%s:session id %d: media format block failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 				break;
 			}
@@ -76,7 +76,7 @@ static long g711_in_ioctl_shared(struct file *file,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("%s:session id %d: Audio Start procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Start procedure failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 			break;
 		}
@@ -92,7 +92,7 @@ static long g711_in_ioctl_shared(struct file *file,
 				audio->ac->session);
 		rc = audio_in_disable(audio);
 		if (rc  < 0) {
-			pr_err("%s:session id %d: Audio Stop procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Stop procedure failed rc=%d\n",
 				__func__, audio->ac->session,
 					rc);
 			break;
@@ -107,13 +107,13 @@ static long g711_in_ioctl_shared(struct file *file,
 
 		cfg = (struct msm_audio_g711_enc_config *)arg;
 		if (cfg == NULL) {
-			pr_err("%s: NULL config pointer\n", __func__);
+			pr_debug("%s: NULL config pointer\n", __func__);
 			rc = -EINVAL;
 			break;
 		}
 		if (cfg->sample_rate != 8000 &&
 			 cfg->sample_rate != 16000) {
-			pr_err("%s:session id %d: invalid sample rate\n",
+			pr_debug("%s:session id %d: invalid sample rate\n",
 					__func__, audio->ac->session);
 			rc = -EINVAL;
 			break;
@@ -125,7 +125,7 @@ static long g711_in_ioctl_shared(struct file *file,
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -ENOIOCTLCMD;
 	}
 	return rc;
@@ -146,7 +146,7 @@ static long g711_in_ioctl(struct file *file,
 	case AUDIO_GET_G711_ENC_CONFIG: {
 		if (copy_to_user((void *)arg, audio->enc_cfg,
 			sizeof(struct msm_audio_g711_enc_config))) {
-			pr_err(
+			pr_debug(
 				"%s: copy_to_user for AUDIO_GET_g711_ENC_CONFIG failed",
 				__func__);
 			rc = -EFAULT;
@@ -158,7 +158,7 @@ static long g711_in_ioctl(struct file *file,
 
 		if (copy_from_user(&cfg, (void *) arg,
 				sizeof(cfg))) {
-			pr_err(
+			pr_debug(
 				"%s: copy_from_user for AUDIO_GET_G711_ENC_CONFIG failed",
 				__func__);
 			rc = -EFAULT;
@@ -166,12 +166,12 @@ static long g711_in_ioctl(struct file *file,
 		}
 		rc = g711_in_ioctl_shared(file, cmd, (unsigned long)&cfg);
 		if (rc)
-			pr_err("%s:AUDIO_GET_G711_ENC_CONFIG failed. Rc= %d\n",
+			pr_debug("%s:AUDIO_GET_G711_ENC_CONFIG failed. Rc= %d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -ENOIOCTLCMD;
 	}
 	return rc;
@@ -209,7 +209,7 @@ static long g711_in_compat_ioctl(struct file *file,
 		cfg_32.sample_rate = enc_cfg->sample_rate;
 		if (copy_to_user((void *)arg, &cfg_32,
 			sizeof(cfg_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_G711_ENC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_G711_ENC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -221,7 +221,7 @@ static long g711_in_compat_ioctl(struct file *file,
 
 		if (copy_from_user(&cfg_32, (void *) arg,
 				sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_G711_ENC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_G711_ENC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -230,12 +230,12 @@ static long g711_in_compat_ioctl(struct file *file,
 		cmd = AUDIO_SET_G711_ENC_CONFIG;
 		rc = g711_in_ioctl_shared(file, cmd, (unsigned long)&cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_G711_ENC_CONFIG failed. rc= %d\n",
+			pr_debug("%s:AUDIO_SET_G711_ENC_CONFIG failed. rc= %d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -ENOIOCTLCMD;
 	}
 	return rc;
@@ -303,7 +303,7 @@ static int g711_in_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_G711_MLAW_FS,
 					FORMAT_LINEAR_PCM);
 		if (rc < 0) {
-			pr_err("%s:session id %d: NT mode Open failed rc=%d\n",
+			pr_debug("%s:session id %d: NT mode Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
@@ -313,7 +313,7 @@ static int g711_in_open(struct inode *inode, struct file *file)
 		audio->feedback = TUNNEL_MODE;
 		rc = q6asm_open_read(audio->ac, FORMAT_G711_MLAW_FS);
 		if (rc < 0) {
-			pr_err("%s:session id %d: T mode Open failed rc=%d\n",
+			pr_debug("%s:session id %d: T mode Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
@@ -321,13 +321,13 @@ static int g711_in_open(struct inode *inode, struct file *file)
 		/* register for tx overflow (valid for tunnel mode only) */
 		rc = q6asm_reg_tx_overflow(audio->ac, 0x01);
 		if (rc < 0) {
-			pr_err("%s:session id %d: TX Overflow registration failed rc=%d\n",
+			pr_debug("%s:session id %d: TX Overflow registration failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 	} else {
-		pr_err("%s:session id %d: Unexpected mode\n", __func__,
+		pr_debug("%s:session id %d: Unexpected mode\n", __func__,
 				audio->ac->session);
 		rc = -EACCES;
 		goto fail;
@@ -341,7 +341,7 @@ static int g711_in_open(struct inode *inode, struct file *file)
 	audio->enc_ioctl = g711_in_ioctl;
 	file->private_data = audio;
 
-	pr_info("%s:session id %d: success\n", __func__, audio->ac->session);
+	pr_debug("%s:session id %d: success\n", __func__, audio->ac->session);
 	return 0;
 fail:
 	q6asm_audio_client_free(audio->ac);

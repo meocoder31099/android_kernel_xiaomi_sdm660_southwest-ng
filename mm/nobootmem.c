@@ -52,7 +52,7 @@ again:
 					   flags);
 	if (!addr && (flags & MEMBLOCK_MIRROR)) {
 		flags &= ~MEMBLOCK_MIRROR;
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
+		pr_debug("Could not allocate %pap bytes of mirrored memory\n",
 			&size);
 		goto again;
 	}

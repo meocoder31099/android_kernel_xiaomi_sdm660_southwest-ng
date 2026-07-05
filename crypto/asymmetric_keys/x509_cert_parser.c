@@ -97,7 +97,7 @@ struct x509_certificate *x509_cert_parse(const void *data, size_t datalen)
 		ret = asn1_ber_decoder(&x509_akid_decoder, ctx,
 				       ctx->raw_akid, ctx->raw_akid_size);
 		if (ret < 0) {
-			pr_warn("Couldn't decode AuthKeyIdentifier\n");
+			pr_debug("Couldn't decode AuthKeyIdentifier\n");
 			goto error_decode;
 		}
 	}
@@ -244,7 +244,7 @@ int x509_note_signature(void *context, size_t hdrlen,
 	pr_debug("Signature type: %u size %zu\n", ctx->last_oid, vlen);
 
 	if (ctx->last_oid != ctx->algo_oid) {
-		pr_warn("Got cert with pkey (%u) and sig (%u) algorithm OIDs\n",
+		pr_debug("Got cert with pkey (%u) and sig (%u) algorithm OIDs\n",
 			ctx->algo_oid, ctx->last_oid);
 		return -EINVAL;
 	}

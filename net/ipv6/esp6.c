@@ -850,7 +850,7 @@ static int esp_init_authenc(struct xfrm_state *x)
 		err = -EINVAL;
 		if (aalg_desc->uinfo.auth.icv_fullbits / 8 !=
 		    crypto_aead_authsize(aead)) {
-			pr_info("ESP: %s digestsize %u != %d\n",
+			pr_debug("ESP: %s digestsize %u != %d\n",
 				x->aalg->alg_name,
 				crypto_aead_authsize(aead),
 				aalg_desc->uinfo.auth.icv_fullbits / 8);
@@ -947,11 +947,11 @@ static struct xfrm6_protocol esp6_protocol = {
 static int __init esp6_init(void)
 {
 	if (xfrm_register_type(&esp6_type, AF_INET6) < 0) {
-		pr_info("%s: can't add xfrm type\n", __func__);
+		pr_debug("%s: can't add xfrm type\n", __func__);
 		return -EAGAIN;
 	}
 	if (xfrm6_protocol_register(&esp6_protocol, IPPROTO_ESP) < 0) {
-		pr_info("%s: can't add protocol\n", __func__);
+		pr_debug("%s: can't add protocol\n", __func__);
 		xfrm_unregister_type(&esp6_type, AF_INET6);
 		return -EAGAIN;
 	}
@@ -962,9 +962,9 @@ static int __init esp6_init(void)
 static void __exit esp6_fini(void)
 {
 	if (xfrm6_protocol_deregister(&esp6_protocol, IPPROTO_ESP) < 0)
-		pr_info("%s: can't remove protocol\n", __func__);
+		pr_debug("%s: can't remove protocol\n", __func__);
 	if (xfrm_unregister_type(&esp6_type, AF_INET6) < 0)
-		pr_info("%s: can't remove xfrm type\n", __func__);
+		pr_debug("%s: can't remove xfrm type\n", __func__);
 }
 
 module_init(esp6_init);

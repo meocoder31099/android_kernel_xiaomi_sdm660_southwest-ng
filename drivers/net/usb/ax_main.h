@@ -74,7 +74,7 @@ typedef int (*usb_write_function)(struct ax_device *axdev, u8 cmd, u16 value,
 #define MODULENAME		"ax_usb_nic"
 
 #define PRINT_VERSION(axdev, str) \
-	dev_info(&axdev->intf->dev, \
+	dev_dbg(&axdev->intf->dev, \
 		"%s %s (%d.%d.%d.%d_%d.%d)", \
 		str, DRIVER_VERSION, \
 		axdev->fw_version[0], \

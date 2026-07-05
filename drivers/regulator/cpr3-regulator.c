@@ -6242,7 +6242,7 @@ static int cpr3_panic_callback(struct notifier_block *nfb,
 	for (i = 0; i < regs_info->reg_count; i++) {
 		reg = &(regs_info->regs[i]);
 		reg->value = readl_relaxed(reg->virt_addr);
-		pr_err("%s[0x%08x] = 0x%08x\n", reg->name, reg->addr,
+		pr_debug("%s[0x%08x] = 0x%08x\n", reg->name, reg->addr,
 			reg->value);
 	}
 	/*
@@ -6270,12 +6270,12 @@ int cpr3_regulator_register(struct platform_device *pdev,
 	int i, j, rc;
 
 	if (!dev->of_node) {
-		dev_err(dev, "%s: Device tree node is missing\n", __func__);
+		dev_dbg(dev, "%s: Device tree node is missing\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!ctrl || !ctrl->name) {
-		dev_err(dev, "%s: CPR controller data is missing\n", __func__);
+		dev_dbg(dev, "%s: CPR controller data is missing\n", __func__);
 		return -EINVAL;
 	}
 

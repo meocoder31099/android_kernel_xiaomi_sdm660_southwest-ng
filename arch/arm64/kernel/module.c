@@ -100,7 +100,7 @@ static u64 do_reloc(enum aarch64_reloc_op reloc_op, __le32 *place, u64 val)
 		return 0;
 	}
 
-	pr_err("do_reloc: unknown relocation operation %d\n", reloc_op);
+	pr_debug("do_reloc: unknown relocation operation %d\n", reloc_op);
 	return 0;
 }
 
@@ -123,7 +123,7 @@ static int reloc_data(enum aarch64_reloc_op op, void *place, u64 val, int len)
 		*(s64 *)place = sval;
 		break;
 	default:
-		pr_err("Invalid length (%d) for data relocation\n", len);
+		pr_debug("Invalid length (%d) for data relocation\n", len);
 		return 0;
 	}
 	return 0;
@@ -434,7 +434,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 			break;
 
 		default:
-			pr_err("module %s: unsupported RELA relocation: %llu\n",
+			pr_debug("module %s: unsupported RELA relocation: %llu\n",
 			       me->name, ELF64_R_TYPE(rel[i].r_info));
 			return -ENOEXEC;
 		}
@@ -447,7 +447,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
 	return 0;
 
 overflow:
-	pr_err("module %s: overflow in relocation type %d val %Lx\n",
+	pr_debug("module %s: overflow in relocation type %d val %Lx\n",
 	       me->name, (int)ELF64_R_TYPE(rel[i].r_info), val);
 	return -ENOEXEC;
 }

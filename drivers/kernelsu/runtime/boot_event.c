@@ -41,7 +41,7 @@ int nuke_ext4_sysfs(const char *mnt)
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
 	if (err) {
-		pr_err("nuke path err: %d\n", err);
+		pr_debug("nuke path err: %d\n", err);
 		return err;
 	}
 

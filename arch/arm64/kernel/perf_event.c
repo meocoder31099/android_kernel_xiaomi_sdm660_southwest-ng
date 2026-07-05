@@ -560,7 +560,7 @@ static inline u64 armv8pmu_read_counter(struct perf_event *event)
 	u64 value = 0;
 
 	if (!armv8pmu_counter_valid(cpu_pmu, idx))
-		pr_err("CPU%u reading wrong counter %d\n",
+		pr_debug("CPU%u reading wrong counter %d\n",
 			smp_processor_id(), idx);
 	else if (idx == ARMV8_IDX_CYCLE_COUNTER)
 		value = read_sysreg(pmccntr_el0);
@@ -596,7 +596,7 @@ static inline void armv8pmu_write_counter(struct perf_event *event, u64 value)
 	int idx = hwc->idx;
 
 	if (!armv8pmu_counter_valid(cpu_pmu, idx))
-		pr_err("CPU%u writing wrong counter %d\n",
+		pr_debug("CPU%u writing wrong counter %d\n",
 			smp_processor_id(), idx);
 	else if (idx == ARMV8_IDX_CYCLE_COUNTER) {
 		/*
@@ -1404,7 +1404,7 @@ static int perf_event_cpu_hp_init(void)
 				perf_event_hotplug_coming_up,
 				perf_event_hotplug_going_down);
 	if (ret)
-		pr_err("CPU hotplug notifier for perf_event.c could not be registered: %d\n",
+		pr_debug("CPU hotplug notifier for perf_event.c could not be registered: %d\n",
 		       ret);
 
 	return ret;

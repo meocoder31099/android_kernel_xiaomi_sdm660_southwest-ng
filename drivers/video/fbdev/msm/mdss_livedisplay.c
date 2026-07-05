@@ -73,7 +73,7 @@ static int parse_dsi_cmds(struct mdss_livedisplay_ctx *mlc,
 		dchdr = (struct dsi_ctrl_hdr *)bp;
 		dchdr->dlen = ntohs(dchdr->dlen);
 		if (dchdr->dlen > len) {
-			pr_err("%s: dtsi cmd=%x error, len=%d\n",
+			pr_debug("%s: dtsi cmd=%x error, len=%d\n",
 				__func__, dchdr->dtype, dchdr->dlen);
 			goto exit_free;
 		}
@@ -85,7 +85,7 @@ static int parse_dsi_cmds(struct mdss_livedisplay_ctx *mlc,
 	}
 
 	if (len != 0) {
-		pr_err("%s: dcs_cmd=%x len=%d error!\n",
+		pr_debug("%s: dcs_cmd=%x len=%d error!\n",
 				__func__, buf[0], blen);
 		goto exit_free;
 	}
@@ -276,7 +276,7 @@ int mdss_livedisplay_update(struct mdss_dsi_ctrl_pdata *ctrl_pdata,
 		kfree(dsi_cmds.buf);
 		kfree(dsi_cmds.cmds);
 	} else {
-		pr_err("%s: error parsing DSI command! ret=%d", __func__, ret);
+		pr_debug("%s: error parsing DSI command! ret=%d", __func__, ret);
 	}
 
 	kfree(cmd_buf);
@@ -647,7 +647,7 @@ int mdss_livedisplay_create_sysfs(struct msm_fb_data_type *mfd)
 	return rc;
 
 sysfs_err:
-	pr_err("%s: sysfs creation failed, rc=%d", __func__, rc);
+	pr_debug("%s: sysfs creation failed, rc=%d", __func__, rc);
 	return rc;
 }
 

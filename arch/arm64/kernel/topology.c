@@ -54,7 +54,7 @@ static int __init get_cpu_for_node(struct device_node *node)
 	if (cpu >= 0)
 		topology_parse_cpu_capacity(cpu_node, cpu);
 	else
-		pr_info("CPU node for %pOF exist but the possible cpu range is :%*pbl\n",
+		pr_debug("CPU node for %pOF exist but the possible cpu range is :%*pbl\n",
 			cpu_node, cpumask_pr_args(cpu_possible_mask));
 	of_node_put(cpu_node);
 	return cpu;
@@ -80,7 +80,7 @@ static int __init parse_core(struct device_node *core, int package_id,
 				cpu_topology[cpu].core_id = core_id;
 				cpu_topology[cpu].thread_id = i;
 			} else if (cpu != -ENODEV) {
-				pr_err("%pOF: Can't get CPU for thread\n",
+				pr_debug("%pOF: Can't get CPU for thread\n",
 				       t);
 				of_node_put(t);
 				return -EINVAL;
@@ -93,7 +93,7 @@ static int __init parse_core(struct device_node *core, int package_id,
 	cpu = get_cpu_for_node(core);
 	if (cpu >= 0) {
 		if (!leaf) {
-			pr_err("%pOF: Core has both threads and CPU\n",
+			pr_debug("%pOF: Core has both threads and CPU\n",
 			       core);
 			return -EINVAL;
 		}
@@ -101,7 +101,7 @@ static int __init parse_core(struct device_node *core, int package_id,
 		cpu_topology[cpu].package_id = package_id;
 		cpu_topology[cpu].core_id = core_id;
 	} else if (leaf && cpu != -ENODEV) {
-		pr_err("%pOF: Can't get CPU for leaf core\n", core);
+		pr_debug("%pOF: Can't get CPU for leaf core\n", core);
 		return -EINVAL;
 	}
 
@@ -146,7 +146,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
 			has_cores = true;
 
 			if (depth == 0) {
-				pr_err("%pOF: cpu-map children should be clusters\n",
+				pr_debug("%pOF: cpu-map children should be clusters\n",
 				       c);
 				of_node_put(c);
 				return -EINVAL;
@@ -155,7 +155,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
 			if (leaf) {
 				ret = parse_core(c, package_id, core_id++);
 			} else {
-				pr_err("%pOF: Non-leaf cluster with core %s\n",
+				pr_debug("%pOF: Non-leaf cluster with core %s\n",
 				       cluster, name);
 				ret = -EINVAL;
 			}
@@ -168,7 +168,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
 	} while (c);
 
 	if (leaf && !has_cores)
-		pr_warn("%pOF: empty cluster\n", cluster);
+		pr_debug("%pOF: empty cluster\n", cluster);
 
 	if (leaf)
 		package_id++;
@@ -184,7 +184,7 @@ static int __init parse_dt_topology(void)
 
 	cn = of_find_node_by_path("/cpus");
 	if (!cn) {
-		pr_err("No CPU information found in DT\n");
+		pr_debug("No CPU information found in DT\n");
 		return 0;
 	}
 

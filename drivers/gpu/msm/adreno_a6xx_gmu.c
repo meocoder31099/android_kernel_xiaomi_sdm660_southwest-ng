@@ -126,19 +126,19 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 	u32 mx_res_addr = cmd_db_read_addr("mx.lvl");
 
 	if (!xo_resource_addr) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Failed to get 'xo.lvl' addr from cmd_db\n");
 		return -ENOENT;
 	}
 
 	if (!cx_res_addr) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Failed to get 'cx.lvl' addr from cmd_db\n");
 		return -ENOENT;
 	}
 
 	if (!mx_res_addr) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Failed to get 'mx.lvl' addr from cmd_db\n");
 		return -ENOENT;
 	}
@@ -180,7 +180,7 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 		cfg = ioremap(res_pdc->start + cfg_offset, 0x10000);
 
 	if (!cfg) {
-		dev_err(&gmu->pdev->dev, "Failed to map PDC CFG\n");
+		dev_dbg(&gmu->pdev->dev, "Failed to map PDC CFG\n");
 		return -ENODEV;
 	}
 
@@ -200,7 +200,7 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 		seq = ioremap(res_pdc->start + seq_offset, 0x10000);
 
 	if (!seq) {
-		dev_err(&gmu->pdev->dev, "Failed to map PDC SEQ\n");
+		dev_dbg(&gmu->pdev->dev, "Failed to map PDC SEQ\n");
 		iounmap(cfg);
 		return -ENODEV;
 	}
@@ -393,7 +393,7 @@ static int a6xx_gmu_start(struct kgsl_device *device)
 	if (timed_poll_check(device,
 			A6XX_GMU_CM3_FW_INIT_RESULT,
 			val, GMU_START_TIMEOUT, mask)) {
-		dev_err(&gmu->pdev->dev, "GMU doesn't boot\n");
+		dev_dbg(&gmu->pdev->dev, "GMU doesn't boot\n");
 		return -ETIMEDOUT;
 	}
 
@@ -415,7 +415,7 @@ static int a6xx_gmu_hfi_start(struct kgsl_device *device)
 			BIT(0),
 			GMU_START_TIMEOUT,
 			BIT(0))) {
-		dev_err(&gmu->pdev->dev, "GMU HFI init failed\n");
+		dev_dbg(&gmu->pdev->dev, "GMU HFI init failed\n");
 		return -ETIMEDOUT;
 	}
 
@@ -448,7 +448,7 @@ static int a6xx_rpmh_power_on_gpu(struct kgsl_device *device)
 			BIT(1),
 			GPU_START_TIMEOUT,
 			BIT(1))) {
-		dev_err(dev, "Failed to do GPU RSC power on\n");
+		dev_dbg(dev, "Failed to do GPU RSC power on\n");
 		return -EINVAL;
 	}
 
@@ -469,7 +469,7 @@ static int a6xx_rpmh_power_on_gpu(struct kgsl_device *device)
 
 	return 0;
 error_rsc:
-	dev_err(dev, "GPU RSC sequence stuck in waking up GPU\n");
+	dev_dbg(dev, "GPU RSC sequence stuck in waking up GPU\n");
 	return -EINVAL;
 }
 
@@ -500,7 +500,7 @@ static int a6xx_rpmh_power_off_gpu(struct kgsl_device *device)
 			BIT(16));
 
 	if (ret) {
-		dev_err(&gmu->pdev->dev, "GPU RSC power off fail\n");
+		dev_dbg(&gmu->pdev->dev, "GPU RSC power off fail\n");
 		return -ETIMEDOUT;
 	}
 
@@ -552,7 +552,7 @@ static int load_gmu_fw(struct kgsl_device *device)
 
 		md = gmu_get_memdesc(gmu, blk->addr, blk->size);
 		if (md == NULL) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 					"No backing memory for 0x%8.8X\n",
 					blk->addr);
 			return -EINVAL;
@@ -601,7 +601,7 @@ static int a6xx_gmu_oob_set(struct kgsl_device *device,
 		check = BIT(31 - req);
 
 		if (req >= 6) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 					"OOB_set(0x%x) invalid\n", set);
 			return -EINVAL;
 		}
@@ -618,7 +618,7 @@ static int a6xx_gmu_oob_set(struct kgsl_device *device,
 			GPU_START_TIMEOUT,
 			check)) {
 		ret = -ETIMEDOUT;
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"OOB_set(0x%x) timed out\n", set);
 	}
 
@@ -643,7 +643,7 @@ static inline void a6xx_gmu_oob_clear(struct kgsl_device *device,
 	if (!adreno_is_a630(adreno_dev) && !adreno_is_a615_family(adreno_dev)) {
 		clear = BIT(31 - req * 2);
 		if (req >= 6) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 					"OOB_clear(0x%x) invalid\n", clear);
 			return;
 		}
@@ -773,7 +773,7 @@ int a6xx_gmu_sptprac_enable(struct adreno_device *adreno_dev)
 			SPTPRAC_POWERON_STATUS_MASK,
 			SPTPRAC_CTRL_TIMEOUT,
 			SPTPRAC_POWERON_STATUS_MASK)) {
-		dev_err(&gmu->pdev->dev, "power on SPTPRAC fail\n");
+		dev_dbg(&gmu->pdev->dev, "power on SPTPRAC fail\n");
 		return -EINVAL;
 	}
 
@@ -805,7 +805,7 @@ void a6xx_gmu_sptprac_disable(struct adreno_device *adreno_dev)
 			SPTPRAC_POWEROFF_STATUS_MASK,
 			SPTPRAC_CTRL_TIMEOUT,
 			SPTPRAC_POWEROFF_STATUS_MASK))
-		dev_err(&gmu->pdev->dev, "power off SPTPRAC fail\n");
+		dev_dbg(&gmu->pdev->dev, "power off SPTPRAC fail\n");
 }
 
 #define SPTPRAC_POWER_OFF	BIT(2)
@@ -957,23 +957,23 @@ static int a6xx_gmu_wait_for_lowest_idle(struct kgsl_device *device)
 	gmu_core_regread(device, A6XX_GMU_GMU_PWR_COL_KEEPALIVE, &reg4);
 	gmu_core_regread(device, A6XX_GMU_AO_SPARE_CNTL, &reg5);
 
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev,
 		"----------------------[ GMU error ]----------------------\n");
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev,
 		"Timeout waiting for lowest idle level %s\n",
 		idle_level_name(gmu->idle_level));
-	dev_err(&gmu->pdev->dev, "Start: %llx (absolute ticks)\n", ts1);
-	dev_err(&gmu->pdev->dev, "Poll: %llx (ticks relative to start)\n",
+	dev_dbg(&gmu->pdev->dev, "Start: %llx (absolute ticks)\n", ts1);
+	dev_dbg(&gmu->pdev->dev, "Poll: %llx (ticks relative to start)\n",
 		ts2-ts1);
-	dev_err(&gmu->pdev->dev, "Retry: %llx (ticks relative to poll)\n",
+	dev_dbg(&gmu->pdev->dev, "Retry: %llx (ticks relative to poll)\n",
 		ts3-ts2);
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev,
 		"RPMH_POWER_STATE=%x SPTPRAC_PWR_CLK_STATUS=%x\n", reg, reg1);
-	dev_err(&gmu->pdev->dev, "CX_BUSY_STATUS=%x\n", reg2);
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev, "CX_BUSY_STATUS=%x\n", reg2);
+	dev_dbg(&gmu->pdev->dev,
 		"RBBM_INT_UNMASKED_STATUS=%x PWR_COL_KEEPALIVE=%x\n",
 		reg3, reg4);
-	dev_err(&gmu->pdev->dev, "A6XX_GMU_AO_SPARE_CNTL=%x\n", reg5);
+	dev_dbg(&gmu->pdev->dev, "A6XX_GMU_AO_SPARE_CNTL=%x\n", reg5);
 
 	/* Access GX registers only when GX is ON */
 	if (is_on(reg1)) {
@@ -981,8 +981,8 @@ static int a6xx_gmu_wait_for_lowest_idle(struct kgsl_device *device)
 		kgsl_regread(device, A6XX_CP_CP2GMU_STATUS, &reg7);
 		kgsl_regread(device, A6XX_CP_CONTEXT_SWITCH_CNTL, &reg8);
 
-		dev_err(&gmu->pdev->dev, "A6XX_CP_STATUS_1=%x\n", reg6);
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev, "A6XX_CP_STATUS_1=%x\n", reg6);
+		dev_dbg(&gmu->pdev->dev,
 			"CP2GMU_STATUS=%x CONTEXT_SWITCH_CNTL=%x\n",
 			reg7, reg8);
 	}
@@ -1004,7 +1004,7 @@ static int a6xx_gmu_wait_for_idle(struct kgsl_device *device)
 			0, GMU_START_TIMEOUT, CXGXCPUBUSYIGNAHB)) {
 		gmu_core_regread(device,
 				A6XX_GPU_GMU_AO_GPU_CX_BUSY_STATUS2, &status2);
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"GMU not idling: status2=0x%x %llx %llx\n",
 				status2, ts1, a6xx_gmu_read_ao_counter(device));
 		return -ETIMEDOUT;
@@ -1071,7 +1071,7 @@ static int a6xx_gmu_fw_start(struct kgsl_device *device,
 			if (ret)
 				return ret;
 		} else {
-			dev_err(&gmu->pdev->dev, "Unsupported GMU load mode %d\n",
+			dev_dbg(&gmu->pdev->dev, "Unsupported GMU load mode %d\n",
 					gmu->load_mode);
 			return -EINVAL;
 		}
@@ -1178,7 +1178,7 @@ static int a6xx_gmu_load_firmware(struct kgsl_device *device)
 		ret = request_firmware(&gmu->fw_image, a6xx_core->gmufw_name,
 				device->dev);
 		if (ret) {
-			dev_err(device->dev, "request_firmware (%s) failed: %d\n",
+			dev_dbg(device->dev, "request_firmware (%s) failed: %d\n",
 					a6xx_core->gmufw_name, ret);
 			return ret;
 		}
@@ -1193,7 +1193,7 @@ static int a6xx_gmu_load_firmware(struct kgsl_device *device)
 		blk = (struct gmu_block_header *)&gmu->fw_image->data[offset];
 
 		if (offset + sizeof(*blk) > gmu->fw_image->size) {
-			dev_err(&gmu->pdev->dev, "Invalid FW Block\n");
+			dev_dbg(&gmu->pdev->dev, "Invalid FW Block\n");
 			return -EINVAL;
 		}
 
@@ -1264,16 +1264,16 @@ static int a6xx_gmu_suspend(struct kgsl_device *device)
 			 */
 			ret = regulator_enable(gmu->gx_gdsc);
 			if (ret)
-				dev_err(&gmu->pdev->dev,
+				dev_dbg(&gmu->pdev->dev,
 					"suspend fail: gx enable %d\n", ret);
 
 			ret = regulator_disable(gmu->gx_gdsc);
 			if (ret)
-				dev_err(&gmu->pdev->dev,
+				dev_dbg(&gmu->pdev->dev,
 					"suspend fail: gx disable %d\n", ret);
 
 			if (a6xx_gmu_gx_is_on(device))
-				dev_err(&gmu->pdev->dev,
+				dev_dbg(&gmu->pdev->dev,
 					"gx is stuck on\n");
 		}
 	}
@@ -1323,7 +1323,7 @@ static int a6xx_gmu_notify_slumber(struct kgsl_device *device)
 		gmu_core_regread(device,
 			A6XX_GPU_GMU_CX_GMU_RPMH_POWER_STATE, &state);
 		if (state != GPU_HW_SLUMBER) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 					"Failed to prepare for slumber: 0x%x\n",
 					state);
 			ret = -EINVAL;
@@ -1369,7 +1369,7 @@ static int a6xx_gmu_rpmh_gpu_pwrctrl(struct kgsl_device *device,
 		ret = a6xx_gmu_notify_slumber(device);
 		break;
 	default:
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"unsupported GMU power ctrl mode:%d\n", mode);
 		ret = -EINVAL;
 		break;
@@ -1473,7 +1473,7 @@ static size_t a6xx_snapshot_gmu_mem(struct kgsl_device *device,
 		return 0;
 
 	if (remain < desc->memdesc->size + sizeof(*mem_hdr)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: Not enough memory for the gmu section %d\n",
 			desc->type);
 		return 0;
@@ -1641,7 +1641,7 @@ static void a6xx_gmu_snapshot(struct kgsl_device *device,
 {
 	unsigned int val;
 
-	dev_err(device->dev, "GMU snapshot started at 0x%llx ticks\n",
+	dev_dbg(device->dev, "GMU snapshot started at 0x%llx ticks\n",
 			a6xx_gmu_read_ao_counter(device));
 	a6xx_gmu_snapshot_versions(device, snapshot);
 
@@ -1664,7 +1664,7 @@ static void a6xx_gmu_snapshot(struct kgsl_device *device,
 		wmb();
 		kgsl_regread(device, A6XX_GMU_AO_AHB_FENCE_CTRL, &val);
 
-		dev_err(device->dev, "set FENCE to ALLOW mode:%x\n", val);
+		dev_dbg(device->dev, "set FENCE to ALLOW mode:%x\n", val);
 		adreno_snapshot_registers(device, snapshot,
 				a6xx_gmu_gx_registers,
 				ARRAY_SIZE(a6xx_gmu_gx_registers) / 2);
@@ -1689,7 +1689,7 @@ static void a6xx_gmu_cooperative_reset(struct kgsl_device *device)
 		return;
 
 	gmu_core_regread(device, A6XX_GMU_CM3_FW_INIT_RESULT, &result);
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev,
 		"GMU cooperative reset timed out 0x%x\n", result);
 	/*
 	 * If we dont get a snapshot ready from GMU, trigger NMI
@@ -1699,7 +1699,7 @@ static void a6xx_gmu_cooperative_reset(struct kgsl_device *device)
 	udelay(200);
 	gmu_core_regread(device, A6XX_GMU_CM3_FW_INIT_RESULT, &result);
 	if ((result & 0x800) != 0x800)
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"GMU cooperative reset NMI timed out 0x%x\n", result);
 }
 
@@ -1723,7 +1723,7 @@ static int a6xx_gmu_wait_for_active_transition(
 	if (reg == GPU_HW_ACTIVE)
 		return 0;
 
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev,
 		"GMU failed to move to ACTIVE state, Current state: 0x%x\n",
 		reg);
 

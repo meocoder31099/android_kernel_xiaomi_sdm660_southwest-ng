@@ -218,7 +218,7 @@ static int __netlink_remove_tap(struct netlink_tap *nt)
 		}
 	}
 
-	pr_warn("__netlink_remove_tap: %p not found\n", nt);
+	pr_debug("__netlink_remove_tap: %p not found\n", nt);
 out:
 	mutex_unlock(&nn->netlink_tap_lock);
 

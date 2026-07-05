@@ -180,7 +180,7 @@ static int qusb_phy_config_vdd(struct qusb_phy *qphy, int high)
 	ret = regulator_set_voltage(qphy->vdd, qphy->vdd_levels[min],
 						qphy->vdd_levels[2]);
 	if (ret) {
-		dev_err(qphy->phy.dev, "unable to set voltage for qusb vdd\n");
+		dev_dbg(qphy->phy.dev, "unable to set voltage for qusb vdd\n");
 		return ret;
 	}
 
@@ -200,66 +200,66 @@ static int qusb_phy_disable_power(struct qusb_phy *qphy)
 
 	ret = regulator_disable(qphy->refgen);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable refgen:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to disable refgen:%d\n", ret);
 
 	if (!regulator_is_enabled(qphy->refgen)) {
 		ret = regulator_set_voltage(qphy->refgen, 0,
 					QUSB2PHY_REFGEN_VOL_MAX);
 		if (ret)
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 				"Unable to set (0) voltage for refgen:%d\n",
 					ret);
 
 		ret = regulator_set_load(qphy->refgen, 0);
 		if (ret < 0)
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 					"Unable to set (0) HPM of refgen\n");
 	}
 
 	ret = regulator_disable(qphy->vdda33);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable vdda33:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to disable vdda33:%d\n", ret);
 
 	if (!regulator_is_enabled(qphy->vdda33)) {
 		ret = regulator_set_voltage(qphy->vdda33, 0,
 					QUSB2PHY_3P3_VOL_MAX);
 		if (ret)
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 				"Unable to set (0) voltage for vdda33:%d\n",
 					ret);
 
 		ret = regulator_set_load(qphy->vdda33, 0);
 		if (ret < 0)
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 					"Unable to set (0) HPM of vdda33\n");
 
 	}
 
 	ret = regulator_disable(qphy->vdda18);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable vdda18:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to disable vdda18:%d\n", ret);
 
 	if (!regulator_is_enabled(qphy->vdda18)) {
 		ret = regulator_set_voltage(qphy->vdda18, 0,
 					QUSB2PHY_1P8_VOL_MAX);
 		if (ret)
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 			   "Unable to set (0) voltage for vdda18:%d\n", ret);
 
 		ret = regulator_set_load(qphy->vdda18, 0);
 		if (ret < 0)
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 					"Unable to set LPM of vdda18\n");
 	}
 
 	ret = regulator_disable(qphy->vdd);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable vdd:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to disable vdd:%d\n", ret);
 
 	if (!regulator_is_enabled(qphy->vdd)) {
 		ret = qusb_phy_config_vdd(qphy, false);
 		if (ret)
-			dev_err(qphy->phy.dev, "Unable unconfig VDD:%d\n",
+			dev_dbg(qphy->phy.dev, "Unable unconfig VDD:%d\n",
 						ret);
 	}
 
@@ -281,74 +281,74 @@ static int qusb_phy_enable_power(struct qusb_phy *qphy)
 
 	ret = qusb_phy_config_vdd(qphy, true);
 	if (ret) {
-		dev_err(qphy->phy.dev, "Unable to config VDD:%d\n",
+		dev_dbg(qphy->phy.dev, "Unable to config VDD:%d\n",
 							ret);
 		goto err_vdd;
 	}
 
 	ret = regulator_enable(qphy->vdd);
 	if (ret) {
-		dev_err(qphy->phy.dev, "Unable to enable VDD\n");
+		dev_dbg(qphy->phy.dev, "Unable to enable VDD\n");
 		goto unconfig_vdd;
 	}
 
 	ret = regulator_set_load(qphy->vdda18, QUSB2PHY_1P8_HPM_LOAD);
 	if (ret < 0) {
-		dev_err(qphy->phy.dev, "Unable to set HPM of vdda18:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to set HPM of vdda18:%d\n", ret);
 		goto disable_vdd;
 	}
 
 	ret = regulator_set_voltage(qphy->vdda18, QUSB2PHY_1P8_VOL_MIN,
 						QUSB2PHY_1P8_VOL_MAX);
 	if (ret) {
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 				"Unable to set voltage for vdda18:%d\n", ret);
 		goto put_vdda18_lpm;
 	}
 
 	ret = regulator_enable(qphy->vdda18);
 	if (ret) {
-		dev_err(qphy->phy.dev, "Unable to enable vdda18:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to enable vdda18:%d\n", ret);
 		goto unset_vdda18;
 	}
 
 	ret = regulator_set_load(qphy->vdda33, QUSB2PHY_3P3_HPM_LOAD);
 	if (ret < 0) {
-		dev_err(qphy->phy.dev, "Unable to set HPM of vdda33:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to set HPM of vdda33:%d\n", ret);
 		goto disable_vdda18;
 	}
 
 	ret = regulator_set_voltage(qphy->vdda33, QUSB2PHY_3P3_VOL_MIN,
 						QUSB2PHY_3P3_VOL_MAX);
 	if (ret) {
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 				"Unable to set voltage for vdda33:%d\n", ret);
 		goto put_vdda33_lpm;
 	}
 
 	ret = regulator_enable(qphy->vdda33);
 	if (ret) {
-		dev_err(qphy->phy.dev, "Unable to enable vdda33:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to enable vdda33:%d\n", ret);
 		goto unset_vdd33;
 	}
 
 	ret = regulator_set_load(qphy->refgen, QUSB2PHY_REFGEN_HPM_LOAD);
 	if (ret < 0) {
-		dev_err(qphy->phy.dev, "Unable to set HPM of refgen:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to set HPM of refgen:%d\n", ret);
 		goto disable_vdd33;
 	}
 
 	ret = regulator_set_voltage(qphy->refgen, QUSB2PHY_REFGEN_VOL_MIN,
 						QUSB2PHY_REFGEN_VOL_MAX);
 	if (ret) {
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 				"Unable to set voltage for refgen:%d\n", ret);
 		goto put_refgen_lpm;
 	}
 
 	ret = regulator_enable(qphy->refgen);
 	if (ret) {
-		dev_err(qphy->phy.dev, "Unable to enable refgen\n");
+		dev_dbg(qphy->phy.dev, "Unable to enable refgen\n");
 		goto unset_refgen;
 	}
 	pr_debug("%s(): QUSB PHY's regulators are turned ON.\n", __func__);
@@ -360,56 +360,56 @@ static int qusb_phy_enable_power(struct qusb_phy *qphy)
 unset_refgen:
 	ret = regulator_set_voltage(qphy->refgen, 0, QUSB2PHY_REFGEN_VOL_MAX);
 	if (ret)
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 			"Unable to set (0) voltage for refgen:%d\n", ret);
 
 put_refgen_lpm:
 	ret = regulator_set_load(qphy->refgen, 0);
 	if (ret < 0)
-		dev_err(qphy->phy.dev, "Unable to set (0) HPM of refgen\n");
+		dev_dbg(qphy->phy.dev, "Unable to set (0) HPM of refgen\n");
 
 disable_vdd33:
 	ret = regulator_disable(qphy->vdda33);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable vdda33:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to disable vdda33:%d\n", ret);
 
 unset_vdd33:
 	ret = regulator_set_voltage(qphy->vdda33, 0, QUSB2PHY_3P3_VOL_MAX);
 	if (ret)
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 			"Unable to set (0) voltage for vdda33:%d\n", ret);
 
 put_vdda33_lpm:
 	ret = regulator_set_load(qphy->vdda33, 0);
 	if (ret < 0)
-		dev_err(qphy->phy.dev, "Unable to set (0) HPM of vdda33\n");
+		dev_dbg(qphy->phy.dev, "Unable to set (0) HPM of vdda33\n");
 
 disable_vdda18:
 	ret = regulator_disable(qphy->vdda18);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable vdda18:%d\n", ret);
+		dev_dbg(qphy->phy.dev, "Unable to disable vdda18:%d\n", ret);
 
 unset_vdda18:
 	ret = regulator_set_voltage(qphy->vdda18, 0, QUSB2PHY_1P8_VOL_MAX);
 	if (ret)
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 			"Unable to set (0) voltage for vdda18:%d\n", ret);
 
 put_vdda18_lpm:
 	ret = regulator_set_load(qphy->vdda18, 0);
 	if (ret < 0)
-		dev_err(qphy->phy.dev, "Unable to set LPM of vdda18\n");
+		dev_dbg(qphy->phy.dev, "Unable to set LPM of vdda18\n");
 
 disable_vdd:
 	ret = regulator_disable(qphy->vdd);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable to disable vdd:%d\n",
+		dev_dbg(qphy->phy.dev, "Unable to disable vdd:%d\n",
 							ret);
 
 unconfig_vdd:
 	ret = qusb_phy_config_vdd(qphy, false);
 	if (ret)
-		dev_err(qphy->phy.dev, "Unable unconfig VDD:%d\n",
+		dev_dbg(qphy->phy.dev, "Unable unconfig VDD:%d\n",
 							ret);
 err_vdd:
 	mutex_unlock(&qphy->lock);
@@ -475,7 +475,7 @@ static void msm_usb_write_readback(void __iomem *base, u32 offset,
 	tmp &= mask;		/* clear other bits */
 
 	if (tmp != val)
-		pr_err("%s: write: %x to QSCRATCH: %x FAILED\n",
+		pr_debug("%s: write: %x to QSCRATCH: %x FAILED\n",
 			__func__, val, offset);
 }
 
@@ -485,13 +485,13 @@ static void qusb_phy_reset(struct qusb_phy *qphy)
 
 	ret = reset_control_assert(qphy->phy_reset);
 	if (ret)
-		dev_err(qphy->phy.dev, "%s: phy_reset assert failed\n",
+		dev_dbg(qphy->phy.dev, "%s: phy_reset assert failed\n",
 								__func__);
 	usleep_range(100, 150);
 
 	ret = reset_control_deassert(qphy->phy_reset);
 	if (ret)
-		dev_err(qphy->phy.dev, "%s: phy_reset deassert failed\n",
+		dev_dbg(qphy->phy.dev, "%s: phy_reset deassert failed\n",
 							__func__);
 }
 
@@ -563,7 +563,7 @@ static void qusb_phy_host_init(struct usb_phy *phy)
 	reg = readb_relaxed(qphy->base + qphy->phy_reg[PLL_COMMON_STATUS_ONE]);
 	dev_dbg(phy->dev, "QUSB2PHY_PLL_COMMON_STATUS_ONE:%x\n", reg);
 	if (!(reg & CORE_READY_STATUS))
-		dev_err(phy->dev, "QUSB PHY PLL LOCK fails:%x\n", reg);
+		dev_dbg(phy->dev, "QUSB PHY PLL LOCK fails:%x\n", reg);
 }
 
 static int qusb_phy_init(struct usb_phy *phy)
@@ -575,7 +575,7 @@ static int qusb_phy_init(struct usb_phy *phy)
 	dev_dbg(phy->dev, "%s\n", __func__);
 
 	if (qphy->eud_enable_reg && readl_relaxed(qphy->eud_enable_reg)) {
-		dev_err(qphy->phy.dev, "eud is enabled\n");
+		dev_dbg(qphy->phy.dev, "eud is enabled\n");
 		return 0;
 	}
 
@@ -662,7 +662,7 @@ static int qusb_phy_init(struct usb_phy *phy)
 	reg = readb_relaxed(qphy->base + qphy->phy_reg[PLL_COMMON_STATUS_ONE]);
 	dev_dbg(phy->dev, "QUSB2PHY_PLL_COMMON_STATUS_ONE:%x\n", reg);
 	if (!(reg & CORE_READY_STATUS)) {
-		dev_err(phy->dev, "QUSB PHY PLL LOCK fails:%x\n", reg);
+		dev_dbg(phy->dev, "QUSB PHY PLL LOCK fails:%x\n", reg);
 		WARN_ON(1);
 	}
 	return 0;
@@ -895,7 +895,7 @@ static int qusb_phy_dpdm_regulator_enable(struct regulator_dev *rdev)
 				__func__, qphy->dpdm_enable);
 
 	if (qphy->eud_enable_reg && readl_relaxed(qphy->eud_enable_reg)) {
-		dev_err(qphy->phy.dev, "eud is enabled\n");
+		dev_dbg(qphy->phy.dev, "eud is enabled\n");
 		return 0;
 	}
 
@@ -983,7 +983,7 @@ static int qusb_phy_create_debugfs(struct qusb_phy *qphy)
 
 	qphy->root = debugfs_create_dir(dev_name(qphy->phy.dev), NULL);
 	if (IS_ERR_OR_NULL(qphy->root)) {
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 			"can't create debugfs root for %s\n",
 					dev_name(qphy->phy.dev));
 		ret = -ENOMEM;
@@ -995,7 +995,7 @@ static int qusb_phy_create_debugfs(struct qusb_phy *qphy)
 		file = debugfs_create_x8(name, 0644, qphy->root,
 						&qphy->tune[i]);
 		if (IS_ERR_OR_NULL(file)) {
-			dev_err(qphy->phy.dev,
+			dev_dbg(qphy->phy.dev,
 				"can't create debugfs entry for %s\n", name);
 			debugfs_remove_recursive(qphy->root);
 			ret = -ENOMEM;
@@ -1006,7 +1006,7 @@ static int qusb_phy_create_debugfs(struct qusb_phy *qphy)
 	file = debugfs_create_x8("bias_ctrl2", 0644, qphy->root,
 						&qphy->bias_ctrl2);
 	if (IS_ERR_OR_NULL(file)) {
-		dev_err(qphy->phy.dev,
+		dev_dbg(qphy->phy.dev,
 			"can't create debugfs entry for bias_ctrl2\n");
 		debugfs_remove_recursive(qphy->root);
 		ret = -ENOMEM;
@@ -1023,25 +1023,25 @@ static int qusb2_get_regulators(struct qusb_phy *qphy)
 
 	qphy->vdd = devm_regulator_get(dev, "vdd");
 	if (IS_ERR(qphy->vdd)) {
-		dev_err(dev, "unable to get vdd supply\n");
+		dev_dbg(dev, "unable to get vdd supply\n");
 		return PTR_ERR(qphy->vdd);
 	}
 
 	qphy->vdda33 = devm_regulator_get(dev, "vdda33");
 	if (IS_ERR(qphy->vdda33)) {
-		dev_err(dev, "unable to get vdda33 supply\n");
+		dev_dbg(dev, "unable to get vdda33 supply\n");
 		return PTR_ERR(qphy->vdda33);
 	}
 
 	qphy->vdda18 = devm_regulator_get(dev, "vdda18");
 	if (IS_ERR(qphy->vdda18)) {
-		dev_err(dev, "unable to get vdda18 supply\n");
+		dev_dbg(dev, "unable to get vdda18 supply\n");
 		return PTR_ERR(qphy->vdda18);
 	}
 
 	qphy->refgen = devm_regulator_get(dev, "refgen");
 	if (IS_ERR(qphy->refgen)) {
-		dev_err(dev, "unable to get refgen supply\n");
+		dev_dbg(dev, "unable to get refgen supply\n");
 		return PTR_ERR(qphy->refgen);
 	}
 
@@ -1092,7 +1092,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 			}
 
 			if (ret) {
-				dev_err(dev,
+				dev_dbg(dev,
 				"DT Value for efuse is invalid.\n");
 				return -EINVAL;
 			}
@@ -1110,7 +1110,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 	if (res) {
 		qphy->eud_enable_reg = devm_ioremap_resource(dev, res);
 		if (IS_ERR(qphy->eud_enable_reg)) {
-			dev_err(dev, "err getting eud_enable_reg address\n");
+			dev_dbg(dev, "err getting eud_enable_reg address\n");
 			return PTR_ERR(qphy->eud_enable_reg);
 		}
 	}
@@ -1144,7 +1144,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 		if (IS_ERR(qphy->cfg_ahb_clk)) {
 			ret = PTR_ERR(qphy->cfg_ahb_clk);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev,
+				dev_dbg(dev,
 				"clk get failed for cfg_ahb_clk ret %d\n", ret);
 			return ret;
 		}
@@ -1165,7 +1165,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 			qphy->emu_init_seq_len =
 				(size / sizeof(*qphy->emu_init_seq));
 			if (qphy->emu_init_seq_len % 2) {
-				dev_err(dev, "invalid emu_init_seq_len\n");
+				dev_dbg(dev, "invalid emu_init_seq_len\n");
 				return -EINVAL;
 			}
 
@@ -1188,7 +1188,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 			qphy->phy_pll_reset_seq_len =
 				(size / sizeof(*qphy->phy_pll_reset_seq));
 			if (qphy->phy_pll_reset_seq_len % 2) {
-				dev_err(dev, "invalid phy_pll_reset_seq_len\n");
+				dev_dbg(dev, "invalid phy_pll_reset_seq_len\n");
 				return -EINVAL;
 			}
 
@@ -1211,7 +1211,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 			qphy->emu_dcm_reset_seq_len =
 				(size / sizeof(*qphy->emu_dcm_reset_seq));
 			if (qphy->emu_dcm_reset_seq_len % 2) {
-				dev_err(dev, "invalid emu_dcm_reset_seq_len\n");
+				dev_dbg(dev, "invalid emu_dcm_reset_seq_len\n");
 				return -EINVAL;
 			}
 
@@ -1233,7 +1233,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 			qphy->qusb_phy_reg_offset_cnt =
 				size / sizeof(*qphy->phy_reg);
 			if (qphy->qusb_phy_reg_offset_cnt != USB2_PHY_REG_MAX) {
-				dev_err(dev, "invalid reg offset count\n");
+				dev_dbg(dev, "invalid reg offset count\n");
 				return -EINVAL;
 			}
 
@@ -1242,11 +1242,11 @@ static int qusb_phy_probe(struct platform_device *pdev)
 					qphy->phy_reg,
 					qphy->qusb_phy_reg_offset_cnt);
 		} else {
-			dev_err(dev, "err mem alloc for qusb_phy_reg_offset\n");
+			dev_dbg(dev, "err mem alloc for qusb_phy_reg_offset\n");
 			return -ENOMEM;
 		}
 	} else {
-		dev_err(dev, "err provide qcom,qmp-phy-reg-offset\n");
+		dev_dbg(dev, "err provide qcom,qmp-phy-reg-offset\n");
 		return -EINVAL;
 	}
 
@@ -1259,7 +1259,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 			qphy->init_seq_len =
 				(size / sizeof(*qphy->qusb_phy_init_seq));
 			if (qphy->init_seq_len % 2) {
-				dev_err(dev, "invalid init_seq_len\n");
+				dev_dbg(dev, "invalid init_seq_len\n");
 				return -EINVAL;
 			}
 
@@ -1268,7 +1268,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 				qphy->qusb_phy_init_seq,
 				qphy->init_seq_len);
 		} else {
-			dev_err(dev,
+			dev_dbg(dev,
 			"error allocating memory for phy_init_seq\n");
 		}
 	}
@@ -1297,7 +1297,7 @@ static int qusb_phy_probe(struct platform_device *pdev)
 					 (u32 *) qphy->vdd_levels,
 					 ARRAY_SIZE(qphy->vdd_levels));
 	if (ret) {
-		dev_err(dev, "error reading qcom,vdd-voltage-level property\n");
+		dev_dbg(dev, "error reading qcom,vdd-voltage-level property\n");
 		return ret;
 	}
 

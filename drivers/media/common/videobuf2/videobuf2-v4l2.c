@@ -37,7 +37,7 @@ module_param(debug, int, 0644);
 #define dprintk(level, fmt, arg...)					      \
 	do {								      \
 		if (debug >= level)					      \
-			pr_info("vb2-v4l2: %s: " fmt, __func__, ## arg); \
+			pr_debug("vb2-v4l2: %s: " fmt, __func__, ## arg); \
 	} while (0)
 
 /* Flags that are set by the vb2 core */
@@ -146,11 +146,11 @@ static void vb2_warn_zero_bytesused(struct vb2_buffer *vb)
 
 	check_once = true;
 
-	pr_warn("use of bytesused == 0 is deprecated and will be removed in the future,\n");
+	pr_debug("use of bytesused == 0 is deprecated and will be removed in the future,\n");
 	if (vb->vb2_queue->allow_zero_bytesused)
-		pr_warn("use VIDIOC_DECODER_CMD(V4L2_DEC_CMD_STOP) instead.\n");
+		pr_debug("use VIDIOC_DECODER_CMD(V4L2_DEC_CMD_STOP) instead.\n");
 	else
-		pr_warn("use the actual size instead.\n");
+		pr_debug("use the actual size instead.\n");
 }
 
 static int vb2_queue_or_prepare_buf(struct vb2_queue *q, struct v4l2_buffer *b,

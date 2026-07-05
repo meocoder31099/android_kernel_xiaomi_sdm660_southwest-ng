@@ -339,7 +339,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 
         node = get_avtab_node(db, &key, &xperms);
         if (!node) {
-            pr_warn("add_xperm_rule_raw cannot found node!\n");
+            pr_debug("add_xperm_rule_raw cannot found node!\n");
             return;
         }
         datum = &node->datum;
@@ -348,7 +348,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
             datum->u.xperms = (struct avtab_extended_perms *)(kzalloc(
                 sizeof(xperms), GFP_KERNEL));
             if (!datum->u.xperms) {
-                pr_err("alloc xperms failed\n");
+                pr_debug("alloc xperms failed\n");
                 return;
             }
             memcpy(datum->u.xperms, &xperms, sizeof(xperms));
@@ -495,22 +495,22 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 
     src = symtab_search(&db->p_types, s);
     if (src == NULL) {
-        pr_warn("source type %s does not exist\n", s);
+        pr_debug("source type %s does not exist\n", s);
         return false;
     }
     tgt = symtab_search(&db->p_types, t);
     if (tgt == NULL) {
-        pr_warn("target type %s does not exist\n", t);
+        pr_debug("target type %s does not exist\n", t);
         return false;
     }
     cls = symtab_search(&db->p_classes, c);
     if (cls == NULL) {
-        pr_warn("class %s does not exist\n", c);
+        pr_debug("class %s does not exist\n", c);
         return false;
     }
     def = symtab_search(&db->p_types, d);
     if (def == NULL) {
-        pr_warn("default type %s does not exist\n", d);
+        pr_debug("default type %s does not exist\n", d);
         return false;
     }
 
@@ -567,13 +567,13 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 		trans = (struct filename_trans_datum *)kcalloc(sizeof(*trans), 1,
                                                        GFP_KERNEL);
 		if (!trans) {
-			pr_err("add_filename_trans: Failed to alloc datum\n");
+			pr_debug("add_filename_trans: Failed to alloc datum\n");
 			return false;
 		}
 		struct filename_trans *new_key =
 			(struct filename_trans *)kzalloc(sizeof(*new_key), GFP_KERNEL);
 		if (!new_key) {
-			pr_err("add_filename_trans: Failed to alloc new_key\n");
+			pr_debug("add_filename_trans: Failed to alloc new_key\n");
 			return false;
 		}
 		*new_key = key;
@@ -604,14 +604,14 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 {
     struct type_datum *type = symtab_search(&db->p_types, type_name);
     if (type) {
-        pr_warn("Type %s already exists\n", type_name);
+        pr_debug("Type %s already exists\n", type_name);
         return true;
     }
 
     u32 value = ++db->p_types.nprim;
     type = (struct type_datum *)kzalloc(sizeof(struct type_datum), GFP_KERNEL);
     if (!type) {
-        pr_err("add_type: alloc type_datum failed.\n");
+        pr_debug("add_type: alloc type_datum failed.\n");
         return false;
     }
 
@@ -621,12 +621,12 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 
     char *key = kstrdup(type_name, GFP_KERNEL);
     if (!key) {
-        pr_err("add_type: alloc key failed.\n");
+        pr_debug("add_type: alloc key failed.\n");
         return false;
     }
 
     if (symtab_insert(&db->p_types, key, type)) {
-        pr_err("add_type: insert symtab failed.\n");
+        pr_debug("add_type: insert symtab failed.\n");
         return false;
     }
 
@@ -636,7 +636,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
                     (value - 1) * sizeof(struct ebitmap));
 
     if (!new_type_attr_map_array) {
-        pr_err("add_type: alloc type_attr_map_array failed\n");
+        pr_debug("add_type: alloc type_attr_map_array failed\n");
         return false;
     }
 
@@ -646,7 +646,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
                     sizeof(*db->type_val_to_struct) * (value - 1));
 
     if (!new_type_val_to_struct) {
-        pr_err("add_type: alloc type_val_to_struct failed\n");
+        pr_debug("add_type: alloc type_val_to_struct failed\n");
         return false;
     }
 
@@ -654,7 +654,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
                     sizeof(char *) * (value - 1));
     if (!new_val_to_name_types) {
-        pr_err("add_type: alloc val_to_name failed\n");
+        pr_debug("add_type: alloc val_to_name failed\n");
         return false;
     }
 
@@ -690,12 +690,12 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 			 GFP_KERNEL);
 
 	if (!new_type_attr_map) {
-		pr_err("add_type: alloc type_attr_map failed\n");
+		pr_debug("add_type: alloc type_attr_map failed\n");
 		return false;
 	}
 
 	if (!new_type_val_to_struct) {
-		pr_err("add_type: alloc type_val_to_struct failed\n");
+		pr_debug("add_type: alloc type_val_to_struct failed\n");
 		return false;
 	}
 
@@ -704,7 +704,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 			 sizeof(char *) * db->symtab[SYM_TYPES].nprim,
 			 GFP_KERNEL);
 	if (!new_val_to_name_types) {
-		pr_err("add_type: alloc val_to_name failed\n");
+		pr_debug("add_type: alloc val_to_name failed\n");
 		return false;
 	}
 
@@ -740,37 +740,37 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 				 GFP_KERNEL | __GFP_ZERO);
 
 	if (!new_type_attr_map_array) {
-		pr_err("add_type: alloc type_attr_map_array failed\n");
+		pr_debug("add_type: alloc type_attr_map_array failed\n");
 		return false;
 	}
 
 	if (!new_type_val_to_struct) {
-		pr_err("add_type: alloc type_val_to_struct failed\n");
+		pr_debug("add_type: alloc type_val_to_struct failed\n");
 		return false;
 	}
 
 	if (!new_val_to_name_types) {
-		pr_err("add_type: alloc val_to_name failed\n");
+		pr_debug("add_type: alloc val_to_name failed\n");
 		return false;
 	}
 
 	// preallocate so we don't have to worry about the put ever failing
 	if (flex_array_prealloc(new_type_attr_map_array, 0, db->p_types.nprim,
 				GFP_KERNEL | __GFP_ZERO)) {
-		pr_err("add_type: prealloc type_attr_map_array failed\n");
+		pr_debug("add_type: prealloc type_attr_map_array failed\n");
 		return false;
 	}
 
 	if (flex_array_prealloc(new_type_val_to_struct, 0, db->p_types.nprim,
 				GFP_KERNEL | __GFP_ZERO)) {
-		pr_err("add_type: prealloc type_val_to_struct_array failed\n");
+		pr_debug("add_type: prealloc type_val_to_struct_array failed\n");
 		return false;
 	}
 
 	if (flex_array_prealloc(new_val_to_name_types, 0,
 				db->symtab[SYM_TYPES].nprim,
 				GFP_KERNEL | __GFP_ZERO)) {
-		pr_err("add_type: prealloc val_to_name_types failed\n");
+		pr_debug("add_type: prealloc val_to_name_types failed\n");
 		return false;
 	}
 
@@ -1456,37 +1456,37 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 
     ret = copy_class_datum_partially(new_db, old_db);
     if (ret < 0) {
-        pr_err("ksu_dup_sepolicy: copy_class_datum_partially\n");
+        pr_debug("ksu_dup_sepolicy: copy_class_datum_partially\n");
         goto out;
     }
 
     ret = copy_avtab(&new_db->te_avtab, &old_db->te_avtab);
     if (ret < 0) {
-        pr_err("ksu_dup_sepolicy: copy_avtab\n");
+        pr_debug("ksu_dup_sepolicy: copy_avtab\n");
         goto out;
     }
 
     ret = copy_role_datum_partially(new_db, old_db);
     if (ret < 0) {
-        pr_err("ksu_dup_sepolicy: copy_role_datum_partially\n");
+        pr_debug("ksu_dup_sepolicy: copy_role_datum_partially\n");
         goto out;
     }
 
     ret = copy_type_datum_partially(new_db, old_db);
     if (ret < 0) {
-        pr_err("ksu_dup_sepolicy: copy_type_datum_partially\n");
+        pr_debug("ksu_dup_sepolicy: copy_type_datum_partially\n");
         goto out;
     }
 
     ret = copy_permissive_map(new_db, old_db);
     if (ret < 0) {
-        pr_err("ksu_dup_sepolicy: copy_permissive_map\n");
+        pr_debug("ksu_dup_sepolicy: copy_permissive_map\n");
         goto out;
     }
 
     ret = copy_filename_trans(new_db, old_db);
     if (ret < 0) {
-        pr_err("ksu_dup_sepolicy: copy_filename_trans\n");
+        pr_debug("ksu_dup_sepolicy: copy_filename_trans\n");
         goto out;
     }
 

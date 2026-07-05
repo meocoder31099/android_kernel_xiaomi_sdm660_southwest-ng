@@ -290,7 +290,7 @@ static void irq_sysfs_add(int irq, struct irq_desc *desc)
 		 * crucial.
 		 */
 		if (kobject_add(&desc->kobj, irq_kobj_base, "%d", irq))
-			pr_warn("Failed to add kobject for irq %d\n", irq);
+			pr_debug("Failed to add kobject for irq %d\n", irq);
 	}
 }
 

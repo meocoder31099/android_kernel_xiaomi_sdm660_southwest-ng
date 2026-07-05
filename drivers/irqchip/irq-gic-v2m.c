@@ -226,12 +226,12 @@ static const struct irq_domain_ops gicv2m_domain_ops = {
 static bool is_msi_spi_valid(u32 base, u32 num)
 {
 	if (base < V2M_MIN_SPI) {
-		pr_err("Invalid MSI base SPI (base:%u)\n", base);
+		pr_debug("Invalid MSI base SPI (base:%u)\n", base);
 		return false;
 	}
 
 	if ((num == 0) || (base + num > V2M_MAX_SPI)) {
-		pr_err("Number of SPIs (%u) exceed maximum (%u)\n",
+		pr_debug("Number of SPIs (%u) exceed maximum (%u)\n",
 		       num, V2M_MAX_SPI - V2M_MIN_SPI + 1);
 		return false;
 	}
@@ -279,7 +279,7 @@ static int gicv2m_allocate_domains(struct irq_domain *parent)
 	inner_domain = irq_domain_create_tree(v2m->fwnode,
 					      &gicv2m_domain_ops, v2m);
 	if (!inner_domain) {
-		pr_err("Failed to create GICv2m domain\n");
+		pr_debug("Failed to create GICv2m domain\n");
 		return -ENOMEM;
 	}
 
@@ -292,7 +292,7 @@ static int gicv2m_allocate_domains(struct irq_domain *parent)
 						     &gicv2m_pmsi_domain_info,
 						     inner_domain);
 	if (!pci_domain || !plat_domain) {
-		pr_err("Failed to create MSI domains\n");
+		pr_debug("Failed to create MSI domains\n");
 		if (plat_domain)
 			irq_domain_remove(plat_domain);
 		if (pci_domain)
@@ -313,7 +313,7 @@ static int __init gicv2m_init_one(struct fwnode_handle *fwnode,
 
 	v2m = kzalloc(sizeof(struct v2m_data), GFP_KERNEL);
 	if (!v2m) {
-		pr_err("Failed to allocate struct v2m_data.\n");
+		pr_debug("Failed to allocate struct v2m_data.\n");
 		return -ENOMEM;
 	}
 
@@ -324,7 +324,7 @@ static int __init gicv2m_init_one(struct fwnode_handle *fwnode,
 
 	v2m->base = ioremap(v2m->res.start, resource_size(&v2m->res));
 	if (!v2m->base) {
-		pr_err("Failed to map GICv2m resource\n");
+		pr_debug("Failed to map GICv2m resource\n");
 		ret = -ENOMEM;
 		goto err_free_v2m;
 	}
@@ -375,7 +375,7 @@ static int __init gicv2m_init_one(struct fwnode_handle *fwnode,
 
 	list_add_tail(&v2m->entry, &v2m_nodes);
 
-	pr_info("range%pR, SPI[%d:%d]\n", res,
+	pr_debug("range%pR, SPI[%d:%d]\n", res,
 		v2m->spi_start, (v2m->spi_start + v2m->nr_spis - 1));
 	return 0;
 
@@ -408,14 +408,14 @@ static int __init gicv2m_of_init(struct fwnode_handle *parent_handle,
 
 		ret = of_address_to_resource(child, 0, &res);
 		if (ret) {
-			pr_err("Failed to allocate v2m resource.\n");
+			pr_debug("Failed to allocate v2m resource.\n");
 			break;
 		}
 
 		if (!of_property_read_u32(child, "arm,msi-base-spi",
 					  &spi_start) &&
 		    !of_property_read_u32(child, "arm,msi-num-spis", &nr_spis))
-			pr_info("DT overriding V2M MSI_TYPER (base:%u, num:%u)\n",
+			pr_debug("DT overriding V2M MSI_TYPER (base:%u, num:%u)\n",
 				spi_start, nr_spis);
 
 		ret = gicv2m_init_one(&child->fwnode, spi_start, nr_spis, &res);
@@ -472,13 +472,13 @@ acpi_parse_madt_msi(struct acpi_subtable_header *header,
 		spi_start = m->spi_base;
 		nr_spis = m->spi_count;
 
-		pr_info("ACPI overriding V2M MSI_TYPER (base:%u, num:%u)\n",
+		pr_debug("ACPI overriding V2M MSI_TYPER (base:%u, num:%u)\n",
 			spi_start, nr_spis);
 	}
 
 	fwnode = irq_domain_alloc_fwnode((void *)m->base_address);
 	if (!fwnode) {
-		pr_err("Unable to allocate GICv2m domain token\n");
+		pr_debug("Unable to allocate GICv2m domain token\n");
 		return -EINVAL;
 	}
 

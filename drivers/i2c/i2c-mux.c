@@ -289,7 +289,7 @@ int i2c_mux_add_adapter(struct i2c_mux_core *muxc,
 	int ret;
 
 	if (muxc->num_adapters >= muxc->max_adapters) {
-		dev_err(muxc->dev, "No room for more i2c-mux adapters\n");
+		dev_dbg(muxc->dev, "No room for more i2c-mux adapters\n");
 		return -EINVAL;
 	}
 
@@ -335,7 +335,7 @@ int i2c_mux_add_adapter(struct i2c_mux_core *muxc,
 
 	/* Sanity check on class */
 	if (i2c_mux_parent_classes(parent) & class & ~I2C_CLASS_DEPRECATED)
-		dev_err(&parent->dev,
+		dev_dbg(&parent->dev,
 			"Segment %d behind mux can't share classes with ancestors\n",
 			chan_id);
 	else
@@ -396,7 +396,7 @@ int i2c_mux_add_adapter(struct i2c_mux_core *muxc,
 		priv->adap.nr = force_nr;
 		ret = i2c_add_numbered_adapter(&priv->adap);
 		if (ret < 0) {
-			dev_err(&parent->dev,
+			dev_dbg(&parent->dev,
 				"failed to add mux-adapter %u as bus %u (error=%d)\n",
 				chan_id, force_nr, ret);
 			goto err_free_priv;
@@ -404,7 +404,7 @@ int i2c_mux_add_adapter(struct i2c_mux_core *muxc,
 	} else {
 		ret = i2c_add_adapter(&priv->adap);
 		if (ret < 0) {
-			dev_err(&parent->dev,
+			dev_dbg(&parent->dev,
 				"failed to add mux-adapter %u (error=%d)\n",
 				chan_id, ret);
 			goto err_free_priv;
@@ -419,7 +419,7 @@ int i2c_mux_add_adapter(struct i2c_mux_core *muxc,
 	WARN(sysfs_create_link(&muxc->dev->kobj, &priv->adap.dev.kobj,
 			       symlink_name),
 	     "can't create symlink to channel %u\n", chan_id);
-	dev_info(&parent->dev, "Added multiplexed i2c bus %d\n",
+	dev_dbg(&parent->dev, "Added multiplexed i2c bus %d\n",
 		 i2c_adapter_id(&priv->adap));
 
 	muxc->adapter[muxc->num_adapters++] = &priv->adap;

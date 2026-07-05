@@ -179,7 +179,7 @@ static bool has_v1_signature_file(struct file *fp)
 	struct ksu_buf_reader *br =
 		kzalloc(sizeof(struct ksu_buf_reader), GFP_KERNEL);
 	if (!br) {
-		pr_err("ksu_buf_reader alloc failed\n");
+		pr_debug("ksu_buf_reader alloc failed\n");
 		return false;
 	}
 
@@ -239,7 +239,7 @@ static __always_inline bool check_v2_signature(char *path,
 	int i;
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("open %s error.\n", path);
+		pr_debug("open %s error.\n", path);
 		return false;
 	}
 
@@ -263,7 +263,7 @@ static __always_inline bool check_v2_signature(char *path,
 
 		eocd_buffer = kvmalloc(search_size, GFP_KERNEL);
 		if (!eocd_buffer) {
-			pr_err("error: cannot allocate memory for eocd\n");
+			pr_debug("error: cannot allocate memory for eocd\n");
 			goto clean;
 		}
 
@@ -345,7 +345,7 @@ static __always_inline bool check_v2_signature(char *path,
 
 	if (v2_signing_blocks != 1) {
 #ifdef CONFIG_KSU_DEBUG
-		pr_err("Unexpected v2 signature count: %d\n",
+		pr_debug("Unexpected v2 signature count: %d\n",
 			v2_signing_blocks);
 #endif
 		v2_signing_valid = false;
@@ -354,7 +354,7 @@ static __always_inline bool check_v2_signature(char *path,
 	if (v2_signing_valid) {
 		int has_v1_signing = has_v1_signature_file(fp);
 		if (has_v1_signing) {
-			pr_err("Unexpected v1 signature scheme found!\n");
+			pr_debug("Unexpected v1 signature scheme found!\n");
 			filp_close(fp, 0);
 			return false;
 		}
@@ -364,7 +364,7 @@ clean:
 
 	if (v3_signing_exist || v3_1_signing_exist) {
 #ifdef CONFIG_KSU_DEBUG
-		pr_err("Unexpected v3 signature scheme found!\n");
+		pr_debug("Unexpected v3 signature scheme found!\n");
 #endif
 		return false;
 	}
@@ -440,7 +440,7 @@ bool is_manager_apk(char *path)
 #ifdef KSU_MANAGER_PACKAGE
 	char pkg[KSU_MAX_PACKAGE_NAME];
 	if (get_pkg_from_apk_path(pkg, path) < 0) {
-		pr_err("Failed to get package name from apk path: %s\n", path);
+		pr_debug("Failed to get package name from apk path: %s\n", path);
 		return false;
 	}
 

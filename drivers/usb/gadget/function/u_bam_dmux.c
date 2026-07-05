@@ -555,7 +555,7 @@ static void gbam_write_data_tohost(struct gbam_port *port)
 			new_skb = skb_copy_expand(skb, 0, extra_alloc -
 					tail_room, GFP_ATOMIC);
 			if (!new_skb) {
-				pr_err("skb_copy_expand failed\n");
+				pr_debug("skb_copy_expand failed\n");
 				break;
 			}
 			dev_kfree_skb_any(skb);
@@ -788,7 +788,7 @@ static void gbam_epin_complete(struct usb_ep *ep, struct usb_request *req)
 		usb_ep_free_request(ep, req);
 		return;
 	default:
-		pr_err("%s: data tx ep error %d\n",
+		pr_debug("%s: data tx ep error %d\n",
 				__func__, status);
 		break;
 	}
@@ -986,7 +986,7 @@ static int _gbam_start_io(struct gbam_port *port, bool in)
 out:
 	spin_unlock_irqrestore(spinlock, flags);
 	if (ret)
-		pr_err("%s: allocation failed\n", __func__);
+		pr_debug("%s: allocation failed\n", __func__);
 
 	return ret;
 }
@@ -1020,7 +1020,7 @@ static void gbam_notify(void *p, int event, unsigned long data)
 	struct sk_buff *skb;
 
 	if (port == NULL)
-		pr_err("BAM DMUX notifying after channel close\n");
+		pr_debug("BAM DMUX notifying after channel close\n");
 
 	switch (event) {
 	case BAM_DMUX_RECEIVE:
@@ -1040,7 +1040,7 @@ static void gbam_notify(void *p, int event, unsigned long data)
 	case BAM_DMUX_TRANSMIT_SIZE:
 		d = &port->data_ch;
 		if (test_bit(BAM_CH_OPENED, &d->flags))
-			pr_warn("%s, BAM channel opened already\n", __func__);
+			pr_debug("%s, BAM channel opened already\n", __func__);
 		bam_mux_rx_req_size = data;
 		pr_debug("%s rx_req_size: %lu\n", __func__,
 						bam_mux_rx_req_size);
@@ -1105,7 +1105,7 @@ static void gbam_disconnect_work(struct work_struct *w)
 	struct bam_ch_info *d = &port->data_ch;
 
 	if (!test_bit(BAM_CH_OPENED, &d->flags)) {
-		pr_err("%s: Bam channel is not opened\n", __func__);
+		pr_debug("%s: Bam channel is not opened\n", __func__);
 		goto exit;
 	}
 
@@ -1133,13 +1133,13 @@ static void gbam_connect_work(struct work_struct *w)
 	spin_unlock_irqrestore(&port->port_lock_ul, flags);
 
 	if (!test_bit(BAM_CH_READY, &d->flags)) {
-		pr_err("%s: Bam channel is not ready\n", __func__);
+		pr_debug("%s: Bam channel is not ready\n", __func__);
 		return;
 	}
 
 	ret = msm_bam_dmux_open(d->id, port, gbam_notify);
 	if (ret) {
-		pr_err("%s: unable open bam ch:%d err:%d\n",
+		pr_debug("%s: unable open bam ch:%d err:%d\n",
 				__func__, d->id, ret);
 		return;
 	}
@@ -1500,18 +1500,18 @@ void gbam_disconnect(struct data_port *gr, enum bam_dmux_func_type func)
 	pr_debug("%s: grmnet:%pK port#%d\n", __func__, gr, func);
 
 	if (func >= BAM_DMUX_NUM_FUNCS) {
-		pr_err("%s: invalid bam portno#%d\n", __func__, func);
+		pr_debug("%s: invalid bam portno#%d\n", __func__, func);
 		return;
 	}
 
 	if (!gr) {
-		pr_err("%s: grmnet port is null\n", __func__);
+		pr_debug("%s: grmnet port is null\n", __func__);
 		return;
 	}
 	port = bam_ports[func].port;
 
 	if (!port) {
-		pr_err("%s: NULL port\n", __func__);
+		pr_debug("%s: NULL port\n", __func__);
 		return;
 	}
 
@@ -1560,24 +1560,24 @@ int gbam_connect(struct data_port *gr, enum bam_dmux_func_type func)
 	pr_debug("%s: grmnet:%pK port#%d\n", __func__, gr, func);
 
 	if (!gr) {
-		pr_err("%s: grmnet port is null\n", __func__);
+		pr_debug("%s: grmnet port is null\n", __func__);
 		return -ENODEV;
 	}
 
 	if (!gr->cdev->gadget) {
-		pr_err("%s: gadget handle not passed\n", __func__);
+		pr_debug("%s: gadget handle not passed\n", __func__);
 		return -EINVAL;
 	}
 
 	if (func >= BAM_DMUX_NUM_FUNCS) {
-		pr_err("%s: invalid portno#%d\n", __func__, func);
+		pr_debug("%s: invalid portno#%d\n", __func__, func);
 		return -ENODEV;
 	}
 
 	port = bam_ports[func].port;
 
 	if (!port) {
-		pr_err("%s: NULL port\n", __func__);
+		pr_debug("%s: NULL port\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1608,7 +1608,7 @@ int gbam_connect(struct data_port *gr, enum bam_dmux_func_type func)
 
 	ret = usb_ep_enable(gr->in);
 	if (ret) {
-		pr_err("%s: usb_ep_enable failed eptype:IN ep:%pK\n",
+		pr_debug("%s: usb_ep_enable failed eptype:IN ep:%pK\n",
 			__func__, gr->in);
 		goto exit;
 	}
@@ -1622,7 +1622,7 @@ int gbam_connect(struct data_port *gr, enum bam_dmux_func_type func)
 	if (gr->out) {
 		ret = usb_ep_enable(gr->out);
 		if (ret) {
-			pr_err("%s: usb_ep_enable failed eptype:OUT ep:%pK\n",
+			pr_debug("%s: usb_ep_enable failed eptype:OUT ep:%pK\n",
 					__func__, gr->out);
 			gr->in->driver_data = NULL;
 			usb_ep_disable(gr->in);
@@ -1647,7 +1647,7 @@ int gbam_setup(enum bam_dmux_func_type func)
 	pr_debug("%s: requested BAM port:%d\n", __func__, func);
 
 	if (func >= BAM_DMUX_NUM_FUNCS) {
-		pr_err("%s: Invalid num of ports count:%d\n", __func__, func);
+		pr_debug("%s: Invalid num of ports count:%d\n", __func__, func);
 		return -EINVAL;
 	}
 
@@ -1655,7 +1655,7 @@ int gbam_setup(enum bam_dmux_func_type func)
 		gbam_wq = alloc_workqueue("k_gbam", WQ_UNBOUND |
 					WQ_MEM_RECLAIM, 1);
 		if (!gbam_wq) {
-			pr_err("%s: Unable to create workqueue gbam_wq\n",
+			pr_debug("%s: Unable to create workqueue gbam_wq\n",
 					__func__);
 			return -ENOMEM;
 		}
@@ -1663,7 +1663,7 @@ int gbam_setup(enum bam_dmux_func_type func)
 
 	ret = gbam_port_alloc(func);
 	if (ret) {
-		pr_err("%s: Unable to alloc port:%d\n", __func__, func);
+		pr_debug("%s: Unable to alloc port:%d\n", __func__, func);
 		goto destroy_wq;
 	}
 
@@ -1704,7 +1704,7 @@ void gbam_mbim_disconnect(void)
 	struct data_port *gr = port->port_usb;
 
 	if (!gr) {
-		pr_err("%s: port_usb is NULL\n", __func__);
+		pr_debug("%s: port_usb is NULL\n", __func__);
 		return;
 	}
 

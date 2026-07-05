@@ -483,17 +483,17 @@ int dsi_pll_clock_register_14nm(struct platform_device *pdev,
 	int num_clks = ARRAY_SIZE(mdss_dsi_pllcc_14nm);
 
 	if (!pdev || !pdev->dev.of_node) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
 	if (!pll_res || !pll_res->pll_base) {
-		pr_err("Invalid PLL resources\n");
+		pr_debug("Invalid PLL resources\n");
 		return -EPROBE_DEFER;
 	}
 
 	if (pll_res->index >= DSI_PLL_NUM) {
-		pr_err("pll ndx=%d is NOT supported\n", pll_res->index);
+		pr_debug("pll ndx=%d is NOT supported\n", pll_res->index);
 		return -EINVAL;
 	}
 
@@ -557,7 +557,7 @@ int dsi_pll_clock_register_14nm(struct platform_device *pdev,
 			clk = devm_clk_register(&pdev->dev,
 					mdss_dsi_pllcc_14nm[i]);
 			if (IS_ERR(clk)) {
-				pr_err("clk registration failed for DSI: %d\n",
+				pr_debug("clk registration failed for DSI: %d\n",
 						pll_res->index);
 				rc = -EINVAL;
 				goto clk_reg_fail;
@@ -595,7 +595,7 @@ int dsi_pll_clock_register_14nm(struct platform_device *pdev,
 			clk = devm_clk_register(&pdev->dev,
 					mdss_dsi_pllcc_14nm[i]);
 			if (IS_ERR(clk)) {
-				pr_err("clk registration failed for DSI: %d\n",
+				pr_debug("clk registration failed for DSI: %d\n",
 						pll_res->index);
 				rc = -EINVAL;
 				goto clk_reg_fail;
@@ -608,7 +608,7 @@ int dsi_pll_clock_register_14nm(struct platform_device *pdev,
 	}
 
 	if (!rc) {
-		pr_info("Registered DSI PLL ndx=%d clocks successfully\n",
+		pr_debug("Registered DSI PLL ndx=%d clocks successfully\n",
 						pll_res->index);
 		return rc;
 	}

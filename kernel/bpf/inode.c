@@ -686,7 +686,7 @@ static bool bpf_preload_mod_get(void)
 	 * kernel is interacting with the kernel module and its UMD.
 	 */
 	if (!try_module_get(bpf_preload_ops->owner)) {
-		pr_err("bpf_preload module get failed.\n");
+		pr_debug("bpf_preload module get failed.\n");
 		return false;
 	}
 	return true;

@@ -328,9 +328,9 @@ do {									\
 } while (0)
 
 #define l2tp_warn(ptr, type, fmt, ...)					\
-	l2tp_printk(ptr, type, pr_warn, fmt, ##__VA_ARGS__)
+	l2tp_printk(ptr, type, pr_debug, fmt, ##__VA_ARGS__)
 #define l2tp_info(ptr, type, fmt, ...)					\
-	l2tp_printk(ptr, type, pr_info, fmt, ##__VA_ARGS__)
+	l2tp_printk(ptr, type, pr_debug, fmt, ##__VA_ARGS__)
 #define l2tp_dbg(ptr, type, fmt, ...)					\
 	l2tp_printk(ptr, type, pr_debug, fmt, ##__VA_ARGS__)
 

@@ -68,7 +68,7 @@ static int regulator_stub_set_mode(struct regulator_dev *rdev,
 	struct regulator_stub *vreg = rdev_get_drvdata(rdev);
 
 	if (mode != REGULATOR_MODE_NORMAL && mode != REGULATOR_MODE_IDLE) {
-		dev_err(&rdev->dev, "%s: invalid mode requested %u\n",
+		dev_dbg(&rdev->dev, "%s: invalid mode requested %u\n",
 			__func__, mode);
 		return -EINVAL;
 	}
@@ -138,7 +138,7 @@ static int regulator_stub_probe(struct platform_device *pdev)
 	int rc;
 
 	if (!dev->of_node) {
-		dev_err(dev, "%s: device node missing\n", __func__);
+		dev_dbg(dev, "%s: device node missing\n", __func__);
 		return -ENODEV;
 	}
 
@@ -151,7 +151,7 @@ static int regulator_stub_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	if (!init_data->constraints.name) {
-		dev_err(dev, "%s: regulator name not specified\n", __func__);
+		dev_dbg(dev, "%s: regulator name not specified\n", __func__);
 		return -EINVAL;
 	}
 
@@ -202,7 +202,7 @@ static int regulator_stub_probe(struct platform_device *pdev)
 	if (IS_ERR(rdev)) {
 		rc = PTR_ERR(rdev);
 		if (rc != -EPROBE_DEFER)
-			dev_err(dev, "%s: regulator_register failed\n",
+			dev_dbg(dev, "%s: regulator_register failed\n",
 				__func__);
 		return rc;
 	}

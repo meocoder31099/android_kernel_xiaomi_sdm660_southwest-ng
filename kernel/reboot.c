@@ -452,7 +452,7 @@ static int __orderly_reboot(void)
 	ret = run_cmd(reboot_cmd);
 
 	if (ret) {
-		pr_warn("Failed to start orderly reboot: forcing the issue\n");
+		pr_debug("Failed to start orderly reboot: forcing the issue\n");
 		emergency_sync();
 		kernel_restart(NULL);
 	}
@@ -467,7 +467,7 @@ static int __orderly_poweroff(bool force)
 	ret = run_cmd(poweroff_cmd);
 
 	if (ret && force) {
-		pr_warn("Failed to start orderly shutdown: forcing the issue\n");
+		pr_debug("Failed to start orderly shutdown: forcing the issue\n");
 
 		/*
 		 * I guess this should try to kick off some daemon to sync and
@@ -565,7 +565,7 @@ static int __init reboot_setup(char *str)
 			else
 				*mode = REBOOT_SOFT;
 			if (reboot_cpu >= num_possible_cpus()) {
-				pr_err("Ignoring the CPU number in reboot= option. "
+				pr_debug("Ignoring the CPU number in reboot= option. "
 				       "CPU %d exceeds possible cpu number %d\n",
 				       reboot_cpu, num_possible_cpus());
 				reboot_cpu = 0;

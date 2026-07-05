@@ -462,7 +462,7 @@ static void socket_open_client(struct diag_socket_info *info)
 
 	ret = sock_create(AF_QIPCRTR, SOCK_DGRAM, PF_QIPCRTR, &info->hdl);
 	if (ret < 0 || !info->hdl) {
-		pr_err("diag: In %s, socket not initialized for %s\n", __func__,
+		pr_debug("diag: In %s, socket not initialized for %s\n", __func__,
 		       info->name);
 		return;
 	}
@@ -473,7 +473,7 @@ static void socket_open_client(struct diag_socket_info *info)
 	info->hdl->sk->sk_error_report = socket_data_ready;
 	write_unlock_bh(&info->hdl->sk->sk_callback_lock);
 	if (!info->remote_addr.sq_node && !info->remote_addr.sq_port) {
-		pr_err("diag: In %s, failed to get remote_addr\n", __func__);
+		pr_debug("diag: In %s, failed to get remote_addr\n", __func__);
 		return;
 	}
 	__socket_open_channel(info);
@@ -494,13 +494,13 @@ static void socket_open_server(struct diag_socket_info *info)
 
 	ret = sock_create(AF_QIPCRTR, SOCK_DGRAM, PF_QIPCRTR, &info->hdl);
 	if (ret < 0 || !info->hdl) {
-		pr_err("diag: In %s, socket not initialized for %s\n", __func__,
+		pr_debug("diag: In %s, socket not initialized for %s\n", __func__,
 		       info->name);
 		return;
 	}
 	ret = kernel_getsockname(info->hdl, (struct sockaddr *)&sq);
 	if (ret < 0) {
-		pr_err("diag: In %s, getsockname failed %d\n", __func__,
+		pr_debug("diag: In %s, getsockname failed %d\n", __func__,
 		       ret);
 		sock_release(info->hdl);
 		return;
@@ -528,7 +528,7 @@ static void socket_open_server(struct diag_socket_info *info)
 
 	ret = kernel_sendmsg(info->hdl, &msg, &iv, 1, sizeof(pkt));
 	if (ret < 0) {
-		pr_err("%s: failed to send new_server: %d\n", __func__, ret);
+		pr_debug("%s: failed to send new_server: %d\n", __func__, ret);
 		return;
 	}
 	DIAG_LOG(DIAG_DEBUG_PERIPHERALS, "%s opened server svc: %d ins: %d\n",
@@ -587,7 +587,7 @@ static void socket_init_work_fn(struct work_struct *work)
 		return;
 
 	if (!info->inited) {
-		pr_err("diag: In %s, socket %s is not initialized\n",
+		pr_debug("diag: In %s, socket %s is not initialized\n",
 			 __func__, info->name);
 		return;
 	}
@@ -600,7 +600,7 @@ static void socket_init_work_fn(struct work_struct *work)
 		socket_open_client(info);
 		break;
 	default:
-		pr_err("diag: In %s, unknown type %d\n", __func__,
+		pr_debug("diag: In %s, unknown type %d\n", __func__,
 		       info->port_type);
 		break;
 	}
@@ -1007,7 +1007,7 @@ static void __diag_socket_init(struct diag_socket_info *info)
 	init_waitqueue_head(&info->read_wait_q);
 	info->wq = create_singlethread_workqueue(wq_name);
 	if (!info->wq) {
-		pr_err("diag: In %s, unable to create workqueue for socket channel %s\n",
+		pr_debug("diag: In %s, unable to create workqueue for socket channel %s\n",
 		       __func__, info->name);
 		return;
 	}

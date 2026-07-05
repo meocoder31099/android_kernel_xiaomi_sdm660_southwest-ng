@@ -159,13 +159,13 @@ static struct clk *_of_fixed_factor_clk_setup(struct device_node *node)
 	int ret;
 
 	if (of_property_read_u32(node, "clock-div", &div)) {
-		pr_err("%s Fixed factor clock <%s> must have a clock-div property\n",
+		pr_debug("%s Fixed factor clock <%s> must have a clock-div property\n",
 			__func__, node->name);
 		return ERR_PTR(-EIO);
 	}
 
 	if (of_property_read_u32(node, "clock-mult", &mult)) {
-		pr_err("%s Fixed factor clock <%s> must have a clock-mult property\n",
+		pr_debug("%s Fixed factor clock <%s> must have a clock-mult property\n",
 			__func__, node->name);
 		return ERR_PTR(-EIO);
 	}

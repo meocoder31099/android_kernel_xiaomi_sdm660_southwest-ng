@@ -40,19 +40,19 @@ static int32_t msm_laser_led_get_subdev_id(
 
 	CDBG("Enter\n");
 	if (!subdev_id) {
-		pr_err("subdevice ID is not valid\n");
+		pr_debug("subdevice ID is not valid\n");
 		return -EINVAL;
 	}
 
 	if (laser_led_ctrl->laser_led_device_type !=
 		MSM_CAMERA_PLATFORM_DEVICE) {
-		pr_err("device type is not matching\n");
+		pr_debug("device type is not matching\n");
 		return -EINVAL;
 	}
 
 	if (copy_to_user(arg, &laser_led_ctrl->pdev->id,
 		sizeof(int32_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
@@ -84,7 +84,7 @@ static int32_t msm_laser_led_init(
 	CDBG("Enter\n");
 
 	if (laser_led_ctrl->laser_led_state == MSM_CAMERA_LASER_LED_INIT) {
-		pr_err("Invalid laser_led state = %d\n",
+		pr_debug("Invalid laser_led state = %d\n",
 				laser_led_ctrl->laser_led_state);
 		return 0;
 	}
@@ -92,14 +92,14 @@ static int32_t msm_laser_led_init(
 	rc = laser_led_ctrl->i2c_client.i2c_func_tbl->i2c_util(
 			&laser_led_ctrl->i2c_client, MSM_CCI_INIT);
 	if (rc < 0)
-		pr_err("cci_init failed\n");
+		pr_debug("cci_init failed\n");
 
 	cci_client = laser_led_ctrl->i2c_client.cci_client;
 
 	if (copy_from_user(&(cci_client->sid),
 		&(laser_led_data->i2c_addr),
 		sizeof(uint16_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 	cci_client->sid = cci_client->sid >> 1;
@@ -109,7 +109,7 @@ static int32_t msm_laser_led_init(
 	if (copy_from_user(&(cci_client->i2c_freq_mode),
 		&(laser_led_data->i2c_freq_mode),
 		sizeof(enum i2c_freq_mode_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
@@ -127,7 +127,7 @@ static int msm_laser_led_close(struct v4l2_subdev *sd,
 
 	CDBG("Enter\n");
 	if (!l_ctrl) {
-		pr_err("failed: subdev data is null\n");
+		pr_debug("failed: subdev data is null\n");
 		return -EINVAL;
 	}
 	mutex_lock(l_ctrl->laser_led_mutex);
@@ -136,7 +136,7 @@ static int msm_laser_led_close(struct v4l2_subdev *sd,
 		rc = l_ctrl->i2c_client.i2c_func_tbl->i2c_util(
 			&l_ctrl->i2c_client, MSM_CCI_RELEASE);
 		if (rc < 0)
-			pr_err("cci_init failed: %d\n", rc);
+			pr_debug("cci_init failed: %d\n", rc);
 	}
 	l_ctrl->laser_led_state = MSM_CAMERA_LASER_LED_RELEASE;
 	mutex_unlock(l_ctrl->laser_led_mutex);
@@ -183,7 +183,7 @@ static int32_t msm_laser_led_control32(
 	uint16_t local_data;
 
 	if (laser_led_ctrl->laser_led_state != MSM_CAMERA_LASER_LED_INIT) {
-		pr_err("%s:%d failed: invalid state %d\n", __func__,
+		pr_debug("%s:%d failed: invalid state %d\n", __func__,
 			__LINE__, laser_led_ctrl->laser_led_state);
 		return -EFAULT;
 	}
@@ -191,14 +191,14 @@ static int32_t msm_laser_led_control32(
 	if (copy_from_user(&laser_led_data,
 		argp,
 		sizeof(struct msm_laser_led_cfg_data_t32))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
 	if (copy_from_user(&conf_array32,
 		(compat_ptr)(laser_led_data.setting),
 		sizeof(struct msm_camera_i2c_reg_setting32))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
@@ -209,7 +209,7 @@ static int32_t msm_laser_led_control32(
 
 	if (!conf_array.size ||
 		conf_array.size > I2C_REG_DATA_MAX) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
@@ -222,7 +222,7 @@ static int32_t msm_laser_led_control32(
 		(compat_ptr)(conf_array32.reg_setting),
 		conf_array.size *
 		sizeof(struct msm_camera_i2c_reg_array))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		kfree(conf_array.reg_setting);
 		return -EFAULT;
 	}
@@ -238,7 +238,7 @@ static int32_t msm_laser_led_control32(
 			(void __user *)compat_ptr(laser_led_data.debug_reg),
 			laser_led_data.debug_reg_size *
 			sizeof(uint32_t))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_debug("%s:%d failed\n", __func__, __LINE__);
 			kfree(conf_array.reg_setting);
 			kfree(debug_reg);
 			return -EFAULT;
@@ -277,7 +277,7 @@ static int32_t msm_laser_led_init32(
 	CDBG("Enter\n");
 
 	if (laser_led_ctrl->laser_led_state == MSM_CAMERA_LASER_LED_INIT) {
-		pr_err("Invalid laser_led state = %d\n",
+		pr_debug("Invalid laser_led state = %d\n",
 				laser_led_ctrl->laser_led_state);
 		return 0;
 	}
@@ -285,14 +285,14 @@ static int32_t msm_laser_led_init32(
 	rc = laser_led_ctrl->i2c_client.i2c_func_tbl->i2c_util(
 			&laser_led_ctrl->i2c_client, MSM_CCI_INIT);
 	if (rc < 0)
-		pr_err("cci_init failed\n");
+		pr_debug("cci_init failed\n");
 
 	cci_client = laser_led_ctrl->i2c_client.cci_client;
 
 	if (copy_from_user(&(cci_client->sid),
 		&(laser_led_data->i2c_addr),
 		sizeof(uint16_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 	cci_client->sid = cci_client->sid >> 1;
@@ -302,7 +302,7 @@ static int32_t msm_laser_led_init32(
 	if (copy_from_user(&(cci_client->i2c_freq_mode),
 		&(laser_led_data->i2c_freq_mode),
 		sizeof(enum i2c_freq_mode_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
@@ -326,7 +326,7 @@ static int32_t msm_laser_led_control(
 	int32_t rc = 0;
 
 	if (laser_led_ctrl->laser_led_state != MSM_CAMERA_LASER_LED_INIT) {
-		pr_err("%s:%d failed: invalid state %d\n", __func__,
+		pr_debug("%s:%d failed: invalid state %d\n", __func__,
 			__LINE__, laser_led_ctrl->laser_led_state);
 		return -EFAULT;
 	}
@@ -334,20 +334,20 @@ static int32_t msm_laser_led_control(
 	if (copy_from_user(&laser_led_data,
 		argp,
 		sizeof(struct msm_laser_led_cfg_data_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
 	if (copy_from_user(&conf_array,
 		(laser_led_data.setting),
 		sizeof(struct msm_camera_i2c_reg_setting))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
 	if (!conf_array.size ||
 		conf_array.size > I2C_REG_DATA_MAX) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EFAULT;
 	}
 
@@ -360,7 +360,7 @@ static int32_t msm_laser_led_control(
 		conf_array.reg_setting),
 		conf_array.size *
 		sizeof(struct msm_camera_i2c_reg_array))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		kfree(conf_array.reg_setting);
 		return -EFAULT;
 	}
@@ -376,7 +376,7 @@ static int32_t msm_laser_led_control(
 			(laser_led_data.debug_reg),
 			laser_led_data.debug_reg_size *
 			sizeof(uint32_t))) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
+			pr_debug("%s:%d failed\n", __func__, __LINE__);
 			kfree(debug_reg);
 			kfree(conf_array.reg_setting);
 			return -EFAULT;
@@ -423,7 +423,7 @@ static int32_t msm_laser_led_config(struct msm_laser_led_ctrl_t *laser_led_ctrl,
 	if (copy_from_user(&(cfg_type),
 		&(laser_led_data->cfg_type),
 		sizeof(enum msm_laser_led_cfg_type_t))) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		mutex_unlock(laser_led_ctrl->laser_led_mutex);
 		return -EFAULT;
 	}
@@ -468,12 +468,12 @@ static long msm_laser_led_subdev_ioctl(struct v4l2_subdev *sd,
 	CDBG("Enter\n");
 
 	if (!sd) {
-		pr_err(" v4l2 ir led subdevice is NULL\n");
+		pr_debug(" v4l2 ir led subdevice is NULL\n");
 		return -EINVAL;
 	}
 	lctrl = v4l2_get_subdevdata(sd);
 	if (!lctrl) {
-		pr_err("lctrl NULL\n");
+		pr_debug("lctrl NULL\n");
 		return -EINVAL;
 	}
 	switch (cmd) {
@@ -485,13 +485,13 @@ static long msm_laser_led_subdev_ioctl(struct v4l2_subdev *sd,
 		return 0;
 	case MSM_SD_SHUTDOWN:
 		if (!lctrl->i2c_client.i2c_func_tbl) {
-			pr_err("a_ctrl->i2c_client.i2c_func_tbl NULL\n");
+			pr_debug("a_ctrl->i2c_client.i2c_func_tbl NULL\n");
 			return -EINVAL;
 		}
 		return msm_laser_led_close(sd, NULL);
 
 	default:
-		pr_err("invalid cmd %d\n", cmd);
+		pr_debug("invalid cmd %d\n", cmd);
 		return -ENOIOCTLCMD;
 	}
 	CDBG("Exit\n");
@@ -517,7 +517,7 @@ static int32_t msm_laser_led_platform_probe(struct platform_device *pdev)
 
 	CDBG("Enter\n");
 	if (!pdev->dev.of_node) {
-		pr_err("IR LED device node is not present in device tree\n");
+		pr_debug("IR LED device node is not present in device tree\n");
 		return -EINVAL;
 	}
 
@@ -532,7 +532,7 @@ static int32_t msm_laser_led_platform_probe(struct platform_device *pdev)
 		&pdev->id);
 	CDBG("cell-index %d, rc %d\n", pdev->id, rc);
 	if (rc < 0) {
-		pr_err("reading cell index failed: rc %d\n", rc);
+		pr_debug("reading cell index failed: rc %d\n", rc);
 		return rc;
 	}
 
@@ -540,7 +540,7 @@ static int32_t msm_laser_led_platform_probe(struct platform_device *pdev)
 		&laser_led_ctrl->cci_master);
 	CDBG("qcom,cci-master %d, rc %d\n", laser_led_ctrl->cci_master, rc);
 	if (rc < 0 || laser_led_ctrl->cci_master >= MASTER_MAX) {
-		pr_err("invalid cci master info: rc %d\n", rc);
+		pr_debug("invalid cci master info: rc %d\n", rc);
 		return rc;
 	}
 
@@ -609,7 +609,7 @@ static int __init msm_laser_led_init_module(void)
 		CDBG("Exit\n");
 		return rc;
 	}
-	pr_err("laser-led driver register failed: %d\n", rc);
+	pr_debug("laser-led driver register failed: %d\n", rc);
 
 	return rc;
 }

@@ -205,14 +205,14 @@ static int read_fuse_param(void __iomem *fuse_base_addr,
 	while (param->row || param->bit_start || param->bit_end) {
 		if (param->bit_start > param->bit_end
 		    || param->bit_end > MAX_FUSE_ROW_BIT) {
-			pr_err("Invalid fuse parameter segment: row=%u, start=%u, end=%u\n",
+			pr_debug("Invalid fuse parameter segment: row=%u, start=%u, end=%u\n",
 				param->row, param->bit_start, param->bit_end);
 			return -EINVAL;
 		}
 
 		bits = param->bit_end - param->bit_start + 1;
 		if (bits_total + bits > 64) {
-			pr_err("Invalid fuse parameter segments; total bits = %d\n",
+			pr_debug("Invalid fuse parameter segments; total bits = %d\n",
 				bits_total + bits);
 			return -EINVAL;
 		}
@@ -312,7 +312,7 @@ static int ldo_update_voltage(struct msm_gfx_ldo *ldo_vreg, int new_uv)
 		udelay(10);
 	}
 	if (!timeout) {
-		pr_err("LDO_VREF_SETTLED not set PWRSWITCH_STATUS = 0x%x\n",
+		pr_debug("LDO_VREF_SETTLED not set PWRSWITCH_STATUS = 0x%x\n",
 									reg);
 		return -EBUSY;
 	}
@@ -423,14 +423,14 @@ static int msm_gfx_ldo_corner_enable(struct regulator_dev *rdev)
 			ldo_vreg->vdd_cx_corner_map[ldo_vreg->corner],
 			INT_MAX);
 		if (rc) {
-			pr_err("Unable to set CX for corner %d rc=%d\n",
+			pr_debug("Unable to set CX for corner %d rc=%d\n",
 				ldo_vreg->corner + MIN_CORNER_OFFSET, rc);
 			goto fail;
 		}
 
 		rc = regulator_enable(ldo_vreg->vdd_cx);
 		if (rc) {
-			pr_err("regulator_enable: vdd_cx: failed rc=%d\n", rc);
+			pr_debug("regulator_enable: vdd_cx: failed rc=%d\n", rc);
 			goto fail;
 		}
 	}
@@ -447,7 +447,7 @@ static int msm_gfx_ldo_corner_enable(struct regulator_dev *rdev)
 	}
 
 	if (rc) {
-		pr_err("Failed to enable regulator in %s mode rc=%d\n",
+		pr_debug("Failed to enable regulator in %s mode rc=%d\n",
 			(enable_mode == LDO_MODE) ? "LDO" : "BHS", rc);
 		goto disable_cx;
 	}
@@ -463,7 +463,7 @@ disable_cx:
 	if (rc && ldo_vreg->vdd_cx) {
 		rc = regulator_disable(ldo_vreg->vdd_cx);
 		if (rc)
-			pr_err("regulator_enable: vdd_cx: failed rc=%d\n", rc);
+			pr_debug("regulator_enable: vdd_cx: failed rc=%d\n", rc);
 	}
 fail:
 	mutex_unlock(&ldo_vreg->ldo_mutex);
@@ -480,12 +480,12 @@ static int msm_gfx_ldo_disable(struct regulator_dev *rdev)
 	if (ldo_vreg->vdd_cx) {
 		rc = regulator_disable(ldo_vreg->vdd_cx);
 		if (rc) {
-			pr_err("regulator_disable: vdd_cx: failed rc=%d\n", rc);
+			pr_debug("regulator_disable: vdd_cx: failed rc=%d\n", rc);
 			goto done;
 		}
 		rc = regulator_set_voltage(ldo_vreg->vdd_cx, 0, INT_MAX);
 		if (rc)
-			pr_err("failed to set voltage on CX rc=%d\n", rc);
+			pr_debug("failed to set voltage on CX rc=%d\n", rc);
 	}
 
 	/* No additional configuration for LDO/BHS - taken care by gsdc */
@@ -567,7 +567,7 @@ static int switch_mode_to_ldo(struct msm_gfx_ldo *ldo_vreg, int new_uv)
 	}
 
 	if (!timeout)
-		pr_err("BHS_EN_RESET_ACK not clear PWRSWITCH_STATUS = 0x%x\n",
+		pr_debug("BHS_EN_RESET_ACK not clear PWRSWITCH_STATUS = 0x%x\n",
 								status);
 
 	/* remove LDO bypass */
@@ -627,7 +627,7 @@ static int switch_mode_to_bhs(struct msm_gfx_ldo *ldo_vreg)
 		udelay(10);
 	}
 	if (!timeout)
-		pr_err("BHS_EN_RESET_ACK not set PWRSWITCH_STATUS = 0x%x\n",
+		pr_debug("BHS_EN_RESET_ACK not set PWRSWITCH_STATUS = 0x%x\n",
 								status);
 
 	/* bypass LDO */
@@ -701,7 +701,7 @@ static int msm_gfx_ldo_set_corner(struct regulator_dev *rdev,
 			ldo_vreg->vdd_cx_corner_map[corner],
 			INT_MAX);
 		if (rc) {
-			pr_err("Unable to set CX for corner %d rc=%d\n",
+			pr_debug("Unable to set CX for corner %d rc=%d\n",
 					corner + MIN_CORNER_OFFSET, rc);
 			goto done;
 		}
@@ -713,7 +713,7 @@ static int msm_gfx_ldo_set_corner(struct regulator_dev *rdev,
 		if (ldo_vreg->mode == LDO_MODE) {
 			rc = switch_mode_to_bhs(ldo_vreg);
 			if (rc)
-				pr_err("Switch to BHS corner=%d failed rc=%d\n",
+				pr_debug("Switch to BHS corner=%d failed rc=%d\n",
 						corner + MIN_CORNER_OFFSET, rc);
 		}
 	} else { /* new mode - LDO */
@@ -722,12 +722,12 @@ static int msm_gfx_ldo_set_corner(struct regulator_dev *rdev,
 		if (ldo_vreg->mode == BHS_MODE) {
 			rc = switch_mode_to_ldo(ldo_vreg, new_uv);
 			if (rc)
-				pr_err("Switch to LDO failed corner=%d rc=%d\n",
+				pr_debug("Switch to LDO failed corner=%d rc=%d\n",
 						corner + MIN_CORNER_OFFSET, rc);
 		} else {
 			rc = ldo_update_voltage(ldo_vreg, new_uv);
 			if (rc)
-				pr_err("Update voltage failed corner=%d rc=%d\n",
+				pr_debug("Update voltage failed corner=%d rc=%d\n",
 						corner + MIN_CORNER_OFFSET, rc);
 		}
 	}
@@ -802,7 +802,7 @@ static int msm_gfx_ldo_set_bypass(struct regulator_dev *rdev,
 		rc = switch_mode_to_bhs(ldo_vreg);
 
 	if (rc) {
-		pr_err("Failed to configure regulator in %s mode rc=%d\n",
+		pr_debug("Failed to configure regulator in %s mode rc=%d\n",
 			(mode == LDO_MODE) ? "LDO" : "BHS", rc);
 		goto done;
 	}
@@ -837,7 +837,7 @@ static int msm_gfx_ldo_voltage_enable(struct regulator_dev *rdev)
 		rc = enable_bhs_mode(ldo_vreg);
 
 	if (rc) {
-		pr_err("Failed to enable regulator in %s mode rc=%d\n",
+		pr_debug("Failed to enable regulator in %s mode rc=%d\n",
 			(enable_mode == LDO_MODE) ? "LDO" : "BHS", rc);
 		goto fail;
 	}
@@ -872,7 +872,7 @@ static int msm_gfx_ldo_set_voltage(struct regulator_dev *rdev,
 	/* update LDO voltage */
 	rc = ldo_update_voltage(ldo_vreg, new_uv);
 	if (rc)
-		pr_err("Update voltage failed for [%d, %d], rc=%d\n",
+		pr_debug("Update voltage failed for [%d, %d], rc=%d\n",
 			new_uv, max_uv, rc);
 done:
 	mutex_unlock(&ldo_vreg->ldo_mutex);
@@ -910,7 +910,7 @@ static int msm_gfx_ldo_adjust_init_voltage(struct msm_gfx_ldo *ldo_vreg)
 
 	size = len / sizeof(u32);
 	if (size != ldo_vreg->num_ldo_corners) {
-		pr_err("%s length=%d is invalid: required:%d\n",
+		pr_debug("%s length=%d is invalid: required:%d\n",
 				prop_name, size, ldo_vreg->num_ldo_corners);
 		return -EINVAL;
 	}
@@ -922,14 +922,14 @@ static int msm_gfx_ldo_adjust_init_voltage(struct msm_gfx_ldo *ldo_vreg)
 
 	rc = of_property_read_u32_array(of_node, prop_name, volt_adjust, size);
 	if (rc) {
-		pr_err("failed to read %s property rc=%d\n", prop_name, rc);
+		pr_debug("failed to read %s property rc=%d\n", prop_name, rc);
 		return rc;
 	}
 
 	for (i = 0; i < ldo_vreg->num_corners; i++) {
 		if (volt_adjust[i]) {
 			ldo_vreg->open_loop_volt[i] += volt_adjust[i];
-			pr_info("adjusted the open-loop voltage[%d] %d -> %d\n",
+			pr_debug("adjusted the open-loop voltage[%d] %d -> %d\n",
 				i + MIN_CORNER_OFFSET,
 				ldo_vreg->open_loop_volt[i] - volt_adjust[i],
 				ldo_vreg->open_loop_volt[i]);
@@ -964,14 +964,14 @@ static int msm_gfx_ldo_voltage_init(struct msm_gfx_ldo *ldo_vreg)
 	rc = of_property_read_u32_array(of_node, "qcom,ldo-voltage-ceiling",
 						ldo_vreg->ceiling_volt, len);
 	if (rc) {
-		pr_err("Unable to read qcom,ldo-voltage-ceiling rc=%d\n", rc);
+		pr_debug("Unable to read qcom,ldo-voltage-ceiling rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = of_property_read_u32_array(of_node, "qcom,ldo-voltage-floor",
 						ldo_vreg->floor_volt, len);
 	if (rc) {
-		pr_err("Unable to read qcom,ldo-voltage-floor rc=%d\n", rc);
+		pr_debug("Unable to read qcom,ldo-voltage-floor rc=%d\n", rc);
 		return rc;
 	}
 
@@ -980,7 +980,7 @@ static int msm_gfx_ldo_voltage_init(struct msm_gfx_ldo *ldo_vreg)
 				ldo_vreg->init_volt_param[i],
 				&efuse_bits);
 		if (rc) {
-			pr_err("Unable to read init-voltage rc=%d\n", rc);
+			pr_debug("Unable to read init-voltage rc=%d\n", rc);
 			return rc;
 		}
 		ldo_vreg->open_loop_volt[i] = convert_open_loop_voltage_fuse(
@@ -988,26 +988,26 @@ static int msm_gfx_ldo_voltage_init(struct msm_gfx_ldo *ldo_vreg)
 					GFX_LDO_FUSE_STEP_VOLT,
 					efuse_bits,
 					GFX_LDO_FUSE_SIZE);
-		pr_info("LDO corner %d: target-volt = %d uV\n",
+		pr_debug("LDO corner %d: target-volt = %d uV\n",
 			i + MIN_CORNER_OFFSET, ldo_vreg->open_loop_volt[i]);
 	}
 
 	rc = msm_gfx_ldo_adjust_init_voltage(ldo_vreg);
 	if (rc) {
-		pr_err("Unable to adjust init voltages rc=%d\n", rc);
+		pr_debug("Unable to adjust init voltages rc=%d\n", rc);
 		return rc;
 	}
 
 	for (i = 0; i < ldo_vreg->num_ldo_corners; i++) {
 		if (ldo_vreg->open_loop_volt[i] > ldo_vreg->ceiling_volt[i]) {
-			pr_info("Warning: initial voltage[%d] %d above ceiling %d\n",
+			pr_debug("Warning: initial voltage[%d] %d above ceiling %d\n",
 				i + MIN_CORNER_OFFSET,
 				ldo_vreg->open_loop_volt[i],
 				ldo_vreg->ceiling_volt[i]);
 			ldo_vreg->open_loop_volt[i] = ldo_vreg->ceiling_volt[i];
 		} else if (ldo_vreg->open_loop_volt[i] <
 				ldo_vreg->floor_volt[i]) {
-			pr_info("Warning: initial voltage[%d] %d below floor %d\n",
+			pr_debug("Warning: initial voltage[%d] %d below floor %d\n",
 				i + MIN_CORNER_OFFSET,
 				ldo_vreg->open_loop_volt[i],
 				ldo_vreg->floor_volt[i]);
@@ -1019,11 +1019,11 @@ static int msm_gfx_ldo_voltage_init(struct msm_gfx_ldo *ldo_vreg)
 	rc = read_fuse_param(ldo_vreg->efuse_base, ldo_vreg->ldo_enable_param,
 								&efuse_bits);
 	if (rc) {
-		pr_err("Unable to read ldo_enable_param rc=%d\n", rc);
+		pr_debug("Unable to read ldo_enable_param rc=%d\n", rc);
 		return rc;
 	}
 	ldo_vreg->ldo_fuse_enable = !!efuse_bits;
-	pr_info("LDO-mode fuse %s by default\n", ldo_vreg->ldo_fuse_enable ?
+	pr_debug("LDO-mode fuse %s by default\n", ldo_vreg->ldo_fuse_enable ?
 					"enabled" : "disabled");
 
 	return rc;
@@ -1037,7 +1037,7 @@ static int msm_gfx_ldo_efuse_init(struct platform_device *pdev,
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "efuse_addr");
 	if (!res || !res->start) {
-		pr_err("efuse_addr missing: res=%p\n", res);
+		pr_debug("efuse_addr missing: res=%p\n", res);
 		return -EINVAL;
 	}
 
@@ -1047,7 +1047,7 @@ static int msm_gfx_ldo_efuse_init(struct platform_device *pdev,
 	ldo_vreg->efuse_base = devm_ioremap(&pdev->dev,
 				ldo_vreg->efuse_addr, len);
 	if (!ldo_vreg->efuse_base) {
-		pr_err("Unable to map efuse_addr %pa\n",
+		pr_debug("Unable to map efuse_addr %pa\n",
 				&ldo_vreg->efuse_addr);
 		return -EINVAL;
 	}
@@ -1067,7 +1067,7 @@ static int msm_gfx_ldo_mem_acc_init(struct msm_gfx_ldo *ldo_vreg)
 		if (IS_ERR_OR_NULL(ldo_vreg->mem_acc_vreg)) {
 			rc = PTR_RET(ldo_vreg->mem_acc_vreg);
 			if (rc != -EPROBE_DEFER)
-				pr_err("devm_regulator_get: mem-acc: rc=%d\n",
+				pr_debug("devm_regulator_get: mem-acc: rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -1077,13 +1077,13 @@ static int msm_gfx_ldo_mem_acc_init(struct msm_gfx_ldo *ldo_vreg)
 	}
 
 	if (!of_find_property(of_node, "qcom,mem-acc-corner-map", &len)) {
-		pr_err("qcom,mem-acc-corner-map missing\n");
+		pr_debug("qcom,mem-acc-corner-map missing\n");
 		return -EINVAL;
 	}
 
 	size = len / sizeof(u32);
 	if (size != ldo_vreg->num_corners) {
-		pr_err("qcom,mem-acc-corner-map length=%d is invalid: required:%u\n",
+		pr_debug("qcom,mem-acc-corner-map length=%d is invalid: required:%u\n",
 						size, ldo_vreg->num_corners);
 		return -EINVAL;
 	}
@@ -1096,7 +1096,7 @@ static int msm_gfx_ldo_mem_acc_init(struct msm_gfx_ldo *ldo_vreg)
 	rc = of_property_read_u32_array(of_node, "qcom,mem-acc-corner-map",
 					ldo_vreg->mem_acc_corner_map, size);
 	if (rc)
-		pr_err("Unable to read qcom,mem-acc-corner-map rc=%d\n", rc);
+		pr_debug("Unable to read qcom,mem-acc-corner-map rc=%d\n", rc);
 
 	return rc;
 }
@@ -1110,7 +1110,7 @@ static int msm_gfx_ldo_init(struct platform_device *pdev,
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "ldo_addr");
 	if (!res || !res->start) {
-		pr_err("ldo_addr missing: res=%p\n", res);
+		pr_debug("ldo_addr missing: res=%p\n", res);
 		return -EINVAL;
 	}
 
@@ -1120,7 +1120,7 @@ static int msm_gfx_ldo_init(struct platform_device *pdev,
 	ldo_vreg->ldo_base = devm_ioremap(ldo_vreg->dev,
 					ldo_vreg->ldo_addr, len);
 	if (!ldo_vreg->ldo_base) {
-		pr_err("Unable to map efuse_addr %pa\n",
+		pr_debug("Unable to map efuse_addr %pa\n",
 				&ldo_vreg->ldo_addr);
 		return -EINVAL;
 	}
@@ -1157,7 +1157,7 @@ static int ldo_parse_cx_parameters(struct msm_gfx_ldo *ldo_vreg)
 		if (IS_ERR_OR_NULL(ldo_vreg->vdd_cx)) {
 			rc = PTR_RET(ldo_vreg->vdd_cx);
 			if (rc != -EPROBE_DEFER)
-				pr_err("devm_regulator_get: vdd-cx: rc=%d\n",
+				pr_debug("devm_regulator_get: vdd-cx: rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -1167,13 +1167,13 @@ static int ldo_parse_cx_parameters(struct msm_gfx_ldo *ldo_vreg)
 	}
 
 	if (!of_find_property(of_node, "qcom,vdd-cx-corner-map", &len)) {
-		pr_err("qcom,vdd-cx-corner-map missing\n");
+		pr_debug("qcom,vdd-cx-corner-map missing\n");
 		return -EINVAL;
 	}
 
 	size = len / sizeof(u32);
 	if (size != ldo_vreg->num_corners) {
-		pr_err("qcom,vdd-cx-corner-map length=%d is invalid: required:%u\n",
+		pr_debug("qcom,vdd-cx-corner-map length=%d is invalid: required:%u\n",
 						size, ldo_vreg->num_corners);
 		return -EINVAL;
 	}
@@ -1186,7 +1186,7 @@ static int ldo_parse_cx_parameters(struct msm_gfx_ldo *ldo_vreg)
 	rc = of_property_read_u32_array(of_node, "qcom,vdd-cx-corner-map",
 					ldo_vreg->vdd_cx_corner_map, size);
 	if (rc)
-		pr_err("Unable to read qcom,vdd-cx-corner-map rc=%d\n", rc);
+		pr_debug("Unable to read qcom,vdd-cx-corner-map rc=%d\n", rc);
 
 
 	return rc;
@@ -1200,32 +1200,32 @@ static int msm_gfx_ldo_parse_dt(struct msm_gfx_ldo *ldo_vreg)
 	rc = of_property_read_u32(of_node, "qcom,num-corners",
 					&ldo_vreg->num_corners);
 	if (rc < 0) {
-		pr_err("Unable to read qcom,num-corners rc=%d\n", rc);
+		pr_debug("Unable to read qcom,num-corners rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = of_property_read_u32(of_node, "qcom,num-ldo-corners",
 					&ldo_vreg->num_ldo_corners);
 	if (rc) {
-		pr_err("Unable to read qcom,num-ldo-corners rc=%d\n", rc);
+		pr_debug("Unable to read qcom,num-ldo-corners rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = of_property_read_u32(of_node, "qcom,init-corner",
 					&ldo_vreg->corner);
 	if (rc) {
-		pr_err("Unable to read qcom,init-corner rc=%d\n", rc);
+		pr_debug("Unable to read qcom,init-corner rc=%d\n", rc);
 		return rc;
 	}
 
 	if (!of_find_property(of_node, "qcom,ldo-enable-corner-map", &len)) {
-		pr_err("qcom,ldo-enable-corner-map missing\n");
+		pr_debug("qcom,ldo-enable-corner-map missing\n");
 		return -EINVAL;
 	}
 
 	size = len / sizeof(u32);
 	if (size != ldo_vreg->num_corners) {
-		pr_err("qcom,ldo-enable-corner-map length=%d is invalid: required:%u\n",
+		pr_debug("qcom,ldo-enable-corner-map length=%d is invalid: required:%u\n",
 					size, ldo_vreg->num_corners);
 		return -EINVAL;
 	}
@@ -1238,14 +1238,14 @@ static int msm_gfx_ldo_parse_dt(struct msm_gfx_ldo *ldo_vreg)
 	rc = of_property_read_u32_array(of_node, "qcom,ldo-enable-corner-map",
 					ldo_vreg->ldo_corner_en_map, size);
 	if (rc) {
-		pr_err("Unable to read qcom,ldo-enable-corner-map rc=%d\n",
+		pr_debug("Unable to read qcom,ldo-enable-corner-map rc=%d\n",
 									rc);
 		return rc;
 	}
 
 	rc = ldo_parse_cx_parameters(ldo_vreg);
 	if (rc) {
-		pr_err("Unable to parse CX parameters rc=%d\n", rc);
+		pr_debug("Unable to parse CX parameters rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1342,7 +1342,7 @@ static int debugfs_ldo_set_voltage(void *data, u64 val)
 		udelay(10);
 	}
 	if (!timeout) {
-		pr_err("LDO_VREF_SETTLED not set PWRSWITCH_STATUS = 0x%x\n",
+		pr_debug("LDO_VREF_SETTLED not set PWRSWITCH_STATUS = 0x%x\n",
 								reg);
 		rc = -EBUSY;
 	} else {
@@ -1428,28 +1428,28 @@ static void msm_gfx_ldo_debugfs_init(struct msm_gfx_ldo *ldo_vreg)
 
 	ldo_vreg->debugfs = debugfs_create_dir("msm_gfx_ldo", NULL);
 	if (!ldo_vreg->debugfs) {
-		pr_err("Couldn't create debug dir\n");
+		pr_debug("Couldn't create debug dir\n");
 		return;
 	}
 
 	temp = debugfs_create_file("debug_info", 0444, ldo_vreg->debugfs,
 					ldo_vreg, &msm_gfx_ldo_debug_info_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debug_info node creation failed\n");
+		pr_debug("debug_info node creation failed\n");
 		return;
 	}
 
 	temp = debugfs_create_file("ldo_voltage", 0644, ldo_vreg->debugfs,
 					ldo_vreg, &ldo_voltage_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("ldo_voltage node creation failed\n");
+		pr_debug("ldo_voltage node creation failed\n");
 		return;
 	}
 
 	temp = debugfs_create_file("ldo_mode_disable", 0644, ldo_vreg->debugfs,
 					ldo_vreg, &ldo_mode_disable_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("ldo_mode_disable node creation failed\n");
+		pr_debug("ldo_mode_disable node creation failed\n");
 		return;
 	}
 }
@@ -1467,31 +1467,31 @@ static int msm_gfx_ldo_corner_config_init(struct msm_gfx_ldo *ldo_vreg,
 
 	rc = msm_gfx_ldo_target_init(ldo_vreg);
 	if (rc) {
-		pr_err("Unable to initialize target specific data rc=%d\n", rc);
+		pr_debug("Unable to initialize target specific data rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = msm_gfx_ldo_parse_dt(ldo_vreg);
 	if (rc) {
-		pr_err("Unable to pasrse dt rc=%d\n", rc);
+		pr_debug("Unable to pasrse dt rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = msm_gfx_ldo_efuse_init(pdev, ldo_vreg);
 	if (rc) {
-		pr_err("efuse_init failed rc=%d\n", rc);
+		pr_debug("efuse_init failed rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = msm_gfx_ldo_voltage_init(ldo_vreg);
 	if (rc) {
-		pr_err("ldo_voltage_init failed rc=%d\n", rc);
+		pr_debug("ldo_voltage_init failed rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = msm_gfx_ldo_mem_acc_init(ldo_vreg);
 	if (rc) {
-		pr_err("Unable to initialize mem_acc rc=%d\n", rc);
+		pr_debug("Unable to initialize mem_acc rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1531,7 +1531,7 @@ static int msm_gfx_ldo_probe(struct platform_device *pdev)
 
 	init_data = of_get_regulator_init_data(dev, dev->of_node, NULL);
 	if (!init_data) {
-		pr_err("regulator init data is missing\n");
+		pr_debug("regulator init data is missing\n");
 		return -EINVAL;
 	}
 
@@ -1541,7 +1541,7 @@ static int msm_gfx_ldo_probe(struct platform_device *pdev)
 
 	ldo_vreg->rdesc.name = init_data->constraints.name;
 	if (ldo_vreg->rdesc.name == NULL) {
-		dev_err(dev, "regulator-name missing\n");
+		dev_dbg(dev, "regulator-name missing\n");
 		return -EINVAL;
 	}
 
@@ -1556,7 +1556,7 @@ static int msm_gfx_ldo_probe(struct platform_device *pdev)
 		ldo_vreg->ops_type = CORNER;
 		rc = msm_gfx_ldo_corner_config_init(ldo_vreg, pdev);
 		if (rc) {
-			pr_err("ldo corner handling initialization failed, rc=%d\n",
+			pr_debug("ldo corner handling initialization failed, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1568,14 +1568,14 @@ static int msm_gfx_ldo_probe(struct platform_device *pdev)
 			|= REGULATOR_CHANGE_BYPASS;
 		break;
 	default:
-		pr_err("invalid SOC ID = %d\n", soc_id);
+		pr_debug("invalid SOC ID = %d\n", soc_id);
 		return -EINVAL;
 	}
 
 	/* HW initialization */
 	rc = msm_gfx_ldo_init(pdev, ldo_vreg);
 	if (rc) {
-		pr_err("ldo_init failed rc=%d\n", rc);
+		pr_debug("ldo_init failed rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1595,7 +1595,7 @@ static int msm_gfx_ldo_probe(struct platform_device *pdev)
 	ldo_vreg->rdev = regulator_register(rdesc, &reg_config);
 	if (IS_ERR(ldo_vreg->rdev)) {
 		rc = PTR_ERR(ldo_vreg->rdev);
-		pr_err("regulator_register failed: rc=%d\n", rc);
+		pr_debug("regulator_register failed: rc=%d\n", rc);
 		return rc;
 	}
 

@@ -395,7 +395,7 @@ enum {
 /* warnings and errors show up on console always */
 #define SLIM_WARN(dev, x...) do { \
 	if (dev->ipc_slimbus_log && dev->ipc_log_mask >= WARN_LEV) { \
-		pr_warn(x); \
+		pr_debug(x); \
 		ipc_log_string(dev->ipc_slimbus_log, x); \
 	} \
 	if (dev->ipc_slimbus_log_err && dev->ipc_log_mask == FATAL_LEV) { \
@@ -409,7 +409,7 @@ enum {
  */
 #define SLIM_ERR(dev, x...) do { \
 	if (dev->ipc_slimbus_log && dev->ipc_log_mask >= ERR_LEV) { \
-		pr_err(x); \
+		pr_debug(x); \
 		ipc_log_string(dev->ipc_slimbus_log, x); \
 		dev->default_ipc_log_mask = dev->ipc_log_mask; \
 		dev->ipc_log_mask = FATAL_LEV; \

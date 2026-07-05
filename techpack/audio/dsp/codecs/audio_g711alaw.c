@@ -42,7 +42,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 
 		if (g711_channel_map(channel_mapping,
 			audio->pcm_cfg.channel_count)) {
-			pr_err("%s: setting channel map failed %d\n",
+			pr_debug("%s: setting channel map failed %d\n",
 					__func__, audio->pcm_cfg.channel_count);
 		}
 
@@ -56,7 +56,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 					16, /*bits per sample*/
 					false, false, channel_mapping);
 			if (rc < 0) {
-				pr_err("%s: pcm output block config failed rc=%d\n",
+				pr_debug("%s: pcm output block config failed rc=%d\n",
 						 __func__, rc);
 				break;
 			}
@@ -68,7 +68,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		rc = q6asm_media_format_block_g711(audio->ac, &g711_dec_cfg,
 							audio->ac->stream_id);
 		if (rc < 0) {
-			pr_err("%s: cmd media format block failed rc=%d\n",
+			pr_debug("%s: cmd media format block failed rc=%d\n",
 				__func__, rc);
 			break;
 		}
@@ -79,7 +79,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("%s: Audio Start procedure failed rc=%d\n",
+			pr_debug("%s: Audio Start procedure failed rc=%d\n",
 						__func__, rc);
 			break;
 		}
@@ -109,7 +109,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_GET_G711_DEC_CONFIG: {
 		if (copy_to_user((void *)arg, audio->codec_cfg,
 			sizeof(struct msm_audio_g711_dec_config))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_G711_DEC_CONFIG failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_G711_DEC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -118,7 +118,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_SET_G711_DEC_CONFIG: {
 		if (copy_from_user(audio->codec_cfg, (void *)arg,
 			sizeof(struct msm_audio_g711_dec_config))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_G711_DEC_CONFIG failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_G711_DEC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -127,7 +127,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	default: {
 		rc = audio->codec_ioctl(file, cmd, arg);
 		if (rc)
-			pr_err("%s: Failed in audio_aio_ioctl: %d cmd=%d\n",
+			pr_debug("%s: Failed in audio_aio_ioctl: %d cmd=%d\n",
 				__func__, rc, cmd);
 		break;
 	}
@@ -170,7 +170,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_to_user((void *)arg, &g711_dec_config_32,
 			sizeof(g711_dec_config_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_G711_DEC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_G711_DEC_CONFIG_32 failed\n",
 				 __func__);
 			rc = -EFAULT;
 		}
@@ -184,7 +184,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_from_user(&g711_dec_config_32, (void *)arg,
 			sizeof(g711_dec_config_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_G711_DEC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_G711_DEC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -199,7 +199,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 	default: {
 		rc = audio->codec_compat_ioctl(file, cmd, arg);
 		if (rc)
-			pr_err("%s: Failed in audio_aio_compat_ioctl: %d cmd=%d\n",
+			pr_debug("%s: Failed in audio_aio_compat_ioctl: %d cmd=%d\n",
 				__func__, rc, cmd);
 		break;
 	}
@@ -239,7 +239,7 @@ static int audio_open(struct inode *inode, struct file *file)
 					     (void *)audio);
 
 	if (!audio->ac) {
-		pr_err("%s: Could not allocate memory for audio client\n",
+		pr_debug("%s: Could not allocate memory for audio client\n",
 					 __func__);
 		kfree(audio->codec_cfg);
 		kfree(audio);
@@ -256,7 +256,7 @@ static int audio_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_LINEAR_PCM,
 					   FORMAT_G711_ALAW_FS);
 		if (rc < 0) {
-			pr_err("%s: NT mode Open failed rc=%d\n", __func__, rc);
+			pr_debug("%s: NT mode Open failed rc=%d\n", __func__, rc);
 			goto fail;
 		}
 		audio->feedback = NON_TUNNEL_MODE;
@@ -267,13 +267,13 @@ static int audio_open(struct inode *inode, struct file *file)
 			!(file->f_mode & FMODE_READ)) {
 		rc = q6asm_open_write(audio->ac, FORMAT_G711_ALAW_FS);
 		if (rc < 0) {
-			pr_err("%s: T mode Open failed rc=%d\n", __func__, rc);
+			pr_debug("%s: T mode Open failed rc=%d\n", __func__, rc);
 			goto fail;
 		}
 		audio->feedback = TUNNEL_MODE;
 		audio->buf_cfg.meta_info_enable = 0x00;
 	} else {
-		pr_err("%s: %d mode is not supported mode\n",
+		pr_debug("%s: %d mode is not supported mode\n",
 				__func__, file->f_mode);
 		rc = -EACCES;
 		goto fail;
@@ -348,7 +348,7 @@ static int g711_channel_map(u8 *channel_mapping, uint32_t channels)
 		lchannel_mapping[6] = PCM_CHANNEL_RS;
 		lchannel_mapping[7] = PCM_CHANNEL_LFE;
 	} else {
-		pr_err("%s: ERROR.unsupported num_ch = %u\n",
+		pr_debug("%s: ERROR.unsupported num_ch = %u\n",
 				__func__, channels);
 		return -EINVAL;
 	}

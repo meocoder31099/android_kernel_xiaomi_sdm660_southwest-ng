@@ -95,7 +95,7 @@ static int watch_one_dir(struct watch_dir *wd)
 
 	ret = add_mark_on_inode(wd->inode, wd->mask, &wd->mark);
 	if (ret) {
-		pr_err("Add mark failed for %s (%d)\n", wd->path, ret);
+		pr_debug("Add mark failed for %s (%d)\n", wd->path, ret);
 		path_put(&wd->kpath);
 		iput(wd->inode);
 		wd->inode = NULL;

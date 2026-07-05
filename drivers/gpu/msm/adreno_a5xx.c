@@ -500,14 +500,14 @@ static int a5xx_regulator_enable(struct adreno_device *adreno_dev)
 	udelay(3);
 	ret = _poll_gdsc_status(adreno_dev, A5XX_GPMU_RBCCU_PWR_CLK_STATUS, 1);
 	if (ret) {
-		dev_err(device->dev, "RBCCU GDSC enable failed\n");
+		dev_dbg(device->dev, "RBCCU GDSC enable failed\n");
 		return ret;
 	}
 
 	kgsl_regwrite(device, A5XX_GPMU_SP_POWER_CNTL, 0x778000);
 	ret = _poll_gdsc_status(adreno_dev, A5XX_GPMU_SP_PWR_CLK_STATUS, 1);
 	if (ret) {
-		dev_err(device->dev, "SPTP GDSC enable failed\n");
+		dev_dbg(device->dev, "SPTP GDSC enable failed\n");
 		return ret;
 	}
 
@@ -553,28 +553,28 @@ static void a5xx_regulator_disable(struct adreno_device *adreno_dev)
 		udelay(3);
 		if (_poll_gdsc_status(adreno_dev,
 					A5XX_GPMU_SP_PWR_CLK_STATUS, 0))
-			dev_warn(device->dev, "SPTP GDSC disable failed\n");
+			dev_dbg(device->dev, "SPTP GDSC disable failed\n");
 
 		kgsl_regwrite(device, A5XX_GPMU_RBCCU_POWER_CNTL, 0x778001);
 		if (_poll_gdsc_status(adreno_dev,
 					A5XX_GPMU_RBCCU_PWR_CLK_STATUS, 0))
-			dev_warn(device->dev, "RBCCU GDSC disable failed\n");
+			dev_dbg(device->dev, "RBCCU GDSC disable failed\n");
 	} else if (test_bit(ADRENO_DEVICE_GPMU_INITIALIZED,
 			&adreno_dev->priv)) {
 		/* GPMU firmware is supposed to turn off SPTP & RAC GDSCs. */
 		kgsl_regread(device, A5XX_GPMU_SP_PWR_CLK_STATUS, &reg);
 		if (reg & BIT(20))
-			dev_warn(device->dev, "SPTP GDSC is not disabled\n");
+			dev_dbg(device->dev, "SPTP GDSC is not disabled\n");
 		kgsl_regread(device, A5XX_GPMU_RBCCU_PWR_CLK_STATUS, &reg);
 		if (reg & BIT(20))
-			dev_warn(device->dev, "RBCCU GDSC is not disabled\n");
+			dev_dbg(device->dev, "RBCCU GDSC is not disabled\n");
 		/*
 		 * GPMU firmware is supposed to set GMEM to non-retention.
 		 * Bit 14 is the memory core force on bit.
 		 */
 		kgsl_regread(device, A5XX_GPMU_RBCCU_CLOCK_CNTL, &reg);
 		if (reg & BIT(14))
-			dev_warn(device->dev, "GMEM is forced on\n");
+			dev_dbg(device->dev, "GMEM is forced on\n");
 	}
 
 	if (adreno_is_a530(adreno_dev)) {
@@ -698,7 +698,7 @@ static int _load_gpmu_firmware(struct adreno_device *adreno_dev)
 
 	ret = request_firmware(&fw, a5xx_core->gpmufw_name, device->dev);
 	if (ret || fw == NULL) {
-		dev_err(device->dev, "request_firmware (%s) failed: %d\n",
+		dev_dbg(device->dev, "request_firmware (%s) failed: %d\n",
 				a5xx_core->gpmufw_name, ret);
 		return ret;
 	}
@@ -723,7 +723,7 @@ static int _load_gpmu_firmware(struct adreno_device *adreno_dev)
 	cmd_size = data[0] - data[2] - 2;
 
 	if (cmd_size > GPMU_INST_RAM_SIZE) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"GPMU firmware block size is larger than RAM size\n");
 		goto err;
 	}
@@ -800,7 +800,7 @@ static int a5xx_gpmu_start(struct adreno_device *adreno_dev)
 	} while ((reg != 0xBABEFACE) && retry--);
 
 	if (reg != 0xBABEFACE) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"GPMU firmware initialization timed out\n");
 		return -ETIMEDOUT;
 	}
@@ -809,7 +809,7 @@ static int a5xx_gpmu_start(struct adreno_device *adreno_dev)
 		kgsl_regread(device, A5XX_GPMU_GENERAL_1, &reg);
 
 		if (reg) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"GPMU firmware initialization failed: %d\n",
 				reg);
 			return -EIO;
@@ -879,7 +879,7 @@ static int _read_fw2_block_header(struct kgsl_device *device,
 		case HEADER_MAJOR:
 			if ((major > header[i + 1]) &&
 				header[i + 1]) {
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"GPMU major version mis-match %d, %d\n",
 					major, header[i + 1]);
 				return -EINVAL;
@@ -887,7 +887,7 @@ static int _read_fw2_block_header(struct kgsl_device *device,
 			break;
 		case HEADER_MINOR:
 			if (minor > header[i + 1])
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"GPMU minor version mis-match %d %d\n",
 					minor, header[i + 1]);
 			break;
@@ -895,7 +895,7 @@ static int _read_fw2_block_header(struct kgsl_device *device,
 		case HEADER_TIME:
 			break;
 		default:
-			dev_err(device->dev, "GPMU unknown header ID %d\n",
+			dev_dbg(device->dev, "GPMU unknown header ID %d\n",
 					header[i]);
 		}
 	}
@@ -939,7 +939,7 @@ static void _load_regfile(struct adreno_device *adreno_dev)
 
 	ret = request_firmware(&fw, a5xx_core->regfw_name, device->dev);
 	if (ret) {
-		dev_err(device->dev, "request firmware failed %d, %s\n",
+		dev_dbg(device->dev, "request firmware failed %d, %s\n",
 				ret, a5xx_core->regfw_name);
 		return;
 	}
@@ -985,7 +985,7 @@ static void _load_regfile(struct adreno_device *adreno_dev)
 
 err:
 	release_firmware(fw);
-	dev_err(device->dev,
+	dev_dbg(device->dev,
 		     "Register file failed to load sz=%d bsz=%llu header=%d\n",
 		     fw_size, block_size, ret);
 }
@@ -1088,7 +1088,7 @@ static void a530_lm_init(struct adreno_device *adreno_dev)
 				adreno_dev->lm_size)) {
 		/* If the sequence is invalid, it's not getting better */
 		adreno_dev->lm_sequence = NULL;
-		dev_warn(device->dev,
+		dev_dbg(device->dev,
 				"Invalid LM sequence\n");
 		return;
 	}
@@ -1167,7 +1167,7 @@ static void a540_lm_init(struct adreno_device *adreno_dev)
 		kgsl_regread(device, A5XX_GPMU_TEMP_SENSOR_CONFIG, &r);
 
 		if ((r & GPMU_ISENSE_STATUS) == GPMU_ISENSE_END_POINT_CAL_ERR) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"GPMU: ISENSE end point calibration failure\n");
 			agc_lm_config |= AGC_LM_CONFIG_ENABLE_ERROR;
 		}
@@ -1255,11 +1255,11 @@ static void a5xx_pwrlevel_change_settings(struct adreno_device *adreno_dev,
 
 	if (!post) {
 		if (gpmu_set_level(adreno_dev, (0x80000010 | postlevel)))
-			dev_err(KGSL_DEVICE(adreno_dev)->dev,
+			dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 				"GPMU pre powerlevel did not stabilize\n");
 	} else {
 		if (gpmu_set_level(adreno_dev, (0x80000000 | postlevel)))
-			dev_err(KGSL_DEVICE(adreno_dev)->dev,
+			dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 				"GPMU post powerlevel did not stabilize\n");
 	}
 }
@@ -1635,7 +1635,7 @@ static void a5xx_start(struct adreno_device *adreno_dev)
 			kgsl_regwrite(device, A5XX_RBBM_CLOCK_CNTL, 0x0);
 			kgsl_regwrite(device, A5XX_RBBM_ISDB_CNT, 0x0);
 		} else
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"Active count failed while turning on ISDB\n");
 	} else {
 		/* if not in ISDB mode enable ME/PFP split notification */
@@ -1735,7 +1735,7 @@ static int a5xx_post_start(struct adreno_device *adreno_dev)
 	if (IS_ERR(cmds)) {
 		struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "error allocating preemtion init cmds\n");
 		return PTR_ERR(cmds);
 	}
@@ -1833,7 +1833,7 @@ static int a5xx_microcode_load(struct adreno_device *adreno_dev)
 
 		ret = scm_call2(SCM_SIP_FNID(SCM_SVC_BOOT, 0xA), &desc);
 		if (ret) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"SCM resume call failed with error %d\n", ret);
 			return ret;
 		}
@@ -2055,7 +2055,7 @@ static int _load_firmware(struct kgsl_device *device, const char *fwfile,
 	ret = request_firmware(&fw, fwfile, device->dev);
 
 	if (ret) {
-		dev_err(device->dev, "request_firmware(%s) failed: %d\n",
+		dev_dbg(device->dev, "request_firmware(%s) failed: %d\n",
 				fwfile, ret);
 		return ret;
 	}
@@ -2770,7 +2770,7 @@ static void a5xx_irq_storm_worker(struct work_struct *work)
 			gpudev->irq->mask);
 	clear_bit(ADRENO_DEVICE_CACHE_FLUSH_TS_SUSPENDED, &adreno_dev->priv);
 
-	dev_warn(device->dev, "Re-enabled A5XX_INT_CP_CACHE_FLUSH_TS\n");
+	dev_dbg(device->dev, "Re-enabled A5XX_INT_CP_CACHE_FLUSH_TS\n");
 	mutex_unlock(&device->mutex);
 
 	/* Reschedule just to make sure everything retires */

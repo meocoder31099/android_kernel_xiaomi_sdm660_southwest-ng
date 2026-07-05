@@ -1195,7 +1195,7 @@ static journal_t *journal_init_common(struct block_device *bdev,
 
 	bh = getblk_unmovable(journal->j_dev, start, journal->j_blocksize);
 	if (!bh) {
-		pr_err("%s: Cannot get buffer for journal superblock\n",
+		pr_debug("%s: Cannot get buffer for journal superblock\n",
 			__func__);
 		goto err_cleanup;
 	}
@@ -1270,7 +1270,7 @@ journal_t *jbd2_journal_init_inode(struct inode *inode)
 	err = bmap(inode, &blocknr);
 
 	if (err || !blocknr) {
-		pr_err("%s: Cannot locate journal superblock\n",
+		pr_debug("%s: Cannot locate journal superblock\n",
 			__func__);
 		return NULL;
 	}

@@ -19,14 +19,14 @@
 
 #include "power_supply.h"
 
-#undef dev_info
-#define dev_info(x, ...)
 #undef dev_dbg
 #define dev_dbg(x, ...)
-#undef dev_err
-#define dev_err(x, ...)
-#undef pr_info
-#define pr_info(x, ...)
+#undef dev_dbg
+#define dev_dbg(x, ...)
+#undef dev_dbg
+#define dev_dbg(x, ...)
+#undef pr_debug
+#define pr_debug(x, ...)
 #undef pr_debug
 #define pr_debug(x, ...)
 #undef pr_error
@@ -143,7 +143,7 @@ static ssize_t power_supply_show_usb_type(struct device *dev,
 	}
 
 	if (!match) {
-		dev_warn(dev, "driver reporting unsupported connected type\n");
+		dev_dbg(dev, "driver reporting unsupported connected type\n");
 		return -EINVAL;
 	}
 

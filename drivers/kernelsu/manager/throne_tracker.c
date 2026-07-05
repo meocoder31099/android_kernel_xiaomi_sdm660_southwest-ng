@@ -33,7 +33,7 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 {
 	char pkg[KSU_MAX_PACKAGE_NAME];
 	if (get_pkg_from_apk_path(pkg, apk) < 0) {
-		pr_err("Failed to get package name from apk path: %s\n", apk);
+		pr_debug("Failed to get package name from apk path: %s\n", apk);
 		return;
 	}
 
@@ -98,7 +98,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	char dirpath[DATA_PATH_LEN];
 
 	if (!my_ctx) {
-		pr_err("Invalid context\n");
+		pr_debug("Invalid context\n");
 		return FILLDIR_ACTOR_STOP;
 	}
 	if (my_ctx->stop && *my_ctx->stop) {
@@ -117,7 +117,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 	if (snprintf(dirpath, DATA_PATH_LEN, "%s/%.*s", my_ctx->parent_dir, namelen,
 				name) >= DATA_PATH_LEN) {
-		pr_err("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen, name);
+		pr_debug("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen, name);
 		return FILLDIR_ACTOR_CONTINUE;
 	}
 
@@ -126,7 +126,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		struct data_path *data = kzalloc(sizeof(struct data_path), GFP_KERNEL);
 
 		if (!data) {
-			pr_err("Failed to allocate memory for %s\n", dirpath);
+			pr_debug("Failed to allocate memory for %s\n", dirpath);
 			return FILLDIR_ACTOR_CONTINUE;
 		}
 
@@ -179,7 +179,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 			if (!stop) {
 				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
 				if (IS_ERR(file)) {
-					pr_err("Failed to open directory: %s, err: %ld\n",
+					pr_debug("Failed to open directory: %s, err: %ld\n",
 						pos->dirpath, PTR_ERR(file));
 					goto skip_iterate;
 				}
@@ -301,14 +301,14 @@ static bool do_track_throne_core(bool prune_only)
 		char *uid = strsep(&tmp, delim);
 		if (!uid || !package) {
 			kfree(data);
-			pr_err("update_uid: package or uid is NULL!\n");
+			pr_debug("update_uid: package or uid is NULL!\n");
 			break;
 		}
 
 		u32 res;
 		if (kstrtou32(uid, 10, &res)) {
 			kfree(data);
-			pr_err("update_uid: uid parse err\n");
+			pr_debug("update_uid: uid parse err\n");
 			break;
 		}
 		data->uid = res;
@@ -382,7 +382,7 @@ static void ksu_throne_work_fn(struct work_struct *work)
 		schedule_delayed_work(&data->dwork, msecs_to_jiffies(100));
 	} else {
 		if (!success) {
-			pr_warn("throne_tracker: giving up after 10 retries.\n");
+			pr_debug("throne_tracker: giving up after 10 retries.\n");
 		}
 		data->retries = 0; // Resets for future triggers
 	}

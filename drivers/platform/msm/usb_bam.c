@@ -359,7 +359,7 @@ static void usb_bam_set_inactivity_timer(enum usb_ctrl bam)
 	}
 
 	if (!pipe) {
-		pr_warn("%s: Bam has no connected pipes\n", __func__);
+		pr_debug("%s: Bam has no connected pipes\n", __func__);
 		return;
 	}
 
@@ -1303,7 +1303,7 @@ int usb_bam_connect(enum usb_ctrl cur_bam, int idx, u32 *bam_pipe_idx,
 	struct device *bam_dev = &ctx->usb_bam_pdev->dev;
 
 	if (pipe_connect->enabled) {
-		pr_warn("%s: connection %d was already established\n",
+		pr_debug("%s: connection %d was already established\n",
 				__func__, idx);
 		return 0;
 	}
@@ -3083,7 +3083,7 @@ static void msm_usb_bam_update_props(struct sps_bam_props *props,
 	if (dev && dev->parent && device_property_present(dev->parent, "iommus")
 		&& !device_property_present(dev->parent,
 						"qcom,smmu-s1-bypass")) {
-		pr_info("%s: setting SPS_BAM_SMMU_EN flag with (%s)\n",
+		pr_debug("%s: setting SPS_BAM_SMMU_EN flag with (%s)\n",
 						__func__, dev_name(dev));
 		props->options |= SPS_BAM_SMMU_EN;
 	}
@@ -3117,7 +3117,7 @@ static int usb_bam_init(struct platform_device *pdev)
 	if (dev && dev->parent && device_property_present(dev->parent, "iommus")
 		&& !device_property_present(dev->parent,
 						"qcom,smmu-s1-bypass")) {
-		pr_info("%s: setting SPS_BAM_SMMU_EN flag with (%s)\n",
+		pr_debug("%s: setting SPS_BAM_SMMU_EN flag with (%s)\n",
 						__func__, dev_name(dev));
 		props.options |= SPS_BAM_SMMU_EN;
 	}
@@ -3179,7 +3179,7 @@ static int usb_bam_panic_notifier(struct notifier_block *this,
 	if (!ctx->pipes_enabled_per_bam || info[i].pipes_suspended)
 		goto fail;
 
-	pr_err("%s: dump usb bam registers here in call back!\n",
+	pr_debug("%s: dump usb bam registers here in call back!\n",
 								__func__);
 	sps_get_bam_debug_info(ctx->h_bam, 93,
 			(SPS_BAM_PIPE(0) | SPS_BAM_PIPE(1)), 0, 2);
@@ -3216,13 +3216,13 @@ static int usb_bam_probe(struct platform_device *pdev)
 
 	io_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!io_res) {
-		dev_err(&pdev->dev, "missing BAM memory resource\n");
+		dev_dbg(&pdev->dev, "missing BAM memory resource\n");
 		return -ENODEV;
 	}
 
 	irq = platform_get_irq(pdev, 0);
 	if (irq < 0) {
-		dev_err(&pdev->dev, "Unable to get IRQ resource\n");
+		dev_dbg(&pdev->dev, "Unable to get IRQ resource\n");
 		return irq;
 	}
 

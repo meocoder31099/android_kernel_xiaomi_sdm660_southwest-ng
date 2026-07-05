@@ -67,10 +67,10 @@ static long msm_rng_ioctl(struct file *filp, unsigned int cmd,
 		ret = msm_bus_scale_client_update_request(
 				msm_rng_device_info.qrng_perf_client, 0);
 		if (ret)
-			pr_err("failed qrng_reset_bus_bw, ret = %ld\n", ret);
+			pr_debug("failed qrng_reset_bus_bw, ret = %ld\n", ret);
 		break;
 	default:
-		pr_err("Unsupported IOCTL call\n");
+		pr_debug("Unsupported IOCTL call\n");
 		break;
 	}
 	return ret;
@@ -106,7 +106,7 @@ static int msm_rng_direct_read(struct msm_rng_device *msm_rng_dev,
 		ret = msm_bus_scale_client_update_request(
 				msm_rng_dev->qrng_perf_client, 1);
 		if (ret) {
-			pr_err("bus_scale_client_update_req failed\n");
+			pr_debug("bus_scale_client_update_req failed\n");
 			goto bus_err;
 		}
 	}
@@ -114,7 +114,7 @@ static int msm_rng_direct_read(struct msm_rng_device *msm_rng_dev,
 	if (msm_rng_dev->prng_clk) {
 		ret = clk_prepare_enable(msm_rng_dev->prng_clk);
 		if (ret) {
-			pr_err("failed to enable prng clock\n");
+			pr_debug("failed to enable prng clock\n");
 			goto err;
 		}
 	}
@@ -125,7 +125,7 @@ static int msm_rng_direct_read(struct msm_rng_device *msm_rng_dev,
 				& 0x00000001)) {
 			if (failed++ == RETRY_MAX_CNT) {
 				if (currsize == 0)
-					pr_err("Data not available\n");
+					pr_debug("Data not available\n");
 				break;
 			}
 			udelay(RETRY_DELAY_INTERVAL);
@@ -152,7 +152,7 @@ err:
 		ret = msm_bus_scale_client_update_request(
 				msm_rng_dev->qrng_perf_client, 0);
 		if (ret)
-			pr_err("bus_scale_client_update_req failed\n");
+			pr_debug("bus_scale_client_update_req failed\n");
 	}
 bus_err:
 	mutex_unlock(&msm_rng_dev->rng_lock);
@@ -188,13 +188,13 @@ static int msm_rng_enable_hw(struct msm_rng_device *msm_rng_dev)
 		ret = msm_bus_scale_client_update_request(
 				msm_rng_dev->qrng_perf_client, 1);
 		if (ret)
-			pr_err("bus_scale_client_update_req failed\n");
+			pr_debug("bus_scale_client_update_req failed\n");
 	}
 	/* Enable the PRNG CLK */
 	if (msm_rng_dev->prng_clk) {
 		ret = clk_prepare_enable(msm_rng_dev->prng_clk);
 		if (ret) {
-			dev_err(&(msm_rng_dev->pdev)->dev,
+			dev_dbg(&(msm_rng_dev->pdev)->dev,
 				"failed to enable clock in probe\n");
 			return -EPERM;
 		}
@@ -230,7 +230,7 @@ static int msm_rng_enable_hw(struct msm_rng_device *msm_rng_dev)
 		ret = msm_bus_scale_client_update_request(
 				msm_rng_dev->qrng_perf_client, 0);
 		if (ret)
-			pr_err("bus_scale_client_update_req failed\n");
+			pr_debug("bus_scale_client_update_req failed\n");
 	}
 
 	return 0;
@@ -256,7 +256,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (res == NULL) {
-		dev_err(&pdev->dev, "invalid address\n");
+		dev_dbg(&pdev->dev, "invalid address\n");
 		error = -EFAULT;
 		goto err_exit;
 	}
@@ -269,7 +269,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 
 	base = ioremap(res->start, resource_size(res));
 	if (!base) {
-		dev_err(&pdev->dev, "ioremap failed\n");
+		dev_dbg(&pdev->dev, "ioremap failed\n");
 		error = -ENOMEM;
 		goto err_iomap;
 	}
@@ -297,7 +297,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 	}
 
 	if (IS_ERR(msm_rng_dev->prng_clk)) {
-		dev_err(&pdev->dev, "failed to register clock source\n");
+		dev_dbg(&pdev->dev, "failed to register clock source\n");
 		error = -EPERM;
 		goto err_clk_get;
 	}
@@ -314,7 +314,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 		msm_rng_device_info.qrng_perf_client =
 					msm_rng_dev->qrng_perf_client;
 		if (!msm_rng_dev->qrng_perf_client)
-			pr_err("Unable to register bus client\n");
+			pr_debug("Unable to register bus client\n");
 	}
 
 	/* Enable rng h/w for the targets which can access the entire
@@ -336,7 +336,7 @@ static int msm_rng_probe(struct platform_device *pdev)
 	msm_rng.priv = (unsigned long) msm_rng_dev;
 	error = hwrng_register(&msm_rng);
 	if (error) {
-		dev_err(&pdev->dev, "failed to register hwrng\n");
+		dev_dbg(&pdev->dev, "failed to register hwrng\n");
 		error = -EPERM;
 		goto rollback_clk;
 	}
@@ -344,14 +344,14 @@ static int msm_rng_probe(struct platform_device *pdev)
 
 	msm_rng_class = class_create(THIS_MODULE, "msm-rng");
 	if (IS_ERR(msm_rng_class)) {
-		pr_err("class_create failed\n");
+		pr_debug("class_create failed\n");
 		return PTR_ERR(msm_rng_class);
 	}
 
 	dev = device_create(msm_rng_class, NULL, MKDEV(QRNG_IOC_MAGIC, 0),
 				NULL, "msm-rng");
 	if (IS_ERR(dev)) {
-		pr_err("Device create failed\n");
+		pr_debug("Device create failed\n");
 		error = PTR_ERR(dev);
 		goto unregister_chrdev;
 	}
@@ -398,20 +398,20 @@ static int qrng_get_random(struct crypto_rng *tfm, const u8 *src,
 	int rv = -EFAULT;
 
 	if (!msm_rng_dev_cached) {
-		pr_err("%s: msm_rng_dev is not initialized\n", __func__);
+		pr_debug("%s: msm_rng_dev is not initialized\n", __func__);
 		rv = -ENODEV;
 		goto err_exit;
 	}
 
 	if (!rdata) {
-		pr_err("%s: data buffer is null\n", __func__);
+		pr_debug("%s: data buffer is null\n", __func__);
 		rv = -EINVAL;
 		goto err_exit;
 	}
 
 	if (signal_pending(current) ||
 		mutex_lock_interruptible(&cached_rng_lock)) {
-		pr_err("%s: mutex lock interrupted\n", __func__);
+		pr_debug("%s: mutex lock interrupted\n", __func__);
 		rv = -ERESTARTSYS;
 		goto err_exit;
 	}
@@ -466,13 +466,13 @@ static int __init msm_rng_init(void)
 	msm_rng_dev_cached = NULL;
 	ret = platform_driver_register(&rng_driver);
 	if (ret) {
-		pr_err("%s: platform_driver_register error:%d\n",
+		pr_debug("%s: platform_driver_register error:%d\n",
 			__func__, ret);
 		goto err_exit;
 	}
 	ret = crypto_register_rngs(rng_algs, ARRAY_SIZE(rng_algs));
 	if (ret) {
-		pr_err("%s: crypto_register_algs error:%d\n",
+		pr_debug("%s: crypto_register_algs error:%d\n",
 			__func__, ret);
 		goto err_exit;
 	}

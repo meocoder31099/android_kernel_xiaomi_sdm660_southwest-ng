@@ -1841,7 +1841,7 @@ static inline int adreno_wait_for_halt_ack(struct kgsl_device *device,
 		if ((val & mask) == mask)
 			break;
 		if (time_after(jiffies, wait_for_vbif)) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"GBIF/VBIF Halt ack timeout: reg=%08X mask=%08X status=%08X\n",
 				ack_reg, mask, val);
 			ret = -ETIMEDOUT;

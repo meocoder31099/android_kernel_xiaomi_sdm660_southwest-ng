@@ -530,7 +530,7 @@ static int msm_mpm_init(struct device_node *node)
 
 	dev->mpm_request_reg_base = of_iomap(node, index);
 	if (!dev->mpm_request_reg_base) {
-		pr_err("Unable to iomap\n");
+		pr_debug("Unable to iomap\n");
 		ret = -EADDRNOTAVAIL;
 		goto reg_base_err;
 	}
@@ -543,14 +543,14 @@ static int msm_mpm_init(struct device_node *node)
 
 	dev->mpm_ipc_reg = of_iomap(node, index);
 	if (!dev->mpm_ipc_reg) {
-		pr_err("Unable to iomap IPC register\n");
+		pr_debug("Unable to iomap IPC register\n");
 		ret = -EADDRNOTAVAIL;
 		goto ipc_reg_err;
 	}
 
 	irq = of_irq_get(node, 0);
 	if (irq <= 0) {
-		pr_err("no IRQ resource info\n");
+		pr_debug("no IRQ resource info\n");
 		ret = irq;
 		goto ipc_irq_err;
 	}
@@ -560,13 +560,13 @@ static int msm_mpm_init(struct device_node *node)
 		IRQF_TRIGGER_RISING | IRQF_NO_SUSPEND, "mpm",
 		msm_mpm_irq);
 	if (ret) {
-		pr_err("request_irq failed errno: %d\n", ret);
+		pr_debug("request_irq failed errno: %d\n", ret);
 		goto ipc_irq_err;
 	}
 
 	ret = irq_set_irq_wake(dev->ipc_irq, 1);
 	if (ret) {
-		pr_err("failed to set wakeup irq %lu: %d\n",
+		pr_debug("failed to set wakeup irq %lu: %d\n",
 			dev->ipc_irq, ret);
 		goto set_wake_irq_err;
 	}
@@ -624,13 +624,13 @@ static int __init mpm_gic_chip_init(struct device_node *node,
 	int ret;
 
 	if (!parent) {
-		pr_err("%s(): no parent for mpm-gic\n", node->full_name);
+		pr_debug("%s(): no parent for mpm-gic\n", node->full_name);
 		return -ENXIO;
 	}
 
 	parent_domain = irq_find_host(parent);
 	if (!parent_domain) {
-		pr_err("unable to obtain gic parent domain\n");
+		pr_debug("unable to obtain gic parent domain\n");
 		return -ENXIO;
 	}
 
@@ -642,7 +642,7 @@ static int __init mpm_gic_chip_init(struct device_node *node,
 
 	id = of_match_node(mpm_gic_chip_data_table, node);
 	if (!id) {
-		pr_err("can not find mpm_gic_data_table of_node\n");
+		pr_debug("can not find mpm_gic_data_table of_node\n");
 		ret = -ENODEV;
 		goto mpm_map_err;
 	}
@@ -651,7 +651,7 @@ static int __init mpm_gic_chip_init(struct device_node *node,
 			parent_domain, 0, num_mpm_irqs, node,
 			&msm_mpm_gic_chip_domain_ops, (void *)id->data);
 	if (!msm_mpm_dev_data.gic_chip_domain) {
-		pr_err("gic domain add failed\n");
+		pr_debug("gic domain add failed\n");
 		ret = -ENOMEM;
 		goto mpm_map_err;
 	}

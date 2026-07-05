@@ -361,7 +361,7 @@ smc_pxa_dma_insl(void __iomem *ioaddr, struct smc_local *lp, int reg, int dma,
 	config.dst_maxburst = 32;
 	ret = dmaengine_slave_config(lp->dma_chan, &config);
 	if (ret) {
-		dev_err(lp->device, "dma channel configuration failed: %d\n",
+		dev_dbg(lp->device, "dma channel configuration failed: %d\n",
 			ret);
 		return;
 	}
@@ -404,7 +404,7 @@ smc_pxa_dma_insw(void __iomem *ioaddr, struct smc_local *lp, int reg, int dma,
 	config.dst_maxburst = 32;
 	ret = dmaengine_slave_config(lp->dma_chan, &config);
 	if (ret) {
-		dev_err(lp->device, "dma channel configuration failed: %d\n",
+		dev_dbg(lp->device, "dma channel configuration failed: %d\n",
 			ret);
 		return;
 	}
@@ -858,7 +858,7 @@ static const char * chip_ids[ 16 ] =  {
 	({								\
 		int __b = SMC_CURRENT_BANK(lp);			\
 		if (unlikely((__b & ~0xf0) != (0x3300 | bank))) {	\
-			pr_err("%s: bank reg screwed (0x%04x)\n",	\
+			pr_debug("%s: bank reg screwed (0x%04x)\n",	\
 			       CARDNAME, __b);				\
 			BUG();						\
 		}							\

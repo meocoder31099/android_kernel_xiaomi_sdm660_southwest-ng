@@ -374,7 +374,7 @@ static int parse_audio_format_rates_v2v3(struct snd_usb_audio *chip,
 	int clock = snd_usb_clock_find_source(chip, fp, false);
 
 	if (clock < 0) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%s(): unable to find clock source (clock %d)\n",
 				__func__, clock);
 		goto err;
@@ -388,7 +388,7 @@ static int parse_audio_format_rates_v2v3(struct snd_usb_audio *chip,
 			      tmp, sizeof(tmp));
 
 	if (ret < 0) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%s(): unable to retrieve number of sample rates (clock %d)\n",
 				__func__, clock);
 		goto err;
@@ -410,7 +410,7 @@ static int parse_audio_format_rates_v2v3(struct snd_usb_audio *chip,
 			      data, data_size);
 
 	if (ret < 0) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%s(): unable to retrieve sample rate range (clock %d)\n",
 				__func__, clock);
 		ret = -EINVAL;

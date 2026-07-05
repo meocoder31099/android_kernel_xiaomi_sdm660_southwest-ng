@@ -2827,12 +2827,12 @@ static int blk_mq_alloc_rq_maps(struct blk_mq_tag_set *set)
 	} while (set->queue_depth);
 
 	if (!set->queue_depth || err) {
-		pr_err("blk-mq: failed to allocate request map\n");
+		pr_debug("blk-mq: failed to allocate request map\n");
 		return -ENOMEM;
 	}
 
 	if (depth != set->queue_depth)
-		pr_info("blk-mq: reduced tag depth (%u -> %u)\n",
+		pr_debug("blk-mq: reduced tag depth (%u -> %u)\n",
 						depth, set->queue_depth);
 
 	return 0;
@@ -2888,7 +2888,7 @@ int blk_mq_alloc_tag_set(struct blk_mq_tag_set *set)
 		return -EINVAL;
 
 	if (set->queue_depth > BLK_MQ_MAX_DEPTH) {
-		pr_info("blk-mq: reduced tag depth to %u\n",
+		pr_debug("blk-mq: reduced tag depth to %u\n",
 			BLK_MQ_MAX_DEPTH);
 		set->queue_depth = BLK_MQ_MAX_DEPTH;
 	}

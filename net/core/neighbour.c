@@ -723,13 +723,13 @@ void neigh_destroy(struct neighbour *neigh)
 	NEIGH_CACHE_STAT_INC(neigh->tbl, destroys);
 
 	if (!neigh->dead) {
-		pr_warn("Destroying alive neighbour %pK\n", neigh);
+		pr_debug("Destroying alive neighbour %pK\n", neigh);
 		dump_stack();
 		return;
 	}
 
 	if (neigh_del_timer(neigh))
-		pr_warn("Impossible event\n");
+		pr_debug("Impossible event\n");
 
 	write_lock_bh(&neigh->lock);
 	__skb_queue_purge(&neigh->arp_queue);

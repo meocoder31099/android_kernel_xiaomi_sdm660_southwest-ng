@@ -1108,7 +1108,7 @@ static inline enum mdss_mdp_pu_type mdss_mdp_get_pu_type(
 	else if (mctl->mixer_right && mctl->mixer_right->valid_roi)
 		pu_type = MDSS_MDP_RIGHT_ONLY_UPDATE;
 	else
-		pr_err("%s: invalid pu_type\n", __func__);
+		pr_debug("%s: invalid pu_type\n", __func__);
 
 	return pu_type;
 }

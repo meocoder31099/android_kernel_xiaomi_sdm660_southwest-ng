@@ -114,7 +114,7 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 
 	module_id = btf_find_by_name_kind(btf, "module", BTF_KIND_STRUCT);
 	if (module_id < 0) {
-		pr_warn("Cannot find struct module in btf_vmlinux\n");
+		pr_debug("Cannot find struct module in btf_vmlinux\n");
 		return;
 	}
 	module_type = btf_type_by_id(btf, module_id);
@@ -124,7 +124,7 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 
 		if (strlen(st_ops->name) + VALUE_PREFIX_LEN >=
 		    sizeof(value_name)) {
-			pr_warn("struct_ops name %s is too long\n",
+			pr_debug("struct_ops name %s is too long\n",
 				st_ops->name);
 			continue;
 		}
@@ -133,7 +133,7 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 		value_id = btf_find_by_name_kind(btf, value_name,
 						 BTF_KIND_STRUCT);
 		if (value_id < 0) {
-			pr_warn("Cannot find struct %s in btf_vmlinux\n",
+			pr_debug("Cannot find struct %s in btf_vmlinux\n",
 				value_name);
 			continue;
 		}
@@ -141,13 +141,13 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 		type_id = btf_find_by_name_kind(btf, st_ops->name,
 						BTF_KIND_STRUCT);
 		if (type_id < 0) {
-			pr_warn("Cannot find struct %s in btf_vmlinux\n",
+			pr_debug("Cannot find struct %s in btf_vmlinux\n",
 				st_ops->name);
 			continue;
 		}
 		t = btf_type_by_id(btf, type_id);
 		if (btf_type_vlen(t) > BPF_STRUCT_OPS_MAX_NR_MEMBERS) {
-			pr_warn("Cannot support #%u members in struct %s\n",
+			pr_debug("Cannot support #%u members in struct %s\n",
 				btf_type_vlen(t), st_ops->name);
 			continue;
 		}
@@ -157,13 +157,13 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 
 			mname = btf_name_by_offset(btf, member->name_off);
 			if (!*mname) {
-				pr_warn("anon member in struct %s is not supported\n",
+				pr_debug("anon member in struct %s is not supported\n",
 					st_ops->name);
 				break;
 			}
 
 			if (btf_member_bitfield_size(t, member)) {
-				pr_warn("bit field member %s in struct %s is not supported\n",
+				pr_debug("bit field member %s in struct %s is not supported\n",
 					mname, st_ops->name);
 				break;
 			}
@@ -175,7 +175,7 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 			    btf_distill_func_proto(log, btf,
 						   func_proto, mname,
 						   &st_ops->func_models[j])) {
-				pr_warn("Error in parsing func ptr %s in struct %s\n",
+				pr_debug("Error in parsing func ptr %s in struct %s\n",
 					mname, st_ops->name);
 				break;
 			}
@@ -183,7 +183,7 @@ void bpf_struct_ops_init(struct btf *btf, struct bpf_verifier_log *log)
 
 		if (j == btf_type_vlen(t)) {
 			if (st_ops->init(btf)) {
-				pr_warn("Error in init bpf_struct_ops %s\n",
+				pr_debug("Error in init bpf_struct_ops %s\n",
 					st_ops->name);
 			} else {
 				st_ops->type_id = type_id;

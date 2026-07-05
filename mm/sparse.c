@@ -344,7 +344,7 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
 
 	usemap_nid = sparse_early_nid(__nr_to_section(usemap_snr));
 	if (usemap_nid != nid) {
-		pr_info("node %d must be removed before remove section %ld\n",
+		pr_debug("node %d must be removed before remove section %ld\n",
 			nid, usemap_snr);
 		return;
 	}
@@ -354,7 +354,7 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
 	 * gather other removable sections for dynamic partitioning.
 	 * Just notify un-removable section's number here.
 	 */
-	pr_info("Section %ld and %ld (node %d) have a circular dependency on usemap and pgdat allocations\n",
+	pr_debug("Section %ld and %ld (node %d) have a circular dependency on usemap and pgdat allocations\n",
 		usemap_snr, pgdat_snr, nid);
 }
 #else
@@ -454,7 +454,7 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
 							  usemap_size() *
 							  map_count);
 	if (!usemap) {
-		pr_err("%s: node[%d] usemap allocation failed", __func__, nid);
+		pr_debug("%s: node[%d] usemap allocation failed", __func__, nid);
 		goto failed;
 	}
 	sparse_buffer_init(map_count * section_map_size(), nid);
@@ -464,7 +464,7 @@ static void __init sparse_init_nid(int nid, unsigned long pnum_begin,
 
 		map = sparse_mem_map_populate(pnum, nid, NULL);
 		if (!map) {
-			pr_err("%s: node[%d] memory map backing failed. Some memory will not be available.",
+			pr_debug("%s: node[%d] memory map backing failed. Some memory will not be available.",
 			       __func__, nid);
 			pnum_begin = pnum;
 			sparse_buffer_fini();

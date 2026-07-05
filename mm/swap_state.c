@@ -848,12 +848,12 @@ static int __init swap_init_sysfs(void)
 
 	swap_kobj = kobject_create_and_add("swap", mm_kobj);
 	if (!swap_kobj) {
-		pr_err("failed to create swap kobject\n");
+		pr_debug("failed to create swap kobject\n");
 		return -ENOMEM;
 	}
 	err = sysfs_create_group(swap_kobj, &swap_attr_group);
 	if (err) {
-		pr_err("failed to register swap group\n");
+		pr_debug("failed to register swap group\n");
 		goto delete_obj;
 	}
 	return 0;

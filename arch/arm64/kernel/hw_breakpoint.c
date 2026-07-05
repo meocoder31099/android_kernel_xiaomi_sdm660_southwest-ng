@@ -1017,7 +1017,7 @@ static int __init arch_hw_breakpoint_init(void)
 	core_num_brps = get_num_brps();
 	core_num_wrps = get_num_wrps();
 
-	pr_info("found %d breakpoint and %d watchpoint registers.\n",
+	pr_debug("found %d breakpoint and %d watchpoint registers.\n",
 		core_num_brps, core_num_wrps);
 
 	/* Register debug fault handlers. */
@@ -1034,7 +1034,7 @@ static int __init arch_hw_breakpoint_init(void)
 			  "perf/arm64/hw_breakpoint:starting",
 			  hw_breakpoint_reset, NULL);
 	if (ret)
-		pr_err("failed to register CPU hotplug notifier: %d\n", ret);
+		pr_debug("failed to register CPU hotplug notifier: %d\n", ret);
 
 	/* Register cpu_suspend hw breakpoint restore hook */
 	cpu_suspend_set_dbg_restorer(hw_breakpoint_reset);

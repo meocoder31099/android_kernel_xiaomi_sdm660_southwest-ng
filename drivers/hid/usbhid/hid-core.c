@@ -1126,7 +1126,7 @@ static int usbhid_start(struct hid_device *hid)
 		if (hid->quirks & HID_QUIRK_FULLSPEED_INTERVAL &&
 		    dev->speed == USB_SPEED_HIGH) {
 			interval = fls(endpoint->bInterval*8);
-			pr_info("%s: Fixing fullspeed to highspeed interval: %d -> %d\n",
+			pr_debug("%s: Fixing fullspeed to highspeed interval: %d -> %d\n",
 				hid->name, endpoint->bInterval, interval);
 		}
 
@@ -1193,7 +1193,7 @@ static int usbhid_start(struct hid_device *hid)
 		usbhid->intf->needs_remote_wakeup = 1;
 		ret = hid_start_in(hid);
 		if (ret) {
-			dev_err(&hid->dev,
+			dev_dbg(&hid->dev,
 				"failed to start in urb: %d\n", ret);
 		}
 		usb_autopm_put_interface(usbhid->intf);
@@ -1707,7 +1707,7 @@ static int __init hid_init(void)
 	retval = usb_register(&hid_driver);
 	if (retval)
 		goto usb_register_fail;
-	pr_info(KBUILD_MODNAME ": " DRIVER_DESC "\n");
+	pr_debug(KBUILD_MODNAME ": " DRIVER_DESC "\n");
 
 	return 0;
 usb_register_fail:

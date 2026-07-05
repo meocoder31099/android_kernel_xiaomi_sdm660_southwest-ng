@@ -53,7 +53,7 @@ static int cavium_rng_probe_vf(struct	pci_dev		*pdev,
 	/* Map the RNG result */
 	rng->result = pcim_iomap(pdev, 0, 0);
 	if (!rng->result) {
-		dev_err(&pdev->dev, "Error iomap failed retrieving result.\n");
+		dev_dbg(&pdev->dev, "Error iomap failed retrieving result.\n");
 		return -ENOMEM;
 	}
 
@@ -69,7 +69,7 @@ static int cavium_rng_probe_vf(struct	pci_dev		*pdev,
 
 	ret = hwrng_register(&rng->ops);
 	if (ret) {
-		dev_err(&pdev->dev, "Error registering device as HWRNG.\n");
+		dev_dbg(&pdev->dev, "Error registering device as HWRNG.\n");
 		return ret;
 	}
 

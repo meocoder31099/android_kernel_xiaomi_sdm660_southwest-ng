@@ -41,7 +41,7 @@ static int audio_pdr_locator_callback(struct notifier_block *this,
 		pdr_state = AUDIO_PDR_FRAMEWORK_UP;
 		goto done;
 	} else
-		pr_err("%s: Service %s returned invalid total domains %d",
+		pr_debug("%s: Service %s returned invalid total domains %d",
 			__func__,
 			audio_pdr_services[AUDIO_PDR_DOMAIN_ADSP].service_name,
 			audio_pdr_services[AUDIO_PDR_DOMAIN_ADSP].
@@ -67,7 +67,7 @@ static struct notifier_block audio_pdr_locator_nb = {
 int audio_pdr_register(struct notifier_block *nb)
 {
 	if (nb == NULL) {
-		pr_err("%s: Notifier block is NULL\n", __func__);
+		pr_debug("%s: Notifier block is NULL\n", __func__);
 		return -EINVAL;
 	}
 	return srcu_notifier_chain_register(&audio_pdr_cb_list, nb);
@@ -85,7 +85,7 @@ EXPORT_SYMBOL(audio_pdr_register);
 int audio_pdr_deregister(struct notifier_block *nb)
 {
 	if (nb == NULL) {
-		pr_err("%s: Notifier block is NULL\n", __func__);
+		pr_debug("%s: Notifier block is NULL\n", __func__);
 		return -EINVAL;
 	}
 	return srcu_notifier_chain_unregister(&audio_pdr_cb_list, nb);
@@ -99,7 +99,7 @@ void *audio_pdr_service_register(int domain_id,
 
 	if ((domain_id < 0) ||
 	    (domain_id >= AUDIO_PDR_DOMAIN_MAX)) {
-		pr_err("%s: Invalid service ID %d\n", __func__, domain_id);
+		pr_debug("%s: Invalid service ID %d\n", __func__, domain_id);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -108,7 +108,7 @@ void *audio_pdr_service_register(int domain_id,
 		audio_pdr_services[domain_id].domain_list[0].instance_id,
 		nb, curr_state);
 	if (IS_ERR_OR_NULL(handle)) {
-		pr_err("%s: Failed to register for service %s, instance %d\n",
+		pr_debug("%s: Failed to register for service %s, instance %d\n",
 			__func__,
 			audio_pdr_services[domain_id].domain_list[0].name,
 			audio_pdr_services[domain_id].domain_list[0].
@@ -124,7 +124,7 @@ int audio_pdr_service_deregister(void *service_handle,
 	int ret;
 
 	if (service_handle == NULL) {
-		pr_err("%s: service handle is NULL\n", __func__);
+		pr_debug("%s: service handle is NULL\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -132,7 +132,7 @@ int audio_pdr_service_deregister(void *service_handle,
 	ret = service_notif_unregister_notifier(
 		service_handle, nb);
 	if (ret < 0)
-		pr_err("%s: Failed to deregister service ret %d\n",
+		pr_debug("%s: Failed to deregister service ret %d\n",
 			__func__, ret);
 done:
 	return ret;
@@ -156,7 +156,7 @@ static int __init audio_pdr_late_init(void)
 		audio_pdr_services[AUDIO_PDR_DOMAIN_ADSP].service_name,
 		&audio_pdr_locator_nb);
 	if (ret < 0) {
-		pr_err("%s get_service_location failed ret %d\n",
+		pr_debug("%s get_service_location failed ret %d\n",
 			__func__, ret);
 		srcu_notifier_call_chain(&audio_pdr_cb_list,
 					 AUDIO_PDR_FRAMEWORK_DOWN, NULL);

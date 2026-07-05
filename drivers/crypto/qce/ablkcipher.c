@@ -84,11 +84,11 @@ qce_ablkcipher_async_req_handle(struct crypto_async_request *async_req)
 	else
 		rctx->dst_nents = rctx->src_nents;
 	if (rctx->src_nents < 0) {
-		dev_err(qce->dev, "Invalid numbers of src SG.\n");
+		dev_dbg(qce->dev, "Invalid numbers of src SG.\n");
 		return rctx->src_nents;
 	}
 	if (rctx->dst_nents < 0) {
-		dev_err(qce->dev, "Invalid numbers of dst SG.\n");
+		dev_dbg(qce->dev, "Invalid numbers of dst SG.\n");
 		return -rctx->dst_nents;
 	}
 
@@ -386,7 +386,7 @@ static int qce_ablkcipher_register_one(const struct qce_ablkcipher_def *def,
 	ret = crypto_register_alg(alg);
 	if (ret) {
 		kfree(tmpl);
-		dev_err(qce->dev, "%s registration failed\n", alg->cra_name);
+		dev_dbg(qce->dev, "%s registration failed\n", alg->cra_name);
 		return ret;
 	}
 

@@ -165,7 +165,7 @@ static int __init fsverity_sysctl_init(void)
 	fsverity_sysctl_header = register_sysctl_paths(fsverity_sysctl_path,
 						       fsverity_sysctl_table);
 	if (!fsverity_sysctl_header) {
-		pr_err("sysctl registration failed!\n");
+		pr_debug("sysctl registration failed!\n");
 		return -ENOMEM;
 	}
 	return 0;

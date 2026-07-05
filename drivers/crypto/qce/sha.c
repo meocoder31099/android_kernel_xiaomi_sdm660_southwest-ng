@@ -93,7 +93,7 @@ static int qce_ahash_async_req_handle(struct crypto_async_request *async_req)
 
 	rctx->src_nents = sg_nents_for_len(req->src, req->nbytes);
 	if (rctx->src_nents < 0) {
-		dev_err(qce->dev, "Invalid numbers of src SG.\n");
+		dev_dbg(qce->dev, "Invalid numbers of src SG.\n");
 		return rctx->src_nents;
 	}
 
@@ -521,7 +521,7 @@ static int qce_ahash_register_one(const struct qce_ahash_def *def,
 
 	ret = crypto_register_ahash(alg);
 	if (ret) {
-		dev_err(qce->dev, "%s registration failed\n", base->cra_name);
+		dev_dbg(qce->dev, "%s registration failed\n", base->cra_name);
 		kfree(tmpl);
 		return ret;
 	}

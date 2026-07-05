@@ -42,7 +42,7 @@
 
 #define IPAWANERR(fmt, args...) \
 	do { \
-		pr_err(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args); \
+		pr_debug(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args); \
 		IPA_IPC_LOGGING(ipa_get_ipc_logbuf(), \
 			DEV_NAME " %s:%d " fmt, ## args); \
 		IPA_IPC_LOGGING(ipa_get_ipc_logbuf_low(), \
@@ -61,7 +61,7 @@
 
 #define IPAWANINFO(fmt, args...) \
 	do { \
-		pr_info(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args); \
+		pr_debug(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args); \
 		IPA_IPC_LOGGING(ipa_get_ipc_logbuf(), \
 			DEV_NAME " %s:%d " fmt, ## args); \
 		IPA_IPC_LOGGING(ipa_get_ipc_logbuf_low(), \
@@ -71,9 +71,9 @@
 #else
 #define IPAWANDBG(fmt, args...) pr_debug(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
 #define IPAWANDBG_LOW(fmt, args...) pr_debug(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
-#define IPAWANERR(fmt, args...) pr_err(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
+#define IPAWANERR(fmt, args...) pr_debug(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
 #define IPAWANERR_RL(fmt, args...) pr_err_ratelimited_ipa(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
-#define IPAWANINFO(fmt, args...) pr_info(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
+#define IPAWANINFO(fmt, args...) pr_debug(DEV_NAME " %s:%d " fmt, __func__, __LINE__, ## args)
 #endif
 
 extern struct ipa_qmi_context *ipa_qmi_ctx;

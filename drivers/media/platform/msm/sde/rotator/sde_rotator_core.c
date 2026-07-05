@@ -315,7 +315,7 @@ static int sde_rotator_footswitch_ctrl(struct sde_rot_mgr *mgr, bool on)
 		ret = sde_rot_enable_vreg(mgr->module_power.vreg_config,
 			mgr->module_power.num_vreg, on);
 	if (ret) {
-		pr_err("rotator regulator failed to %s ret:%d client:%d\n",
+		pr_debug("rotator regulator failed to %s ret:%d client:%d\n",
 		      on ? "enable" : "disable", ret,
 				      sde_rot_mgr_pd_enabled(mgr));
 		return ret;

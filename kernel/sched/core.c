@@ -3295,7 +3295,7 @@ static void set_schedstats(bool enabled)
 void force_schedstat_enabled(void)
 {
 	if (!schedstat_enabled()) {
-		pr_info("kernel profiling enabled schedstats, disable via kernel.sched_schedstats.\n");
+		pr_debug("kernel profiling enabled schedstats, disable via kernel.sched_schedstats.\n");
 		static_branch_enable(&sched_schedstats);
 	}
 }
@@ -3320,7 +3320,7 @@ static int __init setup_schedstats(char *str)
 	}
 out:
 	if (!ret)
-		pr_warn("Unable to parse schedstats=\n");
+		pr_debug("Unable to parse schedstats=\n");
 
 	return ret;
 }
@@ -4427,7 +4427,7 @@ static noinline void __schedule_bug(struct task_struct *prev)
 		print_irqtrace_events(prev);
 	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)
 	    && in_atomic_preempt_off()) {
-		pr_err("Preemption disabled at:");
+		pr_debug("Preemption disabled at:");
 		print_ip_sym(preempt_disable_ip);
 		pr_cont("\n");
 	}
@@ -7869,7 +7869,7 @@ void ___might_sleep(const char *file, int line, int preempt_offset)
 		print_irqtrace_events(current);
 	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)
 	    && !preempt_count_equals(preempt_offset)) {
-		pr_err("Preemption disabled at:");
+		pr_debug("Preemption disabled at:");
 		print_ip_sym(preempt_disable_ip);
 		pr_cont("\n");
 	}
@@ -9037,7 +9037,7 @@ struct cgroup_subsys cpu_cgrp_subsys = {
 
 void dump_cpu_task(int cpu)
 {
-	pr_info("Task dump for CPU %d:\n", cpu);
+	pr_debug("Task dump for CPU %d:\n", cpu);
 	sched_show_task(cpu_curr(cpu));
 }
 

@@ -225,10 +225,10 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				cb->func = ksu_initialize_selinux_tw_func;
 				if (task_work_add(current, cb, TWA_RESUME)) {
 					kfree(cb);
-					pr_warn("ksu_initialize_selinux failed to add task work\n");
+					pr_debug("ksu_initialize_selinux failed to add task work\n");
 				}
 			} else {
-				pr_warn(
+				pr_debug(
 					"ksu_initialize_selinux failed to allocate task work\n");
 			}
 			init_second_stage_executed = true;
@@ -393,7 +393,7 @@ static bool check_init_path(char *dpath)
 	}
 
 	if (!path_match) {
-		pr_err("vfs_read: couldn't determine init.rc path for %s\n",
+		pr_debug("vfs_read: couldn't determine init.rc path for %s\n",
 		       dpath);
 		return false;
 	}
@@ -564,7 +564,7 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	}
 
 	if (ret < 0) {
-		pr_err("Access filename failed for execve_handler_pre\n");
+		pr_debug("Access filename failed for execve_handler_pre\n");
 		return 0;
 	}
 	filename_in.name = path;
@@ -641,7 +641,7 @@ static int sys_fstat_handler_post(struct kretprobe_instance *p,
 		if (!copy_to_user(st_size_ptr, &new_size, size_bytes)) {
 			pr_debug("added ksu_rc_len");
 		} else {
-			pr_err("add ksu_rc_len failed: statbuf 0x%lx",
+			pr_debug("add ksu_rc_len failed: statbuf 0x%lx",
 					(unsigned long)st_size_ptr);
 		}
 	}

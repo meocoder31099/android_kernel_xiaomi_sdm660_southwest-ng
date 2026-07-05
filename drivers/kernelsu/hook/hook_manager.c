@@ -376,7 +376,7 @@ void __init ksu_syscall_hook_manager_init(void)
 	ksu_mark_running_process_locked();
 #endif
 	if (ret) {
-		pr_err("hook_manager: failed to register sys_enter tracepoint: %d\n", ret);
+		pr_debug("hook_manager: failed to register sys_enter tracepoint: %d\n", ret);
 	} else {
 		pr_debug("hook_manager: sys_enter tracepoint registered\n");
 	}

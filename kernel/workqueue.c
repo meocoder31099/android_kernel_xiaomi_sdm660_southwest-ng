@@ -1383,7 +1383,7 @@ static int wq_select_unbound_cpu(int cpu)
 		if (cpumask_test_cpu(cpu, wq_unbound_cpumask))
 			return cpu;
 	} else if (!printed_dbg_warning) {
-		pr_warn("workqueue: round-robin CPU selection forced, expect performance impact\n");
+		pr_debug("workqueue: round-robin CPU selection forced, expect performance impact\n");
 		printed_dbg_warning = true;
 	}
 
@@ -2206,7 +2206,7 @@ __acquires(&pool->lock)
 	lock_map_release(&pwq->wq->lockdep_map);
 
 	if (unlikely(in_atomic() || lockdep_depth(current) > 0)) {
-		pr_err("BUG: workqueue leaked lock or atomic: %s/0x%08x/%d\n"
+		pr_debug("BUG: workqueue leaked lock or atomic: %s/0x%08x/%d\n"
 		       "     last function: %pf\n",
 		       current->comm, preempt_count(), task_pid_nr(current),
 		       worker->current_func);
@@ -2888,7 +2888,7 @@ reflush:
 
 		if (++flush_cnt == 10 ||
 		    (flush_cnt % 100 == 0 && flush_cnt <= 1000))
-			pr_warn("workqueue %s: drain_workqueue() isn't complete after %u tries\n",
+			pr_debug("workqueue %s: drain_workqueue() isn't complete after %u tries\n",
 				wq->name, flush_cnt);
 
 		mutex_unlock(&wq->mutex);
@@ -4015,7 +4015,7 @@ static void wq_update_unbound_numa(struct workqueue_struct *wq, int cpu,
 	/* create a new pwq */
 	pwq = alloc_unbound_pwq(wq, target_attrs);
 	if (!pwq) {
-		pr_warn("workqueue: allocation failed while updating NUMA affinity of \"%s\"\n",
+		pr_debug("workqueue: allocation failed while updating NUMA affinity of \"%s\"\n",
 			wq->name);
 		goto use_dfl_pwq;
 	}
@@ -4077,7 +4077,7 @@ static int wq_clamp_max_active(int max_active, unsigned int flags,
 	int lim = flags & WQ_UNBOUND ? WQ_UNBOUND_MAX_ACTIVE : WQ_MAX_ACTIVE;
 
 	if (max_active < 1 || max_active > lim)
-		pr_warn("workqueue: max_active %d requested for %s is out of range, clamping between %d and %d\n",
+		pr_debug("workqueue: max_active %d requested for %s is out of range, clamping between %d and %d\n",
 			max_active, name, 1, lim);
 
 	return clamp_val(max_active, 1, lim);
@@ -4543,7 +4543,7 @@ static void show_pwq(struct pool_workqueue *pwq)
 	bool has_in_flight = false, has_pending = false;
 	int bkt;
 
-	pr_info("  pwq %d:", pool->id);
+	pr_debug("  pwq %d:", pool->id);
 	pr_cont_pool_info(pool);
 
 	pr_cont(" active=%d/%d refcnt=%d%s\n",
@@ -4559,7 +4559,7 @@ static void show_pwq(struct pool_workqueue *pwq)
 	if (has_in_flight) {
 		bool comma = false;
 
-		pr_info("    in-flight:");
+		pr_debug("    in-flight:");
 		hash_for_each(pool->busy_hash, bkt, worker, hentry) {
 			if (worker->current_pwq != pwq)
 				continue;
@@ -4584,7 +4584,7 @@ static void show_pwq(struct pool_workqueue *pwq)
 	if (has_pending) {
 		bool comma = false;
 
-		pr_info("    pending:");
+		pr_debug("    pending:");
 		list_for_each_entry(work, &pool->worklist, entry) {
 			if (get_work_pwq(work) != pwq)
 				continue;
@@ -4598,7 +4598,7 @@ static void show_pwq(struct pool_workqueue *pwq)
 	if (!list_empty(&pwq->delayed_works)) {
 		bool comma = false;
 
-		pr_info("    delayed:");
+		pr_debug("    delayed:");
 		list_for_each_entry(work, &pwq->delayed_works, entry) {
 			pr_cont_work(comma, work);
 			comma = !(*work_data_bits(work) & WORK_STRUCT_LINKED);
@@ -4622,7 +4622,7 @@ void show_workqueue_state(void)
 
 	rcu_read_lock_sched();
 
-	pr_info("Showing busy workqueues and worker pools:\n");
+	pr_debug("Showing busy workqueues and worker pools:\n");
 
 	list_for_each_entry_rcu(wq, &workqueues, list) {
 		struct pool_workqueue *pwq;
@@ -4637,7 +4637,7 @@ void show_workqueue_state(void)
 		if (idle)
 			continue;
 
-		pr_info("workqueue %s: flags=0x%x\n", wq->name, wq->flags);
+		pr_debug("workqueue %s: flags=0x%x\n", wq->name, wq->flags);
 
 		for_each_pwq(pwq, wq) {
 			spin_lock_irqsave(&pwq->pool->lock, flags);
@@ -4661,7 +4661,7 @@ void show_workqueue_state(void)
 		if (pool->nr_workers == pool->nr_idle)
 			goto next_pool;
 
-		pr_info("pool %d:", pool->id);
+		pr_debug("pool %d:", pool->id);
 		pr_cont_pool_info(pool);
 		pr_cont(" hung=%us workers=%d",
 			jiffies_to_msecs(jiffies - pool->watchdog_ts) / 1000,
@@ -5745,7 +5745,7 @@ static void __init wq_numa_init(void)
 		return;
 
 	if (wq_disable_numa) {
-		pr_info("workqueue: NUMA affinity support disabled\n");
+		pr_debug("workqueue: NUMA affinity support disabled\n");
 		return;
 	}
 
@@ -5767,7 +5767,7 @@ static void __init wq_numa_init(void)
 	for_each_possible_cpu(cpu) {
 		node = cpu_to_node(cpu);
 		if (WARN_ON(node == NUMA_NO_NODE)) {
-			pr_warn("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
+			pr_debug("workqueue: NUMA node mapping not available for cpu%d, disabling NUMA support\n", cpu);
 			/* happens iff arch is bonkers, let's just proceed */
 			return;
 		}

@@ -246,7 +246,7 @@ out:									\
 		bool wceis;						\
 									\
 		if (opts->bound == false) {				\
-			pr_err("Gadget function do not bind yet.\n");	\
+			pr_debug("Gadget function do not bind yet.\n");	\
 			return -ENODEV;					\
 		}							\
 									\
@@ -264,7 +264,7 @@ out:									\
 		int ret;						\
 									\
 		if (opts->bound == false) {				\
-			pr_err("Gadget function do not bind yet.\n");	\
+			pr_debug("Gadget function do not bind yet.\n");	\
 			return -ENODEV;					\
 		}							\
 									\

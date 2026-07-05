@@ -963,7 +963,7 @@ static int snd_timer_free(struct snd_timer *timer)
 	if (! list_empty(&timer->open_list_head)) {
 		struct list_head *p, *n;
 		struct snd_timer_instance *ti;
-		pr_warn("ALSA: timer %p is busy?\n", timer);
+		pr_debug("ALSA: timer %p is busy?\n", timer);
 		list_for_each_safe(p, n, &timer->open_list_head) {
 			list_del_init(p);
 			ti = list_entry(p, struct snd_timer_instance, open_list);
@@ -2184,14 +2184,14 @@ static int __init alsa_timer_init(void)
 
 	err = snd_timer_register_system();
 	if (err < 0) {
-		pr_err("ALSA: unable to register system timer (%i)\n", err);
+		pr_debug("ALSA: unable to register system timer (%i)\n", err);
 		goto put_timer;
 	}
 
 	err = snd_register_device(SNDRV_DEVICE_TYPE_TIMER, NULL, 0,
 				  &snd_timer_f_ops, NULL, &timer_dev);
 	if (err < 0) {
-		pr_err("ALSA: unable to register timer device (%i)\n", err);
+		pr_debug("ALSA: unable to register timer device (%i)\n", err);
 		snd_timer_free_all();
 		goto put_timer;
 	}

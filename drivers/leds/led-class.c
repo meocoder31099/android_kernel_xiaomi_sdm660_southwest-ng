@@ -152,14 +152,14 @@ static int led_add_brightness_hw_changed(struct led_classdev *led_cdev)
 
 	ret = device_create_file(dev, &dev_attr_brightness_hw_changed);
 	if (ret) {
-		dev_err(dev, "Error creating brightness_hw_changed\n");
+		dev_dbg(dev, "Error creating brightness_hw_changed\n");
 		return ret;
 	}
 
 	led_cdev->brightness_hw_changed_kn =
 		sysfs_get_dirent(dev->kobj.sd, "brightness_hw_changed");
 	if (!led_cdev->brightness_hw_changed_kn) {
-		dev_err(dev, "Error getting brightness_hw_changed kn\n");
+		dev_dbg(dev, "Error getting brightness_hw_changed kn\n");
 		device_remove_file(dev, &dev_attr_brightness_hw_changed);
 		return -ENXIO;
 	}
@@ -300,7 +300,7 @@ int of_led_classdev_register(struct device *parent, struct device_node *np,
 	led_cdev->dev->of_node = np;
 
 	if (ret)
-		dev_warn(parent, "Led %s renamed to %s due to name collision",
+		dev_dbg(parent, "Led %s renamed to %s due to name collision",
 				led_cdev->name, dev_name(led_cdev->dev));
 
 	if (led_cdev->flags & LED_BRIGHT_HW_CHANGED) {

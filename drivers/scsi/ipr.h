@@ -1833,7 +1833,7 @@ struct ipr_ucode_image_header {
 				fmt, __VA_ARGS__);			\
 		}							\
 	} else {							\
-		dev_err(&(hostrcb)->ioa_cfg->pdev->dev, fmt, __VA_ARGS__); \
+		dev_dbg(&(hostrcb)->ioa_cfg->pdev->dev, fmt, __VA_ARGS__); \
 	}								\
 }
 

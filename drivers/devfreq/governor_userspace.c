@@ -159,7 +159,7 @@ static void __exit devfreq_userspace_exit(void)
 
 	ret = devfreq_remove_governor(&devfreq_userspace);
 	if (ret)
-		pr_err("%s: failed remove governor %d\n", __func__, ret);
+		pr_debug("%s: failed remove governor %d\n", __func__, ret);
 
 	return;
 }

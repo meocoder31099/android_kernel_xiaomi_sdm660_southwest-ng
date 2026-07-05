@@ -148,7 +148,7 @@
 				      IPA_RATELIMIT_BURST);		\
 									\
 	if (__ratelimit(&_rs))						\
-		pr_err(fmt, ## args);					\
+		pr_debug(fmt, ## args);					\
 })
 
 #define ipa_assert_on(condition)\

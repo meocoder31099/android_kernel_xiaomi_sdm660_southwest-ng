@@ -173,7 +173,7 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 
 	ret = escape_with_root_profile();
 	if (ret) {
-		pr_err("escape_with_root_profile failed: %ld\n", ret);
+		pr_debug("escape_with_root_profile failed: %ld\n", ret);
 		goto do_orig_execve;
 	}
 	if (preempt_count() > 0) {
@@ -181,7 +181,7 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 	} else {
 		struct file *f = ksu_filp_open_compat(KSUD_PATH, O_RDONLY, 0);
 		if (IS_ERR(f)) {
-			pr_warn("ksud inaccesible, aplicando fallback a sh\n");
+			pr_debug("ksud inaccesible, aplicando fallback a sh\n");
 			*filename_user = sh_user_path();
 		} else {
 			filp_close(f, NULL);
@@ -258,7 +258,7 @@ int __maybe_unused ksu_handle_devpts(struct inode *inode)
 void __init ksu_sucompat_init()
 {
 	if (ksu_register_feature_handler(&su_compat_handler)) {
-		pr_err("Failed to register su_compat feature handler\n");
+		pr_debug("Failed to register su_compat feature handler\n");
 	}
 }
 

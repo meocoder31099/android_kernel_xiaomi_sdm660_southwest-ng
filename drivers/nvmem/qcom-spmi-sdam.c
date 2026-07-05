@@ -65,13 +65,13 @@ static int sdam_read(void *priv, unsigned int offset, void *val, size_t bytes)
 	int rc;
 
 	if (!is_valid(sdam, offset, bytes)) {
-		pr_err("Invalid SDAM offset 0x%02x len=%zd\n", offset, bytes);
+		pr_debug("Invalid SDAM offset 0x%02x len=%zd\n", offset, bytes);
 		return -EINVAL;
 	}
 
 	rc = regmap_bulk_read(sdam->regmap, sdam->base + offset, val, bytes);
 	if (rc < 0)
-		pr_err("Failed to read SDAM offset 0x%02x len=%zd, rc=%d\n",
+		pr_debug("Failed to read SDAM offset 0x%02x len=%zd, rc=%d\n",
 						offset, bytes, rc);
 
 	return rc;
@@ -83,18 +83,18 @@ static int sdam_write(void *priv, unsigned int offset, void *val, size_t bytes)
 	int rc;
 
 	if (!is_valid(sdam, offset, bytes)) {
-		pr_err("Invalid SDAM offset 0x%02x len=%zd\n", offset, bytes);
+		pr_debug("Invalid SDAM offset 0x%02x len=%zd\n", offset, bytes);
 		return -EINVAL;
 	}
 
 	if (is_ro(offset, bytes)) {
-		pr_err("Invalid write offset 0x%02x len=%zd\n", offset, bytes);
+		pr_debug("Invalid write offset 0x%02x len=%zd\n", offset, bytes);
 		return -EINVAL;
 	}
 
 	rc = regmap_bulk_write(sdam->regmap, sdam->base + offset, val, bytes);
 	if (rc < 0)
-		pr_err("Failed to write SDAM offset 0x%02x len=%zd, rc=%d\n",
+		pr_debug("Failed to write SDAM offset 0x%02x len=%zd, rc=%d\n",
 						offset, bytes, rc);
 
 	return rc;
@@ -119,19 +119,19 @@ static int sdam_probe(struct platform_device *pdev)
 
 	sdam->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!sdam->regmap) {
-		pr_err("Failed to get regmap handle\n");
+		pr_debug("Failed to get regmap handle\n");
 		return -ENXIO;
 	}
 
 	rc = of_property_read_u32(pdev->dev.of_node, "reg", &sdam->base);
 	if (rc < 0) {
-		pr_err("Failed to get SDAM base, rc=%d\n", rc);
+		pr_debug("Failed to get SDAM base, rc=%d\n", rc);
 		return -EINVAL;
 	}
 
 	rc = regmap_read(sdam->regmap, sdam->base + SDAM_SIZE, &val);
 	if (rc < 0) {
-		pr_err("Failed to read SDAM_SIZE rc=%d\n", rc);
+		pr_debug("Failed to read SDAM_SIZE rc=%d\n", rc);
 		return -EINVAL;
 	}
 	sdam->size = val * 32;
@@ -148,13 +148,13 @@ static int sdam_probe(struct platform_device *pdev)
 
 	nvmem = nvmem_register(sdam_config);
 	if (IS_ERR(nvmem)) {
-		pr_err("Failed to register SDAM nvmem device rc=%ld\n",
+		pr_debug("Failed to register SDAM nvmem device rc=%ld\n",
 						PTR_ERR(nvmem));
 		return -ENXIO;
 	}
 	platform_set_drvdata(pdev, nvmem);
 
-	pr_info("SDAM base=0x%04x size=%d registered successfully\n",
+	pr_debug("SDAM base=0x%04x size=%d registered successfully\n",
 						sdam->base, sdam->size);
 
 	return 0;

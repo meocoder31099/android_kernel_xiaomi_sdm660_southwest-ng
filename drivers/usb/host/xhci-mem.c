@@ -1118,27 +1118,27 @@ int xhci_setup_addressable_virt_dev(struct xhci_hcd *xhci, struct usb_device *ud
 	slot_ctx = xhci_get_slot_ctx(xhci, dev->in_ctx);
 
 	/* 3) Only the control endpoint is valid - one endpoint context */
-	slot_ctx->dev_info |= cpu_to_le32(LAST_CTX(1) | udev->route);
+	slot_ctx->dev_dbg |= cpu_to_le32(LAST_CTX(1) | udev->route);
 	switch (udev->speed) {
 	case USB_SPEED_SUPER_PLUS:
-		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_SSP);
+		slot_ctx->dev_dbg |= cpu_to_le32(SLOT_SPEED_SSP);
 		max_packets = MAX_PACKET(512);
 		break;
 	case USB_SPEED_SUPER:
-		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_SS);
+		slot_ctx->dev_dbg |= cpu_to_le32(SLOT_SPEED_SS);
 		max_packets = MAX_PACKET(512);
 		break;
 	case USB_SPEED_HIGH:
-		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_HS);
+		slot_ctx->dev_dbg |= cpu_to_le32(SLOT_SPEED_HS);
 		max_packets = MAX_PACKET(64);
 		break;
 	/* USB core guesses at a 64-byte max packet first for FS devices */
 	case USB_SPEED_FULL:
-		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_FS);
+		slot_ctx->dev_dbg |= cpu_to_le32(SLOT_SPEED_FS);
 		max_packets = MAX_PACKET(64);
 		break;
 	case USB_SPEED_LOW:
-		slot_ctx->dev_info |= cpu_to_le32(SLOT_SPEED_LS);
+		slot_ctx->dev_dbg |= cpu_to_le32(SLOT_SPEED_LS);
 		max_packets = MAX_PACKET(8);
 		break;
 	case USB_SPEED_WIRELESS:
@@ -1198,7 +1198,7 @@ int xhci_setup_addressable_virt_dev(struct xhci_hcd *xhci, struct usb_device *ud
 		slot_ctx->tt_info = cpu_to_le32(udev->tt->hub->slot_id |
 						(udev->ttport << 8));
 		if (udev->tt->multi)
-			slot_ctx->dev_info |= cpu_to_le32(DEV_MTT);
+			slot_ctx->dev_dbg |= cpu_to_le32(DEV_MTT);
 	}
 	xhci_dbg(xhci, "udev->tt = %p\n", udev->tt);
 	xhci_dbg(xhci, "udev->ttport = 0x%x\n", udev->ttport);
@@ -1235,7 +1235,7 @@ static unsigned int xhci_parse_exponent_interval(struct usb_device *udev,
 
 	interval = clamp_val(ep->desc.bInterval, 1, 16) - 1;
 	if (interval != ep->desc.bInterval - 1)
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			 "ep %#x - rounding interval to %d %sframes\n",
 			 ep->desc.bEndpointAddress,
 			 1 << interval,
@@ -1651,7 +1651,7 @@ void xhci_slot_copy(struct xhci_hcd *xhci,
 	in_slot_ctx = xhci_get_slot_ctx(xhci, in_ctx);
 	out_slot_ctx = xhci_get_slot_ctx(xhci, out_ctx);
 
-	in_slot_ctx->dev_info = out_slot_ctx->dev_info;
+	in_slot_ctx->dev_dbg = out_slot_ctx->dev_dbg;
 	in_slot_ctx->dev_info2 = out_slot_ctx->dev_info2;
 	in_slot_ctx->tt_info = out_slot_ctx->tt_info;
 	in_slot_ctx->dev_state = out_slot_ctx->dev_state;

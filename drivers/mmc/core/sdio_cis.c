@@ -138,7 +138,7 @@ static int cis_tpl_parse(struct mmc_card *card, struct sdio_func *func,
 			ret = -EINVAL;
 		}
 		if (ret && ret != -EILSEQ && ret != -ENOENT) {
-			pr_err("%s: bad %s tuple 0x%02x (%u bytes)\n",
+			pr_debug("%s: bad %s tuple 0x%02x (%u bytes)\n",
 			       mmc_hostname(card->host), tpl_descr, code, size);
 		}
 	} else {
@@ -184,7 +184,7 @@ static int cistpl_funce_func(struct mmc_card *card, struct sdio_func *func,
 	min_size = (vsn == SDIO_SDIO_REV_1_00) ? 28 : 42;
 
 	if (size == 28 && vsn == SDIO_SDIO_REV_1_10) {
-		pr_warn("%s: card has broken SDIO 1.1 CIS, forcing SDIO 1.0\n",
+		pr_debug("%s: card has broken SDIO 1.1 CIS, forcing SDIO 1.0\n",
 			mmc_hostname(card->host));
 		vsn = SDIO_SDIO_REV_1_00;
 	} else if (size < min_size) {

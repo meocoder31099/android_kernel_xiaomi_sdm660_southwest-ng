@@ -48,14 +48,14 @@ int ksu_install_fd(void)
 	// Get unused fd
 	fd = get_unused_fd_flags(O_CLOEXEC);
 	if (fd < 0) {
-		pr_err("ksu_install_fd: failed to get unused fd\n");
+		pr_debug("ksu_install_fd: failed to get unused fd\n");
 		return fd;
 	}
 
 	// Create anonymous inode file
 	filp = anon_inode_getfile("[ksu_driver]", &anon_ksu_fops, NULL, O_RDWR | O_CLOEXEC);
 	if (IS_ERR(filp)) {
-		pr_err("ksu_install_fd: failed to create anon inode file\n");
+		pr_debug("ksu_install_fd: failed to create anon inode file\n");
 		put_unused_fd(fd);
 		return PTR_ERR(filp);
 	}
@@ -84,7 +84,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		int fd = ksu_install_fd();
 		// downstream: dereference all arg usage!
 		if (copy_to_user((void __user *)*arg, &fd, sizeof(fd))) {
-			pr_err("install ksu fd reply err\n");
+			pr_debug("install ksu fd reply err\n");
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 		close_fd(fd);
 #else
@@ -253,7 +253,7 @@ void __init ksu_supercalls_init(void)
 #ifdef KSU_KPROBES_HOOK
 	int rc = register_kprobe(&reboot_kp);
 	if (rc) {
-		pr_err("reboot kprobe failed: %d\n", rc);
+		pr_debug("reboot kprobe failed: %d\n", rc);
 	} else {
 		pr_debug("reboot kprobe registered successfully\n");
 	}

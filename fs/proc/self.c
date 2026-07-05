@@ -67,7 +67,7 @@ int proc_setup_self(struct super_block *s)
 	}
 	inode_unlock(root_inode);
 	if (IS_ERR(self)) {
-		pr_err("proc_fill_super: can't allocate /proc/self\n");
+		pr_debug("proc_fill_super: can't allocate /proc/self\n");
 		return PTR_ERR(self);
 	}
 	ns->proc_self = self;

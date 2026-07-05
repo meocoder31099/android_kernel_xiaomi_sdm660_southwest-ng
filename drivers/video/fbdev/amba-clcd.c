@@ -556,7 +556,7 @@ static int clcdfb_register(struct clcd_fb *fb)
 
 	fb_set_var(&fb->fb, &fb->fb.var);
 
-	dev_info(&fb->dev->dev, "%s hardware, %s display\n",
+	dev_dbg(&fb->dev->dev, "%s hardware, %s display\n",
 	         fb->board->name, fb->panel->mode.name);
 
 	ret = register_framebuffer(&fb->fb);
@@ -992,7 +992,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
 	fb->vendor = vendor;
 	fb->board = board;
 
-	dev_info(&fb->dev->dev, "PL%03x designer %02x rev%u at 0x%08llx\n",
+	dev_dbg(&fb->dev->dev, "PL%03x designer %02x rev%u at 0x%08llx\n",
 		amba_part(dev), amba_manf(dev), amba_rev(dev),
 		(unsigned long long)dev->res.start);
 

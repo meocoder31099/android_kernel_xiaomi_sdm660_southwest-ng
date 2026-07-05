@@ -188,7 +188,7 @@ reprobe:
 out:
 	return ret;
 bad_bmap:
-	pr_err("swapon: swapfile has holes\n");
+	pr_debug("swapon: swapfile has holes\n");
 	ret = -EINVAL;
 	goto out;
 }

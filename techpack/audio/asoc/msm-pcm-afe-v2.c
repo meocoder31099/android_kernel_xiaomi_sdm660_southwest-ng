@@ -97,7 +97,7 @@ static enum hrtimer_restart afe_hrtimer_callback(struct hrtimer *hrt)
 
 	mem_map_handle = afe_req_mmap_handle(prtd->audio_client);
 	if (!mem_map_handle)
-		pr_err("%s: mem_map_handle is NULL\n", __func__);
+		pr_debug("%s: mem_map_handle is NULL\n", __func__);
 
 	if (prtd->start) {
 		pr_debug("sending frame to DSP: poll_time: %d\n",
@@ -129,7 +129,7 @@ static enum hrtimer_restart afe_hrtimer_rec_callback(struct hrtimer *hrt)
 
 	mem_map_handle = afe_req_mmap_handle(prtd->audio_client);
 	if (!mem_map_handle)
-		pr_err("%s: mem_map_handle is NULL\n", __func__);
+		pr_debug("%s: mem_map_handle is NULL\n", __func__);
 
 	if (prtd->start) {
 		if (prtd->dsp_cnt == runtime->periods)
@@ -140,7 +140,7 @@ static enum hrtimer_restart afe_hrtimer_rec_callback(struct hrtimer *hrt)
 		* snd_pcm_lib_period_bytes(prtd->substream))), mem_map_handle,
 		snd_pcm_lib_period_bytes(prtd->substream));
 		if (ret < 0) {
-			pr_err("%s: AFE port read fails: %d\n", __func__, ret);
+			pr_debug("%s: AFE port read fails: %d\n", __func__, ret);
 			prtd->start = 0;
 			return HRTIMER_NORESTART;
 		}
@@ -296,7 +296,7 @@ static void pcm_afe_process_rx_pkt(uint32_t opcode,
 				mem_map_handle =
 					afe_req_mmap_handle(prtd->audio_client);
 				if (!mem_map_handle)
-					pr_err("%s:mem_map_handle is NULL\n",
+					pr_debug("%s:mem_map_handle is NULL\n",
 							 __func__);
 				/* Do initial read to start transfer */
 				afe_rt_proxy_port_read((prtd->dma_addr +
@@ -373,7 +373,7 @@ static int msm_afe_playback_prepare(struct snd_pcm_substream *substream)
 	ret = afe_register_get_events(dai->id,
 			pcm_afe_process_tx_pkt, prtd);
 	if (ret < 0) {
-		pr_err("afe-pcm:register for events failed\n");
+		pr_debug("afe-pcm:register for events failed\n");
 		return ret;
 	}
 	pr_debug("%s:success\n", __func__);
@@ -395,7 +395,7 @@ static int msm_afe_capture_prepare(struct snd_pcm_substream *substream)
 	ret = afe_register_get_events(dai->id,
 			pcm_afe_process_rx_pkt, prtd);
 	if (ret < 0) {
-		pr_err("afe-pcm:register for events failed\n");
+		pr_debug("afe-pcm:register for events failed\n");
 		return ret;
 	}
 	pr_debug("%s:success\n", __func__);
@@ -460,12 +460,12 @@ static int msm_afe_open(struct snd_pcm_substream *substream)
 				SNDRV_PCM_HW_PARAM_RATE,
 				&constraints_sample_rates);
 	if (ret < 0)
-		pr_err("snd_pcm_hw_constraint_list failed\n");
+		pr_debug("snd_pcm_hw_constraint_list failed\n");
 	/* Ensure that buffer size is a multiple of period size */
 	ret = snd_pcm_hw_constraint_integer(runtime,
 					    SNDRV_PCM_HW_PARAM_PERIODS);
 	if (ret < 0)
-		pr_err("snd_pcm_hw_constraint_integer failed\n");
+		pr_debug("snd_pcm_hw_constraint_integer failed\n");
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
 		ret = snd_pcm_hw_constraint_minmax(runtime,
@@ -474,7 +474,7 @@ static int msm_afe_open(struct snd_pcm_substream *substream)
 			MAX_CAPTURE_NUM_PERIODS * MAX_CAPTURE_PERIOD_SIZE);
 
 		if (ret < 0) {
-			pr_err("constraint for buffer bytes min max ret = %d\n",
+			pr_debug("constraint for buffer bytes min max ret = %d\n",
 			      ret);
 		}
 	}
@@ -498,7 +498,7 @@ static int msm_afe_playback_copy(struct snd_pcm_substream *substream,
 		runtime->control->appl_ptr, runtime->status->hw_ptr, hwbuf);
 
 	if (copy_from_user(hwbuf, buf, fbytes)) {
-		pr_err("%s :Failed to copy audio from user buffer\n",
+		pr_debug("%s :Failed to copy audio from user buffer\n",
 			__func__);
 
 		ret = -EFAULT;
@@ -508,7 +508,7 @@ static int msm_afe_playback_copy(struct snd_pcm_substream *substream,
 	if (!prtd->mmap_flag) {
 		mem_map_handle = afe_req_mmap_handle(prtd->audio_client);
 		if (!mem_map_handle) {
-			pr_err("%s: mem_map_handle is NULL\n", __func__);
+			pr_debug("%s: mem_map_handle is NULL\n", __func__);
 			ret = -EFAULT;
 			goto fail;
 		}
@@ -526,7 +526,7 @@ static int msm_afe_playback_copy(struct snd_pcm_substream *substream,
 				snd_pcm_lib_period_bytes(prtd->substream));
 
 		if (ret) {
-			pr_err("%s: AFE proxy port write failed %d\n",
+			pr_debug("%s: AFE proxy port write failed %d\n",
 				__func__, ret);
 			goto fail;
 		}
@@ -550,7 +550,7 @@ static int msm_afe_capture_copy(struct snd_pcm_substream *substream,
 		mem_map_handle = afe_req_mmap_handle(prtd->audio_client);
 
 		if (!mem_map_handle) {
-			pr_err("%s: mem_map_handle is NULL\n", __func__);
+			pr_debug("%s: mem_map_handle is NULL\n", __func__);
 			ret = -EFAULT;
 			goto fail;
 		}
@@ -565,7 +565,7 @@ static int msm_afe_capture_copy(struct snd_pcm_substream *substream,
 				snd_pcm_lib_period_bytes(prtd->substream));
 
 		if (ret) {
-			pr_err("%s: AFE proxy port read failed %d\n",
+			pr_debug("%s: AFE proxy port read failed %d\n",
 				__func__, ret);
 			goto fail;
 		}
@@ -575,7 +575,7 @@ static int msm_afe_capture_copy(struct snd_pcm_substream *substream,
 				atomic_read(&prtd->rec_bytes_avail),
 				msecs_to_jiffies(TIMEOUT_MS));
 		if (ret < 0) {
-			pr_err("%s: wait_event_timeout failed\n", __func__);
+			pr_debug("%s: wait_event_timeout failed\n", __func__);
 
 			ret = -ETIMEDOUT;
 			goto fail;
@@ -587,7 +587,7 @@ static int msm_afe_capture_copy(struct snd_pcm_substream *substream,
 			runtime->status->hw_ptr, hwbuf);
 
 	if (copy_to_user(buf, hwbuf, fbytes)) {
-		pr_err("%s: copy to user failed\n", __func__);
+		pr_debug("%s: copy to user failed\n", __func__);
 
 		goto fail;
 		ret = -EFAULT;
@@ -634,7 +634,7 @@ static int msm_afe_close(struct snd_pcm_substream *substream)
 
 	pr_debug("%s\n", __func__);
 	if (substream == NULL) {
-		pr_err("substream is NULL\n");
+		pr_debug("substream is NULL\n");
 		return -EINVAL;
 	}
 	rtd = substream->private_data;
@@ -648,19 +648,19 @@ static int msm_afe_close(struct snd_pcm_substream *substream)
 		dir = IN;
 		ret =  afe_unregister_get_events(dai->id);
 		if (ret < 0)
-			pr_err("AFE unregister for events failed\n");
+			pr_debug("AFE unregister for events failed\n");
 	} else if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
 		dir = OUT;
 		ret =  afe_unregister_get_events(dai->id);
 		if (ret < 0)
-			pr_err("AFE unregister for events failed\n");
+			pr_debug("AFE unregister for events failed\n");
 	}
 	if (prtd->mmap_flag)
 		hrtimer_cancel(&prtd->hrt);
 
 	rc = afe_cmd_memory_unmap(afe_req_mmap_handle(prtd->audio_client));
 	if (rc < 0)
-		pr_err("AFE memory unmap failed\n");
+		pr_debug("AFE memory unmap failed\n");
 
 	pr_debug("release all buffer\n");
 	dma_buf = &substream->dma_buffer;
@@ -776,7 +776,7 @@ static int msm_afe_hw_params(struct snd_pcm_substream *substream,
 		(params_buffer_bytes(params) / params_periods(params)));
 
 	if (rc < 0) {
-		pr_err("Audio Start: Buffer Allocation failed rc = %d\n", rc);
+		pr_debug("Audio Start: Buffer Allocation failed rc = %d\n", rc);
 		mutex_unlock(&prtd->lock);
 		return -ENOMEM;
 	}
@@ -797,7 +797,7 @@ static int msm_afe_hw_params(struct snd_pcm_substream *substream,
 	dma_buf->bytes = params_buffer_bytes(params);
 
 	if (!dma_buf->area) {
-		pr_err("%s:MSM AFE physical memory allocation failed\n",
+		pr_debug("%s:MSM AFE physical memory allocation failed\n",
 							__func__);
 		mutex_unlock(&prtd->lock);
 		return -ENOMEM;
@@ -813,7 +813,7 @@ static int msm_afe_hw_params(struct snd_pcm_substream *substream,
 
 	rc = afe_memory_map(dma_buf->addr, dma_buf->bytes, prtd->audio_client);
 	if (rc < 0)
-		pr_err("fail to map memory to DSP\n");
+		pr_debug("fail to map memory to DSP\n");
 
 	return rc;
 }

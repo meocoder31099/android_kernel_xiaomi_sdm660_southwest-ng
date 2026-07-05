@@ -198,7 +198,7 @@ int partition_translate_id(struct partition_desc *desc, void *partition_id)
 	}
 
 	if (WARN_ON(!part)) {
-		pr_err("Failed to find partition\n");
+		pr_debug("Failed to find partition\n");
 		return -EINVAL;
 	}
 
