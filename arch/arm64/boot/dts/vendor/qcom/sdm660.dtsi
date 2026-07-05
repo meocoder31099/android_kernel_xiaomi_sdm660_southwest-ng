@@ -46,7 +46,7 @@
 
 		CPU0: cpu@0 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x0>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <636>;
@@ -73,7 +73,7 @@
 
 		CPU1: cpu@1 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x1>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <636>;
@@ -92,7 +92,7 @@
 
 		CPU2: cpu@2 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x2>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <636>;
@@ -111,7 +111,7 @@
 
 		CPU3: cpu@3 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x3>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <636>;
@@ -130,7 +130,7 @@
 
 		CPU4: cpu@100 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x100>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <1024>;
@@ -153,7 +153,7 @@
 
 		CPU5: cpu@101 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x101>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <1024>;
@@ -172,7 +172,7 @@
 
 		CPU6: cpu@102 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x102>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <1024>;
@@ -191,7 +191,7 @@
 
 		CPU7: cpu@103 {
 			device_type = "cpu";
-			compatible = "arm,armv8";
+			compatible = "qcom,kryo260";
 			reg = <0x0 0x103>;
 			enable-method = "psci";
 			capacity-dmips-mhz = <1024>;
@@ -270,6 +270,7 @@
 				1958400	641
 				2150400	783
 				2208000	915
+				2457600 1150
 			>;
 		};
 	};
@@ -809,9 +810,8 @@
 			< 266000000 2>,  /* LowSVS */
 			< 370000000 3>,  /* SVS    */
 			< 465000000 4>,  /* SVS_L1 */
-			< 588000000 5>,  /* NOM    */
+			< 585000000 5>,  /* NOM    */
 			< 647000000 6>,  /* NOM_L1 */
-			< 700000000 7>,  /* TURBO */
 			< 750000000 7>;  /* TURBO  */
 		#clock-cells = <1>;
 		#reset-cells = <1>;
@@ -862,7 +862,7 @@
 
 	 cpu_cpu_ddr_bw: qcom,cpu-cpu-ddr-bw {
 		compatible = "qcom,devbw";
-		governor = "performance";
+		governor = "bw_hwmon";
 		qcom,src-dst-ports =
 			<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_EBI_CH0>;
 		qcom,active-only;
@@ -882,7 +882,7 @@
 
 	cpu0_cpu_ddr_latfloor: qcom,cpu0-cpu-ddr-latfloor {
 		compatible = "qcom,devbw";
-		governor = "powersave";
+		governor = "compute";
 		qcom,src-dst-ports =
 			<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_EBI_CH0>;
 		qcom,active-only;
@@ -891,7 +891,7 @@
 
 	cpu4_cpu_ddr_latfloor: qcom,cpu4-cpu-ddr-latfloor {
 		compatible = "qcom,devbw";
-		governor = "powersave";
+		governor = "compute";
 		qcom,src-dst-ports =
 			<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_EBI_CH0>;
 		qcom,active-only;
@@ -900,7 +900,7 @@
 
 	cpu0_cpu_ddr_lat: qcom,cpu0-cpu-ddr-lat {
 		compatible = "qcom,devbw";
-		governor = "powersave";
+		governor = "mem_latency";
 		qcom,src-dst-ports =
 			<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_EBI_CH0>;
 		qcom,active-only;
@@ -909,7 +909,7 @@
 
 	cpu4_cpu_ddr_lat: qcom,cpu4-cpu-ddr-lat {
 		compatible = "qcom,devbw";
-		governor = "powersave";
+		governor = "mem_latency";
 		qcom,src-dst-ports =
 			<MSM_BUS_MASTER_AMPSS_M0 MSM_BUS_SLAVE_EBI_CH0>;
 		qcom,active-only;
@@ -1021,13 +1021,10 @@
 
 		qcom,pwrcl-speedbin4-v0 =
 			<   300000000 0x0004000f 0x01200020 0x1 1 >,
-			<   633600000 0x05040021 0x03200020 0x1 2 >,
-			<   902400000 0x0404002f 0x04260026 0x1 3 >,
-			<  1113600000 0x0404003a 0x052e002e 0x2 4 >,
-			<  1401600000 0x04040049 0x073a003a 0x2 5 >,
-			<  1536000000 0x04040050 0x08400040 0x2 6 >,
-			<  1747200000 0x0404005b 0x09480048 0x2 7 >,
-			<  1843200000 0x04040060 0x094c004c 0x3 8 >;
+			<   433100000 0x05040021 0x03200020 0x1 2 >,
+			<   633600000 0x0404002f 0x04260026 0x1 3 >,
+			<   902400000 0x0404003a 0x052e002e 0x2 4 >,
+			<  1257400000 0x04040049 0x073a003a 0x2 5 >;
 
 		qcom,perfcl-speedbin0-v0 =
 			<   300000000 0x0004000f 0x01200020 0x1 1 >,
@@ -1056,10 +1053,11 @@
 
 		qcom,perfcl-speedbin4-v0 =
 			<   300000000 0x0004000f 0x01200020 0x1 1 >,
-			<  1113600000 0x0404003a 0x052e002e 0x1 2 >,
-			<  1401600000 0x04040049 0x073a003a 0x2 3 >,
-			<  1747200000 0x0404005b 0x09480048 0x2 4 >,
-			<  1958400000 0x04040066 0x0a510051 0x2 5 >;
+			<   433100000 0x0404003a 0x052e002e 0x1 2 >,
+			<   633600000 0x04040049 0x073a003a 0x2 3 >,
+			<   902400000 0x0404005b 0x09480048 0x2 4 >,
+			<  1257400000 0x04040066 0x0a510051 0x2 5 >,
+			<  1401600000 0x04040070 0x0b590059 0x2 6 >;
 
 		qcom,up-timer = <1000 1000>;
 		qcom,down-timer = <1000 1000>;
@@ -1108,21 +1106,28 @@
 		qcom,governor-per-policy;
 
 		qcom,cpufreq-table-0 =
-			<  633600 >,
-			<  902400 >,
+			< 433100 >,
+			< 633600 >,
+			< 902400 >,
 			< 1113600 >,
+			< 1257400 >,
 			< 1401600 >,
 			< 1536000 >,
 			< 1747200 >,
 			< 1843200 >;
 
 		qcom,cpufreq-table-4 =
+			< 433100 >,
+			< 633600 >,
+			< 902400 >,
 			< 1113600 >,
+			< 1257400 >,
 			< 1401600 >,
 			< 1747200 >,
 			< 1958400 >,
 			< 2150400 >,
-			< 2208000 >;
+			< 2208000 >,
+			< 2457600 >;
 	};
 
 	sdhc_1: sdhci@c0c4000 {
@@ -2232,19 +2237,11 @@
 		hyplog-size-offset = <0x414>;
 	};
 
-	qcom_rng: qrng@793000 {
-		compatible = "qcom,msm-rng";
+	rng: rng@793000 {
+		compatible = "qcom,prng-ee";
 		reg = <0x793000 0x1000>;
-		qcom,msm-rng-iface-clk;
-		qcom,no-qrng-config;
-		qcom,msm-bus,name = "msm-rng-noc";
-		qcom,msm-bus,num-cases = <2>;
-		qcom,msm-bus,num-paths = <1>;
-		qcom,msm-bus,vectors-KBps =
-			<1 618 0 0>,    /* No vote */
-			<1 618 0 800>;  /* 100 KHz */
 		clocks = <&clock_gcc GCC_PRNG_AHB_CLK>;
-		clock-names = "iface_clk";
+		clock-names = "core";
 	};
 
 	qcom,chd_silver {

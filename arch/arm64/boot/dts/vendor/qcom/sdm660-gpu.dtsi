@@ -57,8 +57,6 @@
 		qcom,initial-pwrlevel = <6>;
 
 		/* <HZ/12> */
-		qcom,idle-timeout = <64>;
-
 		qcom,highest-bank-bit = <14>;
 
 		/* size in bytes */
@@ -131,7 +129,7 @@
 
 			qcom,gpu-cx-ipeak@0 {
 				qcom,gpu-cx-ipeak = <&cx_ipeak_lm 1>;
-				qcom,gpu-cx-ipeak-freq = <700000000>;
+				qcom,gpu-cx-ipeak-freq = <750000000>;
 			};
 		};
 
