@@ -37,14 +37,18 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 		return;
 	}
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("manager pkg: %s\n", pkg);
+#endif
 
 	struct list_head *list = (struct list_head *)uid_data;
 	struct uid_data *np;
 
 	list_for_each_entry (np, list, list) {
 		if (strncmp(np->package, pkg, KSU_MAX_PACKAGE_NAME) == 0) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("Crowning manager: %s(uid=%d)\n", pkg, np->uid);
+#endif
 			ksu_set_manager_appid(np->uid);
 			break;
 		}
@@ -102,7 +106,9 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		return FILLDIR_ACTOR_STOP;
 	}
 	if (my_ctx->stop && *my_ctx->stop) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("Stop searching\n");
+#endif
 		return FILLDIR_ACTOR_STOP;
 	}
 
@@ -111,7 +117,9 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 	if ((d_type == DT_DIR || d_type == DT_UNKNOWN) && namelen >= 8 && !strncmp(name, "vmdl", 4) &&
 		!strncmp(name + namelen - 4, ".tmp", 4)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("Skipping directory: %.*s\n", namelen, name);
+#endif
 		return FILLDIR_ACTOR_CONTINUE; // Skip staging package
 	}
 
@@ -195,7 +203,9 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 					goto skip_iterate;
 
 				bool is_manager = is_manager_apk(candidate_path);
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("Found new base.apk at path: %s, is_manager: %d\n", candidate_path, is_manager);
+#endif
 
 				if (likely(!is_manager))
 					goto skip_iterate;
@@ -242,7 +252,9 @@ static bool is_lock_held(const char *path)
 
 	// Check the VFS lock (d_lock) without blocking ourselves
 	if (!spin_trylock(&kpath.dentry->d_lock)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("%s: lock held on %s, bail out!\n", __func__, path);
+#endif
 		path_put(&kpath);
 		return true;
 	}
@@ -269,7 +281,9 @@ static bool do_track_throne_core(bool prune_only)
 
 	struct file *fp = ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("throne_tracker: %s not ready yet: %ld\n", SYSTEM_PACKAGES_LIST_PATH, PTR_ERR(fp));
+#endif
 		return false; // It does not yet exist or cannot be read, we ask for a retry
 	}
 
@@ -337,13 +351,19 @@ static bool do_track_throne_core(bool prune_only)
 
 	if (!manager_exist) {
 		if (ksu_is_manager_appid_valid()) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("manager is uninstalled, invalidate it!\n");
+#endif
 			ksu_invalidate_manager_uid();
 			goto prune;
 		}
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("Searching manager...\n");
+#endif
 		search_manager("/data/app", 2, &uid_list);
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("Search manager finished\n");
+#endif
 	}
 
 prune:
@@ -377,7 +397,9 @@ static void ksu_throne_work_fn(struct work_struct *work)
 
 	if (!success && data->retries < 10) {
 		data->retries++;
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("throne_tracker: retrying (%d/10) in 100ms...\n", data->retries);
+#endif
 		// Reschedule exactly this work instance
 		schedule_delayed_work(&data->dwork, msecs_to_jiffies(100));
 	} else {

@@ -60,3 +60,9 @@ config KSU_KPROBES_HOOK
 	  This should not be used on kernel below 5.10.
 
 endmenu
+
+config KSU_PRINT_INFO
+    bool "Enable KernelSU Print Info Logs"
+    default n
+    help
+      Enable or diable KernelSU's pr_info.

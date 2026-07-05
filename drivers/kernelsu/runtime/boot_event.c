@@ -21,11 +21,15 @@ void on_post_fs_data(void)
 {
 	static bool done = false;
 	if (done) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("on_post_fs_data already done\n");
+#endif
 		return;
 	}
 	done = true;
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("on_post_fs_data!\n");
+#endif
 
 	ksu_load_allow_list();
 	ksu_observer_init();
@@ -48,7 +52,9 @@ int nuke_ext4_sysfs(const char *mnt)
 	struct super_block *sb = path.dentry->d_inode->i_sb;
 	const char *name = sb->s_type->name;
 	if (strcmp(name, "ext4") != 0) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("nuke but module aren't mounted\n");
+#endif
 		path_put(&path);
 		return -EINVAL;
 	}
@@ -60,14 +66,18 @@ int nuke_ext4_sysfs(const char *mnt)
 
 void on_module_mounted(void)
 {
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("on_module_mounted!\n");
+#endif
 	ksu_module_mounted = true;
 }
 
 void on_boot_completed(void)
 {
     ksu_boot_completed = true;
+#ifdef CONFIG_KSU_PRINT_INFO
     pr_info("on_boot_completed!\n");
+#endif
     track_throne(true);
     ksu_avc_spoof_late_init();
 }

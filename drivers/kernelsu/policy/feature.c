@@ -33,8 +33,10 @@ int ksu_register_feature_handler(const struct ksu_feature_handler *handler)
 
 	feature_handlers[handler->feature_id] = handler;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("feature: registered handler for %s (id=%u)\n",
 		handler->name ? handler->name : "unknown", handler->feature_id);
+#endif
 
 	mutex_unlock(&feature_mutex);
 	return 0;
@@ -59,7 +61,9 @@ int ksu_unregister_feature_handler(u32 feature_id)
 
 	feature_handlers[feature_id] = NULL;
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("feature: unregistered handler for id=%u\n", feature_id);
+#endif
 
 out:
 	mutex_unlock(&feature_mutex);
@@ -154,7 +158,9 @@ void __init ksu_feature_init(void)
 		feature_handlers[i] = NULL;
 	}
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("feature: feature management initialized\n");
+#endif
 }
 
 void __exit ksu_feature_exit(void)
@@ -169,5 +175,7 @@ void __exit ksu_feature_exit(void)
 
 	mutex_unlock(&feature_mutex);
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("feature: feature management cleaned up\n");
+#endif
 }

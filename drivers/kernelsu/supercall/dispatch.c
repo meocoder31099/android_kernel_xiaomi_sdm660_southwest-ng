@@ -29,7 +29,9 @@ static int do_grant_root(void __user *arg)
 
     write_sulog('i'); // log ioctl escalation
 
+#ifdef CONFIG_KSU_PRINT_INFO
     pr_info("allow root for: %d\n", current_uid().val);
+#endif
     escape_with_root_profile();
 
 	return 0;
@@ -77,9 +79,13 @@ static int do_report_event(void __user *arg)
 		if (!post_fs_data_lock) {
 			post_fs_data_lock = true;
 			if (ksu_late_loaded) {
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("post-fs-data skipped (late load)\n");
+#endif
 			} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("post-fs-data triggered\n");
+#endif
 				on_post_fs_data();
 			}
 		}
@@ -90,16 +96,22 @@ static int do_report_event(void __user *arg)
 		if (!boot_complete_lock) {
 			boot_complete_lock = true;
 			if (ksu_late_loaded) {
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("boot_complete skipped (late load)\n");
+#endif
 			} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("boot_complete triggered\n");
+#endif
 				on_boot_completed();
 			}
 		}
 		break;
 	}
 	case EVENT_MODULE_MOUNTED: {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("module mounted!\n");
+#endif
 		on_module_mounted();
 		break;
 	}
@@ -457,7 +469,9 @@ static int do_manage_mark(void __user *arg)
 	}
 	case KSU_MARK_REFRESH: {
 		ksu_mark_running_process();
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("manage_mark: refreshed running processes\n");
+#endif
 		break;
 	}
 	default: {
@@ -544,7 +558,9 @@ static int do_nuke_ext4_sysfs(void __user *arg)
         return -ENAMETOOLONG;
     }
 
+#ifdef CONFIG_KSU_PRINT_INFO
     pr_info("do_nuke_ext4_sysfs: %s\n", mnt);
+#endif
 
     return nuke_ext4_sysfs(mnt);
 }
@@ -566,7 +582,9 @@ static int add_try_umount(void __user *arg)
             struct mount_entry *entry, *tmp;
             down_write(&mount_list_lock);
             list_for_each_entry_safe(entry, tmp, &mount_list, list) {
+#ifdef CONFIG_KSU_PRINT_INFO
                 pr_info("wipe_umount_list: removing entry: %s\n", entry->umountable);
+#endif
                 list_del(&entry->list);
                 kfree(entry->umountable);
                 kfree(entry);
@@ -599,7 +617,9 @@ static int add_try_umount(void __user *arg)
             // if this gets too many, we can consider moving this whole task to a kthread
             list_for_each_entry(entry, &mount_list, list) {
                 if (!strcmp(entry->umountable, buf)) {
+#ifdef CONFIG_KSU_PRINT_INFO
                     pr_info("cmd_add_try_umount: %s is already here!\n", buf);
+#endif
                     up_write(&mount_list_lock);
                     kfree(new_entry->umountable);
                     kfree(new_entry);
@@ -617,7 +637,9 @@ static int add_try_umount(void __user *arg)
             // debug
             list_add(&new_entry->list, &mount_list);
             up_write(&mount_list_lock);
+#ifdef CONFIG_KSU_PRINT_INFO
             pr_info("cmd_add_try_umount: %s added!\n", buf);
+#endif
 
             return 0;
         }
@@ -633,7 +655,9 @@ static int add_try_umount(void __user *arg)
             down_write(&mount_list_lock);
             list_for_each_entry_safe(entry, tmp, &mount_list, list) {
                 if (!strcmp(entry->umountable, buf)) {
+#ifdef CONFIG_KSU_PRINT_INFO
                     pr_info("cmd_add_try_umount: entry removed: %s\n", entry->umountable);
+#endif
                     list_del(&entry->list);
                     kfree(entry->umountable);
                     kfree(entry);
@@ -658,7 +682,9 @@ static int add_try_umount(void __user *arg)
 			}
 			up_read(&mount_list_lock);
 
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("cmd_add_try_umount: total_size: %zu\n", total_size);
+#endif
 			
 			if (copy_to_user((size_t __user *)cmd.arg, &total_size, sizeof(total_size)))
 				return -EFAULT;
@@ -678,7 +704,9 @@ static int add_try_umount(void __user *arg)
 
 			down_read(&mount_list_lock);
 			list_for_each_entry(entry, &mount_list, list) {
+#ifdef CONFIG_KSU_PRINT_INFO
 				pr_info("cmd_add_try_umount: entry: %s\n", entry->umountable);
+#endif
 			
 				if (copy_to_user(user_buf, entry->umountable, strlen(entry->umountable) + 1 )) {
 					up_read(&mount_list_lock);
@@ -893,7 +921,9 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 	int i;
 
 #ifdef CONFIG_KSU_DEBUG
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksu ioctl: cmd=0x%x from uid=%d\n", cmd, current_uid().val);
+#endif
 #endif
 
 	for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
@@ -918,9 +948,13 @@ void __init ksu_supercall_dump_commands(void)
 {
     int i;
 
+#ifdef CONFIG_KSU_PRINT_INFO
     pr_info("KernelSU IOCTL Commands:\n");
+#endif
     for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
+#ifdef CONFIG_KSU_PRINT_INFO
         pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
+#endif
     }
 }
 

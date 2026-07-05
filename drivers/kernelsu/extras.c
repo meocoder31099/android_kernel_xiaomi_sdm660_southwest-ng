@@ -36,7 +36,9 @@ static int avc_spoof_feature_set(u64 value)
 	bool enable = value != 0;
 
 	if (enable == ksu_avc_spoof_enabled) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("avc_spoof: no need to change\n");
+#endif
 		return 0;
 	}
 
@@ -50,7 +52,9 @@ static int avc_spoof_feature_set(u64 value)
 		}
 	}
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof: set to %d\n", enable);
+#endif
 
 	return 0;
 }
@@ -67,17 +71,25 @@ static int get_sid()
 	// dont load at all if we cant get sids
 	int err = security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &su_sid);
 	if (err) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("avc_spoof/get_sid: su_sid not found!\n");
+#endif
 		return -1;
 	}
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof/get_sid: su_sid: %u\n", su_sid);
+#endif
 
 	err = security_secctx_to_secid("u:r:priv_app:s0:c512,c768", strlen("u:r:priv_app:s0:c512,c768"), &priv_app_sid);
 	if (err) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("avc_spoof/get_sid: priv_app_sid not found!\n");
+#endif
 		return -1;
 	}
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof/get_sid: priv_app_sid: %u\n", priv_app_sid);
+#endif
 	return 0;
 }
 
@@ -89,7 +101,9 @@ int ksu_handle_slow_avc_audit(u32 *tsid)
 	// if tsid is su, we just replace it
 	// unsure if its enough, but this is how it is aye?
 	if (*tsid == su_sid) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("avc_spoof/slow_avc_audit: replacing su_sid: %u with priv_app_sid: %u\n", su_sid, priv_app_sid);
+#endif
 		*tsid = priv_app_sid;
 	}
 
@@ -140,7 +154,9 @@ static struct kprobe *init_kprobe(const char *name,
 	kp->pre_handler = handler;
 
 	int ret = register_kprobe(kp);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("sucompat: register_%s kprobe: %d\n", name, ret);
+#endif
 	if (ret) {
 		kfree(kp);
 		return NULL;
@@ -163,29 +179,39 @@ static void destroy_kprobe(struct kprobe **kp_ptr)
 void ksu_avc_spoof_disable(void)
 {
 #ifdef KSU_KPROBES_HOOK
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof/exit: unregister slow_avc_audit kprobe!\n");
+#endif
 	destroy_kprobe(&slow_avc_audit_kp);
 #endif
 	atomic_set(&disable_spoof, 1);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof/exit: slow_avc_audit spoofing disabled!\n");
+#endif
 }
 
 void ksu_avc_spoof_enable(void) 
 {
 	int ret = get_sid();
 	if (ret) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("avc_spoof/init: sid grab fail!\n");
+#endif
 		return;
 	}
 
 #ifdef KSU_KPROBES_HOOK
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof/init: register slow_avc_audit kprobe!\n");
+#endif
 	slow_avc_audit_kp = init_kprobe("slow_avc_audit", slow_avc_audit_pre_handler);
 #endif	
 	// once we get the sids, we can now enable the hook handler
 	atomic_set(&disable_spoof, 0);
 	
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("avc_spoof/init: slow_avc_audit spoofing enabled!\n");
+#endif
 }
 
 void ksu_avc_spoof_late_init(void)

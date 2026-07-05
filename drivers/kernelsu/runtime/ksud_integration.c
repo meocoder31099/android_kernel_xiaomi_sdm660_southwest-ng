@@ -219,7 +219,9 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		char buf[16];
 		if (!init_second_stage_executed &&
 		    check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("/system/bin/init second_stage executed\n");
+#endif
 			struct callback_head *cb = kzalloc(sizeof(*cb), GFP_ATOMIC);
 			if (cb) {
 				cb->func = ksu_initialize_selinux_tw_func;
@@ -240,7 +242,9 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		if (!init_second_stage_executed &&
 		    check_argv(*argv, 1, "--second-stage", buf, sizeof(buf))) {
 			/* This applies to versions between Android 6 ~ 7 */
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("/init second_stage executed\n");
+#endif
 			apply_kernelsu_rules();
 			setup_ksu_cred();
 			init_second_stage_executed = true;
@@ -271,7 +275,9 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					if (!strcmp(env_name, "INIT_SECOND_STAGE") &&
 					    (!strcmp(env_value, "1") ||
 					     !strcmp(env_value, "true"))) {
+#ifdef CONFIG_KSU_PRINT_INFO
 						pr_info("/init second_stage executed\n");
+#endif
 						apply_kernelsu_rules();
 						setup_ksu_cred();
 						init_second_stage_executed = true;
@@ -285,8 +291,10 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			     sizeof(app_process) - 1) && argv)) {
 		char buf[16];
 		if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("exec zygote, /data prepared, second_stage: %d\n",
 				init_second_stage_executed);
+#endif
 			rcu_read_lock();
 			struct task_struct *init_task =
 				rcu_dereference(current->real_parent);
@@ -324,7 +332,9 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
 	if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
 		return ret;
 	} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("read_proxy: orig read finished, start append rc\n");
+#endif
 	}
 append_ksu_rc:
 	append_count = ksu_rc_len - ksu_rc_pos;
@@ -332,13 +342,19 @@ append_ksu_rc:
 		append_count = count - ret;
 	// copy_to_user returns the number of not copied
 	if (copy_to_user(buf + ret, KERNEL_SU_RC + ksu_rc_pos, append_count)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("read_proxy: append error, totally appended %ld\n", ksu_rc_pos);
+#endif
 	} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("read_proxy: append %ld\n", append_count);
+#endif
 
 		ksu_rc_pos += append_count;
 		if (ksu_rc_pos == ksu_rc_len) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("read_proxy: append done\n");
+#endif
 		}
 		ret += append_count;
 	}
@@ -357,21 +373,29 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 	if (ret != 0 || ksu_rc_pos >= ksu_rc_len) {
 		return ret;
 	} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("read_iter_proxy: orig read finished, start append rc\n");
+#endif
 	}
 append_ksu_rc:
 	// copy_to_iter returns the number of copied bytes
 	append_count =
 		copy_to_iter(KERNEL_SU_RC + ksu_rc_pos, ksu_rc_len - ksu_rc_pos, to);
 	if (!append_count) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("read_iter_proxy: append error, totally appended %ld\n",
 			ksu_rc_pos);
+#endif
 	} else {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("read_iter_proxy: append %ld\n", append_count);
+#endif
 
 		ksu_rc_pos += append_count;
 		if (ksu_rc_pos == ksu_rc_len) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("read_iter_proxy: append done\n");
+#endif
 		}
 		ret += append_count;
 	}
@@ -398,7 +422,9 @@ static bool check_init_path(char *dpath)
 		return false;
 	}
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("vfs_read: got init.rc path: %s\n", dpath);
+#endif
 	return true;
 }
 
@@ -446,8 +472,10 @@ static void ksu_apply_init_rc_proxy(struct file *file)
     // now we can sure that the init process is reading
     // `/system/etc/init/init.rc`
 
+#ifdef CONFIG_KSU_PRINT_INFO
     pr_info("read init.rc, comm: %s, rc_count: %zu\n", current->comm,
             ksu_rc_len);
+#endif
 
     // Now we need to proxy the read and modify the result!
     // But, we can not modify the file_operations directly, because it's in read-only memory.
@@ -494,7 +522,9 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 #endif
 	if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
 		int val = *value;
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("KEY_VOLUMEDOWN val: %d\n", val);
+#endif
 		if (val) {
 			// key pressed, count it
 			volumedown_pressed_count += 1;
@@ -522,10 +552,14 @@ bool ksu_is_safe_mode()
 	// stop hook first!
 	stop_input_hook();
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
+#endif
 	if (is_volumedown_enough(volumedown_pressed_count)) {
 		// pressed over 3 times
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
+#endif
 		safe_mode = true;
 		return true;
 	}
@@ -594,7 +628,9 @@ static int sys_fstat_handler_pre(struct kretprobe_instance *p,
 	if (!file)
 		return 1;
 	if (is_init_rc(file)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("stat init.rc");
+#endif
 		fput(file);
 		*(void **)&p->data = statbuf;
 		return 0;
@@ -635,11 +671,15 @@ static int sys_fstat_handler_post(struct kretprobe_instance *p,
 
 	if (!ksu_copy_from_user_nofault(&size, st_size_ptr, size_bytes)) {
 		new_size = size + ksu_rc_len;
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("adding ksu_rc_len: %ld -> %ld", size, new_size);
+#endif
 
 		// Attempt to overwrite the file size in userspace safely
 		if (!copy_to_user(st_size_ptr, &new_size, size_bytes)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 			pr_info("added ksu_rc_len");
+#endif
 		} else {
 			pr_err("add ksu_rc_len failed: statbuf 0x%lx",
 					(unsigned long)st_size_ptr);
@@ -778,7 +818,9 @@ static noinline void ksu_common_newfstat_ret(unsigned int fd_int, void **statbuf
 	}
 	fput(file);
 
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("%s: stat init.rc \n", syscall_name);
+#endif
 
 	uintptr_t statbuf_ptr_local = (uintptr_t)*(void **)statbuf_ptr;
 	void __user *statbuf = (void __user *)statbuf_ptr_local;
@@ -800,17 +842,25 @@ static noinline void ksu_common_newfstat_ret(unsigned int fd_int, void **statbuf
 #endif
 
 	if (copy_from_user(&size, st_size_ptr, len)) {
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("%s: read statbuf 0x%lx failed \n", syscall_name, (unsigned long)st_size_ptr);
+#endif
 		return;
 	}
 
 	new_size = size + ksu_rc_len;
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("%s: adding ksu_rc_len: %ld -> %ld \n", syscall_name, size, new_size);
+#endif
 		
 	if (!copy_to_user(st_size_ptr, &new_size, len))
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("%s: added ksu_rc_len \n", syscall_name);
+#endif
 	else
+#ifdef CONFIG_KSU_PRINT_INFO
 		pr_info("%s: add ksu_rc_len failed: statbuf 0x%lx \n", syscall_name, (unsigned long)st_size_ptr);
+#endif
 	
 	return;
 }
@@ -841,10 +891,14 @@ void stop_init_rc_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	bool ret = schedule_work(&stop_init_rc_hook_work);
+#ifdef CONFIG_KSU_PRINT_INFO
     pr_info("unregister init_rc_hook kprobe: %d!\n", ret);
+#endif
 #else
 	ksu_init_rc_hook = false;
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("stop init_rc_hook\n");
+#endif
 #endif
 }
 
@@ -852,9 +906,13 @@ void stop_execve_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	bool ret = schedule_work(&stop_execve_hook_work);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("unregister execve kprobe: %d!\n", ret);
+#endif
 #else
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("stop execve_hook\n");
+#endif
 	ksu_execveat_hook = false;
 #endif
 }
@@ -868,13 +926,17 @@ void stop_input_hook()
 	}
 	input_hook_stopped = true;
 	bool ret = schedule_work(&stop_input_hook_work);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("unregister input kprobe: %d!\n", ret);
+#endif
 #else
 	if (!ksu_input_hook) {
 		return;
 	}
 	ksu_input_hook = false;
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("stop input_hook\n");
+#endif
 #endif
 }
 
@@ -886,16 +948,24 @@ void __init ksu_ksud_init()
 	int ret;
 
 	ret = register_kprobe(&execve_kp);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksud: execve_kp: %d\n", ret);
+#endif
 
 	ret = register_kprobe(&sys_read_kp);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksud: sys_read_kp: %d\n", ret);
+#endif
 
 	ret = register_kretprobe(&sys_fstat_kp);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksud: sys_fstat_kp: %d\n", ret);
+#endif
 
 	ret = register_kprobe(&input_event_kp);
+#ifdef CONFIG_KSU_PRINT_INFO
 	pr_info("ksud: input_event_kp: %d\n", ret);
+#endif
 
 	INIT_WORK(&stop_init_rc_hook_work, do_stop_init_rc_hook);
 	INIT_WORK(&stop_execve_hook_work, do_stop_execve_hook);
