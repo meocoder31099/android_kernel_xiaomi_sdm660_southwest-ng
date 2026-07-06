@@ -1748,7 +1748,11 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 		blank = evdata->data;
 		if (*blank == FB_BLANK_POWERDOWN) {
 			NVT_LOG("touch suspend\n");
+<<<<<<< HEAD
 			flush_work(&ts->nvt_work);
+=======
+			cancel_work_sync(&ts->nvt_work);
+>>>>>>> dynamic-qcom-rng
 			flush_work(&g_resume_work);
 			mutex_lock(&ts->pm_mutex);
 			nvt_ts_suspend(&ts->client->dev);
