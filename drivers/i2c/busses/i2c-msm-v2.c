@@ -2338,9 +2338,10 @@ i2c_msm_frmwrk_xfer(struct i2c_adapter *adap, struct i2c_msg msgs[], int num)
 
 	/* if system is suspended just bail out */
 	if (ctrl->pwr_state == I2C_MSM_PM_SYS_SUSPENDED) {
-		dev_dbg(ctrl->dev,
+		dev_info(ctrl->dev,
 				"slave:0x%x is calling xfer when system is suspended\n",
 				msgs->addr);
+		dump_stack();
 		return -EIO;
 	}
 
