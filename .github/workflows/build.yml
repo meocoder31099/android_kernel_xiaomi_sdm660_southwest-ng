@@ -172,8 +172,9 @@ jobs:
       # ------------------------------------------------------------------
       # 6. RESTORE CCACHE (Only if use_cache is enabled/true)
       # ------------------------------------------------------------------
-      - name: Cache ccache
-        uses: actions/cache@v5
+      - name: Restore ccache
+        if: ${{ github.event.inputs.use_cache != 'false' }}
+        uses: actions/cache/restore@v4
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
@@ -294,6 +295,16 @@ jobs:
           echo "lto_mode=${LTO_MODE}" >> "$GITHUB_OUTPUT"
 
           exit "$BUILD_EXIT"
+
+      # ------------------------------------------------------------------
+      # 8.5. SAVE CCACHE (Always runs to store the newly built object files)
+      # ------------------------------------------------------------------
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
 
       # ------------------------------------------------------------------
       # 9. VERIFY BUILD OUTPUT
