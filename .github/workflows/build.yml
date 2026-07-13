@@ -108,15 +108,7 @@ jobs:
             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       # ------------------------------------------------------------------
-      # 4.5. SETUP RESUKISU (KERNELSU)
-      # ------------------------------------------------------------------
-      - name: Set up ReSukiSU (KernelSU)
-        working-directory: kernel
-        run: |
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
-
-      # ------------------------------------------------------------------
-      # 5. CACHE & DOWNLOAD TOOLCHAIN (ALWAYS CACHED - EXCEPTION CACHE RULE)
+      # 5. CACHE & DOWNLOAD TOOLCHAIN (AOSP OR NEUTRON)
       # ------------------------------------------------------------------
       # AOSP Clang Configuration
       - name: Cache AOSP Clang toolchain
@@ -180,9 +172,8 @@ jobs:
       # ------------------------------------------------------------------
       # 6. RESTORE CCACHE (Only if use_cache is enabled/true)
       # ------------------------------------------------------------------
-      - name: Restore ccache
-        if: ${{ github.event.inputs.use_cache != 'false' }}
-        uses: actions/cache/restore@v6
+      - name: Cache ccache
+        uses: actions/cache@v5
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
@@ -303,16 +294,6 @@ jobs:
           echo "lto_mode=${LTO_MODE}" >> "$GITHUB_OUTPUT"
 
           exit "$BUILD_EXIT"
-
-      # ------------------------------------------------------------------
-      # 8.5. SAVE CCACHE
-      # ------------------------------------------------------------------
-      - name: Save ccache
-        if: always()
-        uses: actions/cache/save@v6
-        with:
-          path: ~/.ccache
-          key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
 
       # ------------------------------------------------------------------
       # 9. VERIFY BUILD OUTPUT
