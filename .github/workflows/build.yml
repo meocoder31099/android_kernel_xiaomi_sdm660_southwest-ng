@@ -165,7 +165,7 @@ jobs:
       # ------------------------------------------------------------------
       - name: Restore ccache
         if: ${{ github.event.inputs.use_cache != 'false' }}
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
@@ -294,7 +294,7 @@ jobs:
       # ------------------------------------------------------------------
       - name: Save ccache
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
