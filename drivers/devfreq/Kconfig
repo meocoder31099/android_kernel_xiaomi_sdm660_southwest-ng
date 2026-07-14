@@ -73,9 +73,9 @@ config DEVFREQ_GOV_PASSIVE
 	  through sysfs entries. The passive governor recommends that
 	  devfreq device uses the OPP table to get the frequency/voltage.
 
-config SIMPLE_GPU_ALGORITHM
-	tristate "Simple GPU algorithm"
-	depends on DEVFREQ_GOV_QCOM_ADRENO_TZ
+config DEVFREQ_GOV_SIMPLE_GPU
+	tristate "Simple GPU Governor for Adreno"
+	depends on QCOM_KGSL
 	help
 	  Simple user configurable GPU controlling algorithm.
 
