@@ -123,6 +123,9 @@
 
 		qcom,gpu-speed-bin = <0x41a0 0x1fe00000 21>;
 
+		/* Custom governor name */
+		qcom,custom-governor-name = "";
+
 		/* Cx ipeak limit support */
 		qcom,gpu-cx-ipeak {
 			#address-cells = <1>;
