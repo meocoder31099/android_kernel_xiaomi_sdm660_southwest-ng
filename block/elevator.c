@@ -924,6 +924,8 @@ int elevator_init_mq(struct request_queue *q)
 
 #if defined(CONFIG_BFQ_DEFAULT)
 		e = elevator_get(q, "bfq", false);
+#elif defined(CONFIG_MQ_ZEN_DEFAULT)
+		e = elevator_get(q, "mq-zen", false);
 #elif defined(CONFIG_MQ_KYBER_DEFAULT)
 		e = elevator_get(q, "kyber", false);
 #else
