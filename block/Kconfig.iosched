@@ -55,7 +55,7 @@ choice
 	help
 	  Select the I/O scheduler which will be used by default.
 
-	config DEFAULT_ANXIETY
+	config ANXIETY_DEFAULT
 		bool "Anxiety"
 		depends on IOSCHED_ANXIETY
 
@@ -79,7 +79,7 @@ endchoice
 
 config DEFAULT_IOSCHED
 	string
-	default "anxiety" if DEFAULT_ANXIETY
+	default "anxiety" if ANXIETY_DEFAULT
 	default "mq-deadline" if MQ_DEADLINE_DEFAULT
 	default "kyber" if MQ_KYBER_DEFAULT
 	default "bfq" if BFQ_DEFAULT
