@@ -16,7 +16,7 @@ config MQ_IOSCHED_DEADLINE
 
 config MQ_IOSCHED_KYBER
 	tristate "Kyber I/O scheduler"
-	default y
+	default n
 	help
 	  The Kyber I/O scheduler is a low-overhead scheduler suitable for
 	  multiqueue and other fast devices. Given target latencies for reads and
@@ -51,7 +51,7 @@ config IOSCHED_ZEN
 
 choice
 	prompt "Default mq I/O scheduler"
-	default MQ_DEADLINE_DEFAULT
+	default ZEN_DEFAULT
 	help
 	  Select the I/O scheduler which will be used by default.
 
@@ -84,4 +84,4 @@ config DEFAULT_IOSCHED
 	default "kyber" if MQ_KYBER_DEFAULT
 	default "bfq" if BFQ_DEFAULT
 	default "zen" if ZEN_DEFAULT
-	default "mq-deadline"
+	default "zen"
