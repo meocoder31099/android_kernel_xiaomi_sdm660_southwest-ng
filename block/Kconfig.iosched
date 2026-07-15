@@ -42,7 +42,7 @@ config BFQ_GROUP_IOSCHED
 	  Enable hierarchical scheduling in BFQ, using the blkio
 	  (cgroups-v1) or io (cgroups-v2) controller.
 
-config IOSCHED_ZEN
+config MQ_IOSCHED_ZEN
 	tristate "Zen I/O scheduler"
 	default y
 	help
@@ -51,7 +51,7 @@ config IOSCHED_ZEN
 
 choice
 	prompt "Default mq I/O scheduler"
-	default ZEN_DEFAULT
+	default MQ_ZEN_DEFAULT
 	help
 	  Select the I/O scheduler which will be used by default.
 
@@ -71,9 +71,9 @@ choice
 		bool "BFQ"
 		depends on IOSCHED_BFQ
 
-	config ZEN_DEFAULT
+	config MQ_ZEN_DEFAULT
 		bool "ZEN"
-		depends on IOSCHED_ZEN
+		depends on MQ_IOSCHED_ZEN
 
 endchoice
 
@@ -83,5 +83,5 @@ config DEFAULT_IOSCHED
 	default "mq-deadline" if MQ_DEADLINE_DEFAULT
 	default "kyber" if MQ_KYBER_DEFAULT
 	default "bfq" if BFQ_DEFAULT
-	default "zen" if ZEN_DEFAULT
-	default "zen"
+	default "mq-zen" if ZEN_DEFAULT
+	default "mq-zen"
