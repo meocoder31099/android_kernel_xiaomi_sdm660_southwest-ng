@@ -1408,6 +1408,23 @@ static int adreno_probe_efuse(struct platform_device *pdev,
 	return 0;
 }
 
+static const char *adreno_of_get_custom_gpu_governor(struct device *dev)
+{
+	const char *gov = NULL;
+
+	/* Read governor name from device tree node */
+	if (of_property_read_string(dev->of_node, "qcom,custom-governor-name", &gov) == 0 && gov) {
+		
+		#ifdef CONFIG_DEVFREQ_GOV_SIMPLE_GPU
+		if (strcmp(gov, "gpu-simple") == 0)
+			return gov;
+		#endif
+	}
+
+	/* Fallback default governor name from Kconfig */
+	return CONFIG_QCOM_ADRENO_DEFAULT_GOVERNOR;
+}
+
 static int adreno_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *of_id;
@@ -1537,7 +1554,7 @@ static int adreno_probe(struct platform_device *pdev)
 
 	adreno_sysfs_init(adreno_dev);
 
-	kgsl_pwrscale_init(&pdev->dev, CONFIG_QCOM_ADRENO_DEFAULT_GOVERNOR);
+	kgsl_pwrscale_init(&pdev->dev, adreno_of_get_custom_gpu_governor(&pdev->dev));
 
 	/* Initialize coresight for the target */
 	adreno_coresight_init(adreno_dev);
