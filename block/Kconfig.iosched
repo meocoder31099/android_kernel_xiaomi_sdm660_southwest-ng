@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0
-if BLOCK
-
-menu "IO Schedulers"
 
 config MQ_IOSCHED_DEADLINE
 	tristate "MQ deadline I/O scheduler"
@@ -58,7 +55,3 @@ choice
 		depends on IOSCHED_BFQ
 
 endchoice
-
-endmenu
-
-endif
