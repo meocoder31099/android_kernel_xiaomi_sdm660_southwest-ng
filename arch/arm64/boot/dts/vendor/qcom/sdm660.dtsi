@@ -252,7 +252,6 @@
 
 		CPU_COST_0: core-cost0 {
 			busy-cost-data = <
-				300000	25
 				633600	53
 				902400	68
 				1113600	99
@@ -1116,7 +1115,6 @@
 		qcom,governor-per-policy;
 
 		qcom,cpufreq-table-0 =
-			< 300000 >,
 			< 433100 >,
 			< 633600 >,
 			< 902400 >,
