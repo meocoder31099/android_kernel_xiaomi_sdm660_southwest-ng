@@ -131,6 +131,9 @@ static const int sdm660_mmss_fuse_ref_volt[SDM660_MMSS_FUSE_CORNERS] = {
 
 #define SDM660_MMSS_CPR_CLOCK_RATE		19200000
 
+/* For safety, the "custom voltage reduce" must <= 80mV */
+#define CUSTOM_VOLTAGE_REDUCE_LIMIT 80000
+
 enum {
 	SDM660_SOC_ID,
 	SDM630_SOC_ID,
@@ -232,17 +235,34 @@ static int cpr4_sdm660_mmss_calculate_open_loop_voltages(
 	int i, rc = 0;
 	const int *ref_volt;
 	int *fuse_volt;
+	u32 custom_voltage_reduce;
 
 	fuse_volt = kcalloc(vreg->fuse_corner_count, sizeof(*fuse_volt),
 				GFP_KERNEL);
 	if (!fuse_volt)
 		return -ENOMEM;
 
+	/* Read custom-voltage-reduce value from device tree node */
+	rc = of_property_read_u32(vreg->of_node, "qcom,custom-voltage-reduce", &custom_voltage_reduce);
+
+	if (rc < 0)
+		custom_voltage_reduce = 0;
+	else if (custom_voltage_reduce > CUSTOM_VOLTAGE_REDUCE_LIMIT)
+		custom_voltage_reduce = CUSTOM_VOLTAGE_REDUCE_LIMIT;
+
 	ref_volt = sdm660_mmss_fuse_ref_volt;
 	for (i = 0; i < vreg->fuse_corner_count; i++) {
-		fuse_volt[i] = cpr3_convert_open_loop_voltage_fuse(ref_volt[i],
+		fuse_volt[i] = cpr3_convert_open_loop_voltage_fuse(ref_volt[i] - custom_voltage_reduce,
 			SDM660_MMSS_FUSE_STEP_VOLT, fuse->init_voltage[i],
 			SDM660_MMSS_VOLTAGE_FUSE_SIZE);
+
+		/*
+		* Adjust both floor and ceiling voltages.
+		* Subtract the custom voltage reduction from the reference voltage.
+		*/
+		vreg->corner[i].floor_volt -= custom_voltage_reduce;
+		vreg->corner[i].ceiling_volt -= custom_voltage_reduce;
+
 		cpr3_info(vreg, "fuse_corner[%d] open-loop=%7d uV\n",
 			i, fuse_volt[i]);
 	}
@@ -276,6 +296,18 @@ static int cpr4_sdm660_mmss_calculate_open_loop_voltages(
 	if (rc)
 		cpr3_err(vreg, "open-loop voltage adjustment failed, rc=%d\n",
 			rc);
+
+	// Debug
+	pr_info("GPU_CPR_DEBUG: Custom UV Applied: %d uV\n", custom_voltage_reduce);
+	pr_info("GPU_CPR_DEBUG: Corner | Freq (Hz)  | Floor (uV) | Open-Loop (uV) | Ceiling (uV)\n");
+	for (i = 0; i < vreg->corner_count; i++) {
+		pr_info("GPU_CPR_DEBUG: [%2d]   | %10u | %10d | %14d | %12d\n",
+			i,
+			vreg->corner[i].proc_freq,
+			vreg->corner[i].floor_volt,
+			vreg->corner[i].open_loop_volt,
+			vreg->corner[i].ceiling_volt);
+	}
 
 done:
 	kfree(fuse_volt);
