@@ -133,3 +133,9 @@
                 status = "disabled";
 	};
 };
+
+/ {
+	chosen {
+		custom-zram-size-gb = <3>; 
+	};
+};
