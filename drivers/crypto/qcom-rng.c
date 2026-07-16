@@ -241,7 +241,7 @@ static struct qcom_rng_of_data qcom_prng_of_data = {
 
 static struct qcom_rng_of_data qcom_prng_ee_of_data = {
 	.skip_init = true,
-	.hwrng_support = false,
+	.hwrng_support = true,
 };
 
 static struct qcom_rng_of_data qcom_trng_of_data = {
