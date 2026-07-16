@@ -1,13 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
 
-config IOSCHED_ANXIETY
-	tristate "Anxiety I/O scheduler"
-	default y
-	help
-	  The Anxiety I/O scheduler prioritizes latency over everything
-	  else. When a request comes in, it will use a lighweight
-	  selection algorithm to swiftly process the current pending task.
-
 config MQ_IOSCHED_DEADLINE
 	tristate "MQ deadline I/O scheduler"
 	default y
@@ -43,7 +35,7 @@ config BFQ_GROUP_IOSCHED
 	  (cgroups-v1) or io (cgroups-v2) controller.
 
 config MQ_IOSCHED_ZEN
-	tristate "Zen I/O scheduler"
+	tristate "MQ Zen I/O scheduler"
 	default y
 	help
 	  FCFS, dispatches are back-inserted, deadlines ensure fairness. Should
@@ -76,12 +68,3 @@ choice
 		depends on MQ_IOSCHED_ZEN
 
 endchoice
-
-config DEFAULT_IOSCHED
-	string
-	default "anxiety" if ANXIETY_DEFAULT
-	default "mq-deadline" if MQ_DEADLINE_DEFAULT
-	default "kyber" if MQ_KYBER_DEFAULT
-	default "bfq" if BFQ_DEFAULT
-	default "mq-zen" if ZEN_DEFAULT
-	default "mq-zen"
