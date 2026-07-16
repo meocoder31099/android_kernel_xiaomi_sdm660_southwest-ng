@@ -107,7 +107,7 @@ int ion_hyp_unassign_sg(struct sg_table *sgt, int *source_vm_list,
 	int ret, i;
 
 	if (source_nelems <= 0) {
-		pr_err("%s: source_nelems invalid\n",
+		pr_debug("%s: source_nelems invalid\n",
 		       __func__);
 		ret = -EINVAL;
 		goto out;
@@ -121,7 +121,7 @@ int ion_hyp_unassign_sg(struct sg_table *sgt, int *source_vm_list,
 				       &dest_vmid, &dest_perms, 1);
 	if (ret) {
 		if (!try_lock)
-			pr_err("%s: Unassign call failed.\n",
+			pr_debug("%s: Unassign call failed.\n",
 			       __func__);
 		goto out;
 	}
@@ -142,7 +142,7 @@ int ion_hyp_assign_sg(struct sg_table *sgt, int *dest_vm_list,
 	int ret = 0;
 
 	if (dest_nelems <= 0) {
-		pr_err("%s: dest_nelems invalid\n",
+		pr_debug("%s: dest_nelems invalid\n",
 		       __func__);
 		ret = -EINVAL;
 		goto out;
@@ -161,7 +161,7 @@ int ion_hyp_assign_sg(struct sg_table *sgt, int *dest_vm_list,
 			       dest_vm_list, dest_perms, dest_nelems);
 
 	if (ret) {
-		pr_err("%s: Assign call failed\n",
+		pr_debug("%s: Assign call failed\n",
 		       __func__);
 		goto out_free_dest;
 	}
@@ -189,7 +189,7 @@ int ion_hyp_unassign_sg_from_flags(struct sg_table *sgt, unsigned long flags,
 		return -ENOMEM;
 	ret = ion_populate_vm_list(flags, source_vm_list, source_nelems);
 	if (ret) {
-		pr_err("%s: Failed to get secure vmids\n", __func__);
+		pr_debug("%s: Failed to get secure vmids\n", __func__);
 		goto out_free_source;
 	}
 
@@ -217,7 +217,7 @@ int ion_hyp_assign_sg_from_flags(struct sg_table *sgt, unsigned long flags,
 
 	ret = ion_populate_vm_list(flags, dest_vm_list, dest_nelems);
 	if (ret) {
-		pr_err("%s: Failed to get secure vmid(s)\n", __func__);
+		pr_debug("%s: Failed to get secure vmid(s)\n", __func__);
 		goto out_free_dest_vm;
 	}
 
@@ -264,7 +264,7 @@ int ion_hyp_assign_from_flags(u64 base, u64 size, unsigned long flags)
 
 	if ((flags & ~ION_FLAGS_CP_MASK) ||
 	    ion_populate_vm_list(flags, vmids, nr)) {
-		pr_err("%s: Failed to parse secure flags 0x%lx\n", __func__,
+		pr_debug("%s: Failed to parse secure flags 0x%lx\n", __func__,
 		       flags);
 		goto out;
 	}
@@ -274,7 +274,7 @@ int ion_hyp_assign_from_flags(u64 base, u64 size, unsigned long flags)
 
 	ret = hyp_assign_phys(base, size, &src_vm, 1, vmids, modes, nr);
 	if (ret)
-		pr_err("%s: Assign call failed, flags 0x%lx\n", __func__,
+		pr_debug("%s: Assign call failed, flags 0x%lx\n", __func__,
 		       flags);
 
 out:

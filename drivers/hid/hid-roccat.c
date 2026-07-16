@@ -426,7 +426,7 @@ static int __init roccat_init(void)
 	retval = alloc_chrdev_region(&dev_id, ROCCAT_FIRST_MINOR,
 			ROCCAT_MAX_DEVICES, "roccat");
 	if (retval < 0) {
-		pr_warn("can't get major number\n");
+		pr_debug("can't get major number\n");
 		goto error;
 	}
 
@@ -436,7 +436,7 @@ static int __init roccat_init(void)
 	retval = cdev_add(&roccat_cdev, dev_id, ROCCAT_MAX_DEVICES);
 
 	if (retval < 0) {
-		pr_warn("cannot add cdev\n");
+		pr_debug("cannot add cdev\n");
 		goto cleanup_alloc_chrdev_region;
 	}
 	return 0;

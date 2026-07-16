@@ -537,7 +537,7 @@ static void synchronize_sched_expedited_wait(struct rcu_state *rsp)
 		if (rcu_cpu_stall_suppress)
 			continue;
 		panic_on_rcu_stall();
-		pr_err("INFO: %s detected expedited stalls on CPUs/tasks: {",
+		pr_debug("INFO: %s detected expedited stalls on CPUs/tasks: {",
 		       rsp->name);
 		ndetected = 0;
 		rcu_for_each_leaf_node(rsp, rnp) {
@@ -560,7 +560,7 @@ static void synchronize_sched_expedited_wait(struct rcu_state *rsp)
 			jiffies - jiffies_start, rsp->expedited_sequence,
 			rnp_root->expmask, ".T"[!!rnp_root->exp_tasks]);
 		if (ndetected) {
-			pr_err("blocking rcu_node structures:");
+			pr_debug("blocking rcu_node structures:");
 			rcu_for_each_node_breadth_first(rsp, rnp) {
 				if (rnp == rnp_root)
 					continue; /* printed unconditionally */

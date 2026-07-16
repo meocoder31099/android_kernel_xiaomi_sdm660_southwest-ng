@@ -99,7 +99,7 @@ static void swap_ping_pong(struct elliptic_userspace_ctrl_device *dev)
 static int device_open(struct inode *inode, struct file *filp)
 {
 	if (inode->i_cdev != &ctrl_device.cdev) {
-		pr_warn("elliptic : dev pointer mismatch\n");
+		pr_debug("elliptic : dev pointer mismatch\n");
 		return -ENODEV; /* No such device */
 	}
 
@@ -202,7 +202,7 @@ int elliptic_userspace_ctrl_driver_init(void)
 		&device_number, 0, 1, USERSPACE_CTRL_IO_DEVICE_NAME);
 
 	if (err < 0) {
-		pr_err("failed to allocate chrdev region\n");
+		pr_debug("failed to allocate chrdev region\n");
 		return err;
 	}
 

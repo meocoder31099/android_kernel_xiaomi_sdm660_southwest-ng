@@ -365,7 +365,7 @@ int register_blkdev(unsigned int major, const char *name)
 	}
 
 	if (major >= BLKDEV_MAJOR_MAX) {
-		pr_err("register_blkdev: major requested (%u) is greater than the maximum (%u) for %s\n",
+		pr_debug("register_blkdev: major requested (%u) is greater than the maximum (%u) for %s\n",
 		       major, BLKDEV_MAJOR_MAX-1, name);
 
 		ret = -EINVAL;
@@ -1978,7 +1978,7 @@ static void disk_alloc_events(struct gendisk *disk)
 
 	ev = kzalloc(sizeof(*ev), GFP_KERNEL);
 	if (!ev) {
-		pr_warn("%s: failed to initialize events\n", disk->disk_name);
+		pr_debug("%s: failed to initialize events\n", disk->disk_name);
 		return;
 	}
 
@@ -2000,7 +2000,7 @@ static void disk_add_events(struct gendisk *disk)
 
 	/* FIXME: error handling */
 	if (sysfs_create_files(&disk_to_dev(disk)->kobj, disk_events_attrs) < 0)
-		pr_warn("%s: failed to create sysfs files for events\n",
+		pr_debug("%s: failed to create sysfs files for events\n",
 			disk->disk_name);
 
 	mutex_lock(&disk_events_mutex);

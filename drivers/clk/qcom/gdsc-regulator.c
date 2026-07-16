@@ -178,7 +178,7 @@ static int gdsc_is_enabled(struct regulator_dev *rdev)
 	if (sc->bus_handle && !sc->is_bus_enabled) {
 		ret = msm_bus_scale_client_update_request(sc->bus_handle, 1);
 		if (ret) {
-			dev_err(&rdev->dev, "bus scaling failed, ret=%d\n",
+			dev_dbg(&rdev->dev, "bus scaling failed, ret=%d\n",
 				ret);
 			goto end;
 		}
@@ -227,7 +227,7 @@ static int gdsc_enable(struct regulator_dev *rdev)
 	if (sc->bus_handle) {
 		ret = msm_bus_scale_client_update_request(sc->bus_handle, 1);
 		if (ret) {
-			dev_err(&rdev->dev, "bus scaling failed, ret=%d\n",
+			dev_dbg(&rdev->dev, "bus scaling failed, ret=%d\n",
 				ret);
 			goto end;
 		}
@@ -239,7 +239,7 @@ static int gdsc_enable(struct regulator_dev *rdev)
 
 	regmap_read(sc->regmap, REG_OFFSET, &regval);
 	if (regval & HW_CONTROL_MASK) {
-		dev_warn(&rdev->dev, "Invalid enable while %s is under HW control\n",
+		dev_dbg(&rdev->dev, "Invalid enable while %s is under HW control\n",
 				sc->rdesc.name);
 		ret = -EBUSY;
 		goto end;
@@ -312,7 +312,7 @@ static int gdsc_enable(struct regulator_dev *rdev)
 			if (sc->hw_ctrl) {
 				regmap_read(sc->hw_ctrl, REG_OFFSET,
 						&hw_ctrl_regval);
-				dev_warn(&rdev->dev, "%s state (after %d us timeout): 0x%x, GDS_HW_CTRL: 0x%x. Re-polling.\n",
+				dev_dbg(&rdev->dev, "%s state (after %d us timeout): 0x%x, GDS_HW_CTRL: 0x%x. Re-polling.\n",
 					sc->rdesc.name, sc->gds_timeout,
 					regval, hw_ctrl_regval);
 
@@ -322,19 +322,19 @@ static int gdsc_enable(struct regulator_dev *rdev)
 								&regval);
 					regmap_read(sc->hw_ctrl, REG_OFFSET,
 							&hw_ctrl_regval);
-					dev_err(&rdev->dev, "%s final state (after additional %d us timeout): 0x%x, GDS_HW_CTRL: 0x%x\n",
+					dev_dbg(&rdev->dev, "%s final state (after additional %d us timeout): 0x%x, GDS_HW_CTRL: 0x%x\n",
 						sc->rdesc.name, sc->gds_timeout,
 						regval, hw_ctrl_regval);
 					goto end;
 				}
 			} else {
-				dev_err(&rdev->dev, "%s enable timed out: 0x%x\n",
+				dev_dbg(&rdev->dev, "%s enable timed out: 0x%x\n",
 					sc->rdesc.name,
 					regval);
 				udelay(sc->gds_timeout);
 
 				regmap_read(sc->regmap, REG_OFFSET, &regval);
-				dev_err(&rdev->dev, "%s final state: 0x%x (%d us after timeout)\n",
+				dev_dbg(&rdev->dev, "%s final state: 0x%x (%d us after timeout)\n",
 					sc->rdesc.name, regval,
 					sc->gds_timeout);
 				goto end;
@@ -427,7 +427,7 @@ static int gdsc_disable(struct regulator_dev *rdev)
 		} else {
 			ret = poll_gdsc_status(sc, DISABLED);
 			if (ret)
-				dev_err(&rdev->dev, "%s disable timed out: 0x%x\n",
+				dev_dbg(&rdev->dev, "%s disable timed out: 0x%x\n",
 					sc->rdesc.name, regval);
 		}
 
@@ -453,7 +453,7 @@ static int gdsc_disable(struct regulator_dev *rdev)
 	if (sc->bus_handle) {
 		ret = msm_bus_scale_client_update_request(sc->bus_handle, 0);
 		if (ret)
-			dev_err(&rdev->dev, "bus scaling failed, ret=%d\n",
+			dev_dbg(&rdev->dev, "bus scaling failed, ret=%d\n",
 				ret);
 		sc->is_bus_enabled = false;
 	}
@@ -488,7 +488,7 @@ static unsigned int gdsc_get_mode(struct regulator_dev *rdev)
 	if (sc->bus_handle && !sc->is_bus_enabled) {
 		ret = msm_bus_scale_client_update_request(sc->bus_handle, 1);
 		if (ret) {
-			dev_err(&rdev->dev, "bus scaling failed, ret=%d\n",
+			dev_dbg(&rdev->dev, "bus scaling failed, ret=%d\n",
 				ret);
 			if (sc->parent_regulator) {
 				regulator_disable(sc->parent_regulator);
@@ -537,7 +537,7 @@ static int gdsc_set_mode(struct regulator_dev *rdev, unsigned int mode)
 	if (sc->bus_handle && !sc->is_bus_enabled) {
 		ret = msm_bus_scale_client_update_request(sc->bus_handle, 1);
 		if (ret) {
-			dev_err(&rdev->dev, "bus scaling failed, ret=%d\n",
+			dev_dbg(&rdev->dev, "bus scaling failed, ret=%d\n",
 				ret);
 			if (sc->parent_regulator) {
 				regulator_disable(sc->parent_regulator);
@@ -589,7 +589,7 @@ static int gdsc_set_mode(struct regulator_dev *rdev, unsigned int mode)
 		if (sc->is_gdsc_enabled) {
 			ret = poll_gdsc_status(sc, ENABLED);
 			if (ret)
-				dev_err(&rdev->dev, "%s enable timed out\n",
+				dev_dbg(&rdev->dev, "%s enable timed out\n",
 					sc->rdesc.name);
 		}
 		break;
@@ -632,19 +632,19 @@ void gdsc_debug_print_regs(struct regulator *regulator)
 	int ret;
 
 	if (!sc) {
-		pr_err("Failed to get GDSC Handle\n");
+		pr_debug("Failed to get GDSC Handle\n");
 		return;
 	}
 
 	ret = regmap_bulk_read(sc->regmap, REG_OFFSET, regvals,
 			gdsc_regmap_config.max_register ? 3 : 1);
 	if (ret) {
-		pr_err("Failed to read %s registers\n", sc->rdesc.name);
+		pr_debug("Failed to read %s registers\n", sc->rdesc.name);
 		return;
 	}
 
-	pr_info("Dumping %s Registers:\n", sc->rdesc.name);
-	pr_info("GDSCR: 0x%.8x CFG: 0x%.8x CFG2: 0x%.8x\n",
+	pr_debug("Dumping %s Registers:\n", sc->rdesc.name);
+	pr_debug("GDSCR: 0x%.8x CFG: 0x%.8x CFG2: 0x%.8x\n",
 			regvals[0], regvals[1], regvals[2]);
 }
 EXPORT_SYMBOL(gdsc_debug_print_regs);
@@ -696,7 +696,7 @@ static int gdsc_parse_dt_data(struct gdsc *sc, struct device *dev,
 	if (sc->clock_count == -EINVAL) {
 		sc->clock_count = 0;
 	} else if (sc->clock_count < 0) {
-		dev_err(dev, "Failed to get clock names, ret=%d\n",
+		dev_dbg(dev, "Failed to get clock names, ret=%d\n",
 			sc->clock_count);
 		return sc->clock_count;
 	}
@@ -728,7 +728,7 @@ static int gdsc_parse_dt_data(struct gdsc *sc, struct device *dev,
 		if (sc->reset_count == -EINVAL) {
 			sc->reset_count = 0;
 		} else if (sc->reset_count < 0) {
-			dev_err(dev, "Failed to get reset clock names\n");
+			dev_dbg(dev, "Failed to get reset clock names\n");
 			return sc->reset_count;
 		}
 	}
@@ -751,7 +751,7 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (res == NULL) {
-		dev_err(dev, "Failed to get address resource\n");
+		dev_dbg(dev, "Failed to get address resource\n");
 		return -EINVAL;
 	}
 
@@ -764,7 +764,7 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 
 	sc->regmap = devm_regmap_init_mmio(dev, sc->gdscr, &gdsc_regmap_config);
 	if (!sc->regmap) {
-		dev_err(dev, "Couldn't get regmap\n");
+		dev_dbg(dev, "Couldn't get regmap\n");
 		return -EINVAL;
 	}
 
@@ -773,7 +773,7 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 		if (IS_ERR(sc->parent_regulator)) {
 			ret = PTR_ERR(sc->parent_regulator);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev, "Unable to get vdd_parent regulator, ret=%d\n",
+				dev_dbg(dev, "Unable to get vdd_parent regulator, ret=%d\n",
 					ret);
 			return ret;
 		}
@@ -795,7 +795,7 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 		if (IS_ERR(sc->clocks[i])) {
 			ret = PTR_ERR(sc->clocks[i]);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev, "Failed to get %s, ret=%d\n",
+				dev_dbg(dev, "Failed to get %s, ret=%d\n",
 					clock_name, ret);
 			return ret;
 		}
@@ -805,7 +805,7 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 	}
 
 	if ((sc->root_en || sc->force_root_en) && (sc->root_clk_idx == -1)) {
-		dev_err(dev, "Failed to get root clock name\n");
+		dev_dbg(dev, "Failed to get root clock name\n");
 		return -EINVAL;
 	}
 
@@ -826,7 +826,7 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 			if (IS_ERR(sc->reset_clocks[i])) {
 				ret = PTR_ERR(sc->reset_clocks[i]);
 				if (ret != -EPROBE_DEFER)
-					dev_err(&pdev->dev, "Failed to get %s, ret=%d\n",
+					dev_dbg(&pdev->dev, "Failed to get %s, ret=%d\n",
 						reset_name, ret);
 				return ret;
 			}
@@ -836,13 +836,13 @@ static int gdsc_get_resources(struct gdsc *sc, struct platform_device *pdev)
 	if (of_find_property(pdev->dev.of_node, "qcom,msm-bus,name", NULL)) {
 		sc->bus_pdata = msm_bus_cl_get_pdata(pdev);
 		if (!sc->bus_pdata) {
-			dev_err(&pdev->dev, "Failed to get bus config data\n");
+			dev_dbg(&pdev->dev, "Failed to get bus config data\n");
 			return -EINVAL;
 		}
 
 		sc->bus_handle = msm_bus_scale_register_client(sc->bus_pdata);
 		if (!sc->bus_handle) {
-			dev_err(&pdev->dev, "Failed to register bus client\n");
+			dev_dbg(&pdev->dev, "Failed to register bus client\n");
 			/*
 			 * msm_bus_scale_register_client() returns 0 for all
 			 * errors including when called before the bus driver
@@ -885,7 +885,7 @@ static int gdsc_probe(struct platform_device *pdev)
 		 */
 		ret = msm_bus_scale_client_update_request(sc->bus_handle, 1);
 		if (ret) {
-			dev_err(&pdev->dev, "bus scaling failed, ret=%d\n",
+			dev_dbg(&pdev->dev, "bus scaling failed, ret=%d\n",
 				ret);
 			goto err;
 		}
@@ -916,7 +916,7 @@ static int gdsc_probe(struct platform_device *pdev)
 
 		ret = poll_gdsc_status(sc, ENABLED);
 		if (ret) {
-			dev_err(&pdev->dev, "%s enable timed out: 0x%x\n",
+			dev_dbg(&pdev->dev, "%s enable timed out: 0x%x\n",
 				sc->rdesc.name, regval);
 			goto err;
 		}
@@ -962,7 +962,7 @@ static int gdsc_probe(struct platform_device *pdev)
 	sc->rdev = devm_regulator_register(&pdev->dev, &sc->rdesc, &reg_config);
 	if (IS_ERR(sc->rdev)) {
 		ret = PTR_ERR(sc->rdev);
-		dev_err(&pdev->dev, "regulator_register(\"%s\") failed, ret=%d\n",
+		dev_dbg(&pdev->dev, "regulator_register(\"%s\") failed, ret=%d\n",
 			sc->rdesc.name, ret);
 		goto err;
 	}

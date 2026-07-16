@@ -271,7 +271,7 @@ void arm64_force_sig_info(struct siginfo *info, const char *str,
 	if (!show_unhandled_signals_ratelimited())
 		goto send_sig;
 
-	pr_info("%s[%d]: unhandled exception: ", tsk->comm, task_pid_nr(tsk));
+	pr_debug("%s[%d]: unhandled exception: ", tsk->comm, task_pid_nr(tsk));
 	if (esr)
 		pr_cont("%s, ESR 0x%08x, ", esr_get_class_string(esr), esr);
 
@@ -919,22 +919,22 @@ asmlinkage void do_serror(struct pt_regs *regs, unsigned int esr)
 
 void __pte_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pte %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pte %016lx.\n", file, line, val);
 }
 
 void __pmd_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pmd %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pmd %016lx.\n", file, line, val);
 }
 
 void __pud_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pud %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pud %016lx.\n", file, line, val);
 }
 
 void __pgd_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pgd %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pgd %016lx.\n", file, line, val);
 }
 
 /* GENERIC_BUG traps */

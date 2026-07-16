@@ -5492,7 +5492,7 @@ static int pskb_carve_frag_list(struct sk_buff *skb,
 
 	do {
 		if (!list) {
-			pr_err("Not enough bytes to eat. Want %d\n", eat);
+			pr_debug("Not enough bytes to eat. Want %d\n", eat);
 			return -EFAULT;
 		}
 		if (list->len <= eat) {

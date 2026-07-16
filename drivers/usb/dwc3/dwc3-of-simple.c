@@ -110,7 +110,7 @@ static int dwc3_of_simple_probe(struct platform_device *pdev)
 	simple->resets = of_reset_control_array_get(np, shared_resets, true);
 	if (IS_ERR(simple->resets)) {
 		ret = PTR_ERR(simple->resets);
-		dev_err(dev, "failed to get device resets, err=%d\n", ret);
+		dev_dbg(dev, "failed to get device resets, err=%d\n", ret);
 		return ret;
 	}
 

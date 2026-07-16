@@ -157,6 +157,7 @@
 /* This should be increased if a protocol with a bigger head is added. */
 #define GRO_MAX_HEAD (MAX_HEADER + 128)
 
+static const char *default_qdisc = "fq_codel";
 static DEFINE_SPINLOCK(ptype_lock);
 static DEFINE_SPINLOCK(offload_lock);
 struct list_head ptype_base[PTYPE_HASH_SIZE] __read_mostly;
@@ -444,7 +445,7 @@ void __dev_remove_pack(struct packet_type *pt)
 		}
 	}
 
-	pr_warn("dev_remove_pack: %p not found\n", pt);
+	pr_debug("dev_remove_pack: %p not found\n", pt);
 out:
 	spin_unlock(&ptype_lock);
 }
@@ -524,7 +525,7 @@ static void __dev_remove_offload(struct packet_offload *po)
 		}
 	}
 
-	pr_warn("dev_remove_offload: %p not found\n", po);
+	pr_debug("dev_remove_offload: %p not found\n", po);
 out:
 	spin_unlock(&offload_lock);
 }
@@ -1254,7 +1255,7 @@ rollback:
 			old_assign_type = NET_NAME_RENAMED;
 			goto rollback;
 		} else {
-			pr_err("%s: name change rollback failed: %d\n",
+			pr_debug("%s: name change rollback failed: %d\n",
 			       dev->name, ret);
 		}
 	}
@@ -2249,7 +2250,7 @@ static void netif_setup_tc(struct net_device *dev, unsigned int txq)
 
 	/* If TC0 is invalidated disable TC mapping */
 	if (tc->offset + tc->count > txq) {
-		pr_warn("Number of in use tx queues changed invalidating tc mappings. Priority traffic classification disabled!\n");
+		pr_debug("Number of in use tx queues changed invalidating tc mappings. Priority traffic classification disabled!\n");
 		dev->num_tc = 0;
 		return;
 	}
@@ -2260,7 +2261,7 @@ static void netif_setup_tc(struct net_device *dev, unsigned int txq)
 
 		tc = &dev->tc_to_txq[q];
 		if (tc->offset + tc->count > txq) {
-			pr_warn("Number of in use tx queues changed. Priority %i to tc mapping %i is no longer valid. Setting map to 0\n",
+			pr_debug("Number of in use tx queues changed. Priority %i to tc mapping %i is no longer valid. Setting map to 0\n",
 				i, q);
 			netdev_set_prio_tc_map(dev, i, 0);
 		}
@@ -3283,7 +3284,7 @@ EXPORT_SYMBOL(__skb_gso_segment);
 void netdev_rx_csum_fault(struct net_device *dev)
 {
 	if (net_ratelimit()) {
-		pr_err("%s: hw csum failure\n", dev ? dev->name : "<unknown>");
+		pr_debug("%s: hw csum failure\n", dev ? dev->name : "<unknown>");
 		dump_stack();
 	}
 }
@@ -6050,7 +6051,7 @@ static void net_rps_send_ipi(struct softnet_data *remsd)
 		if (cpu_online(remsd->cpu)) {
 			smp_call_function_single_async(remsd->cpu, &remsd->csd);
 		} else {
-			pr_err("%s() cpu offline\n", __func__);
+			pr_debug("%s() cpu offline\n", __func__);
 			rps_lock(remsd);
 			remsd->backlog.state = 0;
 			rps_unlock(remsd);
@@ -7331,7 +7332,7 @@ static void __netdev_adjacent_dev_remove(struct net_device *dev,
 	adj = __netdev_find_adj(adj_dev, dev_list);
 
 	if (!adj) {
-		pr_err("Adjacency does not exist for device %s from %s\n",
+		pr_debug("Adjacency does not exist for device %s from %s\n",
 		       dev->name, adj_dev->name);
 		WARN_ON(1);
 		return;
@@ -7743,13 +7744,13 @@ static int __dev_set_promiscuity(struct net_device *dev, int inc, bool notify)
 			dev->flags &= ~IFF_PROMISC;
 		else {
 			dev->promiscuity -= inc;
-			pr_warn("%s: promiscuity touches roof, set promiscuity failed. promiscuity feature of device might be broken.\n",
+			pr_debug("%s: promiscuity touches roof, set promiscuity failed. promiscuity feature of device might be broken.\n",
 				dev->name);
 			return -EOVERFLOW;
 		}
 	}
 	if (dev->flags != old_flags) {
-		pr_info("device %s %s promiscuous mode\n",
+		pr_debug("device %s %s promiscuous mode\n",
 			dev->name,
 			dev->flags & IFF_PROMISC ? "entered" : "left");
 		if (audit_enabled) {
@@ -7814,7 +7815,7 @@ static int __dev_set_allmulti(struct net_device *dev, int inc, bool notify)
 			dev->flags &= ~IFF_ALLMULTI;
 		else {
 			dev->allmulti -= inc;
-			pr_warn("%s: allmulti touches roof, set allmulti failed. allmulti feature of device might be broken.\n",
+			pr_debug("%s: allmulti touches roof, set allmulti failed. allmulti feature of device might be broken.\n",
 				dev->name);
 			return -EOVERFLOW;
 		}
@@ -9617,7 +9618,7 @@ void netdev_run_todo(void)
 		list_del(&dev->todo_list);
 
 		if (unlikely(dev->reg_state != NETREG_UNREGISTERING)) {
-			pr_err("network todo '%s' but state %d\n",
+			pr_debug("network todo '%s' but state %d\n",
 			       dev->name, dev->reg_state);
 			dump_stack();
 			continue;
@@ -9769,12 +9770,12 @@ struct net_device *alloc_netdev_mqs(int sizeof_priv, const char *name,
 	BUG_ON(strlen(name) >= sizeof(dev->name));
 
 	if (txqs < 1) {
-		pr_err("alloc_netdev: Unable to allocate device with zero queues\n");
+		pr_debug("alloc_netdev: Unable to allocate device with zero queues\n");
 		return NULL;
 	}
 
 	if (rxqs < 1) {
-		pr_err("alloc_netdev: Unable to allocate device with zero RX queues\n");
+		pr_debug("alloc_netdev: Unable to allocate device with zero RX queues\n");
 		return NULL;
 	}
 

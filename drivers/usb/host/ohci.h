@@ -488,11 +488,11 @@ static inline struct usb_hcd *ohci_to_hcd (const struct ohci_hcd *ohci)
 #define ohci_dbg(ohci, fmt, args...) \
 	dev_dbg (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
 #define ohci_err(ohci, fmt, args...) \
-	dev_err (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
+	dev_dbg (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
 #define ohci_info(ohci, fmt, args...) \
-	dev_info (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
+	dev_dbg (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
 #define ohci_warn(ohci, fmt, args...) \
-	dev_warn (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
+	dev_dbg (ohci_to_hcd(ohci)->self.controller , fmt , ## args )
 
 /*-------------------------------------------------------------------------*/
 

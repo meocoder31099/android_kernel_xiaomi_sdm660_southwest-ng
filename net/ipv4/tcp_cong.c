@@ -73,7 +73,7 @@ int tcp_register_congestion_control(struct tcp_congestion_ops *ca)
 	/* all algorithms must implement these */
 	if (!ca->ssthresh || !ca->undo_cwnd ||
 	    !(ca->cong_avoid || ca->cong_control)) {
-		pr_err("%s does not implement required ops\n", ca->name);
+		pr_debug("%s does not implement required ops\n", ca->name);
 		return -EINVAL;
 	}
 

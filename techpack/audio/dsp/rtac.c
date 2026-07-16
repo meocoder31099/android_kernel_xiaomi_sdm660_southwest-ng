@@ -141,14 +141,14 @@ int rtac_allocate_cal_buffer(uint32_t cal_type)
 	pr_debug("%s\n", __func__);
 
 	if (cal_type >= MAX_RTAC_BLOCKS) {
-		pr_err("%s: cal_type %d is invalid!\n",
+		pr_debug("%s: cal_type %d is invalid!\n",
 		       __func__, cal_type);
 		result =  -EINVAL;
 		goto done;
 	}
 
 	if (rtac_cal[cal_type].cal_data.paddr != 0) {
-		pr_err("%s: memory already allocated! cal_type %d, paddr 0x%pK\n",
+		pr_debug("%s: memory already allocated! cal_type %d, paddr 0x%pK\n",
 		       __func__, cal_type, &rtac_cal[cal_type].cal_data.paddr);
 		result = -EPERM;
 		goto done;
@@ -160,7 +160,7 @@ int rtac_allocate_cal_buffer(uint32_t cal_type)
 		&len,
 		&rtac_cal[cal_type].cal_data.kvaddr);
 	if (result < 0) {
-		pr_err("%s: ION create client for RTAC failed\n",
+		pr_debug("%s: ION create client for RTAC failed\n",
 		       __func__);
 		goto done;
 	}
@@ -181,7 +181,7 @@ int rtac_free_cal_buffer(uint32_t cal_type)
 	pr_debug("%s\n", __func__);
 
 	if (cal_type >= MAX_RTAC_BLOCKS) {
-		pr_err("%s: cal_type %d is invalid!\n",
+		pr_debug("%s: cal_type %d is invalid!\n",
 		       __func__, cal_type);
 		result =  -EINVAL;
 		goto done;
@@ -195,7 +195,7 @@ int rtac_free_cal_buffer(uint32_t cal_type)
 
 	result = msm_audio_ion_free(rtac_cal[cal_type].map_data.dma_buf);
 	if (result < 0) {
-		pr_err("%s: ION free for RTAC failed! cal_type %d, paddr 0x%pK\n",
+		pr_debug("%s: ION free for RTAC failed! cal_type %d, paddr 0x%pK\n",
 		       __func__, cal_type, &rtac_cal[cal_type].cal_data.paddr);
 		goto done;
 	}
@@ -216,21 +216,21 @@ int rtac_map_cal_buffer(uint32_t cal_type)
 	pr_debug("%s\n", __func__);
 
 	if (cal_type >= MAX_RTAC_BLOCKS) {
-		pr_err("%s: cal_type %d is invalid!\n",
+		pr_debug("%s: cal_type %d is invalid!\n",
 		       __func__, cal_type);
 		result =  -EINVAL;
 		goto done;
 	}
 
 	if (rtac_cal[cal_type].map_data.map_handle != 0) {
-		pr_err("%s: already mapped cal_type %d\n",
+		pr_debug("%s: already mapped cal_type %d\n",
 			__func__, cal_type);
 		result =  -EPERM;
 		goto done;
 	}
 
 	if (rtac_cal[cal_type].cal_data.paddr == 0) {
-		pr_err("%s: physical address is NULL cal_type %d\n",
+		pr_debug("%s: physical address is NULL cal_type %d\n",
 			__func__, cal_type);
 		result =  -EPERM;
 		goto done;
@@ -251,7 +251,7 @@ int rtac_map_cal_buffer(uint32_t cal_type)
 		break;
 	}
 	if (result < 0) {
-		pr_err("%s: map RTAC failed! cal_type %d\n",
+		pr_debug("%s: map RTAC failed! cal_type %d\n",
 		       __func__, cal_type);
 		goto done;
 	}
@@ -266,7 +266,7 @@ int rtac_unmap_cal_buffer(uint32_t cal_type)
 	pr_debug("%s\n", __func__);
 
 	if (cal_type >= MAX_RTAC_BLOCKS) {
-		pr_err("%s: cal_type %d is invalid!\n",
+		pr_debug("%s: cal_type %d is invalid!\n",
 		       __func__, cal_type);
 		result =  -EINVAL;
 		goto done;
@@ -297,7 +297,7 @@ int rtac_unmap_cal_buffer(uint32_t cal_type)
 		break;
 	}
 	if (result < 0) {
-		pr_err("%s: unmap RTAC failed! cal_type %d\n",
+		pr_debug("%s: unmap RTAC failed! cal_type %d\n",
 		       __func__, cal_type);
 		goto done;
 	}
@@ -338,14 +338,14 @@ static int rtac_release(struct inode *inode, struct file *f)
 	for (i = 0; i < MAX_RTAC_BLOCKS; i++) {
 		result2 = rtac_unmap_cal_buffer(i);
 		if (result2 < 0) {
-			pr_err("%s: unmap buffer failed! error %d!\n",
+			pr_debug("%s: unmap buffer failed! error %d!\n",
 				__func__, result2);
 			result = result2;
 		}
 
 		result2 = rtac_free_cal_buffer(i);
 		if (result2 < 0) {
-			pr_err("%s: free buffer failed! error %d!\n",
+			pr_debug("%s: free buffer failed! error %d!\n",
 				__func__, result2);
 			result = result2;
 		}
@@ -367,7 +367,7 @@ void add_popp(u32 dev_idx, u32 port_id, u32 popp_id)
 
 	if (rtac_adm_data.device[dev_idx].num_of_popp ==
 			RTAC_MAX_ACTIVE_POPP) {
-		pr_err("%s, Max POPP!\n", __func__);
+		pr_debug("%s, Max POPP!\n", __func__);
 		goto done;
 	}
 	rtac_adm_data.device[dev_idx].popp[
@@ -419,7 +419,7 @@ void rtac_add_adm_device(u32 port_id, u32 copp_id, u32 path_id, u32 popp_id,
 
 	mutex_lock(&rtac_adm_mutex);
 	if (rtac_adm_data.num_of_dev == RTAC_MAX_ACTIVE_DEVICES) {
-		pr_err("%s, Can't add anymore RTAC devices!\n", __func__);
+		pr_debug("%s, Can't add anymore RTAC devices!\n", __func__);
 		goto done;
 	}
 
@@ -433,7 +433,7 @@ void rtac_add_adm_device(u32 port_id, u32 copp_id, u32 path_id, u32 popp_id,
 			}
 			if (rtac_adm_data.device[i].num_of_popp ==
 						RTAC_MAX_ACTIVE_POPP) {
-				pr_err("%s, Max POPP!\n", __func__);
+				pr_debug("%s, Max POPP!\n", __func__);
 				goto done;
 			}
 		}
@@ -600,7 +600,7 @@ void rtac_add_voice(u32 cvs_handle, u32 cvp_handle, u32 rx_afe_port,
 
 	if (rtac_voice_data.num_of_voice_combos ==
 			RTAC_MAX_ACTIVE_VOICE_COMBOS) {
-		pr_err("%s, Can't add anymore RTAC devices!\n", __func__);
+		pr_debug("%s, Can't add anymore RTAC devices!\n", __func__);
 		goto done;
 	}
 
@@ -670,7 +670,7 @@ static u32 get_voice_session_id_cvs(u32 cvs_handle)
 			return voice_session_id[i];
 	}
 
-	pr_err("%s: No voice index for CVS handle %d found returning 0\n",
+	pr_debug("%s: No voice index for CVS handle %d found returning 0\n",
 	       __func__, cvs_handle);
 	return 0;
 }
@@ -684,7 +684,7 @@ static u32 get_voice_session_id_cvp(u32 cvp_handle)
 			return voice_session_id[i];
 	}
 
-	pr_err("%s: No voice index for CVP handle %d found returning 0\n",
+	pr_debug("%s: No voice index for CVP handle %d found returning 0\n",
 	       __func__, cvp_handle);
 	return 0;
 }
@@ -698,7 +698,7 @@ static int get_voice_index(u32 mode, u32 handle)
 		return voice_get_idx_for_session(
 			get_voice_session_id_cvs(handle));
 
-	pr_err("%s: Invalid mode %d, returning 0\n",
+	pr_debug("%s: Invalid mode %d, returning 0\n",
 	       __func__, mode);
 	return 0;
 }
@@ -748,7 +748,7 @@ int send_adm_apr(void *buf, u32 opcode)
 	if (rtac_cal[ADM_RTAC_CAL].map_data.dma_buf == NULL) {
 		result = rtac_allocate_cal_buffer(ADM_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: allocate buffer failed!",
+			pr_debug("%s: allocate buffer failed!",
 				__func__);
 			goto done;
 		}
@@ -757,7 +757,7 @@ int send_adm_apr(void *buf, u32 opcode)
 	if (rtac_cal[ADM_RTAC_CAL].map_data.map_handle == 0) {
 		result = rtac_map_cal_buffer(ADM_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: map buffer failed!",
+			pr_debug("%s: map buffer failed!",
 				__func__);
 			goto done;
 		}
@@ -765,36 +765,36 @@ int send_adm_apr(void *buf, u32 opcode)
 
 	if (copy_from_user(&user_buf_size, (void *)buf,
 						sizeof(user_buf_size))) {
-		pr_err("%s: Copy from user failed! buf = 0x%pK\n",
+		pr_debug("%s: Copy from user failed! buf = 0x%pK\n",
 		       __func__, buf);
 		goto done;
 	}
 	if (user_buf_size <= 0) {
-		pr_err("%s: Invalid buffer size = %d\n",
+		pr_debug("%s: Invalid buffer size = %d\n",
 			__func__, user_buf_size);
 		goto done;
 	}
 
 	if (copy_from_user(&payload_size, buf + sizeof(u32), sizeof(u32))) {
-		pr_err("%s: Could not copy payload size from user buffer\n",
+		pr_debug("%s: Could not copy payload size from user buffer\n",
 			__func__);
 		goto done;
 	}
 
 	if (copy_from_user(&copp_id, buf + 2 * sizeof(u32), sizeof(u32))) {
-		pr_err("%s: Could not copy port id from user buffer\n",
+		pr_debug("%s: Could not copy port id from user buffer\n",
 			__func__);
 		goto done;
 	}
 
 	if (adm_get_indexes_from_copp_id(copp_id, &copp_idx, &port_idx) != 0) {
-		pr_err("%s: Copp Id-%d is not active\n", __func__, copp_id);
+		pr_debug("%s: Copp Id-%d is not active\n", __func__, copp_id);
 		goto done;
 	}
 
 	mutex_lock(&rtac_adm_apr_mutex);
 	if (rtac_adm_apr_data.apr_handle == NULL) {
-		pr_err("%s: APR not initialized\n", __func__);
+		pr_debug("%s: APR not initialized\n", __func__);
 		result = -EINVAL;
 		goto err;
 	}
@@ -806,7 +806,7 @@ int send_adm_apr(void *buf, u32 opcode)
 		/* set data size to actual out of band payload size */
 		data_size = payload_size - 4 * sizeof(u32);
 		if (data_size > rtac_cal[ADM_RTAC_CAL].map_data.map_size) {
-			pr_err("%s: Invalid data size = %d\n",
+			pr_debug("%s: Invalid data size = %d\n",
 				__func__, data_size);
 			result = -EINVAL;
 			goto err;
@@ -817,7 +817,7 @@ int send_adm_apr(void *buf, u32 opcode)
 		if (copy_from_user((void *)
 				rtac_cal[ADM_RTAC_CAL].cal_data.kvaddr,
 				buf + 7 * sizeof(u32), data_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -829,7 +829,7 @@ int send_adm_apr(void *buf, u32 opcode)
 	case ADM_CMD_GET_PP_PARAMS_V5:
 	case ADM_CMD_GET_PP_PARAMS_V6:
 		if (payload_size > MAX_PAYLOAD_SIZE) {
-			pr_err("%s: Invalid payload size = %d\n",
+			pr_debug("%s: Invalid payload size = %d\n",
 				__func__, payload_size);
 			result = -EINVAL;
 			goto err;
@@ -839,14 +839,14 @@ int send_adm_apr(void *buf, u32 opcode)
 		if (copy_from_user(rtac_adm_buffer +
 				sizeof(adm_params)/sizeof(u32),
 				buf + 3 * sizeof(u32), payload_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
 		}
 		break;
 	default:
-		pr_err("%s: Invalid opcode %d\n", __func__, opcode);
+		pr_debug("%s: Invalid opcode %d\n", __func__, opcode);
 		result = -EINVAL;
 		goto err;
 	}
@@ -898,14 +898,14 @@ int send_adm_apr(void *buf, u32 opcode)
 	}
 
 	if (bytes_returned > rtac_cal[ADM_RTAC_CAL].map_data.map_size) {
-		pr_err("%s: Invalid data size = %d\n", __func__,
+		pr_debug("%s: Invalid data size = %d\n", __func__,
 		       bytes_returned);
 		result = -EINVAL;
 		goto err;
 	}
 
 	if (bytes_returned > user_buf_size) {
-		pr_err("%s: User buf not big enough, size = 0x%x, returned size = 0x%x\n",
+		pr_debug("%s: User buf not big enough, size = 0x%x, returned size = 0x%x\n",
 		       __func__, user_buf_size, bytes_returned);
 		result = -EINVAL;
 		goto err;
@@ -914,7 +914,7 @@ int send_adm_apr(void *buf, u32 opcode)
 	if (copy_to_user((void __user *) buf,
 			 rtac_cal[ADM_RTAC_CAL].cal_data.kvaddr,
 			 bytes_returned)) {
-		pr_err("%s: Could not copy buffer to user,size = %d\n",
+		pr_debug("%s: Could not copy buffer to user,size = %d\n",
 		       __func__, bytes_returned);
 		result = -EFAULT;
 		goto err;
@@ -985,7 +985,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 	if (rtac_cal[ASM_RTAC_CAL].map_data.dma_buf == NULL) {
 		result = rtac_allocate_cal_buffer(ASM_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: allocate buffer failed!",
+			pr_debug("%s: allocate buffer failed!",
 				__func__);
 			goto done;
 		}
@@ -994,7 +994,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 	if (rtac_cal[ASM_RTAC_CAL].map_data.map_handle == 0) {
 		result = rtac_map_cal_buffer(ASM_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: map buffer failed!",
+			pr_debug("%s: map buffer failed!",
 				__func__);
 			goto done;
 		}
@@ -1002,42 +1002,42 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 
 	if (copy_from_user(&user_buf_size, (void *)buf,
 						sizeof(user_buf_size))) {
-		pr_err("%s: Copy from user failed! buf = 0x%pK\n",
+		pr_debug("%s: Copy from user failed! buf = 0x%pK\n",
 		       __func__, buf);
 		goto done;
 	}
 	if (user_buf_size <= 0) {
-		pr_err("%s: Invalid buffer size = %d\n",
+		pr_debug("%s: Invalid buffer size = %d\n",
 			__func__, user_buf_size);
 		goto done;
 	}
 
 	if (copy_from_user(&payload_size, buf + sizeof(u32), sizeof(u32))) {
-		pr_err("%s: Could not copy payload size from user buffer\n",
+		pr_debug("%s: Could not copy payload size from user buffer\n",
 			__func__);
 		goto done;
 	}
 
 	if (copy_from_user(&session_id, buf + 2 * sizeof(u32), sizeof(u32))) {
-		pr_err("%s: Could not copy session id from user buffer\n",
+		pr_debug("%s: Could not copy session id from user buffer\n",
 			__func__);
 		goto done;
 	}
 	if (session_id >= (ASM_ACTIVE_STREAMS_ALLOWED + 1)) {
-		pr_err("%s: Invalid Session = %d\n", __func__, session_id);
+		pr_debug("%s: Invalid Session = %d\n", __func__, session_id);
 		goto done;
 	}
 
 	mutex_lock(&rtac_asm_apr_mutex);
 	if (rtac_asm_apr_data[session_id].apr_handle == NULL) {
-		pr_err("%s: APR not initialized\n", __func__);
+		pr_debug("%s: APR not initialized\n", __func__);
 		result = -EINVAL;
 		goto err;
 	}
 
 	stream_id = q6asm_get_asm_stream_id(session_id);
 	if ((stream_id != 1) && (stream_id != 2)) {
-		pr_err("%s: Invalid stream id %u\n", __func__, stream_id);
+		pr_debug("%s: Invalid stream id %u\n", __func__, stream_id);
 		result = -EINVAL;
 		goto err;
 	}
@@ -1049,7 +1049,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 		/* set data size to actual out of band payload size */
 		data_size = payload_size - 4 * sizeof(u32);
 		if (data_size > rtac_cal[ASM_RTAC_CAL].map_data.map_size) {
-			pr_err("%s: Invalid data size = %d\n",
+			pr_debug("%s: Invalid data size = %d\n",
 				__func__, data_size);
 			result = -EINVAL;
 			goto err;
@@ -1060,7 +1060,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 		if (copy_from_user((void *)
 				rtac_cal[ASM_RTAC_CAL].cal_data.kvaddr,
 				buf + 7 * sizeof(u32), data_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -1071,7 +1071,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 	case ASM_STREAM_CMD_GET_PP_PARAMS_V2:
 	case ASM_STREAM_CMD_GET_PP_PARAMS_V3:
 		if (payload_size > MAX_PAYLOAD_SIZE) {
-			pr_err("%s: Invalid payload size = %d\n",
+			pr_debug("%s: Invalid payload size = %d\n",
 				__func__, payload_size);
 			result = -EINVAL;
 			goto err;
@@ -1081,7 +1081,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 		if (copy_from_user(rtac_asm_buffer +
 				sizeof(asm_params)/sizeof(u32),
 				buf + 3 * sizeof(u32), payload_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -1089,7 +1089,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 
 		break;
 	default:
-		pr_err("%s: Invalid opcode %d\n", __func__, opcode);
+		pr_debug("%s: Invalid opcode %d\n", __func__, opcode);
 		result = -EINVAL;
 		goto err;
 	}
@@ -1126,7 +1126,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 	result = apr_send_pkt(rtac_asm_apr_data[session_id].apr_handle,
 				(uint32_t *)rtac_asm_buffer);
 	if (result < 0) {
-		pr_err("%s: Set params failed session = %d\n",
+		pr_debug("%s: Set params failed session = %d\n",
 			__func__, session_id);
 		goto err;
 	}
@@ -1136,12 +1136,12 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 		(atomic_read(&rtac_asm_apr_data[session_id].cmd_state) == 0),
 		msecs_to_jiffies(TIMEOUT_MS));
 	if (!result) {
-		pr_err("%s: Set params timed out session = %d\n",
+		pr_debug("%s: Set params timed out session = %d\n",
 			__func__, session_id);
 		goto err;
 	}
 	if (atomic_read(&rtac_common.apr_err_code)) {
-		pr_err("%s: DSP returned error code = [%s], opcode = 0x%x\n",
+		pr_debug("%s: DSP returned error code = [%s], opcode = 0x%x\n",
 			__func__, adsp_err_get_err_str(atomic_read(
 			&rtac_common.apr_err_code)),
 			opcode);
@@ -1164,14 +1164,14 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 	}
 
 	if (bytes_returned > rtac_cal[ASM_RTAC_CAL].map_data.map_size) {
-		pr_err("%s: Invalid data size = %d\n", __func__,
+		pr_debug("%s: Invalid data size = %d\n", __func__,
 		       bytes_returned);
 		result = -EINVAL;
 		goto err;
 	}
 
 	if (bytes_returned > user_buf_size) {
-		pr_err("%s: User buf not big enough, size = 0x%x, returned size = 0x%x\n",
+		pr_debug("%s: User buf not big enough, size = 0x%x, returned size = 0x%x\n",
 		       __func__, user_buf_size, bytes_returned);
 		result = -EINVAL;
 		goto err;
@@ -1180,7 +1180,7 @@ int send_rtac_asm_apr(void *buf, u32 opcode)
 	if (copy_to_user((void __user *) buf,
 			 rtac_cal[ASM_RTAC_CAL].cal_data.kvaddr,
 			 bytes_returned)) {
-		pr_err("%s: Could not copy buffer to user,size = %d\n",
+		pr_debug("%s: Could not copy buffer to user,size = %d\n",
 		       __func__, bytes_returned);
 		result = -EFAULT;
 		goto err;
@@ -1224,7 +1224,7 @@ static int fill_afe_apr_hdr(struct apr_hdr *apr_hdr, uint32_t port,
 			 uint32_t opcode, uint32_t apr_msg_size)
 {
 	if (apr_hdr == NULL) {
-		pr_err("%s: invalid APR pointer", __func__);
+		pr_debug("%s: invalid APR pointer", __func__);
 		return -EINVAL;
 	}
 
@@ -1261,7 +1261,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 	if (rtac_cal[AFE_RTAC_CAL].map_data.dma_buf == NULL) {
 		result = rtac_allocate_cal_buffer(AFE_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: allocate buffer failed! ret = %d\n",
+			pr_debug("%s: allocate buffer failed! ret = %d\n",
 				__func__, result);
 			goto done;
 		}
@@ -1270,7 +1270,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 	if (rtac_cal[AFE_RTAC_CAL].map_data.map_handle == 0) {
 		result = rtac_map_cal_buffer(AFE_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: map buffer failed! ret = %d\n",
+			pr_debug("%s: map buffer failed! ret = %d\n",
 				__func__, result);
 			goto done;
 		}
@@ -1278,27 +1278,27 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 
 	if (copy_from_user(&user_afe_buf, (void *)buf,
 		sizeof(struct rtac_afe_user_data))) {
-		pr_err("%s: Copy from user failed! buf = 0x%pK\n",
+		pr_debug("%s: Copy from user failed! buf = 0x%pK\n",
 		       __func__, buf);
 		goto done;
 	}
 
 	if (user_afe_buf.buf_size <= 0) {
-		pr_err("%s: Invalid buffer size = %d\n",
+		pr_debug("%s: Invalid buffer size = %d\n",
 			__func__, user_afe_buf.buf_size);
 		goto done;
 	}
 
 	port_index = q6audio_get_port_index(user_afe_buf.port_id);
 	if (port_index >= AFE_MAX_PORTS) {
-		pr_err("%s: Invalid AFE port = 0x%x\n",
+		pr_debug("%s: Invalid AFE port = 0x%x\n",
 		       __func__, user_afe_buf.port_id);
 		goto done;
 	}
 
 	mutex_lock(&rtac_afe_apr_mutex);
 	if (rtac_afe_apr_data.apr_handle == NULL) {
-		pr_err("%s: APR not initialized\n", __func__);
+		pr_debug("%s: APR not initialized\n", __func__);
 		result = -EINVAL;
 		goto err;
 	}
@@ -1311,7 +1311,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 		apr_msg_size = sizeof(struct afe_port_cmd_set_param_v2);
 		payload_size = user_afe_buf.v2_set.payload_size;
 		if (payload_size > rtac_cal[AFE_RTAC_CAL].map_data.map_size) {
-			pr_err("%s: Invalid payload size = %d\n", __func__,
+			pr_debug("%s: Invalid payload size = %d\n", __func__,
 			       payload_size);
 			result = -EINVAL;
 			goto err;
@@ -1327,7 +1327,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 					   offsetof(struct rtac_afe_user_data,
 						    v2_set.param_hdr),
 				   payload_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -1337,7 +1337,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 		apr_msg_size = sizeof(struct afe_port_cmd_set_param_v3);
 		payload_size = user_afe_buf.v3_set.payload_size;
 		if (payload_size > rtac_cal[AFE_RTAC_CAL].map_data.map_size) {
-			pr_err("%s: Invalid payload size = %d\n", __func__,
+			pr_debug("%s: Invalid payload size = %d\n", __func__,
 			       payload_size);
 			result = -EINVAL;
 			goto err;
@@ -1353,7 +1353,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 					   offsetof(struct rtac_afe_user_data,
 						    v3_set.param_hdr),
 				   payload_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -1363,7 +1363,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 		apr_msg_size = sizeof(struct afe_port_cmd_get_param_v2);
 
 		if (user_afe_buf.cmd_size > MAX_PAYLOAD_SIZE) {
-			pr_err("%s: Invalid payload size = %d\n", __func__,
+			pr_debug("%s: Invalid payload size = %d\n", __func__,
 			       user_afe_buf.cmd_size);
 			result = -EINVAL;
 			goto err;
@@ -1375,7 +1375,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 					   offsetof(struct rtac_afe_user_data,
 						    v2_get),
 				   user_afe_buf.cmd_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 			       __func__);
 			result = -EFAULT;
 			goto err;
@@ -1385,7 +1385,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 		apr_msg_size = sizeof(struct afe_port_cmd_get_param_v3);
 
 		if (user_afe_buf.cmd_size > MAX_PAYLOAD_SIZE) {
-			pr_err("%s: Invalid payload size = %d\n", __func__,
+			pr_debug("%s: Invalid payload size = %d\n", __func__,
 			       user_afe_buf.cmd_size);
 			result = -EINVAL;
 			goto err;
@@ -1397,14 +1397,14 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 					   offsetof(struct rtac_afe_user_data,
 						    v3_get),
 				   user_afe_buf.cmd_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
 		}
 		break;
 	default:
-		pr_err("%s: Invalid opcode %d\n", __func__, opcode);
+		pr_debug("%s: Invalid opcode %d\n", __func__, opcode);
 		result = -EINVAL;
 		goto err;
 	}
@@ -1434,7 +1434,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 	result = apr_send_pkt(rtac_afe_apr_data.apr_handle,
 					(uint32_t *)rtac_afe_buffer);
 	if (result < 0) {
-		pr_err("%s: Set params failed port = 0x%x, ret = %d\n",
+		pr_debug("%s: Set params failed port = 0x%x, ret = %d\n",
 			__func__, user_afe_buf.port_id, result);
 		goto err;
 	}
@@ -1443,12 +1443,12 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 		(atomic_read(&rtac_afe_apr_data.cmd_state) == 0),
 		msecs_to_jiffies(TIMEOUT_MS));
 	if (!result) {
-		pr_err("%s: Set params timed out port = 0x%x, ret = %d\n",
+		pr_debug("%s: Set params timed out port = 0x%x, ret = %d\n",
 			__func__, user_afe_buf.port_id, result);
 		goto err;
 	}
 	if (atomic_read(&rtac_common.apr_err_code)) {
-		pr_err("%s: DSP returned error code = [%s], opcode = 0x%x\n",
+		pr_debug("%s: DSP returned error code = [%s], opcode = 0x%x\n",
 			__func__, adsp_err_get_err_str(atomic_read(
 			&rtac_common.apr_err_code)),
 			opcode);
@@ -1474,14 +1474,14 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 	}
 
 	if (bytes_returned > rtac_cal[AFE_RTAC_CAL].map_data.map_size) {
-		pr_err("%s: Invalid data size = %d\n", __func__,
+		pr_debug("%s: Invalid data size = %d\n", __func__,
 		       bytes_returned);
 		result = -EINVAL;
 		goto err;
 	}
 
 	if (bytes_returned > user_afe_buf.buf_size) {
-		pr_err("%s: user size = 0x%x, returned size = 0x%x\n", __func__,
+		pr_debug("%s: user size = 0x%x, returned size = 0x%x\n", __func__,
 		       user_afe_buf.buf_size, bytes_returned);
 		result = -EINVAL;
 		goto err;
@@ -1490,7 +1490,7 @@ static int send_rtac_afe_apr(void __user *buf, uint32_t opcode)
 	if (copy_to_user((void __user *) buf,
 			 rtac_cal[AFE_RTAC_CAL].cal_data.kvaddr,
 			 bytes_returned)) {
-		pr_err("%s: Could not copy buffer to user,size = %d\n",
+		pr_debug("%s: Could not copy buffer to user,size = %d\n",
 		       __func__, bytes_returned);
 		result = -EFAULT;
 		goto err;
@@ -1547,7 +1547,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 	if (rtac_cal[VOICE_RTAC_CAL].map_data.dma_buf == NULL) {
 		result = rtac_allocate_cal_buffer(VOICE_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: allocate buffer failed!",
+			pr_debug("%s: allocate buffer failed!",
 				__func__);
 			goto done;
 		}
@@ -1556,7 +1556,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 	if (rtac_cal[VOICE_RTAC_CAL].map_data.map_handle == 0) {
 		result = rtac_map_cal_buffer(VOICE_RTAC_CAL);
 		if (result < 0) {
-			pr_err("%s: map buffer failed!",
+			pr_debug("%s: map buffer failed!",
 				__func__);
 			goto done;
 		}
@@ -1564,37 +1564,37 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 
 	if (copy_from_user(&user_buf_size, (void *)buf,
 						sizeof(user_buf_size))) {
-		pr_err("%s: Copy from user failed! buf = 0x%pK\n",
+		pr_debug("%s: Copy from user failed! buf = 0x%pK\n",
 		       __func__, buf);
 		goto done;
 	}
 	if (user_buf_size <= 0) {
-		pr_err("%s: Invalid buffer size = %d\n",
+		pr_debug("%s: Invalid buffer size = %d\n",
 			__func__, user_buf_size);
 		goto done;
 	}
 
 	if (copy_from_user(&payload_size, buf + sizeof(u32), sizeof(u32))) {
-		pr_err("%s: Could not copy payload size from user buffer\n",
+		pr_debug("%s: Could not copy payload size from user buffer\n",
 			__func__);
 		goto done;
 	}
 
 	if (copy_from_user(&dest_port, buf + 2 * sizeof(u32), sizeof(u32))) {
-		pr_err("%s: Could not copy port id from user buffer\n",
+		pr_debug("%s: Could not copy port id from user buffer\n",
 			__func__);
 		goto done;
 	}
 
 	if ((mode != RTAC_CVP) && (mode != RTAC_CVS)) {
-		pr_err("%s: Invalid Mode for APR, mode = %d\n",
+		pr_debug("%s: Invalid Mode for APR, mode = %d\n",
 			__func__, mode);
 		goto done;
 	}
 
 	mutex_lock(&rtac_voice_apr_mutex);
 	if (rtac_voice_apr_data[mode].apr_handle == NULL) {
-		pr_err("%s: APR not initialized\n", __func__);
+		pr_debug("%s: APR not initialized\n", __func__);
 		result = -EINVAL;
 		goto err;
 	}
@@ -1606,7 +1606,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 		/* set data size to actual out of band payload size */
 		data_size = payload_size - 4 * sizeof(u32);
 		if (data_size > rtac_cal[VOICE_RTAC_CAL].map_data.map_size) {
-			pr_err("%s: Invalid data size = %d\n",
+			pr_debug("%s: Invalid data size = %d\n",
 				__func__, data_size);
 			result = -EINVAL;
 			goto err;
@@ -1617,7 +1617,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 		if (copy_from_user((void *)
 				rtac_cal[VOICE_RTAC_CAL].cal_data.kvaddr,
 				buf + 7 * sizeof(u32), data_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -1630,7 +1630,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 	case VSS_ICOMMON_CMD_GET_PARAM_V2:
 	case VSS_ICOMMON_CMD_GET_PARAM_V3:
 		if (payload_size > MAX_PAYLOAD_SIZE) {
-			pr_err("%s: Invalid payload size = %d\n",
+			pr_debug("%s: Invalid payload size = %d\n",
 					__func__, payload_size);
 			result = -EINVAL;
 			goto err;
@@ -1640,7 +1640,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 		if (copy_from_user(rtac_voice_buffer +
 				sizeof(voice_params)/sizeof(u32),
 				buf + 3 * sizeof(u32), payload_size)) {
-			pr_err("%s: Could not copy payload from user buffer\n",
+			pr_debug("%s: Could not copy payload from user buffer\n",
 				__func__);
 			result = -EFAULT;
 			goto err;
@@ -1649,7 +1649,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 		voice_params.token = 0;
 		break;
 	default:
-		pr_err("%s: Invalid opcode %d\n", __func__, opcode);
+		pr_debug("%s: Invalid opcode %d\n", __func__, opcode);
 		result = -EINVAL;
 		goto err;
 	}
@@ -1684,7 +1684,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 	result = apr_send_pkt(rtac_voice_apr_data[mode].apr_handle,
 					(uint32_t *)rtac_voice_buffer);
 	if (result < 0) {
-		pr_err("%s: apr_send_pkt failed opcode = %x\n",
+		pr_debug("%s: apr_send_pkt failed opcode = %x\n",
 			__func__, opcode);
 		goto err;
 	}
@@ -1693,12 +1693,12 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 		(atomic_read(&rtac_voice_apr_data[mode].cmd_state) == 0),
 		msecs_to_jiffies(TIMEOUT_MS));
 	if (!result) {
-		pr_err("%s: apr_send_pkt timed out opcode = %x\n",
+		pr_debug("%s: apr_send_pkt timed out opcode = %x\n",
 			__func__, opcode);
 		goto err;
 	}
 	if (atomic_read(&rtac_common.apr_err_code)) {
-		pr_err("%s: DSP returned error code = [%s], opcode = 0x%x\n",
+		pr_debug("%s: DSP returned error code = [%s], opcode = 0x%x\n",
 			__func__, adsp_err_get_err_str(atomic_read(
 			&rtac_common.apr_err_code)),
 			opcode);
@@ -1721,14 +1721,14 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 	}
 
 	if (bytes_returned > rtac_cal[VOICE_RTAC_CAL].map_data.map_size) {
-		pr_err("%s: Invalid data size = %d\n", __func__,
+		pr_debug("%s: Invalid data size = %d\n", __func__,
 		       bytes_returned);
 		result = -EINVAL;
 		goto err;
 	}
 
 	if (bytes_returned > user_buf_size) {
-		pr_err("%s: User buf not big enough, size = 0x%x, returned size = 0x%x\n",
+		pr_debug("%s: User buf not big enough, size = 0x%x, returned size = 0x%x\n",
 		       __func__, user_buf_size, bytes_returned);
 		result = -EINVAL;
 		goto err;
@@ -1737,7 +1737,7 @@ int send_voice_apr(u32 mode, void *buf, u32 opcode)
 	if (copy_to_user((void __user *) buf,
 			 rtac_cal[VOICE_RTAC_CAL].cal_data.kvaddr,
 			 bytes_returned)) {
-		pr_err("%s: Could not copy buffer to user, size = %d\n",
+		pr_debug("%s: Could not copy buffer to user, size = %d\n",
 		       __func__, bytes_returned);
 		result = -EFAULT;
 		goto err;
@@ -1766,7 +1766,7 @@ static long rtac_ioctl_shared(struct file *f,
 	u32 opcode;
 	int result = 0;
 	if (!arg) {
-		pr_err("%s: No data sent to driver!\n", __func__);
+		pr_debug("%s: No data sent to driver!\n", __func__);
 		result = -EFAULT;
 		goto done;
 	}
@@ -1776,7 +1776,7 @@ static long rtac_ioctl_shared(struct file *f,
 		mutex_lock(&rtac_adm_mutex);
 		if (copy_to_user((void *)arg, &rtac_adm_data,
 						sizeof(rtac_adm_data))) {
-			pr_err("%s: copy_to_user failed for AUDIO_GET_RTAC_ADM_INFO\n",
+			pr_debug("%s: copy_to_user failed for AUDIO_GET_RTAC_ADM_INFO\n",
 					__func__);
 			mutex_unlock(&rtac_adm_mutex);
 			return -EFAULT;
@@ -1789,7 +1789,7 @@ static long rtac_ioctl_shared(struct file *f,
 		mutex_lock(&rtac_voice_mutex);
 		if (copy_to_user((void *)arg, &rtac_voice_data,
 						sizeof(rtac_voice_data))) {
-			pr_err("%s: copy_to_user failed for AUDIO_GET_RTAC_VOICE_INFO\n",
+			pr_debug("%s: copy_to_user failed for AUDIO_GET_RTAC_VOICE_INFO\n",
 					__func__);
 			mutex_unlock(&rtac_voice_mutex);
 			return -EFAULT;
@@ -1860,7 +1860,7 @@ static long rtac_ioctl_shared(struct file *f,
 		result = send_rtac_afe_apr((void __user *) arg, opcode);
 		break;
 	default:
-		pr_err("%s: Invalid IOCTL, command = %d!\n",
+		pr_debug("%s: Invalid IOCTL, command = %d!\n",
 		       __func__, cmd);
 		result = -EINVAL;
 	}
@@ -1875,7 +1875,7 @@ static long rtac_ioctl(struct file *f,
 
 	mutex_lock(&rtac_common.rtac_fops_mutex);
 	if (!arg) {
-		pr_err("%s: No data sent to driver!\n", __func__);
+		pr_debug("%s: No data sent to driver!\n", __func__);
 		result = -EFAULT;
 	} else {
 		result = rtac_ioctl_shared(f, cmd, (void __user *)arg);
@@ -1906,7 +1906,7 @@ static long rtac_compat_ioctl(struct file *f,
 
 	mutex_lock(&rtac_common.rtac_fops_mutex);
 	if (!arg) {
-		pr_err("%s: No data sent to driver!\n", __func__);
+		pr_debug("%s: No data sent to driver!\n", __func__);
 		result = -EINVAL;
 		goto done;
 	}
@@ -1952,7 +1952,7 @@ process:
 		break;
 	default:
 		result = -EINVAL;
-		pr_err("%s: Invalid IOCTL, command = %d!\n",
+		pr_debug("%s: Invalid IOCTL, command = %d!\n",
 		       __func__, cmd);
 		break;
 	}

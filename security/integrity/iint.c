@@ -255,7 +255,7 @@ static int __init integrity_fs_init(void)
 		int ret = PTR_ERR(integrity_dir);
 
 		if (ret != -ENODEV)
-			pr_err("Unable to create integrity sysfs dir: %d\n",
+			pr_debug("Unable to create integrity sysfs dir: %d\n",
 			       ret);
 		integrity_dir = NULL;
 		return ret;

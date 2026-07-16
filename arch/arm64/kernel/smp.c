@@ -150,7 +150,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 			ret = -EIO;
 		}
 	} else {
-		pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
+		pr_debug("CPU%u: failed to boot: %d\n", cpu, ret);
 		return ret;
 	}
 
@@ -164,7 +164,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 
 		switch (status) {
 		default:
-			pr_err("CPU%u: failed in unknown state : 0x%lx\n",
+			pr_debug("CPU%u: failed in unknown state : 0x%lx\n",
 					cpu, status);
 			break;
 		case CPU_KILL_ME:
@@ -342,7 +342,7 @@ void __cpu_die(unsigned int cpu)
 	 */
 	err = op_cpu_kill(cpu);
 	if (err)
-		pr_warn("CPU%d may not have shut down cleanly: %d\n",
+		pr_debug("CPU%d may not have shut down cleanly: %d\n",
 			cpu, err);
 }
 
@@ -402,17 +402,17 @@ void cpu_die_early(void)
 static void __init hyp_mode_check(void)
 {
 	if (is_hyp_mode_available())
-		pr_info("CPU: All CPU(s) started at EL2\n");
+		pr_debug("CPU: All CPU(s) started at EL2\n");
 	else if (is_hyp_mode_mismatched())
 		WARN_TAINT(1, TAINT_CPU_OUT_OF_SPEC,
 			   "CPU: CPUs started in inconsistent modes");
 	else
-		pr_info("CPU: All CPU(s) started at EL1\n");
+		pr_debug("CPU: All CPU(s) started at EL1\n");
 }
 
 void __init smp_cpus_done(unsigned int max_cpus)
 {
-	pr_info("SMP: Total of %d processors activated.\n", num_online_cpus());
+	pr_debug("SMP: Total of %d processors activated.\n", num_online_cpus());
 	setup_cpu_features();
 	hyp_mode_check();
 	apply_alternatives_all();
@@ -437,7 +437,7 @@ static u64 __init of_get_cpu_mpidr(struct device_node *dn)
 	 */
 	cell = of_get_property(dn, "reg", NULL);
 	if (!cell) {
-		pr_err("%pOF: missing reg property\n", dn);
+		pr_debug("%pOF: missing reg property\n", dn);
 		return INVALID_HWID;
 	}
 
@@ -446,7 +446,7 @@ static u64 __init of_get_cpu_mpidr(struct device_node *dn)
 	 * Non affinity bits must be set to 0 in the DT
 	 */
 	if (hwid & ~MPIDR_HWID_BITMASK) {
-		pr_err("%pOF: invalid reg property\n", dn);
+		pr_debug("%pOF: invalid reg property\n", dn);
 		return INVALID_HWID;
 	}
 	return hwid;
@@ -513,19 +513,19 @@ acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
 	}
 
 	if (hwid & ~MPIDR_HWID_BITMASK || hwid == INVALID_HWID) {
-		pr_err("skipping CPU entry with invalid MPIDR 0x%llx\n", hwid);
+		pr_debug("skipping CPU entry with invalid MPIDR 0x%llx\n", hwid);
 		return;
 	}
 
 	if (is_mpidr_duplicate(cpu_count, hwid)) {
-		pr_err("duplicate CPU MPIDR 0x%llx in MADT\n", hwid);
+		pr_debug("duplicate CPU MPIDR 0x%llx in MADT\n", hwid);
 		return;
 	}
 
 	/* Check if GICC structure of boot CPU is available in the MADT */
 	if (cpu_logical_map(0) == hwid) {
 		if (bootcpu_valid) {
-			pr_err("duplicate boot CPU MPIDR: 0x%llx in MADT\n",
+			pr_debug("duplicate boot CPU MPIDR: 0x%llx in MADT\n",
 			       hwid);
 			return;
 		}
@@ -623,7 +623,7 @@ static void __init of_parse_and_init_cpus(void)
 			goto next;
 
 		if (is_mpidr_duplicate(cpu_count, hwid)) {
-			pr_err("%pOF: duplicate cpu reg properties in the DT\n",
+			pr_debug("%pOF: duplicate cpu reg properties in the DT\n",
 				dn);
 			goto next;
 		}
@@ -636,7 +636,7 @@ static void __init of_parse_and_init_cpus(void)
 		 */
 		if (hwid == cpu_logical_map(0)) {
 			if (bootcpu_valid) {
-				pr_err("%pOF: duplicate boot cpu reg property in DT\n",
+				pr_debug("%pOF: duplicate boot cpu reg property in DT\n",
 					dn);
 				goto next;
 			}
@@ -680,11 +680,11 @@ void __init smp_init_cpus(void)
 		acpi_parse_and_init_cpus();
 
 	if (cpu_count > nr_cpu_ids)
-		pr_warn("Number of cores (%d) exceeds configured maximum of %u - clipping\n",
+		pr_debug("Number of cores (%d) exceeds configured maximum of %u - clipping\n",
 			cpu_count, nr_cpu_ids);
 
 	if (!bootcpu_valid) {
-		pr_err("missing boot CPU MPIDR, not enabling secondaries\n");
+		pr_debug("missing boot CPU MPIDR, not enabling secondaries\n");
 		return;
 	}
 

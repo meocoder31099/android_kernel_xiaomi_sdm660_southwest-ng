@@ -27,7 +27,7 @@
 #define IPA_API_DISPATCH_RETURN(api, p...) \
 	do { \
 		if (!ipa_api_ctrl) { \
-			pr_err("%s:%d IPA HW is not supported\n", \
+			pr_debug("%s:%d IPA HW is not supported\n", \
 				__func__, __LINE__); \
 			ret = -EPERM; \
 		} \
@@ -46,7 +46,7 @@
 #define IPA_API_DISPATCH(api, p...) \
 	do { \
 		if (!ipa_api_ctrl) \
-			pr_err("%s:%d IPA HW is not supported\n", \
+			pr_debug("%s:%d IPA HW is not supported\n", \
 				__func__, __LINE__); \
 		else { \
 			if (ipa_api_ctrl->api) { \
@@ -62,7 +62,7 @@
 #define IPA_API_DISPATCH_RETURN_PTR(api, p...) \
 	do { \
 		if (!ipa_api_ctrl) { \
-			pr_err("%s:%d IPA HW is not supported\n", \
+			pr_debug("%s:%d IPA HW is not supported\n", \
 				__func__, __LINE__); \
 			ret = NULL; \
 		} \
@@ -80,7 +80,7 @@
 #define IPA_API_DISPATCH_RETURN_BOOL(api, p...) \
 	do { \
 		if (!ipa_api_ctrl) { \
-			pr_err("%s:%d IPA HW is not supported\n", \
+			pr_debug("%s:%d IPA HW is not supported\n", \
 				__func__, __LINE__); \
 			ret = false; \
 		} \
@@ -220,7 +220,7 @@ const char *ipa_clients_strings[IPA_CLIENT_MAX] = {
 u8 *ipa_write_64(u64 w, u8 *dest)
 {
 	if (unlikely(dest == NULL)) {
-		pr_err("%s: NULL address\n", __func__);
+		pr_debug("%s: NULL address\n", __func__);
 		return dest;
 	}
 	*dest++ = (u8)((w) & 0xFF);
@@ -245,7 +245,7 @@ u8 *ipa_write_64(u64 w, u8 *dest)
 u8 *ipa_write_32(u32 w, u8 *dest)
 {
 	if (unlikely(dest == NULL)) {
-		pr_err("%s: NULL address\n", __func__);
+		pr_debug("%s: NULL address\n", __func__);
 		return dest;
 	}
 	*dest++ = (u8)((w) & 0xFF);
@@ -266,7 +266,7 @@ u8 *ipa_write_32(u32 w, u8 *dest)
 u8 *ipa_write_16(u16 hw, u8 *dest)
 {
 	if (unlikely(dest == NULL)) {
-		pr_err("%s: NULL address\n", __func__);
+		pr_debug("%s: NULL address\n", __func__);
 		return dest;
 	}
 	*dest++ = (u8)((hw) & 0xFF);
@@ -3230,7 +3230,7 @@ static int ipa_generic_plat_drv_probe(struct platform_device *pdev_p)
 		result = of_property_read_u32(pdev_p->dev.of_node,
 			"qcom,ipa-hw-ver", &ipa_api_hw_type);
 		if ((result) || (ipa_api_hw_type == 0)) {
-			pr_err("ipa: get resource failed for ipa-hw-ver!\n");
+			pr_debug("ipa: get resource failed for ipa-hw-ver!\n");
 			kfree(ipa_api_ctrl);
 			ipa_api_ctrl = 0;
 			return -ENODEV;
@@ -3257,12 +3257,12 @@ static int ipa_generic_plat_drv_probe(struct platform_device *pdev_p)
 			ipa_plat_drv_match);
 		break;
 	default:
-		pr_err("ipa: unsupported version %d\n", ipa_api_hw_type);
+		pr_debug("ipa: unsupported version %d\n", ipa_api_hw_type);
 		return -EPERM;
 	}
 
 	if (result && result != -EPROBE_DEFER)
-		pr_err("ipa: ipa_plat_drv_probe failed\n");
+		pr_debug("ipa: ipa_plat_drv_probe failed\n");
 
 	return result;
 }
@@ -3458,7 +3458,7 @@ EXPORT_SYMBOL(ipa_get_ipc_logbuf_low);
  */
 void ipa_assert(void)
 {
-	pr_err("IPA: unrecoverable error has occurred, asserting\n");
+	pr_debug("IPA: unrecoverable error has occurred, asserting\n");
 	BUG();
 }
 
@@ -3837,7 +3837,7 @@ static int ipa_pci_probe(
 	int result;
 
 	if (!pci_dev || !ent) {
-		pr_err(
+		pr_debug(
 		    "Bad arg: pci_dev (%pK) and/or ent (%pK)\n",
 		    pci_dev, ent);
 		return -EOPNOTSUPP;
@@ -3851,7 +3851,7 @@ static int ipa_pci_probe(
 		result = of_property_read_u32(NULL,
 			"qcom,ipa-hw-ver", &ipa_api_hw_type);
 		if (result || ipa_api_hw_type == 0) {
-			pr_err("ipa: get resource failed for ipa-hw-ver!\n");
+			pr_debug("ipa: get resource failed for ipa-hw-ver!\n");
 			kfree(ipa_api_ctrl);
 			ipa_api_ctrl = NULL;
 			return -ENODEV;
@@ -3865,7 +3865,7 @@ static int ipa_pci_probe(
 	result = ipa3_pci_drv_probe(pci_dev, ipa_api_ctrl, ipa_pci_drv_match);
 
 	if (result && result != -EPROBE_DEFER)
-		pr_err("ipa: ipa3_pci_drv_probe failed\n");
+		pr_debug("ipa: ipa3_pci_drv_probe failed\n");
 
 	if (running_emulation)
 		ipa_ut_module_init();

@@ -607,7 +607,7 @@ struct xhci_container_ctx {
 
 /**
  * struct xhci_slot_ctx
- * @dev_info:	Route string, device speed, hub info, and last valid endpoint
+ * @dev_dbg:	Route string, device speed, hub info, and last valid endpoint
  * @dev_info2:	Max exit latency for device number, root hub port number
  * @tt_info:	tt_info is used to construct split transaction tokens
  * @dev_state:	slot state and device address
@@ -617,7 +617,7 @@ struct xhci_container_ctx {
  * reserved at the end of the slot context for HC internal use.
  */
 struct xhci_slot_ctx {
-	__le32	dev_info;
+	__le32	dev_dbg;
 	__le32	dev_info2;
 	__le32	tt_info;
 	__le32	dev_state;
@@ -625,7 +625,7 @@ struct xhci_slot_ctx {
 	__le32	reserved[4];
 };
 
-/* dev_info bitmasks */
+/* dev_dbg bitmasks */
 /* Route String - 0:19 */
 #define ROUTE_STRING_MASK	(0xfffff)
 /* Device speed - values defined by PORTSC Device Speed field - 20:23 */
@@ -1679,7 +1679,7 @@ struct s3_save {
 };
 
 /* Use for lpm */
-struct dev_info {
+struct dev_dbg {
 	u32			dev_id;
 	struct	list_head	list;
 };
@@ -1960,13 +1960,13 @@ static inline struct usb_hcd *xhci_to_hcd(struct xhci_hcd *xhci)
 #define xhci_dbg(xhci, fmt, args...) \
 	dev_dbg(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 #define xhci_err(xhci, fmt, args...) \
-	dev_err(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
+	dev_dbg(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 #define xhci_warn(xhci, fmt, args...) \
-	dev_warn(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
+	dev_dbg(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 #define xhci_warn_ratelimited(xhci, fmt, args...) \
 	dev_warn_ratelimited(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 #define xhci_info(xhci, fmt, args...) \
-	dev_info(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
+	dev_dbg(xhci_to_hcd(xhci)->self.controller , fmt , ## args)
 
 /*
  * Registers should always be accessed with double word or quad word accesses.

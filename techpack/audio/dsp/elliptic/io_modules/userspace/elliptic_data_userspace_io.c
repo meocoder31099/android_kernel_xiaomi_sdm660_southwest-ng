@@ -61,7 +61,7 @@ static struct elliptic_userspace_device io_device;
 static int device_open(struct inode *inode, struct file *filp)
 {
 	if (inode->i_cdev != &io_device.cdev) {
-		pr_warn("elliptic : dev pointer mismatch\n");
+		pr_debug("elliptic : dev pointer mismatch\n");
 		return -ENODEV; /* No such device */
 	}
 
@@ -107,7 +107,7 @@ int elliptic_userspace_io_driver_init(void)
 		&device_number, 0, 1, USERSPACE_IO_DEVICE_NAME);
 
 	if (err < 0) {
-		pr_err("failed to allocate chrdev region\n");
+		pr_debug("failed to allocate chrdev region\n");
 		return err;
 	}
 
@@ -121,7 +121,7 @@ int elliptic_userspace_io_driver_init(void)
 	if (IS_ERR(device)) {
 		unregister_chrdev(
 			elliptic_userspace_major, USERSPACE_IO_DEVICE_NAME);
-		pr_err("Failed to create the device\n");
+		pr_debug("Failed to create the device\n");
 		return PTR_ERR(device);
 	}
 

@@ -363,7 +363,7 @@ static int typec_probe(struct device *dev)
 
 	ret = typec_altmode_create_links(altmode);
 	if (ret) {
-		dev_warn(dev, "failed to create symlinks\n");
+		dev_dbg(dev, "failed to create symlinks\n");
 		return ret;
 	}
 

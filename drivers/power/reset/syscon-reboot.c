@@ -71,7 +71,7 @@ static int syscon_reboot_probe(struct platform_device *pdev)
 	ctx->restart_handler.priority = 192;
 	err = register_restart_handler(&ctx->restart_handler);
 	if (err)
-		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
+		dev_dbg(dev, "can't register restart notifier (err=%d)\n", err);
 
 	return err;
 }

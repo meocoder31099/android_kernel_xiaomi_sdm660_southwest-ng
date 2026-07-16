@@ -130,7 +130,7 @@ struct cpio_data find_cpio_data(const char *path, void *data,
 				*nextoff = (long)nptr - (long)data;
 
 			if (ch[C_NAMESIZE] - mypathsize >= MAX_CPIO_FILE_NAME) {
-				pr_warn(
+				pr_debug(
 				"File %s exceeding MAX_CPIO_FILE_NAME [%d]\n",
 				p, MAX_CPIO_FILE_NAME);
 			}

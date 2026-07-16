@@ -285,7 +285,7 @@ static int single_step_handler(unsigned long addr, unsigned int esr,
 		 */
 		user_rewind_single_step(current);
 	} else if (!handler_found) {
-		pr_warn("Unexpected kernel single-step exception at EL1\n");
+		pr_debug("Unexpected kernel single-step exception at EL1\n");
 		/*
 		 * Re-enable stepping since we know that we will be
 		 * returning to regs.
@@ -363,7 +363,7 @@ static int brk_handler(unsigned long addr, unsigned int esr,
 	if (!handler_found && user_mode(regs)) {
 		send_user_sigtrap(TRAP_BRKPT);
 	} else if (!handler_found) {
-		pr_warn("Unexpected kernel BRK exception at EL1\n");
+		pr_debug("Unexpected kernel BRK exception at EL1\n");
 		return -EFAULT;
 	}
 

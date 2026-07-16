@@ -59,7 +59,7 @@ static u32 get_cpu_asid_bits(void)
 
 	switch (fld) {
 	default:
-		pr_warn("CPU%d: Unknown ASID size (%d); assuming 8-bit\n",
+		pr_debug("CPU%d: Unknown ASID size (%d); assuming 8-bit\n",
 					smp_processor_id(),  fld);
 		/* Fallthrough */
 	case 0:
@@ -340,7 +340,7 @@ static int asids_init(void)
 		panic("Failed to allocate bitmap for %lu ASIDs\n",
 		      NUM_USER_ASIDS);
 
-	pr_info("ASID allocator initialised with %lu entries\n", NUM_USER_ASIDS);
+	pr_debug("ASID allocator initialised with %lu entries\n", NUM_USER_ASIDS);
 	return 0;
 }
 early_initcall(asids_init);

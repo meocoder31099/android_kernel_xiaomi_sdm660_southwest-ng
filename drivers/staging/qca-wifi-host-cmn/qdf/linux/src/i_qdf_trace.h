@@ -261,7 +261,7 @@ static inline void __qdf_trace_hexdump_dummy(QDF_MODULE_ID module,
 #define QDF_ASSERT(_condition) \
 	do { \
 		if (!(_condition)) { \
-			pr_err("QDF ASSERT in %s Line %d\n", \
+			pr_debug("QDF ASSERT in %s Line %d\n", \
 			       __func__, __LINE__); \
 			WARN_ON(1); \
 		} \
@@ -384,14 +384,14 @@ static inline void __qdf_bug(void)
  */
 #define QDF_DEBUG_PANIC_FL(func, line, fmt, args...) \
 	do { \
-		pr_err("WLAN Panic @ %s:%d: " fmt "\n", func, line, ##args); \
+		pr_debug("WLAN Panic @ %s:%d: " fmt "\n", func, line, ##args); \
 		__qdf_bug(); \
 	} while (false)
 
 #define QDF_BUG(_condition) \
 	do { \
 		if (!(_condition)) { \
-			pr_err("QDF BUG in %s Line %d: Failed assertion '" \
+			pr_debug("QDF BUG in %s Line %d: Failed assertion '" \
 			       #_condition "'\n", __func__, __LINE__); \
 			__qdf_bug(); \
 		} \

@@ -44,7 +44,7 @@ static struct usb_device *create_lvs_device(struct usb_interface *intf)
 	struct lvs_rh *lvs = usb_get_intfdata(intf);
 
 	if (!lvs->present) {
-		dev_err(&intf->dev, "No LVS device is present\n");
+		dev_dbg(&intf->dev, "No LVS device is present\n");
 		return NULL;
 	}
 
@@ -53,7 +53,7 @@ static struct usb_device *create_lvs_device(struct usb_interface *intf)
 
 	udev = usb_alloc_dev(hdev, hdev->bus, lvs->portnum);
 	if (!udev) {
-		dev_err(&intf->dev, "Could not allocate lvs udev\n");
+		dev_dbg(&intf->dev, "Could not allocate lvs udev\n");
 		return NULL;
 	}
 	udev->speed = USB_SPEED_SUPER;
@@ -62,7 +62,7 @@ static struct usb_device *create_lvs_device(struct usb_interface *intf)
 
 	if (hcd->driver->enable_device) {
 		if (hcd->driver->enable_device(hcd, udev) < 0) {
-			dev_err(&intf->dev, "Failed to enable\n");
+			dev_dbg(&intf->dev, "Failed to enable\n");
 			usb_put_dev(udev);
 			return NULL;
 		}
@@ -109,14 +109,14 @@ static ssize_t u3_entry_store(struct device *dev,
 
 	udev = create_lvs_device(intf);
 	if (!udev) {
-		dev_err(dev, "failed to create lvs device\n");
+		dev_dbg(dev, "failed to create lvs device\n");
 		return -ENOMEM;
 	}
 
 	ret = lvs_rh_set_port_feature(hdev, lvs->portnum,
 			USB_PORT_FEAT_SUSPEND);
 	if (ret < 0)
-		dev_err(dev, "can't issue U3 entry %d\n", ret);
+		dev_dbg(dev, "can't issue U3 entry %d\n", ret);
 
 	destroy_lvs_device(udev);
 
@@ -138,14 +138,14 @@ static ssize_t u3_exit_store(struct device *dev,
 
 	udev = create_lvs_device(intf);
 	if (!udev) {
-		dev_err(dev, "failed to create lvs device\n");
+		dev_dbg(dev, "failed to create lvs device\n");
 		return -ENOMEM;
 	}
 
 	ret = lvs_rh_clear_port_feature(hdev, lvs->portnum,
 			USB_PORT_FEAT_SUSPEND);
 	if (ret < 0)
-		dev_err(dev, "can't issue U3 exit %d\n", ret);
+		dev_dbg(dev, "can't issue U3 exit %d\n", ret);
 
 	destroy_lvs_device(udev);
 
@@ -167,7 +167,7 @@ static ssize_t hot_reset_store(struct device *dev,
 	ret = lvs_rh_set_port_feature(hdev, lvs->portnum,
 			USB_PORT_FEAT_RESET);
 	if (ret < 0) {
-		dev_err(dev, "can't issue hot reset %d\n", ret);
+		dev_dbg(dev, "can't issue hot reset %d\n", ret);
 		return ret;
 	}
 
@@ -189,7 +189,7 @@ static ssize_t warm_reset_store(struct device *dev,
 
 	ret = lvs_rh_set_port_feature(hdev, port, USB_PORT_FEAT_BH_PORT_RESET);
 	if (ret < 0) {
-		dev_err(dev, "can't issue warm reset %d\n", ret);
+		dev_dbg(dev, "can't issue warm reset %d\n", ret);
 		return ret;
 	}
 
@@ -208,7 +208,7 @@ static ssize_t u2_timeout_store(struct device *dev,
 
 	ret = kstrtoul(buf, 10, &val);
 	if (ret < 0) {
-		dev_err(dev, "couldn't parse string %d\n", ret);
+		dev_dbg(dev, "couldn't parse string %d\n", ret);
 		return ret;
 	}
 
@@ -218,7 +218,7 @@ static ssize_t u2_timeout_store(struct device *dev,
 	ret = lvs_rh_set_port_feature(hdev, lvs->portnum | (val << 8),
 			USB_PORT_FEAT_U2_TIMEOUT);
 	if (ret < 0) {
-		dev_err(dev, "Error %d while setting U2 timeout %ld\n", ret, val);
+		dev_dbg(dev, "Error %d while setting U2 timeout %ld\n", ret, val);
 		return ret;
 	}
 
@@ -237,7 +237,7 @@ static ssize_t u1_timeout_store(struct device *dev,
 
 	ret = kstrtoul(buf, 10, &val);
 	if (ret < 0) {
-		dev_err(dev, "couldn't parse string %d\n", ret);
+		dev_dbg(dev, "couldn't parse string %d\n", ret);
 		return ret;
 	}
 
@@ -247,7 +247,7 @@ static ssize_t u1_timeout_store(struct device *dev,
 	ret = lvs_rh_set_port_feature(hdev, lvs->portnum | (val << 8),
 			USB_PORT_FEAT_U1_TIMEOUT);
 	if (ret < 0) {
-		dev_err(dev, "Error %d while setting U1 timeout %ld\n", ret, val);
+		dev_dbg(dev, "Error %d while setting U1 timeout %ld\n", ret, val);
 		return ret;
 	}
 
@@ -269,7 +269,7 @@ static ssize_t get_dev_desc_store(struct device *dev,
 
 	udev = create_lvs_device(intf);
 	if (!udev) {
-		dev_err(dev, "failed to create lvs device\n");
+		dev_dbg(dev, "failed to create lvs device\n");
 		ret = -ENOMEM;
 		goto free_desc;
 	}
@@ -279,7 +279,7 @@ static ssize_t get_dev_desc_store(struct device *dev,
 			0, descriptor, sizeof(*descriptor),
 			USB_CTRL_GET_TIMEOUT);
 	if (ret < 0)
-		dev_err(dev, "can't read device descriptor %d\n", ret);
+		dev_dbg(dev, "can't read device descriptor %d\n", ret);
 
 	destroy_lvs_device(udev);
 
@@ -309,7 +309,7 @@ static ssize_t enable_compliance_store(struct device *dev,
 			port | (USB_SS_PORT_LS_COMP_MOD << 3),
 			USB_PORT_FEAT_LINK_STATE);
 	if (ret < 0) {
-		dev_err(dev, "can't enable compliance mode %d\n", ret);
+		dev_dbg(dev, "can't enable compliance mode %d\n", ret);
 		return ret;
 	}
 
@@ -389,7 +389,7 @@ static void lvs_rh_work(struct work_struct *work)
 
 	ret = usb_submit_urb(lvs->urb, GFP_KERNEL);
 	if (ret != 0 && ret != -ENODEV && ret != -EPERM)
-		dev_err(&intf->dev, "urb resubmit error %d\n", ret);
+		dev_dbg(&intf->dev, "urb resubmit error %d\n", ret);
 }
 
 static void lvs_rh_irq(struct urb *urb)
@@ -418,7 +418,7 @@ static int lvs_rh_probe(struct usb_interface *intf,
 
 	/* valid only for SS root hub */
 	if (hdev->descriptor.bDeviceProtocol != USB_HUB_PR_SS || hdev->parent) {
-		dev_err(&intf->dev, "Bind LVS driver with SS root Hub only\n");
+		dev_dbg(&intf->dev, "Bind LVS driver with SS root Hub only\n");
 		return -EINVAL;
 	}
 
@@ -435,7 +435,7 @@ static int lvs_rh_probe(struct usb_interface *intf,
 			USB_DT_SS_HUB << 8, 0, &lvs->descriptor,
 			USB_DT_SS_HUB_SIZE, USB_CTRL_GET_TIMEOUT);
 	if (ret < (USB_DT_HUB_NONVAR_SIZE + 2)) {
-		dev_err(&hdev->dev, "wrong root hub descriptor read %d\n", ret);
+		dev_dbg(&hdev->dev, "wrong root hub descriptor read %d\n", ret);
 		return ret < 0 ? ret : -EINVAL;
 	}
 
@@ -448,7 +448,7 @@ static int lvs_rh_probe(struct usb_interface *intf,
 
 	ret = sysfs_create_group(&intf->dev.kobj, &lvs_attr_group);
 	if (ret < 0) {
-		dev_err(&intf->dev, "Failed to create sysfs node %d\n", ret);
+		dev_dbg(&intf->dev, "Failed to create sysfs node %d\n", ret);
 		goto free_urb;
 	}
 
@@ -459,7 +459,7 @@ static int lvs_rh_probe(struct usb_interface *intf,
 
 	ret = usb_submit_urb(lvs->urb, GFP_KERNEL);
 	if (ret < 0) {
-		dev_err(&intf->dev, "couldn't submit lvs urb %d\n", ret);
+		dev_dbg(&intf->dev, "couldn't submit lvs urb %d\n", ret);
 		goto sysfs_remove;
 	}
 

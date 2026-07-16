@@ -171,7 +171,7 @@ static int dt_to_map_one_config(struct pinctrl *p,
 	 */
 	ops = pctldev->desc->pctlops;
 	if (!ops->dt_node_to_map) {
-		dev_err(p->dev, "pctldev %s doesn't support DT\n",
+		dev_dbg(p->dev, "pctldev %s doesn't support DT\n",
 			dev_name(pctldev->dev));
 		return -ENODEV;
 	}
@@ -275,7 +275,7 @@ int pinctrl_dt_to_map(struct pinctrl *p, struct pinctrl_dev *pctldev)
 			/* Look up the pin configuration node */
 			np_config = of_find_node_by_phandle(phandle);
 			if (!np_config) {
-				dev_err(p->dev,
+				dev_dbg(p->dev,
 					"prop %s index %i invalid phandle\n",
 					prop->name, config);
 				ret = -EINVAL;

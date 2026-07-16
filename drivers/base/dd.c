@@ -266,7 +266,7 @@ int driver_deferred_probe_check_state(struct device *dev)
 			dev_WARN(dev, "deferred probe timeout, ignoring dependency");
 			return -ETIMEDOUT;
 		}
-		dev_warn(dev, "ignoring dependency for device, assuming no driver");
+		dev_dbg(dev, "ignoring dependency for device, assuming no driver");
 		return -ENODEV;
 	}
 	return -EPROBE_DEFER;
@@ -282,7 +282,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 
 	mutex_lock(&deferred_probe_mutex);
 	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
-		dev_info(p->device, "deferred probe pending\n");
+		dev_dbg(p->device, "deferred probe pending\n");
 	mutex_unlock(&deferred_probe_mutex);
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);

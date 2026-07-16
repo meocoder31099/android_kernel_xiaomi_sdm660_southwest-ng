@@ -1379,7 +1379,7 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 			jbd_lock_bh_state(bh);
 			if (jh->b_transaction == transaction &&
 			    jh->b_jlist != BJ_Metadata)
-				pr_err("JBD2: assertion failure: h_type=%u "
+				pr_debug("JBD2: assertion failure: h_type=%u "
 				       "h_line_no=%u block_no=%llu jlist=%u\n",
 				       handle->h_type, handle->h_line_no,
 				       (unsigned long long) bh->b_blocknr,
@@ -2062,7 +2062,7 @@ int jbd2_journal_try_to_free_buffers(journal_t *journal,
 		 * after cleanup journal tail.
 		 */
 		if (buffer_write_io_error(bh)) {
-			pr_err("JBD2: Error while async write back metadata bh %llu.",
+			pr_debug("JBD2: Error while async write back metadata bh %llu.",
 			       (unsigned long long)bh->b_blocknr);
 			has_write_io_error = true;
 		}

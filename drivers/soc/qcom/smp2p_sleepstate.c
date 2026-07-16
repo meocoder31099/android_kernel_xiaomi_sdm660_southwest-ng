@@ -67,7 +67,7 @@ static int smp2p_sleepstate_probe(struct platform_device *pdev)
 
 	ret = register_pm_notifier(&sleepstate_pm_nb);
 	if (ret) {
-		dev_err(dev, "%s: power state notif error %d\n", __func__, ret);
+		dev_dbg(dev, "%s: power state notif error %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -79,7 +79,7 @@ static int smp2p_sleepstate_probe(struct platform_device *pdev)
 
 	irq = of_irq_get_byname(node, "smp2p-sleepstate-in");
 	if (irq <= 0) {
-		dev_err(dev, "failed to get irq for smp2p_sleep_state\n");
+		dev_dbg(dev, "failed to get irq for smp2p_sleep_state\n");
 		ret = -EPROBE_DEFER;
 		goto err;
 	}
@@ -89,7 +89,7 @@ static int smp2p_sleepstate_probe(struct platform_device *pdev)
 					IRQF_ONESHOT | IRQF_TRIGGER_RISING,
 					"smp2p_sleepstate", dev);
 	if (ret) {
-		dev_err(dev, "fail to register smp2p threaded_irq=%d\n", irq);
+		dev_dbg(dev, "fail to register smp2p threaded_irq=%d\n", irq);
 		goto err;
 	}
 	return 0;
@@ -119,7 +119,7 @@ static int __init smp2p_sleepstate_init(void)
 
 	ret = platform_driver_register(&smp2p_sleepstate_driver);
 	if (ret) {
-		pr_err("%s: register failed %d\n", __func__, ret);
+		pr_debug("%s: register failed %d\n", __func__, ret);
 		return ret;
 	}
 

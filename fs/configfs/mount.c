@@ -159,7 +159,7 @@ static int __init configfs_init(void)
 
 	return 0;
 out3:
-	pr_err("Unable to register filesystem!\n");
+	pr_debug("Unable to register filesystem!\n");
 	sysfs_remove_mount_point(kernel_kobj, "config");
 out2:
 	kmem_cache_destroy(configfs_dir_cachep);

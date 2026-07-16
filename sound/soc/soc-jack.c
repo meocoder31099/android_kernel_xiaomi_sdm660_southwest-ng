@@ -204,12 +204,12 @@ int snd_soc_jack_add_pins(struct snd_soc_jack *jack, int count,
 
 	for (i = 0; i < count; i++) {
 		if (!pins[i].pin) {
-			dev_err(jack->card->dev, "ASoC: No name for pin %d\n",
+			dev_dbg(jack->card->dev, "ASoC: No name for pin %d\n",
 				i);
 			return -EINVAL;
 		}
 		if (!pins[i].mask) {
-			dev_err(jack->card->dev, "ASoC: No mask for pin %d"
+			dev_dbg(jack->card->dev, "ASoC: No mask for pin %d"
 				" (%s)\n", i, pins[i].pin);
 			return -EINVAL;
 		}
@@ -380,7 +380,7 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 
 	for (i = 0; i < count; i++) {
 		if (!gpios[i].name) {
-			dev_err(jack->card->dev,
+			dev_dbg(jack->card->dev,
 				"ASoC: No name for gpio at index %d\n", i);
 			ret = -EINVAL;
 			goto undo;
@@ -396,7 +396,7 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 							gpios[i].idx, GPIOD_IN);
 			if (IS_ERR(gpios[i].desc)) {
 				ret = PTR_ERR(gpios[i].desc);
-				dev_err(gpios[i].gpiod_dev,
+				dev_dbg(gpios[i].gpiod_dev,
 					"ASoC: Cannot get gpio at index %d: %d",
 					i, ret);
 				goto undo;
@@ -404,7 +404,7 @@ int snd_soc_jack_add_gpios(struct snd_soc_jack *jack, int count,
 		} else {
 			/* legacy GPIO number */
 			if (!gpio_is_valid(gpios[i].gpio)) {
-				dev_err(jack->card->dev,
+				dev_dbg(jack->card->dev,
 					"ASoC: Invalid gpio %d\n",
 					gpios[i].gpio);
 				ret = -EINVAL;
@@ -434,7 +434,7 @@ got_gpio:
 		if (gpios[i].wake) {
 			ret = irq_set_irq_wake(gpiod_to_irq(gpios[i].desc), 1);
 			if (ret != 0)
-				dev_err(jack->card->dev,
+				dev_dbg(jack->card->dev,
 					"ASoC: Failed to mark GPIO at index %d as wake source: %d\n",
 					i, ret);
 		}

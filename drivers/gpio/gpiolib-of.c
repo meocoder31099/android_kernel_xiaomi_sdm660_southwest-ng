@@ -75,7 +75,7 @@ static void of_gpio_flags_quirks(struct device_node *np,
 		 * be actively ignored.
 		 */
 		if (*flags & OF_GPIO_ACTIVE_LOW) {
-			pr_warn("%s GPIO handle specifies active low - ignored\n",
+			pr_debug("%s GPIO handle specifies active low - ignored\n",
 				of_node_full_name(np));
 			*flags &= ~OF_GPIO_ACTIVE_LOW;
 		}
@@ -89,7 +89,7 @@ static void of_gpio_flags_quirks(struct device_node *np,
 	    of_device_is_compatible(np, "reg-fixed-voltage") &&
 	    of_property_read_bool(np, "gpio-open-drain")) {
 		*flags |= (OF_GPIO_SINGLE_ENDED | OF_GPIO_OPEN_DRAIN);
-		pr_info("%s uses legacy open drain flag - update the DTS if you can\n",
+		pr_debug("%s uses legacy open drain flag - update the DTS if you can\n",
 			of_node_full_name(np));
 	}
 }
@@ -349,7 +349,7 @@ static struct gpio_desc *of_parse_own_gpio(struct device_node *np,
 	else if (of_property_read_bool(np, "output-high"))
 		*dflags |= GPIOD_OUT_HIGH;
 	else {
-		pr_warn("GPIO line %d (%s): no hogging state specified, bailing out\n",
+		pr_debug("GPIO line %d (%s): no hogging state specified, bailing out\n",
 			desc_to_gpio(desc), np->name);
 		return ERR_PTR(-EINVAL);
 	}
@@ -490,7 +490,7 @@ err2:
 err1:
 	kfree(gc->label);
 err0:
-	pr_err("%pOF: GPIO chip registration failed with status %d\n", np, ret);
+	pr_debug("%pOF: GPIO chip registration failed with status %d\n", np, ret);
 	return ret;
 }
 EXPORT_SYMBOL(of_mm_gpiochip_add_data);
@@ -567,7 +567,7 @@ static int of_gpiochip_add_pin_range(struct gpio_chip *chip)
 						group_names_propname,
 						index, &name);
 				if (strlen(name)) {
-					pr_err("%pOF: Group name of numeric GPIO ranges must be the empty string.\n",
+					pr_debug("%pOF: Group name of numeric GPIO ranges must be the empty string.\n",
 						np);
 					break;
 				}
@@ -583,13 +583,13 @@ static int of_gpiochip_add_pin_range(struct gpio_chip *chip)
 		} else {
 			/* npins == 0: special range */
 			if (pinspec.args[1]) {
-				pr_err("%pOF: Illegal gpio-range format.\n",
+				pr_debug("%pOF: Illegal gpio-range format.\n",
 					np);
 				break;
 			}
 
 			if (!group_names) {
-				pr_err("%pOF: GPIO group range requested but no %s property.\n",
+				pr_debug("%pOF: GPIO group range requested but no %s property.\n",
 					np, group_names_propname);
 				break;
 			}
@@ -601,7 +601,7 @@ static int of_gpiochip_add_pin_range(struct gpio_chip *chip)
 				break;
 
 			if (!strlen(name)) {
-				pr_err("%pOF: Group name of GPIO group range cannot be the empty string.\n",
+				pr_debug("%pOF: Group name of GPIO group range cannot be the empty string.\n",
 				np);
 				break;
 			}

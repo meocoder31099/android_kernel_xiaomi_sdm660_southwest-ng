@@ -230,7 +230,7 @@ static int __init init_qspinlock_stat(void)
 fail_undo:
 	debugfs_remove_recursive(d_qstat);
 out:
-	pr_warn("Could not create 'qlockstat' debugfs entries\n");
+	pr_debug("Could not create 'qlockstat' debugfs entries\n");
 	return -ENOMEM;
 }
 fs_initcall(init_qspinlock_stat);

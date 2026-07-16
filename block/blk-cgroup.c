@@ -1530,7 +1530,7 @@ int blkcg_policy_register(struct blkcg_policy *pol)
 		if (!blkcg_policy[i])
 			break;
 	if (i >= BLKCG_MAX_POLS) {
-		pr_warn("blkcg_policy_register: BLKCG_MAX_POLS too small\n");
+		pr_debug("blkcg_policy_register: BLKCG_MAX_POLS too small\n");
 		goto err_unlock;
 	}
 

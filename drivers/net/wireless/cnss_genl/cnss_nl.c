@@ -68,7 +68,7 @@ static int cld80211_pre_doit(const struct genl_ops *ops, struct sk_buff *skb,
 	struct cld80211_nl_data *nl = get_local_ctx();
 
 	if (cmd_id < 1 || cmd_id > CLD80211_MAX_COMMANDS) {
-		pr_err("CLD80211: Command Not supported: %u\n", cmd_id);
+		pr_debug("CLD80211: Command Not supported: %u\n", cmd_id);
 		return -EOPNOTSUPP;
 	}
 	info->user_ptr[0] = nl->cld_ops[cmd_id - 1].cb;
@@ -141,7 +141,7 @@ static int cld80211_doit(struct sk_buff *skb, struct genl_info *info)
 	cld_cb = info->user_ptr[0];
 
 	if (!cld_cb) {
-		pr_err("CLD80211: Not supported\n");
+		pr_debug("CLD80211: Not supported\n");
 		return -EOPNOTSUPP;
 	}
 	cld_ctx = info->user_ptr[1];
@@ -151,7 +151,7 @@ static int cld80211_doit(struct sk_buff *skb, struct genl_info *info)
 		       nla_len(info->attrs[CLD80211_ATTR_VENDOR_DATA]),
 		       cld_ctx, info->snd_portid);
 	} else {
-		pr_err("CLD80211: No CLD80211_ATTR_VENDOR_DATA\n");
+		pr_debug("CLD80211: No CLD80211_ATTR_VENDOR_DATA\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -163,7 +163,7 @@ static int __cld80211_init(void)
 
 	memset(&nl_ops[0], 0, sizeof(nl_ops));
 
-	pr_info("CLD80211: Initializing\n");
+	pr_debug("CLD80211: Initializing\n");
 	for (i = 0; i < CLD80211_MAX_COMMANDS; i++) {
 		nl_ops[i].cmd = i + 1;
 		nl_ops[i].doit = cld80211_doit;
@@ -173,7 +173,7 @@ static int __cld80211_init(void)
 
 	err = genl_register_family(&cld80211_fam);
 	if (err) {
-		pr_err("CLD80211: Failed to register cld80211 family: %d\n",
+		pr_debug("CLD80211: Failed to register cld80211 family: %d\n",
 		       err);
 	}
 

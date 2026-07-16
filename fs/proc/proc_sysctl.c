@@ -162,7 +162,7 @@ static int insert_entry(struct ctl_table_header *head, struct ctl_table *entry)
 		else if (cmp > 0)
 			p = &(*p)->rb_right;
 		else {
-			pr_err("sysctl duplicate entry: ");
+			pr_debug("sysctl duplicate entry: ");
 			sysctl_print_dir(head->parent);
 			pr_cont("/%s\n", entry->procname);
 			return -EEXIST;
@@ -1053,7 +1053,7 @@ found:
 	subdir->header.nreg++;
 failed:
 	if (IS_ERR(subdir)) {
-		pr_err("sysctl could not get directory: ");
+		pr_debug("sysctl could not get directory: ");
 		sysctl_print_dir(dir);
 		pr_cont("/%*.*s %ld\n",
 			namelen, namelen, name, PTR_ERR(subdir));
@@ -1121,7 +1121,7 @@ static int sysctl_err(const char *path, struct ctl_table *table, char *fmt, ...)
 	vaf.fmt = fmt;
 	vaf.va = &args;
 
-	pr_err("sysctl table check failed: %s/%s %pV\n",
+	pr_debug("sysctl table check failed: %s/%s %pV\n",
 	       path, table->procname, &vaf);
 
 	va_end(args);
@@ -1439,7 +1439,7 @@ void __init __register_sysctl_init(const char *path, struct ctl_table *table,
 	struct ctl_table_header *hdr = register_sysctl(path, table);
 
 	if (unlikely(!hdr)) {
-		pr_err("failed when register_sysctl %s to %s\n", table_name, path);
+		pr_debug("failed when register_sysctl %s to %s\n", table_name, path);
 		return;
 	}
 	kmemleak_not_leak(hdr);
@@ -1685,7 +1685,7 @@ static void put_links(struct ctl_table_header *header)
 			drop_sysctl_table(link_head);
 		}
 		else {
-			pr_err("sysctl link missing during unregister: ");
+			pr_debug("sysctl link missing during unregister: ");
 			sysctl_print_dir(parent);
 			pr_cont("/%s\n", name);
 		}

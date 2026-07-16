@@ -463,7 +463,7 @@ extern int mminit_loglevel;
 do { \
 	if (level < mminit_loglevel) { \
 		if (level <= MMINIT_WARNING) \
-			pr_warn("mminit::" prefix " " fmt, ##arg);	\
+			pr_debug("mminit::" prefix " " fmt, ##arg);	\
 		else \
 			printk(KERN_DEBUG "mminit::" prefix " " fmt, ##arg); \
 	} \

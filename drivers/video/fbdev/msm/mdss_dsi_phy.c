@@ -73,7 +73,7 @@ static int  mdss_dsi_phy_common_validate_and_set(struct timing_entry *te,
 {
 	if (te->rec & 0xffffff00) {
 		/* Output value can only be 8 bits */
-		pr_err("Incorrect %s calculations - %d\n", te_name, te->rec);
+		pr_debug("Incorrect %s calculations - %d\n", te_name, te->rec);
 		return -EINVAL;
 	}
 	pr_debug("%s program value=%d\n", te_name, te->rec);
@@ -99,7 +99,7 @@ static int mdss_dsi_phy_initialize_defaults(struct dsi_phy_t_clk_param *t_clk,
 		return -EINVAL;
 
 	if (phy_rev <= DSI_PHY_REV_UNKNOWN || phy_rev >= DSI_PHY_REV_MAX) {
-		pr_err("Invalid PHY %d revision\n", phy_rev);
+		pr_debug("Invalid PHY %d revision\n", phy_rev);
 		return -EINVAL;
 	}
 
@@ -644,55 +644,55 @@ static int mdss_dsi_phy_calc_param_phy_cmn(
 	rc = calc_clk_prepare(clk_params, desc, &actual_frac,
 			      &actual_intermediate);
 	if (rc) {
-		pr_err("clk_prepare calculations failed, rc=%d\n", rc);
+		pr_debug("clk_prepare calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_clk_zero(clk_params, desc, actual_frac, actual_intermediate);
 	if (rc) {
-		pr_err("clk_zero calculations failed, rc=%d\n", rc);
+		pr_debug("clk_zero calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_clk_trail(clk_params, desc, &teot_clk_lane);
 	if (rc) {
-		pr_err("clk_trail calculations failed, rc=%d\n", rc);
+		pr_debug("clk_trail calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_hs_prepare(clk_params, desc, &temp_multiple);
 	if (rc) {
-		pr_err("hs_prepare calculations failed, rc=%d\n", rc);
+		pr_debug("hs_prepare calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_hs_zero(clk_params, desc, temp_multiple);
 	if (rc) {
-		pr_err("hs_zero calculations failed, rc=%d\n", rc);
+		pr_debug("hs_zero calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_hs_trail(clk_params, desc, teot_clk_lane);
 	if (rc) {
-		pr_err("hs_trail calculations failed, rc=%d\n", rc);
+		pr_debug("hs_trail calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_hs_rqst(clk_params, desc);
 	if (rc) {
-		pr_err("hs_rqst calculations failed, rc=%d\n", rc);
+		pr_debug("hs_rqst calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_hs_exit(clk_params, desc);
 	if (rc) {
-		pr_err("hs_exit calculations failed, rc=%d\n", rc);
+		pr_debug("hs_exit calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 
 	rc = calc_hs_rqst_clk(clk_params, desc);
 	if (rc) {
-		pr_err("hs_rqst_clk calculations failed, rc=%d\n", rc);
+		pr_debug("hs_rqst_clk calculations failed, rc=%d\n", rc);
 		goto error;
 	}
 error:
@@ -792,7 +792,7 @@ static int mdss_dsi_phy_calc_hs_param_phy_rev_1(
 	t_param->clk_post.program_value += tmp;
 
 	if (t_param->clk_post.program_value & 0xffffff00) {
-		pr_err("Invalid clk post calculations - %d\n",
+		pr_debug("Invalid clk post calculations - %d\n",
 				t_param->clk_post.program_value);
 		goto error;
 	}
@@ -819,7 +819,7 @@ static int mdss_dsi_phy_calc_hs_param_phy_rev_1(
 	}
 
 	if (t_param->clk_pre.program_value & 0xffffff00) {
-		pr_err("Invalid clk pre calculations - %d\n",
+		pr_debug("Invalid clk pre calculations - %d\n",
 				t_param->clk_pre.program_value);
 		goto error;
 	}
@@ -929,7 +929,7 @@ static int mdss_dsi_phy_calc_param_phy_rev_1(struct dsi_phy_t_clk_param *t_clk,
 
 	rc = mdss_dsi_phy_calc_hs_param_phy_rev_1(t_clk, t_param);
 	if (rc)
-		pr_err("Invalid HS param calculations\n");
+		pr_debug("Invalid HS param calculations\n");
 
 error:
 	return rc;
@@ -1032,7 +1032,7 @@ int mdss_dsi_phy_calc_timing_param(struct mdss_panel_info *pinfo, u32 phy_rev,
 	int rc = 0;
 
 	if (!pinfo) {
-		pr_err("invalid panel info\n");
+		pr_debug("invalid panel info\n");
 		return -EINVAL;
 	}
 
@@ -1045,7 +1045,7 @@ int mdss_dsi_phy_calc_timing_param(struct mdss_panel_info *pinfo, u32 phy_rev,
 
 	rc = mdss_dsi_phy_initialize_defaults(&t_clk, &t_param, phy_rev);
 	if (rc) {
-		pr_err("phy%d initialization failed\n", phy_rev);
+		pr_debug("phy%d initialization failed\n", phy_rev);
 		goto timing_calc_end;
 	}
 
@@ -1057,7 +1057,7 @@ int mdss_dsi_phy_calc_timing_param(struct mdss_panel_info *pinfo, u32 phy_rev,
 	case DSI_PHY_REV_20:
 		rc = mdss_dsi_phy_calc_param_phy_cmn(&t_clk, &t_param);
 		if (rc) {
-			pr_err("Phy timing calculations failed\n");
+			pr_debug("Phy timing calculations failed\n");
 			goto timing_calc_end;
 		}
 		mdss_dsi_phy_update_timing_param_v2(pinfo, &t_param);
@@ -1065,13 +1065,13 @@ int mdss_dsi_phy_calc_timing_param(struct mdss_panel_info *pinfo, u32 phy_rev,
 	case DSI_PHY_REV_30:
 		rc = mdss_dsi_phy_calc_param_phy_cmn(&t_clk, &t_param);
 		if (rc) {
-			pr_err("Phy timing calculations failed\n");
+			pr_debug("Phy timing calculations failed\n");
 			goto timing_calc_end;
 		}
 		mdss_dsi_phy_update_timing_param_v3(pinfo, &t_param);
 		break;
 	default:
-		pr_err("phy rev %d not supported\n", phy_rev);
+		pr_debug("phy rev %d not supported\n", phy_rev);
 		return -EINVAL;
 	}
 

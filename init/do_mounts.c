@@ -159,10 +159,10 @@ no_offset:
 	put_device(dev);
 done:
 	if (clear_root_wait) {
-		pr_err("VFS: PARTUUID= is invalid.\n"
+		pr_debug("VFS: PARTUUID= is invalid.\n"
 		       "Expected PARTUUID=<valid-uuid-id>[/PARTNROFF=%%d]\n");
 		if (root_wait)
-			pr_err("Disabling rootwait; root= is invalid.\n");
+			pr_debug("Disabling rootwait; root= is invalid.\n");
 		root_wait = 0;
 	}
 	return res;

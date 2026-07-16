@@ -23,7 +23,7 @@ static int __set_clk_parents(struct device_node *node, bool clk_supplier)
 	num_parents = of_count_phandle_with_args(node, "assigned-clock-parents",
 						 "#clock-cells");
 	if (num_parents == -EINVAL)
-		pr_err("clk: invalid value of clock-parents property at %pOF\n",
+		pr_debug("clk: invalid value of clock-parents property at %pOF\n",
 		       node);
 
 	for (index = 0; index < num_parents; index++) {
@@ -44,7 +44,7 @@ static int __set_clk_parents(struct device_node *node, bool clk_supplier)
 		of_node_put(clkspec.np);
 		if (IS_ERR(pclk)) {
 			if (PTR_ERR(pclk) != -EPROBE_DEFER)
-				pr_warn("clk: couldn't get parent clock %d for %pOF\n",
+				pr_debug("clk: couldn't get parent clock %d for %pOF\n",
 					index, node);
 			return PTR_ERR(pclk);
 		}
@@ -62,7 +62,7 @@ static int __set_clk_parents(struct device_node *node, bool clk_supplier)
 		of_node_put(clkspec.np);
 		if (IS_ERR(clk)) {
 			if (PTR_ERR(clk) != -EPROBE_DEFER)
-				pr_warn("clk: couldn't get assigned clock %d for %pOF\n",
+				pr_debug("clk: couldn't get assigned clock %d for %pOF\n",
 					index, node);
 			rc = PTR_ERR(clk);
 			goto err;
@@ -70,7 +70,7 @@ static int __set_clk_parents(struct device_node *node, bool clk_supplier)
 
 		rc = clk_set_parent(clk, pclk);
 		if (rc < 0)
-			pr_err("clk: failed to reparent %s to %s: %d\n",
+			pr_debug("clk: failed to reparent %s to %s: %d\n",
 			       __clk_get_name(clk), __clk_get_name(pclk), rc);
 		clk_put(clk);
 		clk_put(pclk);
@@ -110,14 +110,14 @@ static int __set_clk_rates(struct device_node *node, bool clk_supplier)
 			of_node_put(clkspec.np);
 			if (IS_ERR(clk)) {
 				if (PTR_ERR(clk) != -EPROBE_DEFER)
-					pr_warn("clk: couldn't get clock %d for %pOF\n",
+					pr_debug("clk: couldn't get clock %d for %pOF\n",
 						index, node);
 				return PTR_ERR(clk);
 			}
 
 			rc = clk_set_rate(clk, rate);
 			if (rc < 0)
-				pr_err("clk: couldn't set %s clk rate to %u (%d), current rate: %lu\n",
+				pr_debug("clk: couldn't set %s clk rate to %u (%d), current rate: %lu\n",
 				       __clk_get_name(clk), rate, rc,
 				       clk_get_rate(clk));
 			clk_put(clk);

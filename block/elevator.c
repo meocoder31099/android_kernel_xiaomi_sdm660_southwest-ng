@@ -353,6 +353,26 @@ struct request *elv_rb_find(struct rb_root *root, sector_t sector)
 }
 EXPORT_SYMBOL(elv_rb_find);
 
+/*
+* Insert rq into dispatch queue of q.  Queue lock must be held on
+* entry.  rq is added to the back of the dispatch queue. To be used by
+* specific elevators.
+*/
+void elv_dispatch_add_tail(struct request_queue *q, struct request *rq)
+{
+	if (q->last_merge == rq)
+		q->last_merge = NULL;
+
+	elv_rqhash_del(q, rq);
+
+	q->nr_sorted--;
+
+	q->end_sector = rq_end_sector(rq);
+	q->boundary_rq = rq;
+	list_add_tail(&rq->queuelist, &q->queue_head);
+}
+EXPORT_SYMBOL(elv_dispatch_add_tail);
+
 enum elv_merge elv_merge(struct request_queue *q, struct request **req,
 		struct bio *bio)
 {
@@ -924,6 +944,8 @@ int elevator_init_mq(struct request_queue *q)
 
 #if defined(CONFIG_BFQ_DEFAULT)
 		e = elevator_get(q, "bfq", false);
+#elif defined(CONFIG_MQ_ZEN_DEFAULT)
+		e = elevator_get(q, "mq-zen", false);
 #elif defined(CONFIG_MQ_KYBER_DEFAULT)
 		e = elevator_get(q, "kyber", false);
 #else

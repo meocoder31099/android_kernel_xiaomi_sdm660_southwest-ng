@@ -272,7 +272,7 @@ int __ext4_handle_dirty_metadata(const char *where, unsigned int line,
 			ext4_journal_abort_handle(where, line, __func__, bh,
 						  handle, err);
 			if (inode == NULL) {
-				pr_err("EXT4: jbd2_journal_dirty_metadata "
+				pr_debug("EXT4: jbd2_journal_dirty_metadata "
 				       "failed: handle type %u started at "
 				       "line %u, credits %u/%u, errcode %d",
 				       handle->h_type,

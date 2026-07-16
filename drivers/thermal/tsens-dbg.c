@@ -45,7 +45,7 @@ zonemask_show(struct device *dev, struct device_attribute *attr, char *buf)
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -63,7 +63,7 @@ zonemask_store(struct device *dev, struct device_attribute *attr,
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -71,7 +71,7 @@ zonemask_store(struct device *dev, struct device_attribute *attr,
 				&tmdev->mtcsys.th1, &tmdev->mtcsys.th2);
 
 	if (ret != TSENS_ZONEMASK_PARAMS) {
-		pr_err("Invalid command line arguments\n");
+		pr_debug("Invalid command line arguments\n");
 		count = -EINVAL;
 	} else {
 		pr_debug("store zone_mtc=%d th1=%d th2=%d\n",
@@ -80,7 +80,7 @@ zonemask_store(struct device *dev, struct device_attribute *attr,
 		ret = tsens_set_mtc_zone_sw_mask(tmdev->mtcsys.zone_mtc,
 					tmdev->mtcsys.th1, tmdev->mtcsys.th2);
 		if (ret < 0) {
-			pr_err("Invalid command line arguments\n");
+			pr_debug("Invalid command line arguments\n");
 			count = -EINVAL;
 		}
 	}
@@ -96,13 +96,13 @@ zonelog_show(struct device *dev, struct device_attribute *attr, char *buf)
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
 	ret = tsens_get_mtc_zone_log(tmdev->mtcsys.zone_log, zlog);
 	if (ret < 0) {
-		pr_err("Invalid command line arguments\n");
+		pr_debug("Invalid command line arguments\n");
 		return -EINVAL;
 	}
 
@@ -120,13 +120,13 @@ zonelog_store(struct device *dev, struct device_attribute *attr,
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
 	ret = kstrtou32(buf, 0, &tmdev->mtcsys.zone_log);
 	if (ret < 0) {
-		pr_err("Invalid command line arguments\n");
+		pr_debug("Invalid command line arguments\n");
 		return -EINVAL;
 	}
 
@@ -141,13 +141,13 @@ zonehist_show(struct device *dev, struct device_attribute *attr, char *buf)
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
 	ret = tsens_get_mtc_zone_history(tmdev->mtcsys.zone_hist, zhist);
 	if (ret < 0) {
-		pr_err("Invalid command line arguments\n");
+		pr_debug("Invalid command line arguments\n");
 		return -EINVAL;
 	}
 
@@ -165,13 +165,13 @@ zonehist_store(struct device *dev, struct device_attribute *attr,
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
 	ret = kstrtou32(buf, 0, &tmdev->mtcsys.zone_hist);
 	if (ret < 0) {
-		pr_err("Invalid command line arguments\n");
+		pr_debug("Invalid command line arguments\n");
 		return -EINVAL;
 	}
 

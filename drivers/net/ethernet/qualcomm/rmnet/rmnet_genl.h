@@ -13,7 +13,7 @@
 #define RMNET_CORE_DEBUG 0
 
 #define rm_err(fmt, ...)  \
-	do { if (RMNET_CORE_DEBUG) pr_err(fmt, __VA_ARGS__); } while (0)
+	do { if (RMNET_CORE_DEBUG) pr_debug(fmt, __VA_ARGS__); } while (0)
 
 /* Generic Netlink Definitions */
 #define RMNET_CORE_GENL_VERSION 1

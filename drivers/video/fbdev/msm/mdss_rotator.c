@@ -71,7 +71,7 @@ static int mdss_rotator_bus_scale_set_quota(struct mdss_rot_bus_data_type *bus,
 	int ret;
 
 	if (bus->bus_hdl < 1) {
-		pr_err("invalid bus handle %d\n", bus->bus_hdl);
+		pr_debug("invalid bus handle %d\n", bus->bus_hdl);
 		return -EINVAL;
 	}
 
@@ -95,7 +95,7 @@ static int mdss_rotator_bus_scale_set_quota(struct mdss_rot_bus_data_type *bus,
 
 		total_axi_port_cnt = bw_table->usecase[new_uc_idx].num_paths;
 		if (total_axi_port_cnt == 0) {
-			pr_err("Number of bw paths is 0\n");
+			pr_debug("Number of bw paths is 0\n");
 			return -ENODEV;
 		}
 		do_div(port_quota, total_axi_port_cnt);
@@ -201,7 +201,7 @@ static unsigned long mdss_rotator_clk_rate_calc(
 static struct clk *mdss_rotator_get_clk(struct mdss_rot_mgr *mgr, u32 clk_idx)
 {
 	if (clk_idx >= MDSS_CLK_ROTATOR_END_IDX) {
-		pr_err("Invalid clk index:%u\n", clk_idx);
+		pr_debug("Invalid clk index:%u\n", clk_idx);
 		return NULL;
 	}
 
@@ -219,11 +219,11 @@ static void mdss_rotator_set_clk_rate(struct mdss_rot_mgr *mgr,
 		mutex_lock(&mgr->clk_lock);
 		clk_rate = clk_round_rate(clk, rate);
 		if (IS_ERR_VALUE(clk_rate)) {
-			pr_err("unable to round rate err=%ld\n", clk_rate);
+			pr_debug("unable to round rate err=%ld\n", clk_rate);
 		} else if (clk_rate != clk_get_rate(clk)) {
 			ret = clk_set_rate(clk, clk_rate);
 			if (IS_ERR_VALUE((unsigned long)ret)) {
-				pr_err("clk_set_rate failed, err:%d\n", ret);
+				pr_debug("clk_set_rate failed, err:%d\n", ret);
 			} else {
 				pr_debug("rotator clk rate=%lu\n", clk_rate);
 				MDSS_XLOG(clk_rate);
@@ -231,7 +231,7 @@ static void mdss_rotator_set_clk_rate(struct mdss_rot_mgr *mgr,
 		}
 		mutex_unlock(&mgr->clk_lock);
 	} else {
-		pr_err("rotator clk not setup properly\n");
+		pr_debug("rotator clk not setup properly\n");
 	}
 }
 
@@ -240,7 +240,7 @@ static void mdss_rotator_footswitch_ctrl(struct mdss_rot_mgr *mgr, bool on)
 	int ret;
 
 	if (mgr->regulator_enable == on) {
-		pr_err("Regulators already in selected mode on=%d\n", on);
+		pr_debug("Regulators already in selected mode on=%d\n", on);
 		return;
 	}
 
@@ -248,7 +248,7 @@ static void mdss_rotator_footswitch_ctrl(struct mdss_rot_mgr *mgr, bool on)
 	ret = msm_dss_enable_vreg(mgr->module_power.vreg_config,
 		mgr->module_power.num_vreg, on);
 	if (ret) {
-		pr_warn("Rotator regulator failed to %s\n",
+		pr_debug("Rotator regulator failed to %s\n",
 			on ? "enable" : "disable");
 		return;
 	}
@@ -273,7 +273,7 @@ static int mdss_rotator_clk_ctrl(struct mdss_rot_mgr *mgr, int enable)
 			if (mgr->rot_enable_clk_cnt == 0)
 				changed++;
 		} else {
-			pr_err("Can not be turned off\n");
+			pr_debug("Can not be turned off\n");
 		}
 	}
 
@@ -284,7 +284,7 @@ static int mdss_rotator_clk_ctrl(struct mdss_rot_mgr *mgr, int enable)
 			if (enable) {
 				ret = clk_prepare_enable(clk);
 				if (ret) {
-					pr_err("enable failed clk_idx %d\n", i);
+					pr_debug("enable failed clk_idx %d\n", i);
 					goto error;
 				}
 			} else {
@@ -333,7 +333,7 @@ int mdss_rotator_resource_ctrl(struct mdss_rot_mgr *mgr, int enable)
 			if (mgr->res_ref_cnt == 0)
 				changed++;
 		} else {
-			pr_err("Rot resource already off\n");
+			pr_debug("Rot resource already off\n");
 		}
 	}
 
@@ -402,13 +402,13 @@ static int mdss_rotator_create_fence(struct mdss_rot_entry *entry)
 	fence = mdss_get_sync_fence(rot_timeline->timeline,
 					rot_timeline->fence_name, NULL, val);
 	if (fence == NULL) {
-		pr_err("cannot create sync point\n");
+		pr_debug("cannot create sync point\n");
 		goto sync_pt_create_err;
 	}
 
 	fd = get_unused_fd_flags(O_CLOEXEC);
 	if (fd < 0) {
-		pr_err("fail to get unused fd\n");
+		pr_debug("fail to get unused fd\n");
 		ret = fd;
 		goto get_fd_err;
 	}
@@ -504,7 +504,7 @@ static int mdss_rotator_import_buffer(struct mdp_layer_buffer *buffer,
 	memset(planes, 0, sizeof(planes));
 
 	if (buffer->plane_count > MAX_PLANES) {
-		pr_err("buffer plane_count exceeds MAX_PLANES limit:%d\n",
+		pr_debug("buffer plane_count exceeds MAX_PLANES limit:%d\n",
 				buffer->plane_count);
 		return -EINVAL;
 	}
@@ -547,20 +547,20 @@ static int mdss_rotator_map_and_check_data(struct mdss_rot_entry *entry)
 	entry->src_buf.state = MDP_BUF_STATE_ACTIVE;
 	ret = mdss_mdp_data_map(&entry->src_buf, true, DMA_TO_DEVICE);
 	if (ret) {
-		pr_err("source buffer mapping failed ret:%d\n", ret);
+		pr_debug("source buffer mapping failed ret:%d\n", ret);
 		goto end;
 	}
 
 	entry->dst_buf.state = MDP_BUF_STATE_ACTIVE;
 	ret = mdss_mdp_data_map(&entry->dst_buf, true, DMA_FROM_DEVICE);
 	if (ret) {
-		pr_err("destination buffer mapping failed ret:%d\n", ret);
+		pr_debug("destination buffer mapping failed ret:%d\n", ret);
 		goto end;
 	}
 
 	fmt = mdss_mdp_get_format_params(input->format);
 	if (!fmt) {
-		pr_err("invalid input format:%d\n", input->format);
+		pr_debug("invalid input format:%d\n", input->format);
 		ret = -EINVAL;
 		goto end;
 	}
@@ -568,19 +568,19 @@ static int mdss_rotator_map_and_check_data(struct mdss_rot_entry *entry)
 	ret = mdss_mdp_get_plane_sizes(
 			fmt, input->width, input->height, &ps, 0, rotation);
 	if (ret) {
-		pr_err("fail to get input plane size ret=%d\n", ret);
+		pr_debug("fail to get input plane size ret=%d\n", ret);
 		goto end;
 	}
 
 	ret = mdss_mdp_data_check(&entry->src_buf, &ps, fmt);
 	if (ret) {
-		pr_err("fail to check input data ret=%d\n", ret);
+		pr_debug("fail to check input data ret=%d\n", ret);
 		goto end;
 	}
 
 	fmt = mdss_mdp_get_format_params(output->format);
 	if (!fmt) {
-		pr_err("invalid output format:%d\n", output->format);
+		pr_debug("invalid output format:%d\n", output->format);
 		ret = -EINVAL;
 		goto end;
 	}
@@ -588,13 +588,13 @@ static int mdss_rotator_map_and_check_data(struct mdss_rot_entry *entry)
 	ret = mdss_mdp_get_plane_sizes(
 			fmt, output->width, output->height, &ps, 0, rotation);
 	if (ret) {
-		pr_err("fail to get output plane size ret=%d\n", ret);
+		pr_debug("fail to get output plane size ret=%d\n", ret);
 		goto end;
 	}
 
 	ret = mdss_mdp_data_check(&entry->dst_buf, &ps, fmt);
 	if (ret) {
-		pr_err("fail to check output data ret=%d\n", ret);
+		pr_debug("fail to check output data ret=%d\n", ret);
 		goto end;
 	}
 
@@ -666,7 +666,7 @@ static int mdss_rotator_import_data(struct mdss_rot_mgr *mgr,
 	ret = mdss_rotator_import_buffer(input, &entry->src_buf, flag,
 				&mgr->pdev->dev, true);
 	if (ret) {
-		pr_err("fail to import input buffer\n");
+		pr_debug("fail to import input buffer\n");
 		return ret;
 	}
 
@@ -677,7 +677,7 @@ static int mdss_rotator_import_data(struct mdss_rot_mgr *mgr,
 	ret = mdss_rotator_import_buffer(output, &entry->dst_buf, flag,
 				&mgr->pdev->dev, false);
 	if (ret) {
-		pr_err("fail to import output buffer\n");
+		pr_debug("fail to import output buffer\n");
 		return ret;
 	}
 
@@ -699,7 +699,7 @@ static struct mdss_rot_hw_resource *mdss_rotator_hw_alloc(
 
 	hw->ctl = mdss_mdp_ctl_alloc(mdata, offset);
 	if (IS_ERR_OR_NULL(hw->ctl)) {
-		pr_err("unable to allocate ctl\n");
+		pr_debug("unable to allocate ctl\n");
 		ret = -ENODEV;
 		goto error;
 	}
@@ -710,7 +710,7 @@ static struct mdss_rot_hw_resource *mdss_rotator_hw_alloc(
 		hw->wb = mdss_mdp_wb_assign(wb_id, hw->ctl->num);
 
 	if (IS_ERR_OR_NULL(hw->wb)) {
-		pr_err("unable to allocate wb\n");
+		pr_debug("unable to allocate wb\n");
 		ret = -ENODEV;
 		goto error;
 	}
@@ -718,7 +718,7 @@ static struct mdss_rot_hw_resource *mdss_rotator_hw_alloc(
 	hw->mixer = mdss_mdp_mixer_assign(hw->wb->num, true, true);
 
 	if (IS_ERR_OR_NULL(hw->mixer)) {
-		pr_err("unable to allocate wb mixer\n");
+		pr_debug("unable to allocate wb mixer\n");
 		ret = -ENODEV;
 		goto error;
 	}
@@ -735,7 +735,7 @@ static struct mdss_rot_hw_resource *mdss_rotator_hw_alloc(
 		hw->ctl->opmode =  MDSS_MDP_CTL_OP_ROT1_MODE;
 		break;
 	default:
-		pr_err("invalid layer mixer=%d\n", hw->mixer->num);
+		pr_debug("invalid layer mixer=%d\n", hw->mixer->num);
 		ret = -EINVAL;
 		goto error;
 	}
@@ -758,7 +758,7 @@ static struct mdss_rot_hw_resource *mdss_rotator_hw_alloc(
 	hw->pipe = mdss_mdp_pipe_assign(mdata, hw->mixer,
 			pipe_ndx, MDSS_MDP_PIPE_RECT0);
 	if (IS_ERR_OR_NULL(hw->pipe)) {
-		pr_err("dma pipe allocation failed\n");
+		pr_debug("dma pipe allocation failed\n");
 		ret = -ENODEV;
 		goto error;
 	}
@@ -808,7 +808,7 @@ struct mdss_rot_hw_resource *mdss_rotator_get_hw_resource(
 	struct mdss_rot_hw_resource *hw = queue->hw;
 
 	if (!hw) {
-		pr_err("no hw in the queue\n");
+		pr_debug("no hw in the queue\n");
 		return NULL;
 	}
 
@@ -931,7 +931,7 @@ static int mdss_rotator_assign_queue(struct mdss_rot_mgr *mgr,
 	}
 
 	if (wb_idx >= mgr->queue_count) {
-		pr_err("Invalid wb idx = %d\n", wb_idx);
+		pr_debug("Invalid wb idx = %d\n", wb_idx);
 		return -EINVAL;
 	}
 
@@ -942,7 +942,7 @@ static int mdss_rotator_assign_queue(struct mdss_rot_mgr *mgr,
 	if (!queue->hw) {
 		hw = mdss_rotator_hw_alloc(mgr, pipe_idx, wb_idx);
 		if (IS_ERR_OR_NULL(hw)) {
-			pr_err("fail to allocate hw\n");
+			pr_debug("fail to allocate hw\n");
 			ret = PTR_ERR(hw);
 		} else {
 			queue->hw = hw;
@@ -958,7 +958,7 @@ static int mdss_rotator_assign_queue(struct mdss_rot_mgr *mgr,
 
 	perf = mdss_rotator_find_session(private, item->session_id);
 	if (!perf) {
-		pr_err("Could not find session based on rotation work item\n");
+		pr_debug("Could not find session based on rotation work item\n");
 		return -EINVAL;
 	}
 
@@ -981,7 +981,7 @@ static void mdss_rotator_unassign_queue(struct mdss_rot_mgr *mgr,
 	mutex_lock(&queue->hw_lock);
 
 	if (!queue->hw) {
-		pr_err("entry assigned a queue with no hw\n");
+		pr_debug("entry assigned a queue with no hw\n");
 		mutex_unlock(&queue->hw_lock);
 		return;
 	}
@@ -1034,12 +1034,12 @@ static int mdss_rotator_calc_perf(struct mdss_rot_perf *perf)
 
 	in_fmt = mdss_mdp_get_format_params(config->input.format);
 	if (!in_fmt) {
-		pr_err("invalid input format\n");
+		pr_debug("invalid input format\n");
 		return -EINVAL;
 	}
 	out_fmt = mdss_mdp_get_format_params(config->output.format);
 	if (!out_fmt) {
-		pr_err("invalid output format\n");
+		pr_debug("invalid output format\n");
 		return -EINVAL;
 	}
 	if (!config->input.width ||
@@ -1177,7 +1177,7 @@ static int mdss_rotator_config_dnsc_factor(struct mdss_rot_mgr *mgr,
 
 	if (!mgr->has_downscale &&
 		(src_w != dst_w || src_h != dst_h)) {
-		pr_err("rotator downscale not supported\n");
+		pr_debug("rotator downscale not supported\n");
 		ret = -EINVAL;
 		goto dnsc_err;
 	}
@@ -1211,7 +1211,7 @@ static int mdss_rotator_config_dnsc_factor(struct mdss_rot_mgr *mgr,
 	fmt =  mdss_mdp_get_format_params(item->output.format);
 	if (mdss_mdp_is_ubwc_format(fmt) &&
 		(entry->dnsc_factor_h || entry->dnsc_factor_w)) {
-		pr_err("ubwc not supported with downscale %d\n",
+		pr_debug("ubwc not supported with downscale %d\n",
 			item->output.format);
 		ret = -EINVAL;
 	}
@@ -1223,7 +1223,7 @@ dnsc_err:
 		ret = -EINVAL;
 
 	if (ret) {
-		pr_err("Invalid rotator downscale ratio %dx%d->%dx%d\n",
+		pr_debug("Invalid rotator downscale ratio %dx%d->%dx%d\n",
 			src_w, src_h, dst_w, dst_h);
 		entry->dnsc_factor_w = 0;
 		entry->dnsc_factor_h = 0;
@@ -1240,17 +1240,17 @@ static bool mdss_rotator_verify_format(struct mdss_rot_mgr *mgr,
 
 	if (!mgr->has_ubwc && (mdss_mdp_is_ubwc_format(in_fmt) ||
 			mdss_mdp_is_ubwc_format(out_fmt))) {
-		pr_err("Rotator doesn't allow ubwc\n");
+		pr_debug("Rotator doesn't allow ubwc\n");
 		return -EINVAL;
 	}
 
 	if (!(out_fmt->flag & VALID_ROT_WB_FORMAT)) {
-		pr_err("Invalid output format\n");
+		pr_debug("Invalid output format\n");
 		return false;
 	}
 
 	if (in_fmt->is_yuv != out_fmt->is_yuv) {
-		pr_err("Rotator does not support CSC\n");
+		pr_debug("Rotator does not support CSC\n");
 		return false;
 	}
 
@@ -1261,7 +1261,7 @@ static bool mdss_rotator_verify_format(struct mdss_rot_mgr *mgr,
 			(in_fmt->bits[C2_R_Cr] != out_fmt->bits[C2_R_Cr]) ||
 			(in_fmt->bits[C0_G_Y] != out_fmt->bits[C0_G_Y]) ||
 			(in_fmt->bits[C1_B_Cb] != out_fmt->bits[C1_B_Cb])) {
-			pr_err("Bit format does not match\n");
+			pr_debug("Bit format does not match\n");
 			return false;
 		}
 	}
@@ -1275,12 +1275,12 @@ static bool mdss_rotator_verify_format(struct mdss_rot_mgr *mgr,
 
 		if ((in_v_subsample != out_h_subsample) ||
 				(in_h_subsample != out_v_subsample)) {
-			pr_err("Rotation has invalid subsampling\n");
+			pr_debug("Rotation has invalid subsampling\n");
 			return false;
 		}
 	} else {
 		if (in_fmt->chroma_sample != out_fmt->chroma_sample) {
-			pr_err("Format subsampling mismatch\n");
+			pr_debug("Format subsampling mismatch\n");
 			return false;
 		}
 	}
@@ -1305,13 +1305,13 @@ static int mdss_rotator_verify_config(struct mdss_rot_mgr *mgr,
 
 	in_fmt = mdss_mdp_get_format_params(input);
 	if (!in_fmt) {
-		pr_err("Unrecognized input format:%u\n", input);
+		pr_debug("Unrecognized input format:%u\n", input);
 		return -EINVAL;
 	}
 
 	out_fmt = mdss_mdp_get_format_params(output);
 	if (!out_fmt) {
-		pr_err("Unrecognized output format:%u\n", output);
+		pr_debug("Unrecognized output format:%u\n", output);
 		return -EINVAL;
 	}
 
@@ -1323,7 +1323,7 @@ static int mdss_rotator_verify_config(struct mdss_rot_mgr *mgr,
 	/* Dimension of image needs to be divisible by subsample rate  */
 	if ((config->input.height % in_v_subsample) ||
 			(config->input.width % in_h_subsample)) {
-		pr_err("In ROI, subsample mismatch, w=%d, h=%d, vss%d, hss%d\n",
+		pr_debug("In ROI, subsample mismatch, w=%d, h=%d, vss%d, hss%d\n",
 			config->input.width, config->input.height,
 			in_v_subsample, in_h_subsample);
 		return -EINVAL;
@@ -1331,7 +1331,7 @@ static int mdss_rotator_verify_config(struct mdss_rot_mgr *mgr,
 
 	if ((config->output.height % out_v_subsample) ||
 			(config->output.width % out_h_subsample)) {
-		pr_err("Out ROI, subsample mismatch, w=%d, h=%d, vss%d, hss%d\n",
+		pr_debug("Out ROI, subsample mismatch, w=%d, h=%d, vss%d, hss%d\n",
 			config->output.width, config->output.height,
 			out_v_subsample, out_h_subsample);
 		return -EINVAL;
@@ -1339,7 +1339,7 @@ static int mdss_rotator_verify_config(struct mdss_rot_mgr *mgr,
 
 	if (!mdss_rotator_verify_format(mgr, in_fmt,
 			out_fmt, rotation)) {
-		pr_err("Rot format pairing invalid, in_fmt:%d, out_fmt:%d\n",
+		pr_debug("Rot format pairing invalid, in_fmt:%d, out_fmt:%d\n",
 			input, output);
 		return -EINVAL;
 	}
@@ -1386,7 +1386,7 @@ static int mdss_rotator_validate_img_roi(struct mdp_rotation_item *item)
 	if (ROT_CHECK_BOUNDS(item->src_rect.x, item->src_rect.w, width) ||
 			ROT_CHECK_BOUNDS(item->src_rect.y, item->src_rect.h,
 			height)) {
-		pr_err("invalid src flag=%08x img wh=%dx%d rect=%d,%d,%d,%d\n",
+		pr_debug("invalid src flag=%08x img wh=%dx%d rect=%d,%d,%d,%d\n",
 			item->flags, width, height, item->src_rect.x,
 			item->src_rect.y, item->src_rect.w, item->src_rect.h);
 		return -EINVAL;
@@ -1395,7 +1395,7 @@ static int mdss_rotator_validate_img_roi(struct mdp_rotation_item *item)
 			item->output.width) ||
 			ROT_CHECK_BOUNDS(item->dst_rect.y, item->dst_rect.h,
 			item->output.height)) {
-		pr_err("invalid dst img wh=%dx%d rect=%d,%d,%d,%d\n",
+		pr_debug("invalid dst img wh=%dx%d rect=%d,%d,%d,%d\n",
 			item->output.width, item->output.height,
 			item->dst_rect.x, item->dst_rect.y, item->dst_rect.w,
 			item->dst_rect.h);
@@ -1404,7 +1404,7 @@ static int mdss_rotator_validate_img_roi(struct mdp_rotation_item *item)
 
 	fmt = mdss_mdp_get_format_params(item->output.format);
 	if (!fmt) {
-		pr_err("invalid output format:%d\n", item->output.format);
+		pr_debug("invalid output format:%d\n", item->output.format);
 		return -EINVAL;
 	}
 
@@ -1423,7 +1423,7 @@ static int mdss_rotator_validate_fmt_and_item_flags(
 	fmt = mdss_mdp_get_format_params(item->input.format);
 	if ((item->flags & MDP_ROTATION_DEINTERLACE) &&
 			mdss_mdp_is_ubwc_format(fmt)) {
-		pr_err("cannot perform mdp deinterlace on tiled formats\n");
+		pr_debug("cannot perform mdp deinterlace on tiled formats\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -1440,32 +1440,32 @@ static int mdss_rotator_validate_entry(struct mdss_rot_mgr *mgr,
 	item = &entry->item;
 
 	if (item->wb_idx != item->pipe_idx) {
-		pr_err("invalid writeback and pipe idx\n");
+		pr_debug("invalid writeback and pipe idx\n");
 		return -EINVAL;
 	}
 
 	if (item->wb_idx != MDSS_ROTATION_HW_ANY &&
 		item->wb_idx > mgr->queue_count) {
-		pr_err("invalid writeback idx\n");
+		pr_debug("invalid writeback idx\n");
 		return -EINVAL;
 	}
 
 	perf = mdss_rotator_find_session(private, item->session_id);
 	if (!perf) {
-		pr_err("Could not find session:%u\n", item->session_id);
+		pr_debug("Could not find session:%u\n", item->session_id);
 		return -EINVAL;
 	}
 
 	ret = mdss_rotator_validate_item_matches_session(&perf->config, item);
 	if (ret) {
-		pr_err("Work item does not match session:%u\n",
+		pr_debug("Work item does not match session:%u\n",
 			item->session_id);
 		return ret;
 	}
 
 	ret = mdss_rotator_validate_img_roi(item);
 	if (ret) {
-		pr_err("Image roi is invalid\n");
+		pr_debug("Image roi is invalid\n");
 		return ret;
 	}
 
@@ -1475,7 +1475,7 @@ static int mdss_rotator_validate_entry(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_config_dnsc_factor(mgr, entry);
 	if (ret) {
-		pr_err("fail to configure downscale factor\n");
+		pr_debug("fail to configure downscale factor\n");
 		return ret;
 	}
 	return ret;
@@ -1503,13 +1503,13 @@ static int mdss_rotator_add_request(struct mdss_rot_mgr *mgr,
 
 		ret = mdss_rotator_validate_entry(mgr, private, entry);
 		if (ret) {
-			pr_err("fail to validate the entry\n");
+			pr_debug("fail to validate the entry\n");
 			return ret;
 		}
 
 		ret = mdss_rotator_import_data(mgr, entry);
 		if (ret) {
-			pr_err("fail to import the data\n");
+			pr_debug("fail to import the data\n");
 			return ret;
 		}
 
@@ -1517,14 +1517,14 @@ static int mdss_rotator_add_request(struct mdss_rot_mgr *mgr,
 			entry->input_fence = mdss_get_fd_sync_fence(
 							    item->input.fence);
 			if (!entry->input_fence) {
-				pr_err("invalid input fence fd\n");
+				pr_debug("invalid input fence fd\n");
 				return -EINVAL;
 			}
 		}
 
 		ret = mdss_rotator_assign_queue(mgr, entry, private);
 		if (ret) {
-			pr_err("fail to assign queue to entry\n");
+			pr_debug("fail to assign queue to entry\n");
 			return ret;
 		}
 
@@ -1534,7 +1534,7 @@ static int mdss_rotator_add_request(struct mdss_rot_mgr *mgr,
 
 		ret = mdss_rotator_create_fence(entry);
 		if (ret) {
-			pr_err("fail to create fence\n");
+			pr_debug("fail to create fence\n");
 			return ret;
 		}
 		item->output.fence = entry->output_fence_fd;
@@ -1747,13 +1747,13 @@ static int mdss_rotator_config_hw(struct mdss_rot_hw_resource *hw,
 
 	ret = mdss_mdp_smp_reserve(pipe);
 	if (ret) {
-		pr_err("unable to mdss_mdp_smp_reserve rot data\n");
+		pr_debug("unable to mdss_mdp_smp_reserve rot data\n");
 		goto done;
 	}
 
 	ret = mdss_mdp_overlay_setup_scaling(pipe);
 	if (ret) {
-		pr_err("scaling setup failed %d\n", ret);
+		pr_debug("scaling setup failed %d\n", ret);
 		goto done;
 	}
 
@@ -1804,25 +1804,25 @@ static int mdss_rotator_commit_entry(struct mdss_rot_hw_resource *hw,
 
 	ret = mdss_rotator_prepare_hw(hw, entry);
 	if (ret) {
-		pr_err("fail to prepare hw resource %d\n", ret);
+		pr_debug("fail to prepare hw resource %d\n", ret);
 		return ret;
 	}
 
 	ret = mdss_rotator_config_hw(hw, entry);
 	if (ret) {
-		pr_err("fail to configure hw resource %d\n", ret);
+		pr_debug("fail to configure hw resource %d\n", ret);
 		return ret;
 	}
 
 	ret = mdss_rotator_kickoff_entry(hw, entry);
 	if (ret) {
-		pr_err("fail to do kickoff %d\n", ret);
+		pr_debug("fail to do kickoff %d\n", ret);
 		return ret;
 	}
 
 	ret = mdss_rotator_wait_for_entry(hw, entry);
 	if (ret) {
-		pr_err("fail to wait for completion %d\n", ret);
+		pr_debug("fail to wait for completion %d\n", ret);
 		return ret;
 	}
 
@@ -1836,19 +1836,19 @@ static int mdss_rotator_handle_entry(struct mdss_rot_hw_resource *hw,
 
 	ret = mdss_rotator_wait_for_input(entry);
 	if (ret) {
-		pr_err("wait for input buffer failed %d\n", ret);
+		pr_debug("wait for input buffer failed %d\n", ret);
 		return ret;
 	}
 
 	ret = mdss_rotator_map_and_check_data(entry);
 	if (ret) {
-		pr_err("fail to prepare input/output data %d\n", ret);
+		pr_debug("fail to prepare input/output data %d\n", ret);
 		return ret;
 	}
 
 	ret = mdss_rotator_commit_entry(hw, entry);
 	if (ret)
-		pr_err("rotator commit failed %d\n", ret);
+		pr_debug("rotator commit failed %d\n", ret);
 
 	return ret;
 }
@@ -1864,13 +1864,13 @@ static void mdss_rotator_wq_handler(struct work_struct *work)
 	request = entry->request;
 
 	if (!request) {
-		pr_err("fatal error, no request with entry\n");
+		pr_debug("fatal error, no request with entry\n");
 		return;
 	}
 
 	hw = mdss_rotator_get_hw_resource(entry->queue, entry);
 	if (!hw) {
-		pr_err("no hw for the queue\n");
+		pr_debug("no hw for the queue\n");
 		goto get_hw_res_err;
 	}
 
@@ -1878,7 +1878,7 @@ static void mdss_rotator_wq_handler(struct work_struct *work)
 	if (ret) {
 		struct mdp_rotation_item *item = &entry->item;
 
-		pr_err("Rot req fail. src{%u,%u,%u,%u}f=%u\n"
+		pr_debug("Rot req fail. src{%u,%u,%u,%u}f=%u\n"
 		"dst{%u,%u,%u,%u}f=%u session_id=%u, wbidx%d, pipe_id=%d\n",
 		item->src_rect.x, item->src_rect.y,
 		item->src_rect.w, item->src_rect.h, item->input.format,
@@ -1907,7 +1907,7 @@ static int mdss_rotator_validate_request(struct mdss_rot_mgr *mgr,
 		ret = mdss_rotator_validate_entry(mgr, private,
 			entry);
 		if (ret) {
-			pr_err("fail to validate the entry\n");
+			pr_debug("fail to validate the entry\n");
 			return ret;
 		}
 	}
@@ -1934,13 +1934,13 @@ static int mdss_rotator_open_session(struct mdss_rot_mgr *mgr,
 
 	ret = copy_from_user(&config, (void __user *)arg, sizeof(config));
 	if (ret) {
-		pr_err("fail to copy session data\n");
+		pr_debug("fail to copy session data\n");
 		return ret;
 	}
 
 	ret = mdss_rotator_verify_config(mgr, &config);
 	if (ret) {
-		pr_err("Rotator verify format failed\n");
+		pr_debug("Rotator verify format failed\n");
 		return ret;
 	}
 
@@ -1965,13 +1965,13 @@ static int mdss_rotator_open_session(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_calc_perf(perf);
 	if (ret) {
-		pr_err("error setting the session%d\n", ret);
+		pr_debug("error setting the session%d\n", ret);
 		goto copy_user_err;
 	}
 
 	ret = copy_to_user((void *)arg, &config, sizeof(config));
 	if (ret) {
-		pr_err("fail to copy to user\n");
+		pr_debug("fail to copy to user\n");
 		goto copy_user_err;
 	}
 
@@ -1981,14 +1981,14 @@ static int mdss_rotator_open_session(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_resource_ctrl(mgr, true);
 	if (ret) {
-		pr_err("Failed to aqcuire rotator resources\n");
+		pr_debug("Failed to aqcuire rotator resources\n");
 		goto resource_err;
 	}
 
 	mdss_rotator_clk_ctrl(rot_mgr, true);
 	ret = mdss_rotator_update_perf(mgr);
 	if (ret) {
-		pr_err("fail to open session, not enough clk/bw\n");
+		pr_debug("fail to open session, not enough clk/bw\n");
 		goto perf_err;
 	}
 	pr_debug("open session id=%u in{%u,%u}f:%u out{%u,%u}f:%u\n",
@@ -2027,7 +2027,7 @@ static int mdss_rotator_close_session(struct mdss_rot_mgr *mgr,
 	if (!perf) {
 		mutex_unlock(&private->perf_lock);
 		mutex_unlock(&mgr->lock);
-		pr_err("Trying to close session that does not exist\n");
+		pr_debug("Trying to close session that does not exist\n");
 		return -EINVAL;
 	}
 
@@ -2069,20 +2069,20 @@ static int mdss_rotator_config_session(struct mdss_rot_mgr *mgr,
 	ret = copy_from_user(&config, (void __user *)arg,
 				sizeof(config));
 	if (ret) {
-		pr_err("fail to copy session data\n");
+		pr_debug("fail to copy session data\n");
 		return ret;
 	}
 
 	ret = mdss_rotator_verify_config(mgr, &config);
 	if (ret) {
-		pr_err("Rotator verify format failed\n");
+		pr_debug("Rotator verify format failed\n");
 		return ret;
 	}
 
 	mutex_lock(&mgr->lock);
 	perf = mdss_rotator_find_session(private, config.session_id);
 	if (!perf) {
-		pr_err("No session with id=%u could be found\n",
+		pr_debug("No session with id=%u could be found\n",
 			config.session_id);
 		mutex_unlock(&mgr->lock);
 		return -EINVAL;
@@ -2095,7 +2095,7 @@ static int mdss_rotator_config_session(struct mdss_rot_mgr *mgr,
 	mutex_unlock(&private->perf_lock);
 
 	if (ret) {
-		pr_err("error in configuring the session %d\n", ret);
+		pr_debug("error in configuring the session %d\n", ret);
 		goto done;
 	}
 
@@ -2125,7 +2125,7 @@ struct mdss_rot_entry_container *mdss_rotator_req_init(
 	for (i = 0 ; i < count; i++) {
 		if ((items[i].input.plane_count > MAX_PLANES) ||
 				(items[i].output.plane_count > MAX_PLANES)) {
-			pr_err("Input/Output plane_count exceeds MAX_PLANES limit, input:%d, output:%d\n",
+			pr_debug("Input/Output plane_count exceeds MAX_PLANES limit, input:%d, output:%d\n",
 					items[i].input.plane_count,
 					items[i].output.plane_count);
 			return ERR_PTR(-EINVAL);
@@ -2164,7 +2164,7 @@ static int mdss_rotator_handle_request_common(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_add_request(mgr, private, req);
 	if (ret) {
-		pr_err("fail to add rotation request\n");
+		pr_debug("fail to add rotation request\n");
 		mdss_rotator_remove_request(mgr, private, req);
 		return ret;
 	}
@@ -2187,25 +2187,25 @@ static int mdss_rotator_handle_request(struct mdss_rot_mgr *mgr,
 	struct mdss_data_type *mdata = mdss_mdp_get_mdata();
 
 	if (mdata->handoff_pending) {
-		pr_err("Rotator request failed. Handoff pending\n");
+		pr_debug("Rotator request failed. Handoff pending\n");
 		return -EPERM;
 	}
 
 	if (mdss_get_sd_client_cnt()) {
-		pr_err("rot request not permitted during secure display session\n");
+		pr_debug("rot request not permitted during secure display session\n");
 		return -EPERM;
 	}
 
 	ret = copy_from_user(&user_req, (void __user *)arg,
 					sizeof(user_req));
 	if (ret) {
-		pr_err("fail to copy rotation request\n");
+		pr_debug("fail to copy rotation request\n");
 		return ret;
 	}
 
 	req_count = user_req.count;
 	if ((!req_count) || (req_count > MAX_LAYER_COUNT)) {
-		pr_err("invalid rotator req count :%d\n", req_count);
+		pr_debug("invalid rotator req count :%d\n", req_count);
 		return -EINVAL;
 	}
 
@@ -2217,19 +2217,19 @@ static int mdss_rotator_handle_request(struct mdss_rot_mgr *mgr,
 	size = sizeof(struct mdp_rotation_item) * req_count;
 	items = kzalloc(size, GFP_KERNEL);
 	if (!items) {
-		pr_err("fail to allocate rotation items\n");
+		pr_debug("fail to allocate rotation items\n");
 		return -ENOMEM;
 	}
 	ret = copy_from_user(items, user_req.list, size);
 	if (ret) {
-		pr_err("fail to copy rotation items\n");
+		pr_debug("fail to copy rotation items\n");
 		kfree(items);
 		return ret;
 	}
 
 	req = mdss_rotator_req_init(mgr, items, user_req.count, user_req.flags);
 	if (IS_ERR_OR_NULL(req)) {
-		pr_err("fail to allocate rotation request\n");
+		pr_debug("fail to allocate rotation request\n");
 		ret = PTR_ERR(req);
 		kfree(items);
 		return ret;
@@ -2244,20 +2244,20 @@ static int mdss_rotator_handle_request(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_handle_request_common(mgr, private, req, items);
 	if (ret) {
-		pr_err("fail to handle request\n");
+		pr_debug("fail to handle request\n");
 		goto handle_request_err1;
 	}
 
 	ret = copy_to_user(user_req.list, items, size);
 	if (ret) {
-		pr_err("fail to copy output fence to user\n");
+		pr_debug("fail to copy output fence to user\n");
 		mdss_rotator_remove_request(mgr, private, req);
 		goto handle_request_err1;
 	}
 
 	ret = mdss_rotator_install_fence_fd(req);
 	if (ret) {
-		pr_err("get_unused_fd_flags failed error:0x%x\n", ret);
+		pr_debug("get_unused_fd_flags failed error:0x%x\n", ret);
 		mdss_rotator_remove_request(mgr, private, req);
 		goto handle_request_err1;
 	}
@@ -2336,7 +2336,7 @@ static int mdss_rotator_close(struct inode *inode, struct file *file)
 	private = (struct mdss_rot_file_private *)file->private_data;
 
 	if (!(mdss_rotator_file_priv_allowed(rot_mgr, private))) {
-		pr_err("Calling close with unrecognized rot_file_private\n");
+		pr_debug("Calling close with unrecognized rot_file_private\n");
 		return -EINVAL;
 	}
 
@@ -2363,32 +2363,32 @@ static int mdss_rotator_handle_request32(struct mdss_rot_mgr *mgr,
 	uint32_t req_count;
 
 	if (mdss_get_sd_client_cnt()) {
-		pr_err("rot request not permitted during secure display session\n");
+		pr_debug("rot request not permitted during secure display session\n");
 		return -EPERM;
 	}
 
 	ret = copy_from_user(&user_req32, (void __user *)arg,
 					sizeof(user_req32));
 	if (ret) {
-		pr_err("fail to copy rotation request\n");
+		pr_debug("fail to copy rotation request\n");
 		return ret;
 	}
 
 	req_count = user_req32.count;
 	if ((!req_count) || (req_count > MAX_LAYER_COUNT)) {
-		pr_err("invalid rotator req count :%d\n", req_count);
+		pr_debug("invalid rotator req count :%d\n", req_count);
 		return -EINVAL;
 	}
 
 	size = sizeof(struct mdp_rotation_item) * req_count;
 	items = kzalloc(size, GFP_KERNEL);
 	if (!items) {
-		pr_err("fail to allocate rotation items\n");
+		pr_debug("fail to allocate rotation items\n");
 		return -ENOMEM;
 	}
 	ret = copy_from_user(items, compat_ptr(user_req32.list), size);
 	if (ret) {
-		pr_err("fail to copy rotation items\n");
+		pr_debug("fail to copy rotation items\n");
 		kfree(items);
 		return ret;
 	}
@@ -2396,7 +2396,7 @@ static int mdss_rotator_handle_request32(struct mdss_rot_mgr *mgr,
 	req = mdss_rotator_req_init(mgr, items, user_req32.count,
 		user_req32.flags);
 	if (IS_ERR_OR_NULL(req)) {
-		pr_err("fail to allocate rotation request\n");
+		pr_debug("fail to allocate rotation request\n");
 		ret = PTR_ERR(req);
 		kfree(items);
 		return ret;
@@ -2411,20 +2411,20 @@ static int mdss_rotator_handle_request32(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_handle_request_common(mgr, private, req, items);
 	if (ret) {
-		pr_err("fail to handle request\n");
+		pr_debug("fail to handle request\n");
 		goto handle_request32_err1;
 	}
 
 	ret = copy_to_user(compat_ptr(user_req32.list), items, size);
 	if (ret) {
-		pr_err("fail to copy output fence to user\n");
+		pr_debug("fail to copy output fence to user\n");
 		mdss_rotator_remove_request(mgr, private, req);
 		goto handle_request32_err1;
 	}
 
 	ret = mdss_rotator_install_fence_fd(req);
 	if (ret) {
-		pr_err("get_unused_fd_flags failed error:0x%x\n", ret);
+		pr_debug("get_unused_fd_flags failed error:0x%x\n", ret);
 		mdss_rotator_remove_request(mgr, private, req);
 		goto handle_request32_err1;
 	}
@@ -2486,7 +2486,7 @@ static long mdss_rotator_compat_ioctl(struct file *file, unsigned int cmd,
 	private = (struct mdss_rot_file_private *)file->private_data;
 
 	if (!(mdss_rotator_file_priv_allowed(rot_mgr, private))) {
-		pr_err("Calling ioctl with unrecognized rot_file_private\n");
+		pr_debug("Calling ioctl with unrecognized rot_file_private\n");
 		return -EINVAL;
 	}
 
@@ -2508,11 +2508,11 @@ static long mdss_rotator_compat_ioctl(struct file *file, unsigned int cmd,
 		ret = mdss_rotator_config_session(rot_mgr, private, arg);
 		break;
 	default:
-		pr_err("unexpected IOCTL %d\n", cmd);
+		pr_debug("unexpected IOCTL %d\n", cmd);
 	}
 
 	if (ret)
-		pr_err("rotator ioctl=%d failed, err=%d\n", cmd, ret);
+		pr_debug("rotator ioctl=%d failed, err=%d\n", cmd, ret);
 	return ret;
 
 }
@@ -2536,7 +2536,7 @@ static long mdss_rotator_ioctl(struct file *file, unsigned int cmd,
 	private = (struct mdss_rot_file_private *)file->private_data;
 
 	if (!(mdss_rotator_file_priv_allowed(rot_mgr, private))) {
-		pr_err("Calling ioctl with unrecognized rot_file_private\n");
+		pr_debug("Calling ioctl with unrecognized rot_file_private\n");
 		return -EINVAL;
 	}
 
@@ -2556,11 +2556,11 @@ static long mdss_rotator_ioctl(struct file *file, unsigned int cmd,
 		ret = mdss_rotator_config_session(rot_mgr, private, arg);
 		break;
 	default:
-		pr_err("unexpected IOCTL %d\n", cmd);
+		pr_debug("unexpected IOCTL %d\n", cmd);
 	}
 
 	if (ret)
-		pr_err("rotator ioctl=%d failed, err=%d\n", cmd, ret);
+		pr_debug("rotator ioctl=%d failed, err=%d\n", cmd, ret);
 	return ret;
 }
 
@@ -2616,7 +2616,7 @@ static int mdss_rotator_parse_dt_bus(struct mdss_rot_mgr *mgr,
 		ret = PTR_ERR(mgr->data_bus.bus_scale_pdata);
 		if (!ret) {
 			ret = -EINVAL;
-			pr_err("msm_bus_cl_get_pdata failed. ret=%d\n", ret);
+			pr_debug("msm_bus_cl_get_pdata failed. ret=%d\n", ret);
 			mgr->data_bus.bus_scale_pdata = NULL;
 		}
 	}
@@ -2641,7 +2641,7 @@ static int mdss_rotator_parse_dt_bus(struct mdss_rot_mgr *mgr,
 				ret = PTR_ERR(mgr->reg_bus.bus_scale_pdata);
 				if (!ret)
 					ret = -EINVAL;
-				pr_err("reg_rot_bus failed rc=%d\n", ret);
+				pr_debug("reg_rot_bus failed rc=%d\n", ret);
 				mgr->reg_bus.bus_scale_pdata = NULL;
 			}
 		}
@@ -2658,11 +2658,11 @@ static int mdss_rotator_parse_dt(struct mdss_rot_mgr *mgr,
 	ret = of_property_read_u32(dev->dev.of_node,
 		"qcom,mdss-wb-count", &data);
 	if (ret) {
-		pr_err("Error in device tree\n");
+		pr_debug("Error in device tree\n");
 		return ret;
 	}
 	if (data > ROT_MAX_HW_BLOCKS) {
-		pr_err("Err, num of wb block (%d) larger than sw max %d\n",
+		pr_debug("Err, num of wb block (%d) larger than sw max %d\n",
 			data, ROT_MAX_HW_BLOCKS);
 		return -EINVAL;
 	}
@@ -2675,7 +2675,7 @@ static int mdss_rotator_parse_dt(struct mdss_rot_mgr *mgr,
 
 	ret = mdss_rotator_parse_dt_bus(mgr, dev);
 	if (ret)
-		pr_err("Failed to parse bus data\n");
+		pr_debug("Failed to parse bus data\n");
 
 	return ret;
 }
@@ -2766,7 +2766,7 @@ static void mdss_rotator_bus_scale_unregister(struct mdss_rot_mgr *mgr)
 static int mdss_rotator_bus_scale_register(struct mdss_rot_mgr *mgr)
 {
 	if (!mgr->data_bus.bus_scale_pdata) {
-		pr_err("Scale table is NULL\n");
+		pr_debug("Scale table is NULL\n");
 		return -EINVAL;
 	}
 
@@ -2774,7 +2774,7 @@ static int mdss_rotator_bus_scale_register(struct mdss_rot_mgr *mgr)
 		msm_bus_scale_register_client(
 		mgr->data_bus.bus_scale_pdata);
 	if (!mgr->data_bus.bus_hdl) {
-		pr_err("bus_client register failed\n");
+		pr_debug("bus_client register failed\n");
 		return -EINVAL;
 	}
 	pr_debug("registered bus_hdl=%x\n", mgr->data_bus.bus_hdl);
@@ -2784,7 +2784,7 @@ static int mdss_rotator_bus_scale_register(struct mdss_rot_mgr *mgr)
 			msm_bus_scale_register_client(
 			mgr->reg_bus.bus_scale_pdata);
 		if (!mgr->reg_bus.bus_hdl) {
-			pr_err("register bus_client register failed\n");
+			pr_debug("register bus_client register failed\n");
 			mdss_rotator_bus_scale_unregister(mgr);
 			return -EINVAL;
 		}
@@ -2803,18 +2803,18 @@ static int mdss_rotator_clk_register(struct platform_device *pdev,
 	pr_debug("registered clk_reg\n");
 
 	if (clk_idx >= MDSS_CLK_ROTATOR_END_IDX) {
-		pr_err("invalid clk index %d\n", clk_idx);
+		pr_debug("invalid clk index %d\n", clk_idx);
 		return -EINVAL;
 	}
 
 	if (mgr->rot_clk[clk_idx]) {
-		pr_err("Stomping on clk prev registered:%d\n", clk_idx);
+		pr_debug("Stomping on clk prev registered:%d\n", clk_idx);
 		return -EINVAL;
 	}
 
 	tmp = devm_clk_get(&pdev->dev, clk_name);
 	if (IS_ERR(tmp)) {
-		pr_err("unable to get clk: %s\n", clk_name);
+		pr_debug("unable to get clk: %s\n", clk_name);
 		return PTR_ERR(tmp);
 	}
 	mgr->rot_clk[clk_idx] = tmp;
@@ -2862,7 +2862,7 @@ static int mdss_rotator_probe(struct platform_device *pdev)
 	rot_mgr->pdev = pdev;
 	ret = mdss_rotator_parse_dt(rot_mgr, pdev);
 	if (ret) {
-		pr_err("fail to parse the dt\n");
+		pr_debug("fail to parse the dt\n");
 		goto error_parse_dt;
 	}
 
@@ -2872,7 +2872,7 @@ static int mdss_rotator_probe(struct platform_device *pdev)
 	atomic_set(&rot_mgr->device_suspended, 0);
 	ret = mdss_rotator_init_queue(rot_mgr);
 	if (ret) {
-		pr_err("fail to init queue\n");
+		pr_debug("fail to init queue\n");
 		goto error_get_dev_num;
 	}
 
@@ -2883,14 +2883,14 @@ static int mdss_rotator_probe(struct platform_device *pdev)
 
 	ret = alloc_chrdev_region(&rot_mgr->dev_num, 0, 1, DRIVER_NAME);
 	if (ret  < 0) {
-		pr_err("alloc_chrdev_region failed ret = %d\n", ret);
+		pr_debug("alloc_chrdev_region failed ret = %d\n", ret);
 		goto error_get_dev_num;
 	}
 
 	rot_mgr->class = class_create(THIS_MODULE, CLASS_NAME);
 	if (IS_ERR(rot_mgr->class)) {
 		ret = PTR_ERR(rot_mgr->class);
-		pr_err("couldn't create class rc = %d\n", ret);
+		pr_debug("couldn't create class rc = %d\n", ret);
 		goto error_class_create;
 	}
 
@@ -2898,7 +2898,7 @@ static int mdss_rotator_probe(struct platform_device *pdev)
 		rot_mgr->dev_num, NULL, DRIVER_NAME);
 	if (IS_ERR(rot_mgr->device)) {
 		ret = PTR_ERR(rot_mgr->device);
-		pr_err("device_create failed %d\n", ret);
+		pr_debug("device_create failed %d\n", ret);
 		goto error_class_device_create;
 	}
 
@@ -2906,18 +2906,18 @@ static int mdss_rotator_probe(struct platform_device *pdev)
 	ret = cdev_add(&rot_mgr->cdev,
 			MKDEV(MAJOR(rot_mgr->dev_num), 0), 1);
 	if (ret < 0) {
-		pr_err("cdev_add failed %d\n", ret);
+		pr_debug("cdev_add failed %d\n", ret);
 		goto error_cdev_add;
 	}
 
 	ret = sysfs_create_group(&rot_mgr->device->kobj,
 			&mdss_rotator_fs_attr_group);
 	if (ret)
-		pr_err("unable to register rotator sysfs nodes\n");
+		pr_debug("unable to register rotator sysfs nodes\n");
 
 	ret = mdss_rotator_res_init(pdev, rot_mgr);
 	if (ret < 0) {
-		pr_err("res_init failed %d\n", ret);
+		pr_debug("res_init failed %d\n", ret);
 		goto error_res_init;
 	}
 	return 0;

@@ -28,7 +28,7 @@ static int msm_cdc_dt_parse_vreg_info(struct device *dev,
 
 	regulator_node = of_parse_phandle(dev->of_node, prop_name, 0);
 	if (!regulator_node) {
-		dev_err(dev, "%s: Looking up %s property in node %s failed",
+		dev_dbg(dev, "%s: Looking up %s property in node %s failed",
 			__func__, prop_name, dev->of_node->full_name);
 		rc = -EINVAL;
 		goto done;
@@ -40,7 +40,7 @@ static int msm_cdc_dt_parse_vreg_info(struct device *dev,
 	snprintf(prop_name, CODEC_DT_MAX_PROP_SIZE, "qcom,%s-voltage", name);
 	prop = of_get_property(dev->of_node, prop_name, &len);
 	if (!prop || (len != (2 * sizeof(__be32)))) {
-		dev_err(dev, "%s: %s %s property\n", __func__,
+		dev_dbg(dev, "%s: %s %s property\n", __func__,
 			prop ? "invalid format" : "no", prop_name);
 		rc = -EINVAL;
 		goto done;
@@ -53,7 +53,7 @@ static int msm_cdc_dt_parse_vreg_info(struct device *dev,
 	snprintf(prop_name, CODEC_DT_MAX_PROP_SIZE, "qcom,%s-current", name);
 	rc = of_property_read_u32(dev->of_node, prop_name, &prop_val);
 	if (rc) {
-		dev_err(dev, "%s: Looking up %s property in node %s failed",
+		dev_dbg(dev, "%s: Looking up %s property in node %s failed",
 			__func__, prop_name, dev->of_node->full_name);
 		goto done;
 	}
@@ -71,7 +71,7 @@ static int msm_cdc_dt_parse_vreg_info(struct device *dev,
 		cdc_vreg->lpm_supported = prop_val;
 	}
 
-	dev_info(dev, "%s: %s: vol=[%d %d]uV, curr=[%d]uA, ond %d lpm %d\n",
+	dev_dbg(dev, "%s: %s: vol=[%d %d]uV, curr=[%d]uA, ond %d lpm %d\n",
 		 __func__, cdc_vreg->name, cdc_vreg->min_uV, cdc_vreg->max_uV,
 		 cdc_vreg->optimum_uA, cdc_vreg->ondemand,
 		 cdc_vreg->lpm_supported);
@@ -92,7 +92,7 @@ static int msm_cdc_parse_supplies(struct device *dev,
 		rc = of_property_read_string_index(dev->of_node, sup_list, idx,
 						   &name);
 		if (rc) {
-			dev_err(dev, "%s: read string %s[%d] error (%d)\n",
+			dev_dbg(dev, "%s: read string %s[%d] error (%d)\n",
 				__func__, sup_list, idx, rc);
 			goto done;
 		}
@@ -103,7 +103,7 @@ static int msm_cdc_parse_supplies(struct device *dev,
 		rc = msm_cdc_dt_parse_vreg_info(dev, &cdc_reg[idx], name,
 						is_ond);
 		if (rc) {
-			dev_err(dev, "%s: parse %s vreg info failed (%d)\n",
+			dev_dbg(dev, "%s: parse %s vreg info failed (%d)\n",
 				__func__, name, rc);
 			goto done;
 		}
@@ -118,12 +118,12 @@ static int msm_cdc_check_supply_param(struct device *dev,
 				      int num_supplies)
 {
 	if (!dev) {
-		pr_err("%s: device is NULL\n", __func__);
+		pr_debug("%s: device is NULL\n", __func__);
 		return -ENODEV;
 	}
 
 	if (!cdc_vreg || (num_supplies <= 0)) {
-		dev_err(dev, "%s: supply check failed: vreg: %pK, num_supplies: %d\n",
+		dev_dbg(dev, "%s: supply check failed: vreg: %pK, num_supplies: %d\n",
 			__func__, cdc_vreg, num_supplies);
 		return -EINVAL;
 	}
@@ -153,7 +153,7 @@ bool msm_cdc_is_ondemand_supply(struct device *dev,
 	int ret, i;
 
 	if ((!supply_name) || (!supplies)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return rc;
 	}
@@ -194,7 +194,7 @@ int msm_cdc_set_supply_min_voltage(struct device *dev,
 	int rc = 0, i;
 
 	if ((!supply_name) || (!supplies)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -239,7 +239,7 @@ int msm_cdc_disable_ondemand_supply(struct device *dev,
 	int rc, i;
 
 	if ((!supply_name) || (!supplies)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -253,13 +253,13 @@ int msm_cdc_disable_ondemand_supply(struct device *dev,
 			!strcmp(cdc_vreg[i].name, supply_name)) {
 			rc = regulator_disable(supplies[i].consumer);
 			if (rc)
-				dev_err(dev, "%s: failed to disable supply %s, err:%d\n",
+				dev_dbg(dev, "%s: failed to disable supply %s, err:%d\n",
 					__func__, supplies[i].supply, rc);
 			break;
 		}
 	}
 	if (i == num_supplies) {
-		dev_err(dev, "%s: not able to find supply %s\n",
+		dev_dbg(dev, "%s: not able to find supply %s\n",
 			__func__, supply_name);
 		rc = -EINVAL;
 	}
@@ -289,7 +289,7 @@ int msm_cdc_enable_ondemand_supply(struct device *dev,
 	int rc, i;
 
 	if ((!supply_name) || (!supplies)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -303,13 +303,13 @@ int msm_cdc_enable_ondemand_supply(struct device *dev,
 			!strcmp(cdc_vreg[i].name, supply_name)) {
 			rc = regulator_enable(supplies[i].consumer);
 			if (rc)
-				dev_err(dev, "%s: failed to enable supply %s, rc: %d\n",
+				dev_dbg(dev, "%s: failed to enable supply %s, rc: %d\n",
 					__func__, supplies[i].supply, rc);
 			break;
 		}
 	}
 	if (i == num_supplies) {
-		dev_err(dev, "%s: not able to find supply %s\n",
+		dev_dbg(dev, "%s: not able to find supply %s\n",
 			__func__, supply_name);
 		rc = -EINVAL;
 	}
@@ -340,7 +340,7 @@ int msm_cdc_set_supplies_lpm_mode(struct device *dev,
 	int rc = 0, i;
 
 	if (!supplies) {
-		pr_err("%s: supplies is NULL\n",
+		pr_debug("%s: supplies is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -355,7 +355,7 @@ int msm_cdc_set_supplies_lpm_mode(struct device *dev,
 				supplies[i].consumer,
 				flag ? 0 : cdc_vreg[i].optimum_uA);
 			if (rc)
-				dev_err(dev,
+				dev_dbg(dev,
 					"%s: failed to set supply %s to %s, err:%d\n",
 					__func__, supplies[i].supply,
 					flag ? "LPM" : "NOM",
@@ -390,7 +390,7 @@ int msm_cdc_disable_static_supplies(struct device *dev,
 	int rc, i;
 
 	if ((!dev) || (!supplies) || (!cdc_vreg)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -405,7 +405,7 @@ int msm_cdc_disable_static_supplies(struct device *dev,
 
 		rc = regulator_disable(supplies[i].consumer);
 		if (rc)
-			dev_err(dev, "%s: failed to disable supply %s, err:%d\n",
+			dev_dbg(dev, "%s: failed to disable supply %s, err:%d\n",
 				__func__, supplies[i].supply, rc);
 		else
 			dev_dbg(dev, "%s: disabled regulator %s\n",
@@ -436,7 +436,7 @@ int msm_cdc_release_supplies(struct device *dev,
 	int i;
 
 	if ((!dev) || (!supplies) || (!cdc_vreg)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -479,7 +479,7 @@ int msm_cdc_enable_static_supplies(struct device *dev,
 	int rc, i;
 
 	if ((!dev) || (!supplies) || (!cdc_vreg)) {
-		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+		pr_debug("%s: either dev or supplies or cdc_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -494,7 +494,7 @@ int msm_cdc_enable_static_supplies(struct device *dev,
 
 		rc = regulator_enable(supplies[i].consumer);
 		if (rc) {
-			dev_err(dev, "%s: failed to enable supply %s, rc: %d\n",
+			dev_dbg(dev, "%s: failed to enable supply %s, rc: %d\n",
 				__func__, supplies[i].supply, rc);
 			break;
 		}
@@ -552,7 +552,7 @@ int msm_cdc_init_supplies_v2(struct device *dev,
 	int i;
 
 	if (!dev || !cdc_vreg) {
-		pr_err("%s: device pointer or dce_vreg is NULL\n",
+		pr_debug("%s: device pointer or dce_vreg is NULL\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -569,7 +569,7 @@ int msm_cdc_init_supplies_v2(struct device *dev,
 
 	for (i = 0; i < num_supplies; i++) {
 		if (!cdc_vreg[i].name) {
-			dev_err(dev, "%s: supply name not defined\n",
+			dev_dbg(dev, "%s: supply name not defined\n",
 				__func__);
 			rc = -EINVAL;
 			goto err_supply;
@@ -579,7 +579,7 @@ int msm_cdc_init_supplies_v2(struct device *dev,
 
 	rc = devm_regulator_bulk_get(dev, num_supplies, vsup);
 	if (rc) {
-		dev_err(dev, "%s: failed to get supplies (%d)\n",
+		dev_dbg(dev, "%s: failed to get supplies (%d)\n",
 			__func__, rc);
 		goto err_supply;
 	}
@@ -596,14 +596,14 @@ int msm_cdc_init_supplies_v2(struct device *dev,
 					   cdc_vreg[i].min_uV,
 					   cdc_vreg[i].max_uV);
 		if (rc) {
-			dev_err(dev, "%s: set regulator voltage failed for %s, err:%d\n",
+			dev_dbg(dev, "%s: set regulator voltage failed for %s, err:%d\n",
 				__func__, vsup[i].supply, rc);
 			goto err_supply;
 		}
 		rc = regulator_set_load(vsup[i].consumer,
 					cdc_vreg[i].optimum_uA);
 		if (rc < 0) {
-			dev_err(dev, "%s: set regulator optimum mode failed for %s, err:%d\n",
+			dev_dbg(dev, "%s: set regulator optimum mode failed for %s, err:%d\n",
 				__func__, vsup[i].supply, rc);
 			goto err_supply;
 		}
@@ -645,13 +645,13 @@ int msm_cdc_get_power_supplies(struct device *dev,
 	int rc;
 
 	if (!dev) {
-		pr_err("%s: device pointer is NULL\n", __func__);
+		pr_debug("%s: device pointer is NULL\n", __func__);
 		return -EINVAL;
 	}
 	static_sup_cnt = of_property_count_strings(dev->of_node,
 						   static_prop_name);
 	if (static_sup_cnt < 0) {
-		dev_err(dev, "%s: Failed to get static supplies(%d)\n",
+		dev_dbg(dev, "%s: Failed to get static supplies(%d)\n",
 			__func__, static_sup_cnt);
 		rc = static_sup_cnt;
 		goto err_supply_cnt;
@@ -667,7 +667,7 @@ int msm_cdc_get_power_supplies(struct device *dev,
 
 	num_supplies = static_sup_cnt + ond_sup_cnt + cp_sup_cnt;
 	if (num_supplies <= 0) {
-		dev_err(dev, "%s: supply count is 0 or negative\n", __func__);
+		dev_dbg(dev, "%s: supply count is 0 or negative\n", __func__);
 		rc = -EINVAL;
 		goto err_supply_cnt;
 	}
@@ -683,7 +683,7 @@ int msm_cdc_get_power_supplies(struct device *dev,
 	rc = msm_cdc_parse_supplies(dev, cdc_reg, static_prop_name,
 				    static_sup_cnt, false);
 	if (rc) {
-		dev_err(dev, "%s: failed to parse static supplies(%d)\n",
+		dev_dbg(dev, "%s: failed to parse static supplies(%d)\n",
 				__func__, rc);
 		goto err_sup;
 	}
@@ -692,7 +692,7 @@ int msm_cdc_get_power_supplies(struct device *dev,
 				    ond_prop_name, ond_sup_cnt,
 				    true);
 	if (rc) {
-		dev_err(dev, "%s: failed to parse demand supplies(%d)\n",
+		dev_dbg(dev, "%s: failed to parse demand supplies(%d)\n",
 				__func__, rc);
 		goto err_sup;
 	}
@@ -701,7 +701,7 @@ int msm_cdc_get_power_supplies(struct device *dev,
 				    &cdc_reg[static_sup_cnt + ond_sup_cnt],
 				    cp_prop_name, cp_sup_cnt, true);
 	if (rc) {
-		dev_err(dev, "%s: failed to parse cp supplies(%d)\n",
+		dev_dbg(dev, "%s: failed to parse cp supplies(%d)\n",
 				__func__, rc);
 		goto err_sup;
 	}

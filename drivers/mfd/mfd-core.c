@@ -406,7 +406,7 @@ int mfd_clone_cell(const char *cell, const char **clones, size_t n_clones)
 		/* don't give up if a single call fails; just report error */
 		if (mfd_add_device(pdev->dev.parent, -1, &cell_entry,
 				   cell_entry.usage_count, NULL, 0, NULL))
-			dev_err(dev, "failed to create platform device '%s'\n",
+			dev_dbg(dev, "failed to create platform device '%s'\n",
 					clones[i]);
 	}
 

@@ -29,6 +29,9 @@ static const char * const backends[] = {
 #if IS_ENABLED(CONFIG_CRYPTO_LZ4HC)
 	"lz4hc",
 #endif
+#if IS_ENABLED(CONFIG_CRYPTO_LZ4KD)
+	"lz4kd",
+#endif
 #if IS_ENABLED(CONFIG_CRYPTO_842)
 	"842",
 #endif
@@ -166,7 +169,7 @@ int zcomp_cpu_up_prepare(unsigned int cpu, struct hlist_node *node)
 	zstrm = per_cpu_ptr(comp->stream, cpu);
 	ret = zcomp_strm_init(zstrm, comp);
 	if (ret)
-		pr_err("Can't allocate a compression stream\n");
+		pr_debug("Can't allocate a compression stream\n");
 	return ret;
 }
 

@@ -150,7 +150,7 @@ int led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trig)
 
 		ret = device_add_groups(led_cdev->dev, trig->groups);
 		if (ret) {
-			dev_err(led_cdev->dev, "Failed to add trigger attributes\n");
+			dev_dbg(led_cdev->dev, "Failed to add trigger attributes\n");
 			goto err_add_groups;
 		}
 	}
@@ -159,7 +159,7 @@ int led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trig)
 		envp[0] = event;
 		envp[1] = NULL;
 		if (kobject_uevent_env(&led_cdev->dev->kobj, KOBJ_CHANGE, envp))
-			dev_err(led_cdev->dev,
+			dev_dbg(led_cdev->dev,
 				"%s: Error sending uevent\n", __func__);
 		kfree(event);
 	}
@@ -383,11 +383,11 @@ void led_trigger_register_simple(const char *name, struct led_trigger **tp)
 		if (err < 0) {
 			kfree(trig);
 			trig = NULL;
-			pr_warn("LED trigger %s failed to register (%d)\n",
+			pr_debug("LED trigger %s failed to register (%d)\n",
 				name, err);
 		}
 	} else {
-		pr_warn("LED trigger %s failed to register (no memory)\n",
+		pr_debug("LED trigger %s failed to register (no memory)\n",
 			name);
 	}
 	*tp = trig;

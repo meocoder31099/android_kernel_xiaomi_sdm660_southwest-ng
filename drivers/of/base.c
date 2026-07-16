@@ -230,7 +230,7 @@ void __init of_core_init(void)
 	of_kset = kset_create_and_add("devicetree", NULL, firmware_kobj);
 	if (!of_kset) {
 		mutex_unlock(&of_mutex);
-		pr_err("failed to register existing nodes\n");
+		pr_debug("failed to register existing nodes\n");
 		return;
 	}
 	for_each_of_allnodes(np)
@@ -1290,7 +1290,7 @@ int of_phandle_iterator_next(struct of_phandle_iterator *it)
 
 		if (it->cells_name) {
 			if (!it->node) {
-				pr_err("%pOF: could not find phandle\n",
+				pr_debug("%pOF: could not find phandle\n",
 				       it->parent);
 				goto err;
 			}
@@ -1305,7 +1305,7 @@ int of_phandle_iterator_next(struct of_phandle_iterator *it)
 				if (it->cell_count >= 0) {
 					count = it->cell_count;
 				} else {
-					pr_err("%pOF: could not get %s for %pOF\n",
+					pr_debug("%pOF: could not get %s for %pOF\n",
 					       it->parent,
 					       it->cells_name,
 					       it->node);
@@ -1321,7 +1321,7 @@ int of_phandle_iterator_next(struct of_phandle_iterator *it)
 		 * property data length
 		 */
 		if (it->cur + count > it->list_end) {
-			pr_err("%pOF: arguments longer than property\n",
+			pr_debug("%pOF: arguments longer than property\n",
 			       it->parent);
 			goto err;
 		}

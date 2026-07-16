@@ -26,7 +26,7 @@ void *audio_ssr_register(int domain_id, struct notifier_block *nb)
 {
 	if ((domain_id < 0) ||
 	    (domain_id >= AUDIO_SSR_DOMAIN_MAX)) {
-		pr_err("%s: Invalid service ID %d\n", __func__, domain_id);
+		pr_debug("%s: Invalid service ID %d\n", __func__, domain_id);
 		return ERR_PTR(-EINVAL);
 	}
 

@@ -125,7 +125,7 @@ static void notify_netlink_uevent(const char *iface, struct idletimer_tg *timer)
 	res = snprintf(iface_msg, NLMSG_MAX_SIZE, "INTERFACE=%s",
 		       iface);
 	if (NLMSG_MAX_SIZE <= res) {
-		pr_err("message too long (%d)", res);
+		pr_debug("message too long (%d)", res);
 		return;
 	}
 
@@ -135,25 +135,25 @@ static void notify_netlink_uevent(const char *iface, struct idletimer_tg *timer)
 			state ? "active" : "inactive");
 
 	if (NLMSG_MAX_SIZE <= res) {
-		pr_err("message too long (%d)", res);
+		pr_debug("message too long (%d)", res);
 		return;
 	}
 
 	if (state) {
 		res = snprintf(uid_msg, NLMSG_MAX_SIZE, "UID=%u", timer->uid);
 		if (NLMSG_MAX_SIZE <= res)
-			pr_err("message too long (%d)", res);
+			pr_debug("message too long (%d)", res);
 	} else {
 		res = snprintf(uid_msg, NLMSG_MAX_SIZE, "UID=");
 		if (NLMSG_MAX_SIZE <= res)
-			pr_err("message too long (%d)", res);
+			pr_debug("message too long (%d)", res);
 	}
 
 	time_ns = timespec_to_ns(&ts);
 	res = snprintf(timestamp_msg, NLMSG_MAX_SIZE, "TIME_NS=%llu", time_ns);
 	if (NLMSG_MAX_SIZE <= res) {
 		timestamp_msg[0] = '\0';
-		pr_err("message too long (%d)", res);
+		pr_debug("message too long (%d)", res);
 	}
 
 	pr_debug("putting nlmsg: <%s> <%s> <%s> <%s>\n", iface_msg, state_msg,

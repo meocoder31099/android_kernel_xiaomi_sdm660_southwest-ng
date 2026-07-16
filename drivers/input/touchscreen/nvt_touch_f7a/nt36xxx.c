@@ -702,7 +702,7 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 	if ((gesture_id == DATA_PROTOCOL) && (func_type == FUNCPAGE_GESTURE)) {
 		gesture_id = func_id;
 	} else if (gesture_id > DATA_PROTOCOL) {
-		NVT_ERR("gesture_id %d is invalid, func_type=%d, func_id=%d\n", gesture_id, func_type, func_id);
+		// NVT_ERR("gesture_id %d is invalid, func_type=%d, func_id=%d\n", gesture_id, func_type, func_id);
 		return;
 	}
 
@@ -1883,11 +1883,11 @@ static int32_t __init nvt_driver_init(void)
 
 	ret = i2c_add_driver(&nvt_i2c_driver);
 	if (ret) {
-		pr_err("%s: failed to add i2c driver", __func__);
+		pr_debug("%s: failed to add i2c driver", __func__);
 		goto err;
 	}
 
-	pr_info("%s: finished\n", __func__);
+	pr_debug("%s: finished\n", __func__);
 	goto exit;
 
 err:

@@ -143,12 +143,12 @@ void inet_sock_destruct(struct sock *sk)
 	sk_mem_reclaim(sk);
 
 	if (sk->sk_type == SOCK_STREAM && sk->sk_state != TCP_CLOSE) {
-		pr_err("Attempt to release TCP socket in state %d %p\n",
+		pr_debug("Attempt to release TCP socket in state %d %p\n",
 		       sk->sk_state, sk);
 		return;
 	}
 	if (!sock_flag(sk, SOCK_DEAD)) {
-		pr_err("Attempt to release alive inet socket %p\n", sk);
+		pr_debug("Attempt to release alive inet socket %p\n", sk);
 		return;
 	}
 
@@ -1185,11 +1185,11 @@ out:
 	return;
 
 out_permanent:
-	pr_err("Attempt to override permanent protocol %d\n", protocol);
+	pr_debug("Attempt to override permanent protocol %d\n", protocol);
 	goto out;
 
 out_illegal:
-	pr_err("Ignoring attempt to register invalid socket type %d\n",
+	pr_debug("Ignoring attempt to register invalid socket type %d\n",
 	       p->type);
 	goto out;
 }
@@ -1198,7 +1198,7 @@ EXPORT_SYMBOL(inet_register_protosw);
 void inet_unregister_protosw(struct inet_protosw *p)
 {
 	if (INET_PROTOSW_PERMANENT & p->flags) {
-		pr_err("Attempt to unregister permanent protocol %d\n",
+		pr_debug("Attempt to unregister permanent protocol %d\n",
 		       p->protocol);
 	} else {
 		spin_lock_bh(&inetsw_lock);
@@ -1241,7 +1241,7 @@ static int inet_sk_reselect_saddr(struct sock *sk)
 		return 0;
 
 	if (READ_ONCE(sock_net(sk)->ipv4.sysctl_ip_dynaddr) > 1) {
-		pr_info("%s(): shifting inet->saddr from %pI4 to %pI4\n",
+		pr_debug("%s(): shifting inet->saddr from %pI4 to %pI4\n",
 			__func__, &old_saddr, &new_saddr);
 	}
 

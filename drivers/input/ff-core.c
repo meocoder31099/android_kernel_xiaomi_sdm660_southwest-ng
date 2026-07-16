@@ -323,12 +323,12 @@ int input_ff_create(struct input_dev *dev, unsigned int max_effects)
 	int i;
 
 	if (!max_effects) {
-		dev_err(&dev->dev, "cannot allocate device without any effects\n");
+		dev_dbg(&dev->dev, "cannot allocate device without any effects\n");
 		return -EINVAL;
 	}
 
 	if (max_effects > FF_MAX_EFFECTS) {
-		dev_err(&dev->dev, "cannot allocate more than FF_MAX_EFFECTS effects\n");
+		dev_dbg(&dev->dev, "cannot allocate more than FF_MAX_EFFECTS effects\n");
 		return -EINVAL;
 	}
 

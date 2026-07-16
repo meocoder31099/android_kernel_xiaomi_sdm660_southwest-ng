@@ -224,7 +224,7 @@ int lpm_get_latency(struct latency_level *level, uint32_t *latency)
 	uint32_t val;
 
 	if (!lpm_root_node) {
-		pr_err("lpm_probe not completed\n");
+		pr_debug("lpm_probe not completed\n");
 		return -EAGAIN;
 	}
 
@@ -237,7 +237,7 @@ int lpm_get_latency(struct latency_level *level, uint32_t *latency)
 
 	cluster = cluster_aff_match(lpm_root_node, level->affinity_level);
 	if (!cluster) {
-		pr_err("No matching cluster found for affinity_level:%d\n",
+		pr_debug("No matching cluster found for affinity_level:%d\n",
 							level->affinity_level);
 		return -EINVAL;
 	}
@@ -248,7 +248,7 @@ int lpm_get_latency(struct latency_level *level, uint32_t *latency)
 		val = least_cluster_latency(cluster, level);
 
 	if (!val) {
-		pr_err("No mode with affinity_level:%d reset_level:%d\n",
+		pr_debug("No mode with affinity_level:%d reset_level:%d\n",
 				level->affinity_level, level->reset_level);
 		return -EINVAL;
 	}
@@ -1463,7 +1463,7 @@ static void lpm_cpuidle_s2idle(struct cpuidle_device *dev,
 			break;
 	}
 	if (idx < 0) {
-		pr_err("Failed suspend\n");
+		pr_debug("Failed suspend\n");
 		return;
 	}
 
@@ -1489,7 +1489,7 @@ static int cpuidle_register_cpu(struct cpuidle_driver *drv,
 	drv->cpumask = mask;
 	ret = cpuidle_register_driver(drv);
 	if (ret) {
-		pr_err("Failed to register cpuidle driver %d\n", ret);
+		pr_debug("Failed to register cpuidle driver %d\n", ret);
 		goto failed_driver_register;
 	}
 
@@ -1499,7 +1499,7 @@ static int cpuidle_register_cpu(struct cpuidle_driver *drv,
 
 		ret = cpuidle_register_device(device);
 		if (ret) {
-			pr_err("Failed to register cpuidle driver for cpu:%u\n",
+			pr_debug("Failed to register cpuidle driver for cpu:%u\n",
 					cpu);
 			goto failed_driver_register;
 		}
@@ -1650,7 +1650,7 @@ static void register_cluster_lpm_stats(struct lpm_cluster *cl,
 	cl->stats = lpm_stats_config_level(cl->cluster_name, level_name,
 			cl->nlevels, parent ? parent->stats : NULL, NULL);
 	if (IS_ERR_OR_NULL(cl->stats) && IS_ENABLED(CONFIG_MSM_IDLE_STATS))
-		pr_info("Cluster (%s) stats not registered\n",
+		pr_debug("Cluster (%s) stats not registered\n",
 			cl->cluster_name);
 
 	kfree(level_name);
@@ -1693,7 +1693,7 @@ static int lpm_suspend_enter(suspend_state_t state)
 			break;
 	}
 	if (idx < 0) {
-		pr_err("Failed suspend\n");
+		pr_debug("Failed suspend\n");
 		return 0;
 	}
 
@@ -1739,7 +1739,7 @@ static int lpm_probe(struct platform_device *pdev)
 	lpm_root_node = lpm_of_parse_cluster(pdev);
 
 	if (IS_ERR_OR_NULL(lpm_root_node)) {
-		pr_err("Failed to probe low power modes\n");
+		pr_debug("Failed to probe low power modes\n");
 		put_online_cpus();
 		return PTR_ERR(lpm_root_node);
 	}
@@ -1770,7 +1770,7 @@ static int lpm_probe(struct platform_device *pdev)
 	ret = cluster_cpuidle_register(lpm_root_node);
 	put_online_cpus();
 	if (ret) {
-		pr_err("Failed to register with cpuidle framework\n");
+		pr_debug("Failed to register with cpuidle framework\n");
 		goto failed;
 	}
 
@@ -1782,14 +1782,14 @@ static int lpm_probe(struct platform_device *pdev)
 
 	module_kobj = kset_find_obj(module_kset, KBUILD_MODNAME);
 	if (!module_kobj) {
-		pr_err("Cannot find kobject for module %s\n", KBUILD_MODNAME);
+		pr_debug("Cannot find kobject for module %s\n", KBUILD_MODNAME);
 		ret = -ENOENT;
 		goto failed;
 	}
 
 	ret = create_cluster_lvl_nodes(lpm_root_node, module_kobj);
 	if (ret) {
-		pr_err("Failed to create cluster level nodes\n");
+		pr_debug("Failed to create cluster level nodes\n");
 		goto failed;
 	}
 
@@ -1826,7 +1826,7 @@ static int __init lpm_levels_module_init(void)
 	for_each_possible_cpu(cpu) {
 		rc = arm_cpuidle_init(cpu);
 		if (rc) {
-			pr_err("CPU%d ARM CPUidle init failed (%d)\n", cpu, rc);
+			pr_debug("CPU%d ARM CPUidle init failed (%d)\n", cpu, rc);
 			return rc;
 		}
 	}
@@ -1834,7 +1834,7 @@ static int __init lpm_levels_module_init(void)
 
 	rc = platform_driver_register(&lpm_driver);
 	if (rc)
-		pr_info("Error registering %s rc=%d\n", lpm_driver.driver.name,
+		pr_debug("Error registering %s rc=%d\n", lpm_driver.driver.name,
 									rc);
 
 	return rc;

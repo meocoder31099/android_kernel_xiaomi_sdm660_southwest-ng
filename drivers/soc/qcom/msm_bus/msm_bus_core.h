@@ -17,11 +17,11 @@
 #define MSM_BUS_DBG(msg, ...) \
 	pr_debug(msg, ## __VA_ARGS__)
 #define MSM_BUS_ERR(msg, ...) \
-	pr_err(msg, ## __VA_ARGS__)
+	pr_debug(msg, ## __VA_ARGS__)
 #define MSM_BUS_WARN(msg, ...) \
-	pr_warn(msg, ## __VA_ARGS__)
+	pr_debug(msg, ## __VA_ARGS__)
 #define MSM_FAB_ERR(msg, ...) \
-	dev_err(&fabric->fabdev.dev, msg, ## __VA_ARGS__)
+	dev_dbg(&fabric->fabdev.dev, msg, ## __VA_ARGS__)
 
 #define IS_MASTER_VALID(mas) \
 	(((mas >= MSM_BUS_MASTER_FIRST) && (mas <= MSM_BUS_MASTER_LAST)) \

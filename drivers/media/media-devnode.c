@@ -228,7 +228,7 @@ int __must_check media_devnode_register(struct media_device *mdev,
 	minor = find_next_zero_bit(media_devnode_nums, MEDIA_NUM_DEVICES, 0);
 	if (minor == MEDIA_NUM_DEVICES) {
 		mutex_unlock(&media_devnode_lock);
-		pr_err("could not get a free minor\n");
+		pr_debug("could not get a free minor\n");
 		kfree(devnode);
 		return -ENFILE;
 	}
@@ -257,7 +257,7 @@ int __must_check media_devnode_register(struct media_device *mdev,
 	ret = cdev_device_add(&devnode->cdev, &devnode->dev);
 	if (ret < 0) {
 		clear_bit(MEDIA_FLAG_REGISTERED, &devnode->flags);
-		pr_err("%s: cdev_device_add failed\n", __func__);
+		pr_debug("%s: cdev_device_add failed\n", __func__);
 		goto cdev_add_error;
 	}
 
@@ -301,18 +301,18 @@ static int __init media_devnode_init(void)
 {
 	int ret;
 
-	pr_info("Linux media interface: v0.10\n");
+	pr_debug("Linux media interface: v0.10\n");
 	ret = alloc_chrdev_region(&media_dev_t, 0, MEDIA_NUM_DEVICES,
 				  MEDIA_NAME);
 	if (ret < 0) {
-		pr_warn("unable to allocate major\n");
+		pr_debug("unable to allocate major\n");
 		return ret;
 	}
 
 	ret = bus_register(&media_bus_type);
 	if (ret < 0) {
 		unregister_chrdev_region(media_dev_t, MEDIA_NUM_DEVICES);
-		pr_warn("bus_register failed\n");
+		pr_debug("bus_register failed\n");
 		return -EIO;
 	}
 

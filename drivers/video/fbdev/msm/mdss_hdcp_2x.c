@@ -227,7 +227,7 @@ static int mdss_hdcp_2x_get_next_message(struct mdss_hdcp_2x_ctrl *hdcp,
 	case REP_STREAM_MANAGE:
 		return REP_STREAM_READY;
 	default:
-		pr_err("Unknown message ID (%d)\n", hdcp->last_msg);
+		pr_debug("Unknown message ID (%d)\n", hdcp->last_msg);
 		return -EINVAL;
 	}
 }
@@ -256,7 +256,7 @@ static void mdss_hdcp_2x_wakeup_client(struct mdss_hdcp_2x_ctrl *hdcp,
 
 		rc = hdcp->client_ops->wakeup(data);
 		if (rc)
-			pr_err("error sending %s to hdcp client\n",
+			pr_debug("error sending %s to hdcp client\n",
 			       hdcp_transport_cmd_to_str(data->cmd));
 	}
 }
@@ -360,7 +360,7 @@ static void mdss_hdcp_2x_stream(struct mdss_hdcp_2x_ctrl *hdcp)
 		goto exit;
 
 	if (!hdcp->app_data.response.data || !hdcp->app_data.request.data) {
-		pr_err("invalid response/request buffers\n");
+		pr_debug("invalid response/request buffers\n");
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -448,7 +448,7 @@ static void mdss_hdcp_2x_msg_sent_work(struct kthread_work *work)
 		container_of(work, struct mdss_hdcp_2x_ctrl, wk_msg_sent);
 
 	if (hdcp->wakeup_cmd != HDCP_2X_CMD_MSG_SEND_SUCCESS) {
-		pr_err("invalid wakeup command %d\n", hdcp->wakeup_cmd);
+		pr_debug("invalid wakeup command %d\n", hdcp->wakeup_cmd);
 		return;
 	}
 
@@ -460,7 +460,7 @@ static void mdss_hdcp_2x_init(struct mdss_hdcp_2x_ctrl *hdcp)
 	int rc = 0;
 
 	if (hdcp->wakeup_cmd != HDCP_2X_CMD_START) {
-		pr_err("invalid wakeup command %d\n", hdcp->wakeup_cmd);
+		pr_debug("invalid wakeup command %d\n", hdcp->wakeup_cmd);
 		return;
 	}
 
@@ -539,7 +539,7 @@ static void mdss_hdcp_2x_msg_recvd(struct mdss_hdcp_2x_ctrl *hdcp)
 	msg = hdcp->app_data.request.data;
 
 	if (request_length == 0) {
-		pr_err("invalid message length\n");
+		pr_debug("invalid message length\n");
 		goto exit;
 	}
 
@@ -563,7 +563,7 @@ static void mdss_hdcp_2x_msg_recvd(struct mdss_hdcp_2x_ctrl *hdcp)
 	rc = hdcp2_app_comm(hdcp->hdcp2_ctx, HDCP2_CMD_PROCESS_MSG,
 			&hdcp->app_data);
 	if (rc) {
-		pr_err("failed to process message from hdcp sink (%d)\n", rc);
+		pr_debug("failed to process message from hdcp sink (%d)\n", rc);
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -586,7 +586,7 @@ static void mdss_hdcp_2x_msg_recvd(struct mdss_hdcp_2x_ctrl *hdcp)
 				cdata.cmd = HDCP_TRANSPORT_CMD_STATUS_SUCCESS;
 				mdss_hdcp_2x_wakeup_client(hdcp, &cdata);
 			} else {
-				pr_err("failed to enable encryption (%d)\n",
+				pr_debug("failed to enable encryption (%d)\n",
 						rc);
 			}
 		}
@@ -695,7 +695,7 @@ static int mdss_hdcp_2x_wakeup(struct mdss_hdcp_2x_wakeup_data *data)
 		HDCP_2X_EXECUTE(stream);
 		break;
 	default:
-		pr_err("invalid wakeup command %d\n", hdcp->wakeup_cmd);
+		pr_debug("invalid wakeup command %d\n", hdcp->wakeup_cmd);
 	}
 exit:
 	mutex_unlock(&hdcp->wakeup_mutex);
@@ -709,22 +709,22 @@ int mdss_hdcp_2x_register(struct mdss_hdcp_2x_register_data *data)
 	struct mdss_hdcp_2x_ctrl *hdcp = NULL;
 
 	if (!data) {
-		pr_err("invalid hdcp init data\n");
+		pr_debug("invalid hdcp init data\n");
 		return -EINVAL;
 	}
 
 	if (!data->ops) {
-		pr_err("invalid input: txmtr context\n");
+		pr_debug("invalid input: txmtr context\n");
 		return -EINVAL;
 	}
 
 	if (!data->client_ops) {
-		pr_err("invalid input: client_ops\n");
+		pr_debug("invalid input: client_ops\n");
 		return -EINVAL;
 	}
 
 	if (!data->hdcp_data) {
-		pr_err("invalid input: hdcp_data\n");
+		pr_debug("invalid input: hdcp_data\n");
 		return -EINVAL;
 	}
 
@@ -765,7 +765,7 @@ int mdss_hdcp_2x_register(struct mdss_hdcp_2x_register_data *data)
 			     &hdcp->worker, "hdcp_tz_lib");
 
 	if (IS_ERR(hdcp->thread)) {
-		pr_err("unable to start lib thread\n");
+		pr_debug("unable to start lib thread\n");
 		rc = PTR_ERR(hdcp->thread);
 		hdcp->thread = NULL;
 		goto error;

@@ -3840,13 +3840,13 @@ static int reserve_mem_notifier(struct notifier_block *nb,
 
 		if (sysctl_user_reserve_kbytes > free_kbytes) {
 			init_user_reserve();
-			pr_info("vm.user_reserve_kbytes reset to %lu\n",
+			pr_debug("vm.user_reserve_kbytes reset to %lu\n",
 				sysctl_user_reserve_kbytes);
 		}
 
 		if (sysctl_admin_reserve_kbytes > free_kbytes) {
 			init_admin_reserve();
-			pr_info("vm.admin_reserve_kbytes reset to %lu\n",
+			pr_debug("vm.admin_reserve_kbytes reset to %lu\n",
 				sysctl_admin_reserve_kbytes);
 		}
 		break;
@@ -3863,7 +3863,7 @@ static struct notifier_block reserve_mem_nb = {
 static int __meminit init_reserve_notifier(void)
 {
 	if (register_hotmemory_notifier(&reserve_mem_nb))
-		pr_err("Failed registering memory add/remove notifier for admin reserve\n");
+		pr_debug("Failed registering memory add/remove notifier for admin reserve\n");
 
 	return 0;
 }

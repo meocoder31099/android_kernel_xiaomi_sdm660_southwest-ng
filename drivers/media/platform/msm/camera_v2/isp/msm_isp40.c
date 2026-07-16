@@ -159,7 +159,7 @@ static int32_t msm_vfe40_init_qos_parms(struct vfe_device *vfe_dev,
 	rc = of_property_read_u32(of_node, qos_parms->entries,
 		&qos_entries);
 	if (rc < 0 || !qos_entries) {
-		pr_err("%s: NO QOS entries found\n", __func__);
+		pr_debug("%s: NO QOS entries found\n", __func__);
 	} else {
 		qos_settings = kcalloc(qos_entries, sizeof(uint32_t),
 			GFP_KERNEL);
@@ -174,7 +174,7 @@ static int32_t msm_vfe40_init_qos_parms(struct vfe_device *vfe_dev,
 		rc = of_property_read_u32_array(of_node, qos_parms->regs,
 			qos_regs, qos_entries);
 		if (rc < 0) {
-			pr_err("%s: NO QOS BUS BDG info\n", __func__);
+			pr_debug("%s: NO QOS BUS BDG info\n", __func__);
 			kfree(qos_settings);
 			kfree(qos_regs);
 		} else {
@@ -183,7 +183,7 @@ static int32_t msm_vfe40_init_qos_parms(struct vfe_device *vfe_dev,
 					qos_parms->settings,
 					qos_settings, qos_entries);
 				if (rc < 0) {
-					pr_err("%s: NO QOS settings\n",
+					pr_debug("%s: NO QOS settings\n",
 						__func__);
 					kfree(qos_settings);
 					kfree(qos_regs);
@@ -203,7 +203,7 @@ static int32_t msm_vfe40_init_qos_parms(struct vfe_device *vfe_dev,
 	rc = of_property_read_u32(of_node, ds_parms->entries,
 		&ds_entries);
 	if (rc < 0 || !ds_entries) {
-		pr_err("%s: NO D/S entries found\n", __func__);
+		pr_debug("%s: NO D/S entries found\n", __func__);
 	} else {
 		ds_settings = kcalloc(ds_entries, sizeof(uint32_t),
 				GFP_KERNEL);
@@ -218,7 +218,7 @@ static int32_t msm_vfe40_init_qos_parms(struct vfe_device *vfe_dev,
 		rc = of_property_read_u32_array(of_node, ds_parms->regs,
 			ds_regs, ds_entries);
 		if (rc < 0) {
-			pr_err("%s: NO D/S register info\n", __func__);
+			pr_debug("%s: NO D/S register info\n", __func__);
 			kfree(ds_settings);
 			kfree(ds_regs);
 		} else {
@@ -227,7 +227,7 @@ static int32_t msm_vfe40_init_qos_parms(struct vfe_device *vfe_dev,
 					ds_parms->settings, ds_settings,
 					ds_entries);
 				if (rc < 0) {
-					pr_err("%s: NO D/S settings\n",
+					pr_debug("%s: NO D/S settings\n",
 						__func__);
 					kfree(ds_settings);
 					kfree(ds_regs);
@@ -260,7 +260,7 @@ static int32_t msm_vfe40_init_vbif_parms(struct vfe_device *vfe_dev,
 	rc = of_property_read_u32(of_node, vbif_parms->entries,
 		&vbif_entries);
 	if (rc < 0 || !vbif_entries) {
-		pr_err("%s: NO VBIF entries found\n", __func__);
+		pr_debug("%s: NO VBIF entries found\n", __func__);
 	} else {
 		vbif_settings = kcalloc(vbif_entries, sizeof(uint32_t),
 			GFP_KERNEL);
@@ -275,7 +275,7 @@ static int32_t msm_vfe40_init_vbif_parms(struct vfe_device *vfe_dev,
 		rc = of_property_read_u32_array(of_node, vbif_parms->regs,
 			vbif_regs, vbif_entries);
 		if (rc < 0) {
-			pr_err("%s: NO VBIF info\n", __func__);
+			pr_debug("%s: NO VBIF info\n", __func__);
 			kfree(vbif_settings);
 			kfree(vbif_regs);
 		} else {
@@ -283,7 +283,7 @@ static int32_t msm_vfe40_init_vbif_parms(struct vfe_device *vfe_dev,
 				vbif_parms->settings,
 				vbif_settings, vbif_entries);
 			if (rc < 0) {
-				pr_err("%s: NO VBIF settings\n",
+				pr_debug("%s: NO VBIF settings\n",
 					__func__);
 				kfree(vbif_settings);
 				kfree(vbif_regs);
@@ -417,64 +417,64 @@ static void msm_vfe40_process_violation_status(
 		return;
 
 	if (violation_status & (1 << 0))
-		pr_err("%s: vfe %d camif violation\n", __func__,
+		pr_debug("%s: vfe %d camif violation\n", __func__,
 			vfe_dev->pdev->id);
 	if (violation_status & (1 << 1))
-		pr_err("%s: vfe %d black violation\n", __func__,
+		pr_debug("%s: vfe %d black violation\n", __func__,
 		vfe_dev->pdev->id);
 	if (violation_status & (1 << 2))
-		pr_err("%s: vfe %d rolloff violation\n", __func__,
+		pr_debug("%s: vfe %d rolloff violation\n", __func__,
 		vfe_dev->pdev->id);
 	if (violation_status & (1 << 3))
-		pr_err("%s: demux violation\n", __func__);
+		pr_debug("%s: demux violation\n", __func__);
 	if (violation_status & (1 << 4))
-		pr_err("%s: demosaic violation\n", __func__);
+		pr_debug("%s: demosaic violation\n", __func__);
 	if (violation_status & (1 << 5))
-		pr_err("%s: wb violation\n", __func__);
+		pr_debug("%s: wb violation\n", __func__);
 	if (violation_status & (1 << 6))
-		pr_err("%s: clf violation\n", __func__);
+		pr_debug("%s: clf violation\n", __func__);
 	if (violation_status & (1 << 7))
-		pr_err("%s: color correct violation\n", __func__);
+		pr_debug("%s: color correct violation\n", __func__);
 	if (violation_status & (1 << 8))
-		pr_err("%s: rgb lut violation\n", __func__);
+		pr_debug("%s: rgb lut violation\n", __func__);
 	if (violation_status & (1 << 9))
-		pr_err("%s: la violation\n", __func__);
+		pr_debug("%s: la violation\n", __func__);
 	if (violation_status & (1 << 10))
-		pr_err("%s: chroma enhance violation\n", __func__);
+		pr_debug("%s: chroma enhance violation\n", __func__);
 	if (violation_status & (1 << 11))
-		pr_err("%s: chroma suppress mce violation\n", __func__);
+		pr_debug("%s: chroma suppress mce violation\n", __func__);
 	if (violation_status & (1 << 12))
-		pr_err("%s: skin enhance violation\n", __func__);
+		pr_debug("%s: skin enhance violation\n", __func__);
 	if (violation_status & (1 << 13))
-		pr_err("%s: color tranform enc violation\n", __func__);
+		pr_debug("%s: color tranform enc violation\n", __func__);
 	if (violation_status & (1 << 14))
-		pr_err("%s: color tranform view violation\n", __func__);
+		pr_debug("%s: color tranform view violation\n", __func__);
 	if (violation_status & (1 << 15))
-		pr_err("%s: scale enc y violation\n", __func__);
+		pr_debug("%s: scale enc y violation\n", __func__);
 	if (violation_status & (1 << 16))
-		pr_err("%s: scale enc cbcr violation\n", __func__);
+		pr_debug("%s: scale enc cbcr violation\n", __func__);
 	if (violation_status & (1 << 17))
-		pr_err("%s: scale view y violation\n", __func__);
+		pr_debug("%s: scale view y violation\n", __func__);
 	if (violation_status & (1 << 18))
-		pr_err("%s: scale view cbcr violation\n", __func__);
+		pr_debug("%s: scale view cbcr violation\n", __func__);
 	if (violation_status & (1 << 19))
-		pr_err("%s: asf enc violation\n", __func__);
+		pr_debug("%s: asf enc violation\n", __func__);
 	if (violation_status & (1 << 20))
-		pr_err("%s: asf view violation\n", __func__);
+		pr_debug("%s: asf view violation\n", __func__);
 	if (violation_status & (1 << 21))
-		pr_err("%s: crop enc y violation\n", __func__);
+		pr_debug("%s: crop enc y violation\n", __func__);
 	if (violation_status & (1 << 22))
-		pr_err("%s: crop enc cbcr violation\n", __func__);
+		pr_debug("%s: crop enc cbcr violation\n", __func__);
 	if (violation_status & (1 << 23))
-		pr_err("%s: crop view y violation\n", __func__);
+		pr_debug("%s: crop view y violation\n", __func__);
 	if (violation_status & (1 << 24))
-		pr_err("%s: crop view cbcr violation\n", __func__);
+		pr_debug("%s: crop view cbcr violation\n", __func__);
 	if (violation_status & (1 << 25))
-		pr_err("%s: realign buf y violation\n", __func__);
+		pr_debug("%s: realign buf y violation\n", __func__);
 	if (violation_status & (1 << 26))
-		pr_err("%s: realign buf cb violation\n", __func__);
+		pr_debug("%s: realign buf cb violation\n", __func__);
 	if (violation_status & (1 << 27))
-		pr_err("%s: realign buf cr violation\n", __func__);
+		pr_debug("%s: realign buf cr violation\n", __func__);
 }
 
 static void msm_vfe40_process_error_status(struct vfe_device *vfe_dev)
@@ -672,7 +672,7 @@ static void msm_vfe40_process_reg_update(struct vfe_device *vfe_dev,
 						MSM_ISP_COMP_IRQ_EPOCH, ts);
 				break;
 			default:
-				pr_err("%s: Error case\n", __func__);
+				pr_debug("%s: Error case\n", __func__);
 				return;
 			}
 		}
@@ -694,7 +694,7 @@ static void msm_vfe40_reg_update(struct vfe_device *vfe_dev,
 
 	/* This HW supports upto VFE_RAW_2 */
 	if (frame_src > VFE_RAW_2 && frame_src != VFE_SRC_MAX) {
-		pr_err("%s Error case\n", __func__);
+		pr_debug("%s Error case\n", __func__);
 		return;
 	}
 
@@ -717,7 +717,7 @@ static void msm_vfe40_reg_update(struct vfe_device *vfe_dev,
 	if ((vfe_dev->is_split && vfe_dev->pdev->id == ISP_VFE1) &&
 		((frame_src == VFE_PIX_0) || (frame_src == VFE_SRC_MAX))) {
 		if (!vfe_dev->common_data->dual_vfe_res->vfe_base[ISP_VFE0]) {
-			pr_err("%s vfe_base for ISP_VFE0 is NULL\n", __func__);
+			pr_debug("%s vfe_base for ISP_VFE0 is NULL\n", __func__);
 			spin_unlock_irqrestore(&vfe_dev->reg_update_lock,
 				flags);
 			return;
@@ -930,7 +930,7 @@ static int32_t msm_vfe40_convert_bpp_to_reg(int32_t bpp, uint32_t *bpp_reg)
 		*bpp_reg = 1 << 1;
 		break;
 	default:
-		pr_err("%s:%d invalid bpp %d\n", __func__, __LINE__, bpp);
+		pr_debug("%s:%d invalid bpp %d\n", __func__, __LINE__, bpp);
 		return -EINVAL;
 	}
 	return rc;
@@ -961,7 +961,7 @@ static int32_t msm_vfe40_convert_io_fmt_to_reg(
 		*pack_reg = 0x5;
 		break;
 	default:
-		pr_err("%s: invalid pack fmt %d!\n", __func__, pack_format);
+		pr_debug("%s: invalid pack fmt %d!\n", __func__, pack_format);
 		return -EINVAL;
 	}
 	return rc;
@@ -985,7 +985,7 @@ static int32_t msm_vfe40_cfg_io_format(struct vfe_device *vfe_dev,
 			vfe_dev->axi_data.src_info[VFE_PIX_0].input_format);
 		rc = msm_vfe40_convert_bpp_to_reg(read_bpp, &read_bpp_reg);
 		if (rc < 0) {
-			pr_err("%s: convert_bpp_to_reg err! in_bpp %d rc %d\n",
+			pr_debug("%s: convert_bpp_to_reg err! in_bpp %d rc %d\n",
 				__func__, read_bpp, rc);
 			return rc;
 		}
@@ -994,7 +994,7 @@ static int32_t msm_vfe40_cfg_io_format(struct vfe_device *vfe_dev,
 		rc = msm_vfe40_convert_io_fmt_to_reg(
 			read_pack_fmt, &read_pack_reg);
 		if (rc < 0) {
-			pr_err("%s: convert_io_fmt_to_reg err! rc = %d\n",
+			pr_debug("%s: convert_io_fmt_to_reg err! rc = %d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -1006,7 +1006,7 @@ static int32_t msm_vfe40_cfg_io_format(struct vfe_device *vfe_dev,
 	bpp = msm_isp_get_bit_per_pixel(io_format);
 	rc = msm_vfe40_convert_bpp_to_reg(bpp, &bpp_reg);
 	if (rc < 0) {
-		pr_err("%s: convert_bpp_to_reg err! bpp %d rc = %d\n",
+		pr_debug("%s: convert_bpp_to_reg err! bpp %d rc = %d\n",
 				__func__, bpp, rc);
 		return rc;
 	}
@@ -1023,7 +1023,7 @@ static int32_t msm_vfe40_cfg_io_format(struct vfe_device *vfe_dev,
 		pack_fmt = msm_isp_get_pack_format(io_format);
 		rc = msm_vfe40_convert_io_fmt_to_reg(pack_fmt, &pack_reg);
 		if (rc < 0) {
-			pr_err("%s: convert_io_fmt_to_reg err! rc = %d\n",
+			pr_debug("%s: convert_io_fmt_to_reg err! rc = %d\n",
 					__func__, rc);
 			return rc;
 		}
@@ -1034,7 +1034,7 @@ static int32_t msm_vfe40_cfg_io_format(struct vfe_device *vfe_dev,
 	case RDI_INTF_1:
 	case RDI_INTF_2:
 	default:
-		pr_err("%s: Invalid stream source\n", __func__);
+		pr_debug("%s: Invalid stream source\n", __func__);
 		return -EINVAL;
 	}
 	msm_camera_io_w(io_format_reg, vfe_dev->vfe_base + 0x54);
@@ -1051,7 +1051,7 @@ static int msm_vfe40_start_fetch_engine(struct vfe_device *vfe_dev,
 	struct msm_isp_buffer_mapped_info mapped_info;
 
 	if (vfe_dev->fetch_engine_info.is_busy == 1) {
-		pr_err("%s: fetch engine busy\n", __func__);
+		pr_debug("%s: fetch engine busy\n", __func__);
 		return -EINVAL;
 	}
 	memset(&mapped_info, 0, sizeof(struct msm_isp_buffer_mapped_info));
@@ -1073,7 +1073,7 @@ static int msm_vfe40_start_fetch_engine(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->get_buf_by_index(
 			vfe_dev->buf_mgr, bufq_handle, fe_cfg->buf_idx, &buf);
 		if (rc < 0 || !buf) {
-			pr_err("%s: No fetch buffer rc= %d buf= %pK\n",
+			pr_debug("%s: No fetch buffer rc= %d buf= %pK\n",
 				__func__, rc, buf);
 			mutex_unlock(&vfe_dev->buf_mgr->lock);
 			return -EINVAL;
@@ -1085,7 +1085,7 @@ static int msm_vfe40_start_fetch_engine(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->map_buf(vfe_dev->buf_mgr,
 			&mapped_info, fe_cfg->fd);
 	if (rc < 0) {
-		pr_err("%s: can not map buffer\n", __func__);
+		pr_debug("%s: can not map buffer\n", __func__);
 		return -EINVAL;
 	}
 	}
@@ -1112,7 +1112,7 @@ static int msm_vfe40_start_fetch_engine_multi_pass(struct vfe_device *vfe_dev,
 	struct msm_isp_buffer_mapped_info mapped_info;
 
 	if (vfe_dev->fetch_engine_info.is_busy == 1) {
-		pr_err("%s: fetch engine busy\n", __func__);
+		pr_debug("%s: fetch engine busy\n", __func__);
 		return -EINVAL;
 	}
 	memset(&mapped_info, 0, sizeof(struct msm_isp_buffer_mapped_info));
@@ -1134,7 +1134,7 @@ static int msm_vfe40_start_fetch_engine_multi_pass(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->get_buf_by_index(
 			vfe_dev->buf_mgr, bufq_handle, fe_cfg->buf_idx, &buf);
 		if (rc < 0 || !buf) {
-			pr_err("%s: No fetch buffer rc= %d buf= %pK\n",
+			pr_debug("%s: No fetch buffer rc= %d buf= %pK\n",
 				__func__, rc, buf);
 			mutex_unlock(&vfe_dev->buf_mgr->lock);
 			return -EINVAL;
@@ -1146,7 +1146,7 @@ static int msm_vfe40_start_fetch_engine_multi_pass(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->map_buf(vfe_dev->buf_mgr,
 			&mapped_info, fe_cfg->fd);
 		if (rc < 0) {
-			pr_err("%s: can not map buffer\n", __func__);
+			pr_debug("%s: can not map buffer\n", __func__);
 			return -EINVAL;
 		}
 	}
@@ -1174,7 +1174,7 @@ static void msm_vfe40_cfg_fetch_engine(struct vfe_device *vfe_dev,
 	struct msm_vfe_fetch_engine_cfg *fe_cfg = NULL;
 
 	if (pix_cfg->input_mux != EXTERNAL_READ) {
-		pr_err("%s: Invalid mux configuration - mux: %d\n",
+		pr_debug("%s: Invalid mux configuration - mux: %d\n",
 			__func__, pix_cfg->input_mux);
 		return;
 	}
@@ -1281,7 +1281,7 @@ static void msm_vfe40_cfg_testgen(struct vfe_device *vfe_dev,
 		bpp_reg = 0x11;
 		break;
 	default:
-		pr_err("%s: invalid bpp %d\n", __func__, bit_per_pixel);
+		pr_debug("%s: invalid bpp %d\n", __func__, bit_per_pixel);
 		break;
 	}
 
@@ -1310,7 +1310,7 @@ static void msm_vfe40_cfg_testgen(struct vfe_device *vfe_dev,
 		bayer_pix_pattern_reg = 0x11;
 		break;
 	default:
-		pr_err("%s: invalid pix pattern %d\n",
+		pr_debug("%s: invalid pix pattern %d\n",
 			__func__, bit_per_pixel);
 		break;
 	}
@@ -1345,7 +1345,7 @@ static void msm_vfe40_cfg_testgen(struct vfe_device *vfe_dev,
 			unicolorbar_reg = 0x111;
 			break;
 		default:
-			pr_err("%s: invalid colorbar %d\n",
+			pr_debug("%s: invalid colorbar %d\n",
 				__func__, testgen_cfg->color_bar_pattern);
 			break;
 		}
@@ -1504,7 +1504,7 @@ static void msm_vfe40_cfg_input_mux(struct vfe_device *vfe_dev,
 		msm_vfe40_cfg_fetch_engine(vfe_dev, pix_cfg);
 		break;
 	default:
-		pr_err("%s: Unsupported input mux %d\n",
+		pr_debug("%s: Unsupported input mux %d\n",
 			__func__, pix_cfg->input_mux);
 		break;
 	}
@@ -1557,7 +1557,7 @@ static void msm_vfe40_update_camif_state(struct vfe_device *vfe_dev,
 				vfe_dev->vfe_base + 0x2F4);
 		if (readl_poll_timeout_atomic(vfe_dev->vfe_base + 0x31C,
 				poll_val, poll_val & 0x80000000, 1000, 2000000))
-			pr_err("%s: camif disable failed %x\n",
+			pr_debug("%s: camif disable failed %x\n",
 				__func__, poll_val);
 		vfe_dev->axi_data.src_info[VFE_PIX_0].active = 0;
 		/* testgen OFF*/
@@ -1733,7 +1733,7 @@ static void msm_vfe40_axi_cfg_wm_xbar_reg(
 		xbar_cfg = 0x700;
 		break;
 	default:
-		pr_err("%s: Invalid stream src\n", __func__);
+		pr_debug("%s: Invalid stream src\n", __func__);
 		break;
 	}
 	xbar_reg_cfg =
@@ -1815,7 +1815,7 @@ static int msm_vfe40_axi_halt(struct vfe_device *vfe_dev,
 		rc = wait_for_completion_interruptible_timeout(
 			&vfe_dev->halt_complete, msecs_to_jiffies(500));
 		if (rc <= 0)
-			pr_err("%s:VFE%d halt timeout rc=%d\n", __func__,
+			pr_debug("%s:VFE%d halt timeout rc=%d\n", __func__,
 				vfe_dev->pdev->id, rc);
 	} else {
 		/* Halt AXI Bus Bridge */
@@ -1882,7 +1882,7 @@ static int msm_vfe40_get_stats_idx(enum msm_isp_stats_type stats_type)
 	case MSM_ISP_STATS_BHIST:
 		return 7;
 	default:
-		pr_err("%s: Invalid stats type\n", __func__);
+		pr_debug("%s: Invalid stats type\n", __func__);
 		return -EINVAL;
 	}
 }
@@ -1904,7 +1904,7 @@ static void msm_vfe40_stats_cfg_comp_mask(struct vfe_device *vfe_dev,
 		return;
 
 	if (request_comp_index >= MAX_NUM_STATS_COMP_MASK) {
-		pr_err("%s: num of comp masks %d exceed max %d\n",
+		pr_debug("%s: num of comp masks %d exceed max %d\n",
 			__func__, request_comp_index,
 			MAX_NUM_STATS_COMP_MASK);
 		return;
@@ -1912,7 +1912,7 @@ static void msm_vfe40_stats_cfg_comp_mask(struct vfe_device *vfe_dev,
 
 	if (vfe_dev->hw_info->stats_hw_info->num_stats_comp_mask >
 			MAX_NUM_STATS_COMP_MASK) {
-		pr_err("%s: num of comp masks %d exceed max %d\n",
+		pr_debug("%s: num of comp masks %d exceed max %d\n",
 			__func__,
 			vfe_dev->hw_info->stats_hw_info->num_stats_comp_mask,
 			MAX_NUM_STATS_COMP_MASK);
@@ -2093,7 +2093,7 @@ static void msm_vfe40_stats_update_cgc_override(struct vfe_device *vfe_dev,
 				cgc_mask |= (1 << 14);
 				break;
 			default:
-				pr_err("%s: Invalid stats mask\n", __func__);
+				pr_debug("%s: Invalid stats mask\n", __func__);
 				return;
 			}
 		}
@@ -2142,7 +2142,7 @@ static void msm_vfe40_stats_enable_module(struct vfe_device *vfe_dev,
 				module_cfg_mask |= 1 << 18;
 				break;
 			default:
-				pr_err("%s: Invalid stats mask\n", __func__);
+				pr_debug("%s: Invalid stats mask\n", __func__);
 				return;
 			}
 		}

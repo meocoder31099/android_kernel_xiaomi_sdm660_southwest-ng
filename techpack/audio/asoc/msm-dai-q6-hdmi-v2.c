@@ -67,7 +67,7 @@ static int msm_dai_q6_ext_disp_format_put(struct snd_kcontrol *kcontrol,
 	int value = ucontrol->value.integer.value[0];
 
 	if (!dai_data) {
-		pr_err("%s: dai_data is NULL\n", __func__);
+		pr_debug("%s: dai_data is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -83,7 +83,7 @@ static int msm_dai_q6_ext_disp_format_get(struct snd_kcontrol *kcontrol,
 	struct msm_dai_q6_hdmi_dai_data *dai_data = kcontrol->private_data;
 
 	if (!dai_data) {
-		pr_err("%s: dai_data is NULL\n", __func__);
+		pr_debug("%s: dai_data is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -101,7 +101,7 @@ static int msm_dai_q6_ext_disp_device_idx_put(struct snd_kcontrol *kcontrol,
 	struct msm_dai_q6_hdmi_dai_data *dai_data = kcontrol->private_data;
 
 	if (!dai_data) {
-		pr_err("%s: dai_data is NULL\n", __func__);
+		pr_debug("%s: dai_data is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -109,7 +109,7 @@ static int msm_dai_q6_ext_disp_device_idx_put(struct snd_kcontrol *kcontrol,
 		(ucontrol->value.integer.value[1] > (DP_STREAM_MAX - 1)) ||
 		(ucontrol->value.integer.value[0] < 0) ||
 		(ucontrol->value.integer.value[1] < 0)) {
-		pr_err("%s: DP control index invalid\n", __func__);
+		pr_debug("%s: DP control index invalid\n", __func__);
 		return -EINVAL;
 	}
 
@@ -127,7 +127,7 @@ static int msm_dai_q6_ext_disp_device_idx_get(struct snd_kcontrol *kcontrol,
 	struct msm_dai_q6_hdmi_dai_data *dai_data = kcontrol->private_data;
 
 	if (!dai_data) {
-		pr_err("%s: dai_data is NULL\n", __func__);
+		pr_debug("%s: dai_data is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -145,7 +145,7 @@ static int msm_dai_q6_ext_disp_ca_put(struct snd_kcontrol *kcontrol,
 	struct msm_dai_q6_hdmi_dai_data *dai_data = kcontrol->private_data;
 
 	if (!dai_data) {
-		pr_err("%s: dai_data is NULL\n", __func__);
+		pr_debug("%s: dai_data is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -161,7 +161,7 @@ static int msm_dai_q6_ext_disp_ca_get(struct snd_kcontrol *kcontrol,
 	struct msm_dai_q6_hdmi_dai_data *dai_data = kcontrol->private_data;
 
 	if (!dai_data) {
-		pr_err("%s: dai_data is NULL\n", __func__);
+		pr_debug("%s: dai_data is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -209,7 +209,7 @@ static int msm_dai_q6_ext_disp_drift_get(struct snd_kcontrol *kcontrol,
 	memset(&timing_stats, 0, sizeof(struct afe_param_id_dev_timing_stats));
 	ret = afe_get_av_dev_drift(&timing_stats, get_port_id(dai->id));
 	if (ret) {
-		pr_err("%s: Error getting AFE Drift for port %d, err=%d\n",
+		pr_debug("%s: Error getting AFE Drift for port %d, err=%d\n",
 			__func__, get_port_id(dai->id), ret);
 
 		ret = -EINVAL;
@@ -327,7 +327,7 @@ static int msm_dai_q6_hdmi_hw_params(struct snd_pcm_substream *substream,
 		dai_data->port_config.hdmi_multi_ch.channel_allocation = 0x13;
 		break;
 	default:
-		dev_err(dai->dev, "invalid Channels = %u\n",
+		dev_dbg(dai->dev, "invalid Channels = %u\n",
 				dai_data->channels);
 		return -EINVAL;
 	}
@@ -351,14 +351,14 @@ static void msm_dai_q6_hdmi_shutdown(struct snd_pcm_substream *substream,
 	int rc = 0;
 
 	if (!test_bit(STATUS_PORT_STARTED, dai_data->status_mask)) {
-		pr_info("%s:  afe port not started. dai_data->status_mask = %ld\n",
+		pr_debug("%s:  afe port not started. dai_data->status_mask = %ld\n",
 		 __func__, *dai_data->status_mask);
 		return;
 	}
 
 	rc = afe_close(get_port_id(dai->id)); /* can block */
 	if (rc < 0)
-		dev_err(dai->dev, "fail to close AFE port\n");
+		dev_dbg(dai->dev, "fail to close AFE port\n");
 
 	pr_debug("%s: dai_data->status_mask = %ld\n", __func__,
 			*dai_data->status_mask);
@@ -381,10 +381,10 @@ static int msm_dai_q6_hdmi_prepare(struct snd_pcm_substream *substream,
 		rc = afe_set_display_stream(get_port_id(dai->id), dai_data->stream_idx,
 						dai_data->ctl_idx);
 		if (rc < 0) {
-			dev_err(dai->dev, "fail to set AFE ctl, stream ID params %x\n",
+			dev_dbg(dai->dev, "fail to set AFE ctl, stream ID params %x\n",
 				dai->id);
 			if (rc != -EOPNOTSUPP) {
-				dev_err(dai->dev, "not starting AFE port\n");
+				dev_dbg(dai->dev, "not starting AFE port\n");
 				goto err;
 			}
 		}
@@ -392,7 +392,7 @@ static int msm_dai_q6_hdmi_prepare(struct snd_pcm_substream *substream,
 		rc = afe_port_start(get_port_id(dai->id), &dai_data->port_config,
 				    dai_data->rate);
 		if (rc < 0)
-			dev_err(dai->dev, "fail to open AFE port %x\n",
+			dev_dbg(dai->dev, "fail to open AFE port %x\n",
 				get_port_id(dai->id));
 		else
 			set_bit(STATUS_PORT_STARTED,
@@ -406,7 +406,7 @@ err:
 static inline void msm_dai_q6_hdmi_set_dai_id(struct snd_soc_dai *dai)
 {
 	if (!dai->driver->id) {
-		dev_warn(dai->dev, "DAI driver id is not set\n");
+		dev_dbg(dai->dev, "DAI driver id is not set\n");
 		return;
 	}
 	dai->id = dai->driver->id;
@@ -421,14 +421,14 @@ static int msm_dai_q6_hdmi_dai_probe(struct snd_soc_dai *dai)
 	struct snd_soc_dapm_context *dapm;
 
 	if (!dai || !dai->driver) {
-		pr_err("%s: dai or dai->driver is NULL\n", __func__);
+		pr_debug("%s: dai or dai->driver is NULL\n", __func__);
 		return -EINVAL;
 	}
 	dai_data = kzalloc(sizeof(struct msm_dai_q6_hdmi_dai_data),
 		GFP_KERNEL);
 
 	if (!dai_data) {
-		dev_err(dai->dev, "DAI-%d: fail to allocate dai data\n",
+		dev_dbg(dai->dev, "DAI-%d: fail to allocate dai data\n",
 		dai->id);
 		rc = -ENOMEM;
 	} else
@@ -481,7 +481,7 @@ static int msm_dai_q6_hdmi_dai_probe(struct snd_soc_dai *dai)
 		rc = snd_ctl_add(dai->component->card->snd_card,
 				snd_ctl_new1(kcontrol, dai));
 	} else {
-		dev_err(dai->dev, "%s: Invalid id:%d\n",
+		dev_dbg(dai->dev, "%s: Invalid id:%d\n",
 			__func__, dai->driver->id);
 		kfree(dai_data);
 		dev_set_drvdata(dai->dev, NULL);
@@ -526,7 +526,7 @@ static int msm_dai_q6_hdmi_dai_remove(struct snd_soc_dai *dai)
 	if (test_bit(STATUS_PORT_STARTED, dai_data->status_mask)) {
 		rc = afe_close(get_port_id(dai->id)); /* can block */
 		if (rc < 0)
-			dev_err(dai->dev, "fail to close AFE port\n");
+			dev_dbg(dai->dev, "fail to close AFE port\n");
 
 		clear_bit(STATUS_PORT_STARTED, dai_data->status_mask);
 	}
@@ -642,7 +642,7 @@ static int msm_dai_q6_hdmi_dev_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(pdev->dev.of_node, q6_dev_id, &id);
 	if (rc) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: missing %s in dt node\n", __func__, q6_dev_id);
 		return rc;
 	}
@@ -675,7 +675,7 @@ static int msm_dai_q6_hdmi_dev_probe(struct platform_device *pdev)
 		break;
 
 	default:
-		dev_err(&pdev->dev, "invalid device ID %d\n", pdev->id);
+		dev_dbg(&pdev->dev, "invalid device ID %d\n", pdev->id);
 		rc = -ENODEV;
 		break;
 	}

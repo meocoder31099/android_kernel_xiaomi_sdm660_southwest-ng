@@ -168,7 +168,7 @@ static int qcom_smd_rpm_callback(struct rpmsg_device *rpdev,
 
 	if (le32_to_cpu(hdr->service_type) != RPM_SERVICE_TYPE_REQUEST ||
 	    hdr_length < sizeof(struct qcom_rpm_message)) {
-		dev_err(rpm->dev, "invalid request\n");
+		dev_dbg(rpm->dev, "invalid request\n");
 		return 0;
 	}
 

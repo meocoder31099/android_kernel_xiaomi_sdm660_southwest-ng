@@ -91,7 +91,7 @@
 
 #define IPAERR(fmt, args...) \
 	do { \
-		pr_err(DRV_NAME " %s:%d " fmt, __func__, __LINE__, ## args);\
+		pr_debug(DRV_NAME " %s:%d " fmt, __func__, __LINE__, ## args);\
 		if (ipa_ctx) { \
 			IPA_IPC_LOGGING(ipa_ctx->logbuf, \
 				DRV_NAME " %s:%d " fmt, ## args); \

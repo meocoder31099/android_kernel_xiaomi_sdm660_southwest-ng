@@ -149,7 +149,7 @@ static inline struct msm_vfe_axi_stream *msm_isp_get_stream_common_data(
 	struct msm_vfe_axi_stream *stream_info;
 
 	if (stream_idx >= VFE_AXI_SRC_MAX) {
-		pr_err("invalid stream_idx %d\n", stream_idx);
+		pr_debug("invalid stream_idx %d\n", stream_idx);
 		return NULL;
 	}
 

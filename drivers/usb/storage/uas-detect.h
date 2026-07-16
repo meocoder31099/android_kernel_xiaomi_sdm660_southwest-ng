@@ -132,25 +132,25 @@ static int uas_use_uas_driver(struct usb_interface *intf,
 	usb_stor_adjust_quirks(udev, &flags);
 
 	if (flags & US_FL_IGNORE_UAS) {
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"UAS is blacklisted for this device, using usb-storage instead\n");
 		return 0;
 	}
 
 	if (udev->bus->sg_tablesize == 0) {
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"The driver for the USB controller %s does not support scatter-gather which is\n",
 			hcd->driver->description);
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"required by the UAS driver. Please try an other USB controller if you wish to use UAS.\n");
 		return 0;
 	}
 
 	if (udev->speed >= USB_SPEED_SUPER && !hcd->can_do_streams) {
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"USB controller %s does not support streams, which are required by the UAS driver.\n",
 			hcd_to_bus(hcd)->bus_name);
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"Please try an other USB controller if you wish to use UAS.\n");
 		return 0;
 	}

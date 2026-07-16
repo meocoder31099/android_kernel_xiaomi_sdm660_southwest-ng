@@ -135,7 +135,7 @@ static int msm_ion_populate_heap(struct device_node *node,
 		}
 	}
 	if (ret)
-		pr_err("%s: Unable to populate heap, error: %d", __func__, ret);
+		pr_debug("%s: Unable to populate heap, error: %d", __func__, ret);
 	return ret;
 }
 
@@ -224,7 +224,7 @@ static struct ion_platform_data *msm_ion_parse_dt(struct platform_device *pdev)
 	for_each_available_child_of_node(dt_node, node) {
 		new_dev = of_platform_device_create(node, NULL, &pdev->dev);
 		if (!new_dev) {
-			pr_err("Failed to create device %s\n", node->name);
+			pr_debug("Failed to create device %s\n", node->name);
 			goto free_heaps;
 		}
 		of_dma_configure(&new_dev->dev, node, true);
@@ -232,7 +232,7 @@ static struct ion_platform_data *msm_ion_parse_dt(struct platform_device *pdev)
 		pdata->heaps[idx].priv = &new_dev->dev;
 		val = of_get_address(node, 0, NULL, NULL);
 		if (!val) {
-			pr_err("%s: Unable to find reg key", __func__);
+			pr_debug("%s: Unable to find reg key", __func__);
 			goto free_heaps;
 		}
 		pdata->heaps[idx].id = (u32)of_read_number(val, 1);
@@ -275,7 +275,7 @@ struct ion_heap *get_ion_heap(int heap_id)
 			return heap;
 	}
 
-	pr_err("%s: heap_id %d not found\n", __func__, heap_id);
+	pr_debug("%s: heap_id %d not found\n", __func__, heap_id);
 	return NULL;
 }
 
@@ -327,12 +327,12 @@ static int msm_ion_probe(struct platform_device *pdev)
 			continue;
 		} else {
 			if (heap_data->size)
-				pr_info("ION heap %s created at %pa with size %zx\n",
+				pr_debug("ION heap %s created at %pa with size %zx\n",
 					heap_data->name,
 					&heap_data->base,
 					heap_data->size);
 			else
-				pr_info("ION heap %s created\n",
+				pr_debug("ION heap %s created\n",
 					heap_data->name);
 		}
 

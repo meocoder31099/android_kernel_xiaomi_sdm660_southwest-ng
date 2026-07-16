@@ -590,7 +590,7 @@ int __init hidraw_init(void)
 	result = alloc_chrdev_region(&dev_id, HIDRAW_FIRST_MINOR,
 			HIDRAW_MAX_DEVICES, "hidraw");
 	if (result < 0) {
-		pr_warn("can't get major number\n");
+		pr_debug("can't get major number\n");
 		goto out;
 	}
 

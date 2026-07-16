@@ -85,7 +85,7 @@ int x509_get_sig_params(struct x509_certificate *cert)
 
 	ret = is_hash_blacklisted(sig->digest, sig->digest_size, "tbs");
 	if (ret == -EKEYREJECTED) {
-		pr_err("Cert %*phN is blacklisted\n",
+		pr_debug("Cert %*phN is blacklisted\n",
 		       sig->digest_size, sig->digest);
 		cert->blacklisted = true;
 		ret = 0;

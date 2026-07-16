@@ -288,7 +288,7 @@ static int erofs_raw_access_readpages(struct file *filp,
 
 			/* all the page errors are ignored when readahead */
 			if (IS_ERR(bio)) {
-				pr_err("%s, readahead error at page %lu of nid %llu\n",
+				pr_debug("%s, readahead error at page %lu of nid %llu\n",
 				       __func__, page->index,
 				       EROFS_I(mapping->host)->nid);
 

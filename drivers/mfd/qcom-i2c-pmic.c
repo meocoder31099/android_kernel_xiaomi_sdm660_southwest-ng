@@ -82,7 +82,7 @@ static void i2c_pmic_sync_type_polarity(struct i2c_pmic *chip,
 				  periph->addr | INT_SET_TYPE_OFFSET,
 				  periph->cached[IRQ_SET_TYPE]);
 		if (rc < 0) {
-			pr_err("Couldn't set periph 0x%04x irqs 0x%02x type rc=%d\n",
+			pr_debug("Couldn't set periph 0x%04x irqs 0x%02x type rc=%d\n",
 				periph->addr, periph->cached[IRQ_SET_TYPE], rc);
 			return;
 		}
@@ -96,7 +96,7 @@ static void i2c_pmic_sync_type_polarity(struct i2c_pmic *chip,
 				  periph->addr | INT_POL_HIGH_OFFSET,
 				  periph->cached[IRQ_POL_HIGH]);
 		if (rc < 0) {
-			pr_err("Couldn't set periph 0x%04x irqs 0x%02x polarity high rc=%d\n",
+			pr_debug("Couldn't set periph 0x%04x irqs 0x%02x polarity high rc=%d\n",
 				periph->addr, periph->cached[IRQ_POL_HIGH], rc);
 			return;
 		}
@@ -110,7 +110,7 @@ static void i2c_pmic_sync_type_polarity(struct i2c_pmic *chip,
 				  periph->addr | INT_POL_LOW_OFFSET,
 				  periph->cached[IRQ_POL_LOW]);
 		if (rc < 0) {
-			pr_err("Couldn't set periph 0x%04x irqs 0x%02x polarity low rc=%d\n",
+			pr_debug("Couldn't set periph 0x%04x irqs 0x%02x polarity low rc=%d\n",
 				periph->addr, periph->cached[IRQ_POL_LOW], rc);
 			return;
 		}
@@ -134,7 +134,7 @@ static void i2c_pmic_sync_enable(struct i2c_pmic *chip,
 		rc = regmap_write(chip->regmap,
 				  periph->addr | INT_EN_CLR_OFFSET, en_clr);
 		if (rc < 0) {
-			pr_err("Couldn't disable periph 0x%04x irqs 0x%02x rc=%d\n",
+			pr_debug("Couldn't disable periph 0x%04x irqs 0x%02x rc=%d\n",
 				periph->addr, en_clr, rc);
 			return;
 		}
@@ -145,7 +145,7 @@ static void i2c_pmic_sync_enable(struct i2c_pmic *chip,
 		rc = regmap_write(chip->regmap,
 				  periph->addr | INT_EN_SET_OFFSET, en_set);
 		if (rc < 0) {
-			pr_err("Couldn't enable periph 0x%04x irqs 0x%02x rc=%d\n",
+			pr_debug("Couldn't enable periph 0x%04x irqs 0x%02x rc=%d\n",
 				periph->addr, en_set, rc);
 			return;
 		}
@@ -210,7 +210,7 @@ static int i2c_pmic_irq_set_type(struct irq_data *d, unsigned int irq_type)
 		periph->cached[IRQ_POL_LOW] |= d->hwirq & 0xFF;
 		break;
 	default:
-		pr_err("irq type 0x%04x is not supported\n", irq_type);
+		pr_debug("irq type 0x%04x is not supported\n", irq_type);
 		return -EINVAL;
 	}
 
@@ -436,20 +436,20 @@ static int i2c_pmic_parse_dt(struct i2c_pmic *chip)
 	u32 temp;
 
 	if (!node) {
-		pr_err("missing device tree\n");
+		pr_debug("missing device tree\n");
 		return -EINVAL;
 	}
 
 	chip->num_periphs = of_property_count_u32_elems(node,
 							"qcom,periph-map");
 	if (chip->num_periphs < 0) {
-		pr_err("missing qcom,periph-map property rc=%d\n",
+		pr_debug("missing qcom,periph-map property rc=%d\n",
 			chip->num_periphs);
 		return chip->num_periphs;
 	}
 
 	if (chip->num_periphs == 0) {
-		pr_err("qcom,periph-map must contain at least one address\n");
+		pr_debug("qcom,periph-map must contain at least one address\n");
 		return -EINVAL;
 	}
 
@@ -462,7 +462,7 @@ static int i2c_pmic_parse_dt(struct i2c_pmic *chip)
 		rc = of_property_read_u32_index(node, "qcom,periph-map",
 						i, &temp);
 		if (rc < 0) {
-			pr_err("Couldn't read qcom,periph-map[%d] rc=%d\n",
+			pr_debug("Couldn't read qcom,periph-map[%d] rc=%d\n",
 			       i, rc);
 			return rc;
 		}
@@ -491,7 +491,7 @@ static int i2c_pmic_read(struct regmap *map, unsigned int reg, void *val,
 	} while (rc == -ENOTCONN && retries++ < MAX_I2C_RETRIES);
 
 	if (retries > 1)
-		pr_err("i2c_pmic_read failed for %d retries, rc = %d\n",
+		pr_debug("i2c_pmic_read failed for %d retries, rc = %d\n",
 			retries - 1, rc);
 
 	return rc;
@@ -506,7 +506,7 @@ static int i2c_pmic_determine_initial_status(struct i2c_pmic *chip)
 				chip->periph[i].addr | INT_SET_TYPE_OFFSET,
 				chip->periph[i].cached, IRQ_MAX_REGS);
 		if (rc < 0) {
-			pr_err("Couldn't read irq data rc=%d\n", rc);
+			pr_debug("Couldn't read irq data rc=%d\n", rc);
 			return rc;
 		}
 
@@ -532,14 +532,14 @@ static int i2c_pmic_toggle_stat(struct i2c_pmic *chip)
 				chip->periph[0].addr | INT_EN_SET_OFFSET,
 				INT_0_BIT);
 	if (rc < 0) {
-		pr_err("Couldn't write to int_en_set rc=%d\n", rc);
+		pr_debug("Couldn't write to int_en_set rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = regmap_write(chip->regmap, chip->periph[0].addr | INT_TEST_OFFSET,
 				INT_TEST_MODE_EN_BIT);
 	if (rc < 0) {
-		pr_err("Couldn't write to int_test rc=%d\n", rc);
+		pr_debug("Couldn't write to int_test rc=%d\n", rc);
 		return rc;
 	}
 
@@ -548,7 +548,7 @@ static int i2c_pmic_toggle_stat(struct i2c_pmic *chip)
 				chip->periph[0].addr | INT_TEST_VAL_OFFSET,
 				INT_0_BIT);
 		if (rc < 0) {
-			pr_err("Couldn't write to int_test_val rc=%d\n", rc);
+			pr_debug("Couldn't write to int_test_val rc=%d\n", rc);
 			goto exit;
 		}
 
@@ -558,7 +558,7 @@ static int i2c_pmic_toggle_stat(struct i2c_pmic *chip)
 				chip->periph[0].addr | INT_TEST_VAL_OFFSET,
 				0);
 		if (rc < 0) {
-			pr_err("Couldn't write to int_test_val rc=%d\n", rc);
+			pr_debug("Couldn't write to int_test_val rc=%d\n", rc);
 			goto exit;
 		}
 
@@ -566,7 +566,7 @@ static int i2c_pmic_toggle_stat(struct i2c_pmic *chip)
 				chip->periph[0].addr | INT_LATCHED_CLR_OFFSET,
 				INT_0_BIT);
 		if (rc < 0) {
-			pr_err("Couldn't write to int_latched_clr rc=%d\n", rc);
+			pr_debug("Couldn't write to int_latched_clr rc=%d\n", rc);
 			goto exit;
 		}
 
@@ -614,13 +614,13 @@ static int i2c_pmic_probe(struct i2c_client *client,
 
 	rc = i2c_pmic_parse_dt(chip);
 	if (rc < 0) {
-		pr_err("Couldn't parse device tree rc=%d\n", rc);
+		pr_debug("Couldn't parse device tree rc=%d\n", rc);
 		goto cleanup;
 	}
 
 	rc = i2c_pmic_determine_initial_status(chip);
 	if (rc < 0) {
-		pr_err("Couldn't determine initial status rc=%d\n", rc);
+		pr_debug("Couldn't determine initial status rc=%d\n", rc);
 		goto cleanup;
 	}
 
@@ -628,7 +628,7 @@ static int i2c_pmic_probe(struct i2c_client *client,
 		chip->pinctrl = devm_pinctrl_get_select(chip->dev,
 							chip->pinctrl_name);
 		if (IS_ERR(chip->pinctrl)) {
-			pr_err("Couldn't select %s pinctrl rc=%ld\n",
+			pr_debug("Couldn't select %s pinctrl rc=%ld\n",
 				chip->pinctrl_name, PTR_ERR(chip->pinctrl));
 			rc = PTR_ERR(chip->pinctrl);
 			goto cleanup;
@@ -640,7 +640,7 @@ static int i2c_pmic_probe(struct i2c_client *client,
 
 	rc = i2c_pmic_toggle_stat(chip);
 	if (rc < 0) {
-		pr_err("Couldn't toggle stat rc=%d\n", rc);
+		pr_debug("Couldn't toggle stat rc=%d\n", rc);
 		goto cleanup;
 	}
 
@@ -649,7 +649,7 @@ static int i2c_pmic_probe(struct i2c_client *client,
 				       IRQF_ONESHOT | IRQF_SHARED,
 				       "i2c_pmic_stat_irq", chip);
 	if (rc < 0) {
-		pr_err("Couldn't request irq %d rc=%d\n", client->irq, rc);
+		pr_debug("Couldn't request irq %d rc=%d\n", client->irq, rc);
 		goto cleanup;
 	}
 
@@ -658,7 +658,7 @@ static int i2c_pmic_probe(struct i2c_client *client,
 
 probe_children:
 	of_platform_populate(chip->dev->of_node, NULL, NULL, chip->dev);
-	pr_info("I2C PMIC probe successful\n");
+	pr_debug("I2C PMIC probe successful\n");
 	return rc;
 
 cleanup:
@@ -736,7 +736,7 @@ static int i2c_pmic_resume(struct device *dev)
 		rc = regmap_write(chip->regmap,
 				  periph->addr | INT_EN_CLR_OFFSET, 0xFF);
 		if (rc < 0) {
-			pr_err("Couldn't clear 0x%04x irqs rc=%d\n",
+			pr_debug("Couldn't clear 0x%04x irqs rc=%d\n",
 				periph->addr, rc);
 			continue;
 		}
@@ -745,7 +745,7 @@ static int i2c_pmic_resume(struct device *dev)
 				  periph->addr | INT_EN_SET_OFFSET,
 				  periph->synced[IRQ_EN_SET]);
 		if (rc < 0)
-			pr_err("Couldn't restore 0x%04x synced irqs 0x%02x rc=%d\n",
+			pr_debug("Couldn't restore 0x%04x synced irqs 0x%02x rc=%d\n",
 			       periph->addr, periph->synced[IRQ_EN_SET], rc);
 	}
 

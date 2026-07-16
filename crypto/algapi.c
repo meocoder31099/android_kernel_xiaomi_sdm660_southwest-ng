@@ -286,7 +286,7 @@ void crypto_alg_tested(const char *name, int err)
 			goto found;
 	}
 
-	pr_err("alg: Unexpected test result for %s: %d\n", name, err);
+	pr_debug("alg: Unexpected test result for %s: %d\n", name, err);
 	goto unlock;
 
 found:
@@ -460,7 +460,7 @@ int crypto_unregister_algs(struct crypto_alg *algs, int count)
 	for (i = 0; i < count; i++) {
 		ret = crypto_unregister_alg(&algs[i]);
 		if (ret)
-			pr_err("Failed to unregister %s %s: %d\n",
+			pr_debug("Failed to unregister %s %s: %d\n",
 			       algs[i].cra_driver_name, algs[i].cra_name, ret);
 	}
 

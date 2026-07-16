@@ -39,7 +39,7 @@ int msm_sdw_page_write(struct msm_sdw_priv *msm_sdw, unsigned short reg)
 			ret = msm_sdw->write_dev(msm_sdw, PAGE_REG_ADDR, 1,
 						 (void *) &pg_num);
 			if (ret < 0) {
-				dev_err(msm_sdw->dev,
+				dev_dbg(msm_sdw->dev,
 					"page write error, pg_num: 0x%x\n",
 					pg_num);
 			} else {
@@ -53,7 +53,7 @@ int msm_sdw_page_write(struct msm_sdw_priv *msm_sdw, unsigned short reg)
 		ret = msm_sdw->write_dev(msm_sdw, PAGE_REG_ADDR, 1,
 					 (void *) &pg_num);
 		if (ret < 0) {
-			dev_err(msm_sdw->dev,
+			dev_dbg(msm_sdw->dev,
 				"page write error, pg_num: 0x%x\n", pg_num);
 		} else {
 			msm_sdw->prev_pg = pg_num;
@@ -75,15 +75,15 @@ static int regmap_bus_read(void *context, const void *reg, size_t reg_size,
 	int ret, i;
 
 	if (!msm_sdw) {
-		dev_err(dev, "%s: msm_sdw is NULL\n", __func__);
+		dev_dbg(dev, "%s: msm_sdw is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (!reg || !val) {
-		dev_err(dev, "%s: reg or val is NULL\n", __func__);
+		dev_dbg(dev, "%s: reg or val is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (reg_size != REG_BYTES) {
-		dev_err(dev, "%s: register size %zd bytes, not supported\n",
+		dev_dbg(dev, "%s: register size %zd bytes, not supported\n",
 			__func__, reg_size);
 		return -EINVAL;
 	}
@@ -100,7 +100,7 @@ static int regmap_bus_read(void *context, const void *reg, size_t reg_size,
 		goto err;
 	ret = msm_sdw->read_dev(msm_sdw, c_reg, val_size, val);
 	if (ret < 0)
-		dev_err(dev, "%s: Codec read failed (%d), reg: 0x%x, size:%zd\n",
+		dev_dbg(dev, "%s: Codec read failed (%d), reg: 0x%x, size:%zd\n",
 			__func__, ret, c_reg, val_size);
 	else {
 		for (i = 0; i < val_size; i++)
@@ -123,15 +123,15 @@ static int regmap_bus_gather_write(void *context,
 	int ret, i;
 
 	if (!msm_sdw) {
-		dev_err(dev, "%s: msm_sdw is NULL\n", __func__);
+		dev_dbg(dev, "%s: msm_sdw is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (!reg || !val) {
-		dev_err(dev, "%s: reg or val is NULL\n", __func__);
+		dev_dbg(dev, "%s: reg or val is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (reg_size != REG_BYTES) {
-		dev_err(dev, "%s: register size %zd bytes, not supported\n",
+		dev_dbg(dev, "%s: register size %zd bytes, not supported\n",
 			__func__, reg_size);
 		return -EINVAL;
 	}
@@ -153,7 +153,7 @@ static int regmap_bus_gather_write(void *context,
 
 	ret = msm_sdw->write_dev(msm_sdw, c_reg, val_size, (void *) val);
 	if (ret < 0)
-		dev_err(dev,
+		dev_dbg(dev,
 			"%s: Codec write failed (%d), reg:0x%x, size:%zd\n",
 			__func__, ret, c_reg, val_size);
 

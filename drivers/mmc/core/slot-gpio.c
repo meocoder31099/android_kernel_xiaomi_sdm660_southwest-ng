@@ -90,7 +90,7 @@ int mmc_gpio_get_cd(struct mmc_host *host)
 	if (host->extcon) {
 		ret =  extcon_get_state(host->extcon, EXTCON_MECHANICAL);
 		if (ret < 0)
-			dev_err(mmc_dev(host), "%s: Extcon failed to check card state, ret=%d\n",
+			dev_dbg(mmc_dev(host), "%s: Extcon failed to check card state, ret=%d\n",
 					__func__, ret);
 		return ret;
 	}
@@ -175,7 +175,7 @@ void mmc_gpiod_request_cd_irq(struct mmc_host *host)
 		host->caps |= MMC_CAP_NEEDS_POLL;
 	ret = mmc_gpio_set_cd_wake(host, true);
 	if (ret)
-		dev_err(mmc_dev(host), "%s: enabling cd irq wake failed ret=%d\n",
+		dev_dbg(mmc_dev(host), "%s: enabling cd irq wake failed ret=%d\n",
 				      __func__, ret);
 }
 EXPORT_SYMBOL(mmc_gpiod_request_cd_irq);
@@ -204,7 +204,7 @@ void mmc_register_extcon(struct mmc_host *host)
 	err = extcon_register_notifier(extcon, EXTCON_MECHANICAL,
 				       &host->card_detect_nb);
 	if (err) {
-		dev_err(mmc_dev(host), "%s: extcon_register_notifier() failed ret=%d\n",
+		dev_dbg(mmc_dev(host), "%s: extcon_register_notifier() failed ret=%d\n",
 			__func__, err);
 		host->caps |= MMC_CAP_NEEDS_POLL;
 	}
@@ -222,7 +222,7 @@ void mmc_unregister_extcon(struct mmc_host *host)
 	err = extcon_unregister_notifier(extcon, EXTCON_MECHANICAL,
 					 &host->card_detect_nb);
 	if (err)
-		dev_err(mmc_dev(host), "%s: extcon_unregister_notifier() failed ret=%d\n",
+		dev_dbg(mmc_dev(host), "%s: extcon_unregister_notifier() failed ret=%d\n",
 			__func__, err);
 }
 EXPORT_SYMBOL(mmc_unregister_extcon);

@@ -67,13 +67,13 @@ void pstore_register_pmsg(void)
 
 	pmsg_major = register_chrdev(0, PMSG_NAME, &pmsg_fops);
 	if (pmsg_major < 0) {
-		pr_err("register_chrdev failed\n");
+		pr_debug("register_chrdev failed\n");
 		goto err;
 	}
 
 	pmsg_class = class_create(THIS_MODULE, PMSG_NAME);
 	if (IS_ERR(pmsg_class)) {
-		pr_err("device class file already in use\n");
+		pr_debug("device class file already in use\n");
 		goto err_class;
 	}
 	pmsg_class->devnode = pmsg_devnode;
@@ -81,7 +81,7 @@ void pstore_register_pmsg(void)
 	pmsg_device = device_create(pmsg_class, NULL, MKDEV(pmsg_major, 0),
 					NULL, "%s%d", PMSG_NAME, 0);
 	if (IS_ERR(pmsg_device)) {
-		pr_err("failed to create device\n");
+		pr_debug("failed to create device\n");
 		goto err_device;
 	}
 	return;

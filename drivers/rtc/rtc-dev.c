@@ -473,7 +473,7 @@ void __init rtc_dev_init(void)
 
 	err = alloc_chrdev_region(&rtc_devt, 0, RTC_DEV_MAX, "rtc");
 	if (err < 0)
-		pr_err("failed to allocate char dev region\n");
+		pr_debug("failed to allocate char dev region\n");
 }
 
 void __exit rtc_dev_exit(void)

@@ -1777,6 +1777,7 @@ static int tcp_zerocopy_receive(struct sock *sk,
 	struct vm_area_struct *vma;
 	struct sk_buff *skb = NULL;
 	struct tcp_sock *tp;
+	int inq;
 	int ret;
 
 	if (address & (PAGE_SIZE - 1) || address != zc->address)
@@ -1798,12 +1799,15 @@ static int tcp_zerocopy_receive(struct sock *sk,
 
 	tp = tcp_sk(sk);
 	seq = tp->copied_seq;
-	zc->length = min_t(u32, zc->length, tcp_inq(sk));
+	inq = tcp_inq(sk);
+	zc->length = min_t(u32, zc->length, inq);
 	zc->length &= ~(PAGE_SIZE - 1);
-
-	zap_page_range(vma, address, zc->length);
-
-	zc->recv_skip_hint = 0;
+	if (zc->length) {
+		zap_page_range(vma, address, zc->length);
+		zc->recv_skip_hint = 0;
+	} else {
+		zc->recv_skip_hint = inq;
+	}
 	ret = 0;
 	while (length + PAGE_SIZE <= zc->length) {
 		if (zc->recv_skip_hint < PAGE_SIZE) {
@@ -1826,8 +1830,17 @@ static int tcp_zerocopy_receive(struct sock *sk,
 				frags++;
 			}
 		}
-		if (frags->size != PAGE_SIZE || frags->page_offset)
+		if (frags->size != PAGE_SIZE || frags->page_offset) {
+			int remaining = zc->recv_skip_hint;
+
+			while (remaining && (frags->size != PAGE_SIZE ||
+					     frags->page_offset)) {
+				remaining -= frags->size;
+				frags++;
+			}
+			zc->recv_skip_hint -= remaining;
 			break;
+		}
 		ret = vm_insert_page(vma, address + length,
 				     skb_frag_page(frags));
 		if (ret)
@@ -2105,7 +2118,7 @@ int tcp_recvmsg(struct sock *sk, struct msghdr *msg, size_t len, int nonblock,
 		}
 		continue;
 
-	found_ok_skb:
+found_ok_skb:
 		/* Ok so how much can we use? */
 		used = skb->len - offset;
 		if (len < used)
@@ -2166,7 +2179,7 @@ skip_copy:
 			sk_eat_skb(sk, skb);
 		continue;
 
-	found_fin_ok:
+found_fin_ok:
 		/* Process the FIN. */
 		WRITE_ONCE(*seq, *seq + 1);
 		if (!(flags & MSG_PEEK))
@@ -2264,10 +2277,6 @@ void tcp_set_state(struct sock *sk, int state)
 	 * socket sitting in hash tables.
 	 */
 	inet_sk_state_store(sk, state);
-
-#ifdef STATE_TRACE
-	SOCK_DEBUG(sk, "TCP sk=%p, State %s -> %s\n", sk, statename[oldstate], statename[state]);
-#endif
 }
 EXPORT_SYMBOL_GPL(tcp_set_state);
 
@@ -4039,7 +4048,7 @@ void __init tcp_init(void)
 	init_net.ipv4.sysctl_tcp_rmem[1] = 131072;
 	init_net.ipv4.sysctl_tcp_rmem[2] = max(131072, max_rshare);
 
-	pr_info("Hash tables configured (established %u bind %u)\n",
+	pr_debug("Hash tables configured (established %u bind %u)\n",
 		tcp_hashinfo.ehash_mask + 1, tcp_hashinfo.bhash_size);
 
 	tcp_v4_init();

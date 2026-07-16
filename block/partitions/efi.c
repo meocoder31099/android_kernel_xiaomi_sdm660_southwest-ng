@@ -500,42 +500,42 @@ compare_gpts(gpt_header *pgpt, gpt_header *agpt, u64 lastlba)
 	if (!pgpt || !agpt)
 		return;
 	if (le64_to_cpu(pgpt->my_lba) != le64_to_cpu(agpt->alternate_lba)) {
-		pr_warn("GPT:Primary header LBA != Alt. header alternate_lba\n");
-		pr_warn("GPT:%lld != %lld\n",
+		pr_debug("GPT:Primary header LBA != Alt. header alternate_lba\n");
+		pr_debug("GPT:%lld != %lld\n",
 		       (unsigned long long)le64_to_cpu(pgpt->my_lba),
                        (unsigned long long)le64_to_cpu(agpt->alternate_lba));
 		error_found++;
 	}
 	if (le64_to_cpu(pgpt->alternate_lba) != le64_to_cpu(agpt->my_lba)) {
-		pr_warn("GPT:Primary header alternate_lba != Alt. header my_lba\n");
-		pr_warn("GPT:%lld != %lld\n",
+		pr_debug("GPT:Primary header alternate_lba != Alt. header my_lba\n");
+		pr_debug("GPT:%lld != %lld\n",
 		       (unsigned long long)le64_to_cpu(pgpt->alternate_lba),
                        (unsigned long long)le64_to_cpu(agpt->my_lba));
 		error_found++;
 	}
 	if (le64_to_cpu(pgpt->first_usable_lba) !=
             le64_to_cpu(agpt->first_usable_lba)) {
-		pr_warn("GPT:first_usable_lbas don't match.\n");
-		pr_warn("GPT:%lld != %lld\n",
+		pr_debug("GPT:first_usable_lbas don't match.\n");
+		pr_debug("GPT:%lld != %lld\n",
 		       (unsigned long long)le64_to_cpu(pgpt->first_usable_lba),
                        (unsigned long long)le64_to_cpu(agpt->first_usable_lba));
 		error_found++;
 	}
 	if (le64_to_cpu(pgpt->last_usable_lba) !=
             le64_to_cpu(agpt->last_usable_lba)) {
-		pr_warn("GPT:last_usable_lbas don't match.\n");
-		pr_warn("GPT:%lld != %lld\n",
+		pr_debug("GPT:last_usable_lbas don't match.\n");
+		pr_debug("GPT:%lld != %lld\n",
 		       (unsigned long long)le64_to_cpu(pgpt->last_usable_lba),
                        (unsigned long long)le64_to_cpu(agpt->last_usable_lba));
 		error_found++;
 	}
 	if (efi_guidcmp(pgpt->disk_guid, agpt->disk_guid)) {
-		pr_warn("GPT:disk_guids don't match.\n");
+		pr_debug("GPT:disk_guids don't match.\n");
 		error_found++;
 	}
 	if (le32_to_cpu(pgpt->num_partition_entries) !=
             le32_to_cpu(agpt->num_partition_entries)) {
-		pr_warn("GPT:num_partition_entries don't match: "
+		pr_debug("GPT:num_partition_entries don't match: "
 		       "0x%x != 0x%x\n",
 		       le32_to_cpu(pgpt->num_partition_entries),
 		       le32_to_cpu(agpt->num_partition_entries));
@@ -543,7 +543,7 @@ compare_gpts(gpt_header *pgpt, gpt_header *agpt, u64 lastlba)
 	}
 	if (le32_to_cpu(pgpt->sizeof_partition_entry) !=
             le32_to_cpu(agpt->sizeof_partition_entry)) {
-		pr_warn("GPT:sizeof_partition_entry values don't match: "
+		pr_debug("GPT:sizeof_partition_entry values don't match: "
 		       "0x%x != 0x%x\n",
                        le32_to_cpu(pgpt->sizeof_partition_entry),
 		       le32_to_cpu(agpt->sizeof_partition_entry));
@@ -551,30 +551,30 @@ compare_gpts(gpt_header *pgpt, gpt_header *agpt, u64 lastlba)
 	}
 	if (le32_to_cpu(pgpt->partition_entry_array_crc32) !=
             le32_to_cpu(agpt->partition_entry_array_crc32)) {
-		pr_warn("GPT:partition_entry_array_crc32 values don't match: "
+		pr_debug("GPT:partition_entry_array_crc32 values don't match: "
 		       "0x%x != 0x%x\n",
                        le32_to_cpu(pgpt->partition_entry_array_crc32),
 		       le32_to_cpu(agpt->partition_entry_array_crc32));
 		error_found++;
 	}
 	if (le64_to_cpu(pgpt->alternate_lba) != lastlba) {
-		pr_warn("GPT:Primary header thinks Alt. header is not at the end of the disk.\n");
-		pr_warn("GPT:%lld != %lld\n",
+		pr_debug("GPT:Primary header thinks Alt. header is not at the end of the disk.\n");
+		pr_debug("GPT:%lld != %lld\n",
 			(unsigned long long)le64_to_cpu(pgpt->alternate_lba),
 			(unsigned long long)lastlba);
 		error_found++;
 	}
 
 	if (le64_to_cpu(agpt->my_lba) != lastlba) {
-		pr_warn("GPT:Alternate GPT header not at the end of the disk.\n");
-		pr_warn("GPT:%lld != %lld\n",
+		pr_debug("GPT:Alternate GPT header not at the end of the disk.\n");
+		pr_debug("GPT:%lld != %lld\n",
 			(unsigned long long)le64_to_cpu(agpt->my_lba),
 			(unsigned long long)lastlba);
 		error_found++;
 	}
 
 	if (error_found)
-		pr_warn("GPT: Use GNU Parted to correct GPT errors.\n");
+		pr_debug("GPT: Use GNU Parted to correct GPT errors.\n");
 	return;
 }
 
@@ -648,7 +648,7 @@ static int find_valid_gpt(struct parsed_partitions *state, gpt_header **gpt,
                 kfree(agpt);
                 kfree(aptes);
 		if (!good_agpt)
-                        pr_warn("Alternate GPT is invalid, using primary GPT.\n");
+                        pr_debug("Alternate GPT is invalid, using primary GPT.\n");
                 return 1;
         }
         else if (good_agpt) {
@@ -656,7 +656,7 @@ static int find_valid_gpt(struct parsed_partitions *state, gpt_header **gpt,
                 *ptes = aptes;
                 kfree(pgpt);
                 kfree(pptes);
-		pr_warn("Primary GPT is invalid, using alternate GPT.\n");
+		pr_debug("Primary GPT is invalid, using alternate GPT.\n");
                 return 1;
         }
 

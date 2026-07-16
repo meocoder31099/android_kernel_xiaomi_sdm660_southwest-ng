@@ -329,7 +329,7 @@ skip:
 	return 0;
 
 bad_desc:
-	dev_info(&dev->udev->dev, "bad CDC descriptors\n");
+	dev_dbg(&dev->udev->dev, "bad CDC descriptors\n");
 	return -ENODEV;
 }
 EXPORT_SYMBOL_GPL(usbnet_generic_cdc_bind);

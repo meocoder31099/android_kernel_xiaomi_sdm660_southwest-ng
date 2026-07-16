@@ -115,11 +115,11 @@ static int __init sockev_client_init(void)
 	rc = sockev_register_notify(&sockev_notifier_client);
 	if (rc != 0) {
 		registration_status = 0;
-		pr_err("%s(): Failed to register cb (%d)\n", __func__, rc);
+		pr_debug("%s(): Failed to register cb (%d)\n", __func__, rc);
 	}
 	socknlmsgsk = netlink_kernel_create(&init_net, NETLINK_SOCKEV, &nlcfg);
 	if (!socknlmsgsk) {
-		pr_err("%s(): Failed to initialize netlink socket\n", __func__);
+		pr_debug("%s(): Failed to initialize netlink socket\n", __func__);
 		if (registration_status)
 			sockev_unregister_notify(&sockev_notifier_client);
 		registration_status = 0;

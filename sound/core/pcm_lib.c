@@ -2643,7 +2643,7 @@ int snd_pcm_add_usr_ctls(struct snd_pcm *pcm, int stream,
 	info->max_length = max_length;
 	buf = kzalloc(max_kctrl_str_len, GFP_KERNEL);
 	if (!buf) {
-		pr_err("%s: buffer allocation failed\n", __func__);
+		pr_debug("%s: buffer allocation failed\n", __func__);
 		kfree(info);
 		return -ENOMEM;
 	}
@@ -2661,7 +2661,7 @@ int snd_pcm_add_usr_ctls(struct snd_pcm *pcm, int stream,
 	if (!info->kctl) {
 		kfree(info);
 		kfree(knew.name);
-		pr_err("%s: snd_ctl_new failed\n", __func__);
+		pr_debug("%s: snd_ctl_new failed\n", __func__);
 		return -ENOMEM;
 	}
 	info->kctl->private_free = pcm_usr_ctl_private_free;
@@ -2669,7 +2669,7 @@ int snd_pcm_add_usr_ctls(struct snd_pcm *pcm, int stream,
 	if (err < 0) {
 		kfree(info);
 		kfree(knew.name);
-		pr_err("%s: snd_ctl_add failed:%d\n", __func__,
+		pr_debug("%s: snd_ctl_add failed:%d\n", __func__,
 			err);
 		return -ENOMEM;
 	}

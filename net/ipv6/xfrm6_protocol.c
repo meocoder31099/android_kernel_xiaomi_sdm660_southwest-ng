@@ -219,7 +219,7 @@ err:
 
 	if (add_netproto) {
 		if (inet6_add_protocol(netproto(protocol), protocol)) {
-			pr_err("%s: can't add protocol\n", __func__);
+			pr_debug("%s: can't add protocol\n", __func__);
 			ret = -EAGAIN;
 		}
 	}
@@ -254,7 +254,7 @@ int xfrm6_protocol_deregister(struct xfrm6_protocol *handler,
 	if (!rcu_dereference_protected(*proto_handlers(protocol),
 				       lockdep_is_held(&xfrm6_protocol_mutex))) {
 		if (inet6_del_protocol(netproto(protocol), protocol) < 0) {
-			pr_err("%s: can't remove protocol\n", __func__);
+			pr_debug("%s: can't remove protocol\n", __func__);
 			ret = -EAGAIN;
 		}
 	}

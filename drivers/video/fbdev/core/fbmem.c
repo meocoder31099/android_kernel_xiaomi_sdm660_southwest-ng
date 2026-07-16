@@ -1010,7 +1010,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
 		/* verify that virtual resolution >= physical resolution */
 		if (var->xres_virtual < var->xres ||
 		    var->yres_virtual < var->yres) {
-			pr_warn("WARNING: fbcon: Driver '%s' missed to adjust virtual screen size (%ux%u vs. %ux%u)\n",
+			pr_debug("WARNING: fbcon: Driver '%s' missed to adjust virtual screen size (%ux%u vs. %ux%u)\n",
 				info->fix.id,
 				var->xres_virtual, var->yres_virtual,
 				var->xres, var->yres);
@@ -1593,11 +1593,11 @@ static int fb_check_foreignness(struct fb_info *fi)
 #endif /* __BIG_ENDIAN */
 
 	if (fi->flags & FBINFO_BE_MATH && !fb_be_math(fi)) {
-		pr_err("%s: enable CONFIG_FB_BIG_ENDIAN to "
+		pr_debug("%s: enable CONFIG_FB_BIG_ENDIAN to "
 		       "support this framebuffer\n", fi->fix.id);
 		return -ENOSYS;
 	} else if (!(fi->flags & FBINFO_BE_MATH) && fb_be_math(fi)) {
-		pr_err("%s: enable CONFIG_FB_LITTLE_ENDIAN to "
+		pr_debug("%s: enable CONFIG_FB_LITTLE_ENDIAN to "
 		       "support this framebuffer\n", fi->fix.id);
 		return -ENOSYS;
 	}
@@ -1965,7 +1965,7 @@ fbmem_init(void)
 	fb_class = class_create(THIS_MODULE, "graphics");
 	if (IS_ERR(fb_class)) {
 		ret = PTR_ERR(fb_class);
-		pr_warn("Unable to create fb class; errno = %d\n", ret);
+		pr_debug("Unable to create fb class; errno = %d\n", ret);
 		fb_class = NULL;
 		goto err_class;
 	}

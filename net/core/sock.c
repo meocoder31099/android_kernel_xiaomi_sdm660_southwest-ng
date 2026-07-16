@@ -387,7 +387,7 @@ static int sock_set_timeout(long *timeo_p, sockptr_t optval, int optlen)
 		*timeo_p = 0;
 		if (warned < 10 && net_ratelimit()) {
 			warned++;
-			pr_info("%s: `%s' (pid %d) tries to set negative timeout\n",
+			pr_debug("%s: `%s' (pid %d) tries to set negative timeout\n",
 				__func__, current->comm, task_pid_nr(current));
 		}
 		return 0;
@@ -406,7 +406,7 @@ static void sock_warn_obsolete_bsdism(const char *name)
 	static char warncomm[TASK_COMM_LEN];
 	if (strcmp(warncomm, current->comm) && warned < 5) {
 		strcpy(warncomm,  current->comm);
-		pr_warn("process `%s' is using obsolete %s SO_BSDCOMPAT\n",
+		pr_debug("process `%s' is using obsolete %s SO_BSDCOMPAT\n",
 			warncomm, name);
 		warned++;
 	}
@@ -3327,7 +3327,7 @@ static void assign_proto_idx(struct proto *prot)
 	prot->inuse_idx = find_first_zero_bit(proto_inuse_idx, PROTO_INUSE_NR);
 
 	if (unlikely(prot->inuse_idx == PROTO_INUSE_NR)) {
-		pr_err("PROTO_INUSE_NR exhausted\n");
+		pr_debug("PROTO_INUSE_NR exhausted\n");
 		return;
 	}
 

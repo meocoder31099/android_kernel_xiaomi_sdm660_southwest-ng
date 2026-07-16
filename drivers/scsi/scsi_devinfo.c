@@ -302,7 +302,7 @@ static void scsi_strcpy_devinfo(char *name, char *to, size_t to_length,
 }
 
 /**
- * scsi_dev_info_list_add - add one dev_info list entry.
+ * scsi_dev_info_list_add - add one dev_dbg list entry.
  * @compatible: if true, null terminate short strings.  Otherwise space pad.
  * @vendor:	vendor string
  * @model:	model (product) string
@@ -310,7 +310,7 @@ static void scsi_strcpy_devinfo(char *name, char *to, size_t to_length,
  * @flags:	if strflags NULL, use this flag value
  *
  * Description:
- *	Create and add one dev_info entry for @vendor, @model, @strflags or
+ *	Create and add one dev_dbg entry for @vendor, @model, @strflags or
  *	@flag. If @compatible, add to the tail of the list, do not space
  *	pad, and set devinfo->compatible. The scsi_static_device_list entries
  *	are added with @compatible 1 and @clfags NULL.
@@ -326,7 +326,7 @@ static int scsi_dev_info_list_add(int compatible, char *vendor, char *model,
 }
 
 /**
- * scsi_dev_info_list_add_keyed - add one dev_info list entry.
+ * scsi_dev_info_list_add_keyed - add one dev_dbg list entry.
  * @compatible: if true, null terminate short strings.  Otherwise space pad.
  * @vendor:	vendor string
  * @model:	model (product) string
@@ -335,7 +335,7 @@ static int scsi_dev_info_list_add(int compatible, char *vendor, char *model,
  * @key:	specify list to use
  *
  * Description:
- *	Create and add one dev_info entry for @vendor, @model,
+ *	Create and add one dev_dbg entry for @vendor, @model,
  *	@strflags or @flag in list specified by @key. If @compatible,
  *	add to the tail of the list, do not space pad, and set
  *	devinfo->compatible. The scsi_static_device_list entries are
@@ -376,7 +376,7 @@ int scsi_dev_info_list_add_keyed(int compatible, char *vendor, char *model,
 		flags = (__force blist_flags_t)val;
 	}
 	if (flags & __BLIST_UNUSED_MASK) {
-		pr_err("scsi_devinfo (%s:%s): unsupported flags 0x%llx",
+		pr_debug("scsi_devinfo (%s:%s): unsupported flags 0x%llx",
 		       vendor, model, flags & __BLIST_UNUSED_MASK);
 		kfree(devinfo);
 		return -EINVAL;
@@ -396,13 +396,13 @@ int scsi_dev_info_list_add_keyed(int compatible, char *vendor, char *model,
 EXPORT_SYMBOL(scsi_dev_info_list_add_keyed);
 
 /**
- * scsi_dev_info_list_find - find a matching dev_info list entry.
+ * scsi_dev_info_list_find - find a matching dev_dbg list entry.
  * @vendor:	full vendor string
  * @model:	full model (product) string
  * @key:	specify list to use
  *
  * Description:
- *	Finds the first dev_info entry matching @vendor, @model
+ *	Finds the first dev_dbg entry matching @vendor, @model
  *	in list specified by @key.
  *
  * Returns: pointer to matching entry, or ERR_PTR on failure.
@@ -480,13 +480,13 @@ static struct scsi_dev_info_list *scsi_dev_info_list_find(const char *vendor,
 }
 
 /**
- * scsi_dev_info_list_del_keyed - remove one dev_info list entry.
+ * scsi_dev_info_list_del_keyed - remove one dev_dbg list entry.
  * @vendor:	vendor string
  * @model:	model (product) string
  * @key:	specify list to use
  *
  * Description:
- *	Remove and destroy one dev_info entry for @vendor, @model
+ *	Remove and destroy one dev_dbg entry for @vendor, @model
  *	in list specified by @key.
  *
  * Returns: 0 OK, -error on failure.

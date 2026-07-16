@@ -850,9 +850,9 @@ struct cpr3_controller {
 #define CPR3_ROUND(n, d) (DIV_ROUND_UP(n, d) * (d))
 
 #define cpr3_err(cpr3_thread, message, ...) \
-	pr_err("%s: " message, (cpr3_thread)->name, ##__VA_ARGS__)
+	pr_debug("%s: " message, (cpr3_thread)->name, ##__VA_ARGS__)
 #define cpr3_info(cpr3_thread, message, ...) \
-	pr_info("%s: " message, (cpr3_thread)->name, ##__VA_ARGS__)
+	pr_debug("%s: " message, (cpr3_thread)->name, ##__VA_ARGS__)
 #define cpr3_debug(cpr3_thread, message, ...) \
 	pr_debug("%s: " message, (cpr3_thread)->name, ##__VA_ARGS__)
 

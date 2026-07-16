@@ -158,7 +158,7 @@ static int register_cpu_capacity_sysctl(void)
 	for_each_possible_cpu(i) {
 		cpu = get_cpu_device(i);
 		if (!cpu) {
-			pr_err("%s: too early to get CPU%d device!\n",
+			pr_debug("%s: too early to get CPU%d device!\n",
 			       __func__, i);
 			continue;
 		}
@@ -238,7 +238,7 @@ bool __init topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu)
 					       sizeof(*raw_capacity),
 					       GFP_KERNEL);
 			if (!raw_capacity) {
-				pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
+				pr_debug("cpu_capacity: failed to allocate memory for raw capacities\n");
 				cap_parsing_failed = true;
 				return false;
 			}
@@ -249,9 +249,9 @@ bool __init topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu)
 			cpu_node, raw_capacity[cpu]);
 	} else {
 		if (raw_capacity) {
-			pr_err("cpu_capacity: missing %pOF raw capacity\n",
+			pr_debug("cpu_capacity: missing %pOF raw capacity\n",
 				cpu_node);
-			pr_err("cpu_capacity: partial information: fallback to 1024 for all CPUs\n");
+			pr_debug("cpu_capacity: partial information: fallback to 1024 for all CPUs\n");
 		}
 		cap_parsing_failed = true;
 		free_raw_capacity();
@@ -319,7 +319,7 @@ static int __init register_cpufreq_notifier(void)
 		return -EINVAL;
 
 	if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
-		pr_err("cpu_capacity: failed to allocate memory for cpus_to_visit\n");
+		pr_debug("cpu_capacity: failed to allocate memory for cpus_to_visit\n");
 		return -ENOMEM;
 	}
 

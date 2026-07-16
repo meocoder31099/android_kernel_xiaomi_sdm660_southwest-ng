@@ -207,7 +207,7 @@ static inline int __compare_session_item_rect(
 {
 	if ((s_rect->width != i_rect->w) || (s_rect->height != i_rect->h) ||
 			(s_rect->format != i_fmt)) {
-		pr_err("%s: session{%u,%u}f:%u mismatch from item{%u,%u}f:%u\n",
+		pr_debug("%s: session{%u,%u}f:%u mismatch from item{%u,%u}f:%u\n",
 			(src ? "src":"dst"), s_rect->width, s_rect->height,
 			s_rect->format, i_rect->w, i_rect->h, i_fmt);
 		return -EINVAL;
@@ -228,7 +228,7 @@ static inline int __compare_session_rotations(uint32_t cfg_flag,
 	cfg_flag &= MDSS_MDP_DEFINING_FLAG_BITS;
 	item_flag &= MDSS_MDP_DEFINING_FLAG_BITS;
 	if (cfg_flag != item_flag) {
-		pr_err("Rotation degree request different from open session\n");
+		pr_debug("Rotation degree request different from open session\n");
 		return -EINVAL;
 	}
 	return 0;

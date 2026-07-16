@@ -381,7 +381,7 @@ static ssize_t active_store(struct device *dev, struct device_attribute *attr,
 			typec_altmode_exit(&altmode->partner->adev);
 	} else if (altmode->partner) {
 		if (enter && !altmode->partner->adev.active) {
-			dev_warn(dev, "port has the mode disabled\n");
+			dev_dbg(dev, "port has the mode disabled\n");
 			return -EPERM;
 		}
 	}
@@ -547,7 +547,7 @@ typec_register_altmode(struct device *parent,
 
 	ret = device_register(&alt->adev.dev);
 	if (ret) {
-		dev_err(parent, "failed to register alternate mode (%d)\n",
+		dev_dbg(parent, "failed to register alternate mode (%d)\n",
 			ret);
 		put_device(&alt->adev.dev);
 		return ERR_PTR(ret);
@@ -692,7 +692,7 @@ struct typec_partner *typec_register_partner(struct typec_port *port,
 
 	ret = device_register(&partner->dev);
 	if (ret) {
-		dev_err(&port->dev, "failed to register partner (%d)\n", ret);
+		dev_dbg(&port->dev, "failed to register partner (%d)\n", ret);
 		put_device(&partner->dev);
 		return ERR_PTR(ret);
 	}
@@ -783,7 +783,7 @@ struct typec_plug *typec_register_plug(struct typec_cable *cable,
 
 	ret = device_register(&plug->dev);
 	if (ret) {
-		dev_err(&cable->dev, "failed to register plug (%d)\n", ret);
+		dev_dbg(&cable->dev, "failed to register plug (%d)\n", ret);
 		put_device(&plug->dev);
 		return ERR_PTR(ret);
 	}
@@ -909,7 +909,7 @@ struct typec_cable *typec_register_cable(struct typec_port *port,
 
 	ret = device_register(&cable->dev);
 	if (ret) {
-		dev_err(&port->dev, "failed to register cable (%d)\n", ret);
+		dev_dbg(&port->dev, "failed to register cable (%d)\n", ret);
 		put_device(&cable->dev);
 		return ERR_PTR(ret);
 	}
@@ -1285,7 +1285,7 @@ static int typec_uevent(struct device *dev, struct kobj_uevent_env *env)
 
 	ret = add_uevent_var(env, "TYPEC_PORT=%s", dev_name(dev));
 	if (ret)
-		dev_err(dev, "failed to add uevent TYPEC_PORT\n");
+		dev_dbg(dev, "failed to add uevent TYPEC_PORT\n");
 
 	return ret;
 }
@@ -1628,7 +1628,7 @@ struct typec_port *typec_register_port(struct device *parent,
 
 	ret = device_add(&port->dev);
 	if (ret) {
-		dev_err(parent, "failed to register port (%d)\n", ret);
+		dev_dbg(parent, "failed to register port (%d)\n", ret);
 		put_device(&port->dev);
 		return ERR_PTR(ret);
 	}

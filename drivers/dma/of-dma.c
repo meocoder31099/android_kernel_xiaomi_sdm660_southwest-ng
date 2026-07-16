@@ -114,7 +114,7 @@ int of_dma_controller_register(struct device_node *np,
 	struct of_dma	*ofdma;
 
 	if (!np || !of_dma_xlate) {
-		pr_err("%s: not enough information provided\n", __func__);
+		pr_debug("%s: not enough information provided\n", __func__);
 		return -EINVAL;
 	}
 
@@ -181,7 +181,7 @@ int of_dma_router_register(struct device_node *np,
 	struct of_dma	*ofdma;
 
 	if (!np || !of_dma_route_allocate || !dma_router) {
-		pr_err("%s: not enough information provided\n", __func__);
+		pr_debug("%s: not enough information provided\n", __func__);
 		return -EINVAL;
 	}
 
@@ -250,7 +250,7 @@ struct dma_chan *of_dma_request_slave_channel(struct device_node *np,
 	static atomic_t		last_index;
 
 	if (!np || !name) {
-		pr_err("%s: not enough information provided\n", __func__);
+		pr_debug("%s: not enough information provided\n", __func__);
 		return ERR_PTR(-ENODEV);
 	}
 
@@ -260,7 +260,7 @@ struct dma_chan *of_dma_request_slave_channel(struct device_node *np,
 
 	count = of_property_count_strings(np, "dma-names");
 	if (count < 0) {
-		pr_err("%s: dma-names property of node '%pOF' missing or empty\n",
+		pr_debug("%s: dma-names property of node '%pOF' missing or empty\n",
 			__func__, np);
 		return ERR_PTR(-ENODEV);
 	}

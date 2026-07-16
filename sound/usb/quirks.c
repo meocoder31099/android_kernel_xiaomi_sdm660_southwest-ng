@@ -652,7 +652,7 @@ static int snd_usb_fasttrackpro_boot_quirk(struct usb_device *dev)
 	int err;
 
 	if (dev->actconfig->desc.bConfigurationValue == 1) {
-		dev_info(&dev->dev,
+		dev_dbg(&dev->dev,
 			   "Fast Track Pro switching to config #2\n");
 		/* This function has to be available by the usb core module.
 		 * if it is not avialable the boot quirk has to be left out
@@ -669,7 +669,7 @@ static int snd_usb_fasttrackpro_boot_quirk(struct usb_device *dev)
 		   configuration */
 		return -ENODEV;
 	} else
-		dev_info(&dev->dev, "Fast Track Pro config OK\n");
+		dev_dbg(&dev->dev, "Fast Track Pro config OK\n");
 
 	return 0;
 }
@@ -845,7 +845,7 @@ static int snd_usb_mbox2_boot_quirk(struct usb_device *dev)
 	fwsize = le16_to_cpu(get_cfg_desc(config)->wTotalLength);
 
 	if (fwsize != MBOX2_FIRMWARE_SIZE) {
-		dev_err(&dev->dev, "Invalid firmware size=%d.\n", fwsize);
+		dev_dbg(&dev->dev, "Invalid firmware size=%d.\n", fwsize);
 		return -ENODEV;
 	}
 
@@ -865,7 +865,7 @@ static int snd_usb_mbox2_boot_quirk(struct usb_device *dev)
 	}
 
 	if (bootresponse[0] != MBOX2_BOOT_READY) {
-		dev_err(&dev->dev, "Unknown bootresponse=%d, or timed out, ignoring device.\n", bootresponse[0]);
+		dev_dbg(&dev->dev, "Unknown bootresponse=%d, or timed out, ignoring device.\n", bootresponse[0]);
 		return -ENODEV;
 	}
 
@@ -895,7 +895,7 @@ static int snd_usb_mbox2_boot_quirk(struct usb_device *dev)
 
 	mbox2_setup_48_24_magic(dev);
 
-	dev_info(&dev->dev, "Digidesign Mbox 2: 24bit 48kHz");
+	dev_dbg(&dev->dev, "Digidesign Mbox 2: 24bit 48kHz");
 
 	return 0; /* Successful boot */
 }
@@ -917,7 +917,7 @@ static int snd_usb_axefx3_boot_quirk(struct usb_device *dev)
 				USB_REQ_SET_INTERFACE, USB_RECIP_INTERFACE,
 				1, 1, NULL, 0, 120000);
 	if (err < 0) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"failed waiting for Axe-Fx III to boot: %d\n", err);
 		return err;
 	}
