@@ -62,7 +62,7 @@ int path_mount(const char *dev_name, struct path *path, const char *type_page,
 
 	char *realpath = d_path(path, buf, sizeof(buf));
 	if (IS_ERR(realpath)) {
-		pr_err("ksu_mount: d_path failed, err: %lu\n",
+		pr_debug("ksu_mount: d_path failed, err: %lu\n",
 		       PTR_ERR(realpath));
 		return PTR_ERR(realpath);
 	}

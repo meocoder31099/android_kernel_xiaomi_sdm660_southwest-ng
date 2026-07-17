@@ -82,18 +82,18 @@ int __init kernelsu_init(void)
 #endif
 
 #ifdef CONFIG_KSU_DEBUG
-	pr_alert("*************************************************************");
-	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-	pr_alert("**                                                         **");
-	pr_alert("**         You are running KernelSU in DEBUG mode          **");
-	pr_alert("**                                                         **");
-	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-	pr_alert("*************************************************************");
+	pr_debug("*************************************************************");
+	pr_debug("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+	pr_debug("**                                                         **");
+	pr_debug("**         You are running KernelSU in DEBUG mode          **");
+	pr_debug("**                                                         **");
+	pr_debug("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+	pr_debug("*************************************************************");
 #endif
 
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
-        pr_err("prepare cred failed!\n");
+        pr_debug("prepare cred failed!\n");
     }
 
 	ksu_feature_init();
@@ -103,7 +103,7 @@ int __init kernelsu_init(void)
 	
 
 	if (ksu_late_loaded) {
-		pr_info("late load mode, skipping kprobe hooks\n");
+		pr_debug("late load mode, skipping kprobe hooks\n");
 
 		apply_kernelsu_rules();
 		cache_sid();
@@ -128,7 +128,7 @@ int __init kernelsu_init(void)
 		track_throne(false);
 
 		if (!getenforce()) {
-			pr_info("Permissive SELinux, enforcing\n");
+			pr_debug("Permissive SELinux, enforcing\n");
 			setenforce(true);
 		}
 

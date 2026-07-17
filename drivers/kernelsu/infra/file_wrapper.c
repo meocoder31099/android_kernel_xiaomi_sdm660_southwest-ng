@@ -551,7 +551,7 @@ int ksu_install_file_wrapper(int fd)
 		"[ksu_fdwrapper]", &file_wrapper_data->ops, file_wrapper_data,
 		orig_file->f_flags, NULL);
 	if (IS_ERR(wrapper_file)) {
-		pr_err("ksu_fdwrapper: getfile failed: %ld\n",
+		pr_debug("ksu_fdwrapper: getfile failed: %ld\n",
 		       PTR_ERR(wrapper_file));
 		ret = PTR_ERR(wrapper_file);
 		goto out_release_wrapper;
@@ -612,13 +612,13 @@ void __init ksu_file_wrapper_init(void)
 	static const struct file_operations tmp = { .owner = THIS_MODULE };
 	struct file *dummy = anon_inode_getfile("dummy", &tmp, NULL, 0);
 	if (IS_ERR(dummy)) {
-		pr_err("file_wrapper: initialize anon_inode_mnt failed, can't get file: %ld\n",
+		pr_debug("file_wrapper: initialize anon_inode_mnt failed, can't get file: %ld\n",
 		       PTR_ERR(dummy));
 		return;
 	}
 	anon_inode_mnt = dummy->f_path.mnt;
 	if (unlikely(!anon_inode_mnt)) {
-		pr_err("file_wrapper: initialize anon_inode_mnt failed, got NULL\n");
+		pr_debug("file_wrapper: initialize anon_inode_mnt failed, got NULL\n");
 	}
 	fput(dummy);
 #endif

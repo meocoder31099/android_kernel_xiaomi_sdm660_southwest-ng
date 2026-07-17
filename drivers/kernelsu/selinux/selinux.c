@@ -32,13 +32,13 @@ static int transive_to_domain(const char *domain, struct cred *cred)
 
     tsec = selinux_cred(cred);
     if (!tsec) {
-        pr_err("tsec == NULL!\n");
+        pr_debug("tsec == NULL!\n");
         return -1;
     }
 
     error = security_secctx_to_secid(domain, strlen(domain), &sid);
     if (error) {
-        pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
+        pr_debug("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
                 sid, error);
     }
     if (!error) {
@@ -76,7 +76,7 @@ is_ksu_transition(const struct task_security_struct *old_tsec,
 void setup_selinux(const char *domain, struct cred *cred)
 {
     if (transive_to_domain(domain, cred)) {
-        pr_err("transive domain failed.\n");
+        pr_debug("transive domain failed.\n");
         return;
     }
 }
@@ -84,7 +84,7 @@ void setup_selinux(const char *domain, struct cred *cred)
 void setup_ksu_cred(void)
 {
     if (ksu_cred && transive_to_domain(KERNEL_SU_CONTEXT, ksu_cred)) {
-        pr_err("setup ksu cred failed.\n");
+        pr_debug("setup ksu cred failed.\n");
     }
 }
 
@@ -156,37 +156,37 @@ void cache_sid(void)
     err = security_secctx_to_secid(KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT),
                                    &cached_su_sid);
     if (err) {
-        pr_warn("Failed to cache kernel su domain SID: %d\n", err);
+        pr_debug("Failed to cache kernel su domain SID: %d\n", err);
         cached_su_sid = 0;
     } else {
-        pr_info("Cached su SID: %u\n", cached_su_sid);
+        pr_debug("Cached su SID: %u\n", cached_su_sid);
     }
 
     err = security_secctx_to_secid(ZYGOTE_CONTEXT, strlen(ZYGOTE_CONTEXT),
                                    &cached_zygote_sid);
     if (err) {
-        pr_warn("Failed to cache zygote SID: %d\n", err);
+        pr_debug("Failed to cache zygote SID: %d\n", err);
         cached_zygote_sid = 0;
     } else {
-        pr_info("Cached zygote SID: %u\n", cached_zygote_sid);
+        pr_debug("Cached zygote SID: %u\n", cached_zygote_sid);
     }
 
     err = security_secctx_to_secid(INIT_CONTEXT, strlen(INIT_CONTEXT),
                                    &cached_init_sid);
     if (err) {
-        pr_warn("Failed to cache init SID: %d\n", err);
+        pr_debug("Failed to cache init SID: %d\n", err);
         cached_init_sid = 0;
     } else {
-        pr_info("Cached init SID: %u\n", cached_init_sid);
+        pr_debug("Cached init SID: %u\n", cached_init_sid);
     }
 
     err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
                                    &ksu_file_sid);
     if (err) {
-        pr_warn("Failed to cache ksu_file SID: %d\n", err);
+        pr_debug("Failed to cache ksu_file SID: %d\n", err);
         ksu_file_sid = 0;
     } else {
-        pr_info("Cached ksu_file SID: %u\n", ksu_file_sid);
+        pr_debug("Cached ksu_file SID: %u\n", ksu_file_sid);
     }
 }
 
@@ -272,19 +272,19 @@ static void initialize_fake_status(void)
 
 	struct page *real_page = selinux_kernel_status_page(&selinux_state);
 	if (!real_page) {
-		pr_warn("ksu_selinux_hide: status_page not exist\n");
+		pr_debug("ksu_selinux_hide: status_page not exist\n");
 		goto out;
 	}
 
 	struct selinux_kernel_status *status = page_address(real_page);
 	if (!status->enforcing && !ksu_late_loaded) {
-		pr_warn("ksu_selinux_hide: skip not enforcing\n");
+		pr_debug("ksu_selinux_hide: skip not enforcing\n");
 		goto out;
 	}
 
 	struct page *new_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
 	if (!new_page) {
-		pr_err("ksu_selinux_hide: failed to allocate fake status page\n");
+		pr_debug("ksu_selinux_hide: failed to allocate fake status page\n");
 		goto out;
 	}
 
@@ -301,7 +301,7 @@ static void initialize_fake_status(void)
 	}
 
 	WRITE_ONCE(fake_status, new_page);
-	pr_info("ksu_selinux_hide: fake status ready: sequence=%d policyload=%d enforcing=%d\n",
+	pr_debug("ksu_selinux_hide: fake status ready: sequence=%d policyload=%d enforcing=%d\n",
 		new_status->sequence, new_status->policyload,
 		new_status->enforcing);
 out:
@@ -340,13 +340,13 @@ static void hook_selinux_status_open(void)
 		(struct file_operations *)kallsyms_lookup_name(
 			"sel_handle_status_ops");
 	if (!ops) {
-		pr_err("ksu_selinux_hide: sel_handle_status_ops not found, fake status disabled\n");
+		pr_debug("ksu_selinux_hide: sel_handle_status_ops not found, fake status disabled\n");
 		return;
 	}
 
 	orig_sel_open_handle_status = ops->open;
 	ops->open = my_sel_open_handle_status;
-	pr_info("ksu_selinux_hide: hooked sel_handle_status_ops->open\n");
+	pr_debug("ksu_selinux_hide: hooked sel_handle_status_ops->open\n");
 }
 
 static void unhook_selinux_status_open(void)
@@ -358,13 +358,13 @@ static void unhook_selinux_status_open(void)
 		(struct file_operations *)kallsyms_lookup_name(
 			"sel_handle_status_ops");
 	if (!ops) {
-		pr_err("ksu_selinux_hide: sel_handle_status_ops not found on unhook\n");
+		pr_debug("ksu_selinux_hide: sel_handle_status_ops not found on unhook\n");
 		return;
 	}
 
 	ops->open = orig_sel_open_handle_status;
 	orig_sel_open_handle_status = NULL;
-	pr_info("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
+	pr_debug("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
 }
 
 static int selinux_hide_status_feature_get(u64 *value)
@@ -377,11 +377,11 @@ static int selinux_hide_status_feature_set(u64 value)
 {
 	bool enable = !!value;
 	if (enable == ksu_selinux_hide_status_enabled) {
-		pr_info("ksu_selinux_hide: no need to change\n");
+		pr_debug("ksu_selinux_hide: no need to change\n");
 		return 0;
 	}
 	ksu_selinux_hide_status_enabled = enable;
-	pr_info("ksu_selinux_hide: set to %d\n", enable);
+	pr_debug("ksu_selinux_hide: set to %d\n", enable);
 	return 0;
 }
 
@@ -398,7 +398,7 @@ void ksu_selinux_hide_status_handle_second_stage(void)
 	if (READ_ONCE(fake_status)) {
 		static_key_disable(&fake_status_initialize_key.key);
 	} else {
-		pr_warn("ksu_selinux_hide: fake status needs late initialization\n");
+		pr_debug("ksu_selinux_hide: fake status needs late initialization\n");
 	}
 }
 
@@ -406,13 +406,13 @@ void ksu_selinux_hide_status_handle_post_fs_data(void)
 {
 	static_key_disable(&fake_status_initialize_key.key);
 	if (!READ_ONCE(fake_status))
-		pr_err("ksu_selinux_hide: fake status not initialized after post-fs-data!\n");
+		pr_debug("ksu_selinux_hide: fake status not initialized after post-fs-data!\n");
 }
 
 void __init ksu_selinux_hide_status_init(void)
 {
 	if (ksu_register_feature_handler(&selinux_hide_status_handler))
-		pr_err("ksu_selinux_hide: failed to register feature handler\n");
+		pr_debug("ksu_selinux_hide: failed to register feature handler\n");
 
 	if (ksu_late_loaded) {
 		initialize_fake_status();

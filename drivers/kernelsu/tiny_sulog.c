@@ -30,7 +30,7 @@ void sulog_init_heap(void)
 	if (!sulog_buf_ptr)
 		return;
 	
-	pr_info("sulog_init: allocated %lu bytes on 0x%p \n", SULOG_BUFSIZ, sulog_buf_ptr);
+	pr_debug("sulog_init: allocated %lu bytes on 0x%p \n", SULOG_BUFSIZ, sulog_buf_ptr);
 }
 
 /*

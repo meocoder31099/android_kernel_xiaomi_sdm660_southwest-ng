@@ -30,7 +30,7 @@ static KSU_DECL_FSNOTIFY_OPS(ksu_handle_inode_event)
 		return 0;
 	if (ksu_fname_len(file_name) == 13 &&
 	    !memcmp(ksu_fname_arg(file_name), "packages.list", 13)) {
-		pr_info("packages.list detected: %d\n", mask);
+		pr_debug("packages.list detected: %d\n", mask);
 		track_throne(false);
 	}
 	return 0;
@@ -87,7 +87,7 @@ static int watch_one_dir(struct watch_dir *wd)
 {
 	int ret = kern_path(wd->path, LOOKUP_FOLLOW, &wd->kpath);
 	if (ret) {
-		pr_info("path not ready: %s (%d)\n", wd->path, ret);
+		pr_debug("path not ready: %s (%d)\n", wd->path, ret);
 		return ret;
 	}
 	wd->inode = d_inode(wd->kpath.dentry);
@@ -95,13 +95,13 @@ static int watch_one_dir(struct watch_dir *wd)
 
 	ret = add_mark_on_inode(wd->inode, wd->mask, &wd->mark);
 	if (ret) {
-		pr_err("Add mark failed for %s (%d)\n", wd->path, ret);
+		pr_debug("Add mark failed for %s (%d)\n", wd->path, ret);
 		path_put(&wd->kpath);
 		iput(wd->inode);
 		wd->inode = NULL;
 		return ret;
 	}
-	pr_info("watching %s\n", wd->path);
+	pr_debug("watching %s\n", wd->path);
 	return 0;
 }
 
@@ -138,7 +138,7 @@ int ksu_observer_init(void)
 		return PTR_ERR(g);
 
 	ret = watch_one_dir(&g_watch);
-	pr_info("observer init done\n");
+	pr_debug("observer init done\n");
 	return 0;
 }
 
@@ -146,5 +146,5 @@ void __exit ksu_observer_exit(void)
 {
 	unwatch_one_dir(&g_watch);
 	fsnotify_put_group(g);
-	pr_info("observer exit done\n");
+	pr_debug("observer exit done\n");
 }

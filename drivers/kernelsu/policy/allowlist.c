@@ -99,10 +99,10 @@ void ksu_persistent_allow_list(void);
 void ksu_show_allow_list(void)
 {
     struct perm_data *p = NULL;
-    pr_info("ksu_show_allow_list\n");
+    pr_debug("ksu_show_allow_list\n");
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
-        pr_info("uid :%d, allow: %d\n", p->profile.current_uid,
+        pr_debug("uid :%d, allow: %d\n", p->profile.current_uid,
                 p->profile.allow_su);
     }
     rcu_read_unlock();
@@ -165,19 +165,19 @@ static bool profile_valid(struct app_profile *profile)
 	}
 
 	if (strnlen(profile->key, sizeof(profile->key)) >= sizeof(profile->key)) {
-		pr_err("invalid app_profile key\n");
+		pr_debug("invalid app_profile key\n");
 		return false;
 	}
 
 	if (profile->version < KSU_APP_PROFILE_VER) {
-		pr_info("Unsupported profile version: %d\n", profile->version);
+		pr_debug("Unsupported profile version: %d\n", profile->version);
 		return false;
 	}
 
 	if (profile->allow_su) {
 #ifndef CONFIG_KSU_DISABLE_POLICY
 		if (profile->rp_config.profile.groups_count > KSU_MAX_GROUPS) {
-			pr_err("invalid groups_count in app_profile: %s\n", profile->key);
+			pr_debug("invalid groups_count in app_profile: %s\n", profile->key);
 			return false;
 		}
 
@@ -186,13 +186,13 @@ static bool profile_valid(struct app_profile *profile)
 		if (unlikely(need_migrate_su_domain)) {
 			if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
 				__strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
-				pr_info("migrated profile domain: %s\n", profile->key);
+				pr_debug("migrated profile domain: %s\n", profile->key);
 			}
 		}
 		size_t len = strnlen(domain, domain_len);
 
 		if (len == 0 || len >= domain_len) {
-			pr_err("invalid selinux_domain in app_profile: %s\n", profile->key);
+			pr_debug("invalid selinux_domain in app_profile: %s\n", profile->key);
 			return false;
 		}
 #endif
@@ -208,7 +208,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     u16 count = 0;
 
     if (!profile_valid(profile)) {
-        pr_err("Failed to set app profile: invalid profile!\n");
+        pr_debug("Failed to set app profile: invalid profile!\n");
         return -EINVAL;
     }
 
@@ -245,7 +245,7 @@ int ksu_set_app_profile(struct app_profile *profile)
     }
 
     if (unlikely(count == U16_MAX)) {
-        pr_err("too many app profile\n");
+        pr_debug("too many app profile\n");
         result = -E2BIG;
         goto out_unlock;
     }
@@ -253,19 +253,19 @@ int ksu_set_app_profile(struct app_profile *profile)
     // not found, alloc a new node!
     p = (struct perm_data *)kzalloc(sizeof(struct perm_data), GFP_KERNEL);
     if (!p) {
-        pr_err("ksu_set_app_profile alloc failed\n");
+        pr_debug("ksu_set_app_profile alloc failed\n");
         result = -ENOMEM;
         goto out_unlock;
     }
 
     memcpy(&p->profile, profile, sizeof(*profile));
     if (profile->allow_su) {
-        pr_info("set root profile, key: %s, uid: %d, gid: %d, context: %s\n",
+        pr_debug("set root profile, key: %s, uid: %d, gid: %d, context: %s\n",
                 profile->key, profile->current_uid,
                 profile->rp_config.profile.gid,
                 profile->rp_config.profile.selinux_domain);
     } else {
-        pr_info("set app profile, key: %s, uid: %d, umount modules: %d\n",
+        pr_debug("set app profile, key: %s, uid: %d, umount modules: %d\n",
                 profile->key, profile->current_uid,
                 profile->nrp_config.profile.umount_modules);
     }
@@ -301,7 +301,7 @@ out:
              * registered to request superuser?
              */
             if (allow_list_pointer >= ARRAY_SIZE(allow_list_arr)) {
-                pr_err("too many apps registered\n");
+                pr_debug("too many apps registered\n");
                 WARN_ON(1);
             } else {
                 allow_list_arr[allow_list_pointer++] = profile->current_uid;
@@ -430,7 +430,7 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
     u16 i = 0, j = 0;
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
-        // pr_info("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
+        // pr_debug("get_allow_list uid: %d allow: %d\n", p->uid, p->allow);
         if (p->profile.allow_su == allow &&
             !is_uid_manager(p->profile.current_uid)) {
             if (j < length) {
@@ -463,24 +463,24 @@ static void do_persistent_allow_list(struct work_struct *work)
     struct file *fp =
         ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
-        pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
+        pr_debug("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
         goto out;
     }
 
 	// store magic and version
 	if (ksu_kernel_write_compat(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
-		pr_err("save_allow_list write magic failed.\n");
+		pr_debug("save_allow_list write magic failed.\n");
 		goto close_file;
 	}
 
 	if (ksu_kernel_write_compat(fp, &version, sizeof(version), &off) != sizeof(version)) {
-		pr_err("save_allow_list write version failed.\n");
+		pr_debug("save_allow_list write version failed.\n");
 		goto close_file;
 	}
 
     mutex_lock(&allowlist_mutex);
     list_for_each_entry (p, &allow_list, list) {
-        pr_info("save allow list, name: %s uid :%d, allow: %d\n",
+        pr_debug("save allow list, name: %s uid :%d, allow: %d\n",
                 p->profile.key, p->profile.current_uid, p->profile.allow_su);
 
         ksu_kernel_write_compat(fp, &p->profile, sizeof(p->profile), &off);
@@ -501,7 +501,7 @@ void ksu_persistent_allow_list(void)
 void ksu_load_allow_list()
 {
 #ifdef CONFIG_KSU_DISABLE_POLICY
-	pr_info("allowlist load skipped because policy is disabled\n");
+	pr_debug("allowlist load skipped because policy is disabled\n");
 	return;
 #endif
 	loff_t off = 0;
@@ -518,23 +518,23 @@ void ksu_load_allow_list()
 	// load allowlist now!
 	fp = ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
+		pr_debug("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
 		return;
 	}
 
 	// verify magic
 	if (ksu_kernel_read_compat(fp, &magic, sizeof(magic), &off) != sizeof(magic) ||
 	    magic != FILE_MAGIC) {
-		pr_err("allowlist file invalid: %d!\n", magic);
+		pr_debug("allowlist file invalid: %d!\n", magic);
 		goto exit;
 	}
 
 	if (ksu_kernel_read_compat(fp, &version, sizeof(version), &off) != sizeof(version)) {
-		pr_err("allowlist read version: %d failed\n", version);
+		pr_debug("allowlist read version: %d failed\n", version);
 		goto exit;
 	}
 
-	pr_info("allowlist version: %d\n", version);
+	pr_debug("allowlist version: %d\n", version);
 
 	while (true) {
 		struct app_profile profile;
@@ -542,11 +542,11 @@ void ksu_load_allow_list()
 		ret = ksu_kernel_read_compat(fp, &profile, sizeof(profile), &off);
 
 		if (ret <= 0) {
-			pr_info("load_allow_list read err: %zd\n", ret);
+			pr_debug("load_allow_list read err: %zd\n", ret);
 			break;
 		}
 
-        pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key,
+        pr_debug("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key,
                 profile.current_uid, profile.allow_su);
         ksu_set_app_profile(&profile);
     }
@@ -563,7 +563,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *),
 	struct perm_data *n = NULL;
 
     if (!ksu_boot_completed) {
-        pr_info("boot not completed, skip prune\n");
+        pr_debug("boot not completed, skip prune\n");
         return;
     }
 
@@ -576,7 +576,7 @@ void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *),
         bool is_preserved_uid = uid == KSU_APP_PROFILE_PRESERVE_UID;
         if (!is_preserved_uid && !is_uid_valid(uid, package, data)) {
             modified = true;
-            pr_info("prune uid: %d, package: %s\n", uid, package);
+            pr_debug("prune uid: %d, package: %s\n", uid, package);
             list_del_rcu(&np->list);
             kfree_rcu(np, rcu);
             if (likely(uid <= BITMAP_UID_MAX)) {
