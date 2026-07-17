@@ -261,7 +261,7 @@ int lifo_stats_file_show(struct seq_file *m, void *v)
 	struct lpm_stats *pos = NULL;
 
 	if (list_empty(&stats->child)) {
-		pr_err("%s: ERROR: Lifo level with no children\n",
+		pr_debug("%s: ERROR: Lifo level with no children\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -411,7 +411,7 @@ static int config_level(const char *name, const char **levels,
 
 	stats->directory = debugfs_create_dir(dirname, directory);
 	if (!stats->directory) {
-		pr_err("%s: Unable to create %s debugfs directory\n",
+		pr_debug("%s: Unable to create %s debugfs directory\n",
 			__func__, dirname);
 		kfree(stats->time_stats);
 		return -EPERM;
@@ -427,7 +427,7 @@ static int config_level(const char *name, const char **levels,
 		if (!debugfs_create_file(stats->time_stats[i].name, 0444,
 			stats->directory, (void *)&stats->time_stats[i],
 			&level_stats_fops)) {
-			pr_err("%s: Unable to create %s %s level-stats file\n",
+			pr_debug("%s: Unable to create %s %s level-stats file\n",
 				__func__, stats->name,
 				stats->time_stats[i].name);
 			kfree(stats->time_stats);
@@ -437,7 +437,7 @@ static int config_level(const char *name, const char **levels,
 
 	if (!debugfs_create_file("stats", 0444, stats->directory,
 		(void *)stats, &lpm_stats_fops)) {
-		pr_err("%s: Unable to create %s's overall 'stats' file\n",
+		pr_debug("%s: Unable to create %s's overall 'stats' file\n",
 			__func__, stats->name);
 		kfree(stats->time_stats);
 		return -EPERM;
@@ -481,7 +481,7 @@ static struct kobject *local_module_kobject(void)
 		if (err) {
 			kobject_put(&mk->kobj);
 			kfree(mk);
-			pr_err("%s: cannot create kobject for %s\n",
+			pr_debug("%s: cannot create kobject for %s\n",
 					__func__, KBUILD_MODNAME);
 			return ERR_PTR(err);
 		}
@@ -558,7 +558,7 @@ static struct lpm_stats *config_cpu_level(const char *name,
 		ret = config_level(cpu_name, levels, num_levels, parent,
 					stats);
 		if (ret) {
-			pr_err("%s: Unable to create %s stats\n",
+			pr_debug("%s: Unable to create %s stats\n",
 				__func__, cpu_name);
 			return ERR_PTR(ret);
 		}
@@ -566,7 +566,7 @@ static struct lpm_stats *config_cpu_level(const char *name,
 		ret = create_sysfs_node(cpu, stats);
 
 		if (ret) {
-			pr_err("Could not create the sysfs node\n");
+			pr_debug("Could not create the sysfs node\n");
 			return ERR_PTR(ret);
 		}
 	}
@@ -587,7 +587,7 @@ static void config_suspend_level(struct lpm_stats *stats)
 	if (!debugfs_create_file(suspend_time_stats.name, 0444,
 		stats->directory, (void *)&suspend_time_stats,
 		&level_stats_fops))
-		pr_err("%s: Unable to create %s Suspend stats file\n",
+		pr_debug("%s: Unable to create %s Suspend stats file\n",
 			__func__, stats->name);
 }
 
@@ -605,7 +605,7 @@ static struct lpm_stats *config_cluster_level(const char *name,
 
 	ret = config_level(name, levels, num_levels, parent, stats);
 	if (ret) {
-		pr_err("%s: Unable to create %s stats\n", __func__,
+		pr_debug("%s: Unable to create %s stats\n", __func__,
 			name);
 		kfree(stats);
 		return ERR_PTR(ret);
@@ -613,7 +613,7 @@ static struct lpm_stats *config_cluster_level(const char *name,
 
 	if (!debugfs_create_file("lifo", 0444, stats->directory,
 		(void *)stats, &lifo_stats_fops)) {
-		pr_err("%s: Unable to create %s lifo stats file\n",
+		pr_debug("%s: Unable to create %s lifo stats file\n",
 			__func__, stats->name);
 		kfree(stats);
 		return ERR_PTR(-EPERM);
@@ -684,7 +684,7 @@ struct lpm_stats *lpm_stats_config_level(const char *name,
 	struct lpm_stats *stats = NULL;
 
 	if (!levels || num_levels <= 0 || IS_ERR(parent)) {
-		pr_err("%s: Invalid input\n", __func__);
+		pr_debug("%s: Invalid input\n", __func__);
 		return ERR_PTR(-EINVAL);
 	}
 

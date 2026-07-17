@@ -368,7 +368,7 @@ void gic_show_pending_irqs(void)
 					GICD_ISENABLER + j * 4);
 		pending = readl_relaxed(base +
 					GICD_ISPENDR + j * 4);
-		pr_err("Pending and enabled irqs[%d] %x %x\n", j,
+		pr_debug("Pending and enabled irqs[%d] %x %x\n", j,
 				pending, enabled);
 
 	}
@@ -402,7 +402,7 @@ static void gic_show_resume_irq(struct gic_chip_data *gic)
 		else if (desc->action && desc->action->name)
 			name = desc->action->name;
 
-		pr_warn("%s: %d triggered %s\n", __func__, irq, name);
+		pr_debug("%s: %d triggered %s\n", __func__, irq, name);
 	}
 }
 
@@ -541,7 +541,7 @@ static int gic_iterate_rdists(int (*fn)(struct redist_region *, void __iomem *))
 		reg = readl_relaxed(ptr + GICR_PIDR2) & GIC_PIDR2_ARCH_MASK;
 		if (reg != GIC_PIDR2_ARCH_GICv3 &&
 		    reg != GIC_PIDR2_ARCH_GICv4) { /* We're in trouble... */
-			pr_warn("No redistributor present @%p\n", ptr);
+			pr_debug("No redistributor present @%p\n", ptr);
 			break;
 		}
 
@@ -620,7 +620,7 @@ static int __gic_update_vlpi_properties(struct redist_region *region,
 static void gic_update_vlpi_properties(void)
 {
 	gic_iterate_rdists(__gic_update_vlpi_properties);
-	pr_info("%sVLPI support, %sdirect LPI support\n",
+	pr_debug("%sVLPI support, %sdirect LPI support\n",
 		!gic_data.rdists.has_vlpis ? "no " : "",
 		!gic_data.rdists.has_direct_lpi ? "no " : "");
 }
@@ -641,7 +641,7 @@ static void gic_cpu_sys_reg_init(void)
 	 * Kindly inform the luser.
 	 */
 	if (!gic_enable_sre())
-		pr_err("GIC: unable to set SRE (disabled at EL2), panic ahead\n");
+		pr_debug("GIC: unable to set SRE (disabled at EL2), panic ahead\n");
 
 	pribits = gic_read_ctlr();
 	pribits &= ICC_CTLR_EL1_PRI_BITS_MASK;
@@ -725,7 +725,7 @@ static void gic_cpu_sys_reg_init(void)
 
 		need_rss |= MPIDR_RS(cpu_logical_map(i));
 		if (need_rss && (!have_rss))
-			pr_crit("CPU%d (%lx) can't SGI CPU%d (%lx), no RSS\n",
+			pr_debug("CPU%d (%lx) can't SGI CPU%d (%lx), no RSS\n",
 				cpu, (unsigned long)mpidr,
 				i, (unsigned long)cpu_logical_map(i));
 	}
@@ -1184,7 +1184,7 @@ static int __init gic_init_bases(void __iomem *dist_base,
 		static_branch_disable(&supports_deactivate_key);
 
 	if (static_branch_likely(&supports_deactivate_key))
-		pr_info("GIC: Using split EOI/Deactivate mode\n");
+		pr_debug("GIC: Using split EOI/Deactivate mode\n");
 
 	gic_data.fwnode = handle;
 	gic_data.dist_base = dist_base;
@@ -1216,13 +1216,13 @@ static int __init gic_init_bases(void __iomem *dist_base,
 	}
 
 	gic_data.has_rss = !!(typer & GICD_TYPER_RSS);
-	pr_info("Distributor has %sRange Selector support\n",
+	pr_debug("Distributor has %sRange Selector support\n",
 		gic_data.has_rss ? "" : "no ");
 
 	if (typer & GICD_TYPER_MBIS) {
 		err = mbi_init(handle, gic_data.domain);
 		if (err)
-			pr_err("Failed to initialize MBIs\n");
+			pr_debug("Failed to initialize MBIs\n");
 	}
 
 	set_handle_irq(gic_handle_irq);
@@ -1286,7 +1286,7 @@ static void __init gic_populate_ppi_partitions(struct device_node *gic_node)
 
 		part->partition_id = of_node_to_fwnode(child_part);
 
-		pr_info("GIC: PPI partition %s[%d] { ",
+		pr_debug("GIC: PPI partition %s[%d] { ",
 			child_part->name, part_idx);
 
 		n = of_property_count_elems_of_size(child_part, "affinity",
@@ -1313,13 +1313,13 @@ static void __init gic_populate_ppi_partitions(struct device_node *gic_node)
 				continue;
 			}
 
-			pr_cont("%pOF[%d] ", cpu_node, cpu);
+			pr_debug("%pOF[%d] ", cpu_node, cpu);
 
 			cpumask_set_cpu(cpu, &part->mask);
 			of_node_put(cpu_node);
 		}
 
-		pr_cont("}\n");
+		pr_debug("}\n");
 		part_idx++;
 	}
 
@@ -1386,13 +1386,13 @@ static int __init gicv3_of_init(struct device_node *node, struct device_node *pa
 
 	dist_base = of_iomap(node, 0);
 	if (!dist_base) {
-		pr_err("%pOF: unable to map gic dist registers\n", node);
+		pr_debug("%pOF: unable to map gic dist registers\n", node);
 		return -ENXIO;
 	}
 
 	err = gic_validate_dist_version(dist_base);
 	if (err) {
-		pr_err("%pOF: no distributor detected, giving up\n", node);
+		pr_debug("%pOF: no distributor detected, giving up\n", node);
 		goto out_unmap_dist;
 	}
 
@@ -1413,7 +1413,7 @@ static int __init gicv3_of_init(struct device_node *node, struct device_node *pa
 		ret = of_address_to_resource(node, 1 + i, &res);
 		rdist_regs[i].redist_base = of_iomap(node, 1 + i);
 		if (ret || !rdist_regs[i].redist_base) {
-			pr_err("%pOF: couldn't map region %d\n", node, i);
+			pr_debug("%pOF: couldn't map region %d\n", node, i);
 			err = -ENODEV;
 			goto out_unmap_rdist;
 		}
@@ -1480,7 +1480,7 @@ gic_acpi_parse_madt_redist(struct acpi_subtable_header *header,
 
 	redist_base = ioremap(redist->base_address, redist->length);
 	if (!redist_base) {
-		pr_err("Couldn't map GICR region @%llx\n", redist->base_address);
+		pr_debug("Couldn't map GICR region @%llx\n", redist->base_address);
 		return -ENOMEM;
 	}
 
@@ -1527,7 +1527,7 @@ static int __init gic_acpi_collect_gicr_base(void)
 	if (acpi_table_parse_madt(type, redist_parser, 0) > 0)
 		return 0;
 
-	pr_info("No valid GICR entries exist\n");
+	pr_debug("No valid GICR entries exist\n");
 	return -ENODEV;
 }
 
@@ -1663,7 +1663,7 @@ static void __init gic_acpi_setup_kvm_info(void)
 	int irq;
 
 	if (!gic_acpi_collect_virt_info()) {
-		pr_warn("Unable to get hardware information used for virtualization\n");
+		pr_debug("Unable to get hardware information used for virtualization\n");
 		return;
 	}
 
@@ -1702,13 +1702,13 @@ gic_acpi_init(struct acpi_subtable_header *header, const unsigned long end)
 	acpi_data.dist_base = ioremap(dist->base_address,
 				      ACPI_GICV3_DIST_MEM_SIZE);
 	if (!acpi_data.dist_base) {
-		pr_err("Unable to map GICD registers\n");
+		pr_debug("Unable to map GICD registers\n");
 		return -ENOMEM;
 	}
 
 	err = gic_validate_dist_version(acpi_data.dist_base);
 	if (err) {
-		pr_err("No distributor detected at @%p, giving up\n",
+		pr_debug("No distributor detected at @%p, giving up\n",
 		       acpi_data.dist_base);
 		goto out_dist_unmap;
 	}

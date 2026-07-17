@@ -69,7 +69,7 @@ static void __always_unused ____ftrace_check_##name(void)		\
 	struct ____ftrace_##name *__entry = NULL;			\
 									\
 	/* force compile-time check on F_printk() */			\
-	printk(print);							\
+	no_printk(print);							\
 }
 
 #undef FTRACE_ENTRY_DUP

@@ -52,7 +52,7 @@ again:
 					   flags);
 	if (!addr && (flags & MEMBLOCK_MIRROR)) {
 		flags &= ~MEMBLOCK_MIRROR;
-		pr_warn("Could not allocate %pap bytes of mirrored memory\n",
+		pr_debug("Could not allocate %pap bytes of mirrored memory\n",
 			&size);
 		goto again;
 	}
@@ -276,7 +276,7 @@ static void * __init ___alloc_bootmem(unsigned long size, unsigned long align,
 	/*
 	 * Whoops, we cannot satisfy the allocation request.
 	 */
-	pr_alert("bootmem alloc of %lu bytes failed!\n", size);
+	pr_debug("bootmem alloc of %lu bytes failed!\n", size);
 	panic("Out of memory");
 	return NULL;
 }
@@ -350,7 +350,7 @@ static void * __init ___alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 	if (ptr)
 		return ptr;
 
-	pr_alert("bootmem alloc of %lu bytes failed!\n", size);
+	pr_debug("bootmem alloc of %lu bytes failed!\n", size);
 	panic("Out of memory");
 	return NULL;
 }

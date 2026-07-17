@@ -140,7 +140,7 @@ int wcd9xxx_spmi_request_irq(int irq, irq_handler_t handler,
 				irq_flags,
 				name, priv);
 		if (rc < 0) {
-			dev_err(&map.spmi[BIT_BYTE(irq)]->dev,
+			dev_dbg(&map.spmi[BIT_BYTE(irq)]->dev,
 				"Can't request %d IRQ\n", irq);
 			return rc;
 		}
@@ -183,7 +183,7 @@ static irqreturn_t wcd9xxx_spmi_irq_handler(int linux_irq, void *data)
 	unsigned long status[NUM_IRQ_REGS] = {0};
 
 	if (unlikely(wcd9xxx_spmi_lock_sleep() == false)) {
-		pr_err("Failed to hold suspend\n");
+		pr_debug("Failed to hold suspend\n");
 		return IRQ_NONE;
 	}
 
@@ -271,7 +271,7 @@ int wcd9xxx_spmi_suspend(pm_message_t pmesg)
 		}
 		mutex_lock(&map.pm_lock);
 	} else if (map.pm_state == WCD9XXX_PM_ASLEEP) {
-		pr_warn("%s: system is already suspended, state %d, wlock %dn",
+		pr_debug("%s: system is already suspended, state %d, wlock %dn",
 			__func__, map.pm_state,
 			map.wlock_holders);
 	}
@@ -293,7 +293,7 @@ int wcd9xxx_spmi_resume(void)
 				map.wlock_holders);
 		map.pm_state = WCD9XXX_PM_SLEEPABLE;
 	} else {
-		pr_warn("%s: system is already awake, state %d wlock %d\n",
+		pr_debug("%s: system is already awake, state %d wlock %d\n",
 				__func__, map.pm_state,
 				map.wlock_holders);
 	}
@@ -337,7 +337,7 @@ bool wcd9xxx_spmi_lock_sleep(void)
 						 WCD9XXX_PM_AWAKE)),
 					msecs_to_jiffies(
 					WCD9XXX_SYSTEM_RESUME_TIMEOUT_MS))) {
-		pr_warn("%s: system didn't resume within %dms, s %d, w %d\n",
+		pr_debug("%s: system didn't resume within %dms, s %d, w %d\n",
 			__func__,
 			WCD9XXX_SYSTEM_RESUME_TIMEOUT_MS, map.pm_state,
 			map.wlock_holders);

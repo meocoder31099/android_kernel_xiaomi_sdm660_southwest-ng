@@ -198,7 +198,7 @@ static bool wcd_spi_can_suspend(struct wcd_spi_priv *wcd_spi)
 
 	if (wcd_spi->clk_users > 0 ||
 	    test_bit(WCD_SPI_CLK_STATE_ENABLED, &wcd_spi->status_mask)) {
-		dev_err(&spi->dev, "%s: cannot suspend, clk_users = %d\n",
+		dev_dbg(&spi->dev, "%s: cannot suspend, clk_users = %d\n",
 			__func__, wcd_spi->clk_users);
 		return false;
 	}
@@ -223,7 +223,7 @@ static int wcd_spi_wait_for_resume(struct wcd_spi_priv *wcd_spi)
 				msecs_to_jiffies(WCD_SPI_RESUME_TIMEOUT_MS));
 	WCD_SPI_MUTEX_LOCK(spi, wcd_spi->clk_mutex);
 	if (rc == 0) {
-		dev_err(&spi->dev, "%s: failed to resume in %u msec\n",
+		dev_dbg(&spi->dev, "%s: failed to resume in %u msec\n",
 			__func__, WCD_SPI_RESUME_TIMEOUT_MS);
 		rc = -EIO;
 		goto done;
@@ -251,7 +251,7 @@ static int wcd_spi_read_single(struct spi_device *spi,
 		__func__, remote_addr);
 
 	if (!tx_buf) {
-		dev_err(&spi->dev, "%s: tx_buf not allocated\n",
+		dev_dbg(&spi->dev, "%s: tx_buf not allocated\n",
 			__func__);
 		return -ENOMEM;
 	}
@@ -271,7 +271,7 @@ static int wcd_spi_read_single(struct spi_device *spi,
 
 	ret = spi_sync(spi, &wcd_spi->msg2);
 	if (ret)
-		dev_err(&spi->dev, "%s: spi_sync failed, err %d\n",
+		dev_dbg(&spi->dev, "%s: spi_sync failed, err %d\n",
 			__func__, ret);
 	else
 		memcpy((u8*) val, rx_buf, sizeof(*val));
@@ -297,7 +297,7 @@ static int wcd_spi_read_multi(struct spi_device *spi,
 	frame |= remote_addr & WCD_CMD_ADDR_MASK;
 
 	if (!tx_buf || !rx_buf) {
-		dev_err(&spi->dev, "%s: %s not allocated\n", __func__,
+		dev_dbg(&spi->dev, "%s: %s not allocated\n", __func__,
 			(!tx_buf) ? "tx_buf" : "rx_buf");
 		return -ENOMEM;
 	}
@@ -311,7 +311,7 @@ static int wcd_spi_read_multi(struct spi_device *spi,
 
 	ret = spi_sync(spi, &wcd_spi->msg1);
 	if (ret) {
-		dev_err(&spi->dev, "%s: failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -367,7 +367,7 @@ static int wcd_spi_write_multi(struct spi_device *spi,
 	xfer_len = len + sizeof(frame);
 
 	if (!tx_buf) {
-		dev_err(&spi->dev, "%s: tx_buf not allocated\n",
+		dev_dbg(&spi->dev, "%s: tx_buf not allocated\n",
 			__func__);
 		return -ENOMEM;
 	}
@@ -381,7 +381,7 @@ static int wcd_spi_write_multi(struct spi_device *spi,
 
 	ret = spi_sync(spi, &wcd_spi->msg1);
 	if (ret < 0)
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Failed, addr = 0x%x, len = %zd\n",
 			__func__, remote_addr, len);
 	return ret;
@@ -407,7 +407,7 @@ static int wcd_spi_transfer_split(struct spi_device *spi,
 			ret = wcd_spi_read_single(spi, addr,
 						  (u32 *)data);
 		if (ret < 0) {
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: %s fail iter(%d) start-word addr (0x%x)\n",
 				__func__, wcd_spi_xfer_req_str(xfer_req),
 				loop_cnt, addr);
@@ -430,7 +430,7 @@ static int wcd_spi_transfer_split(struct spi_device *spi,
 			ret = wcd_spi_read_multi(spi, addr, data,
 						 WCD_SPI_RW_MULTI_MAX_LEN);
 		if (ret < 0) {
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: %s fail iter(%d) max-write addr (0x%x)\n",
 				__func__, wcd_spi_xfer_req_str(xfer_req),
 				loop_cnt, addr);
@@ -455,7 +455,7 @@ static int wcd_spi_transfer_split(struct spi_device *spi,
 		else
 			ret = wcd_spi_read_multi(spi, addr, data, to_xfer);
 		if (ret < 0) {
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: %s fail write addr (0x%x), size (0x%x)\n",
 				__func__, wcd_spi_xfer_req_str(xfer_req),
 				addr, to_xfer);
@@ -475,7 +475,7 @@ static int wcd_spi_transfer_split(struct spi_device *spi,
 		else
 			ret = wcd_spi_read_single(spi, addr,  (u32 *) data);
 		if (ret < 0) {
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: %s fail iter(%d) end-write addr (0x%x)\n",
 				__func__, wcd_spi_xfer_req_str(xfer_req),
 				loop_cnt, addr);
@@ -552,7 +552,7 @@ static int wcd_spi_cmd_rdsr(struct spi_device *spi,
 
 	ret = spi_sync(spi, &wcd_spi->msg2);
 	if (ret < 0) {
-		dev_err(&spi->dev, "%s: RDSR failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: RDSR failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -577,7 +577,7 @@ static int wcd_spi_clk_enable(struct spi_device *spi)
 					 WCD_SPI_ACCESS_REQUEST,
 					 WCD_SPI_AC_DATA_TRANSFER);
 		if (ret) {
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: Can't get spi access, err = %d\n",
 				__func__, ret);
 			return ret;
@@ -586,21 +586,21 @@ static int wcd_spi_clk_enable(struct spi_device *spi)
 
 	ret = wcd_spi_cmd_nop(spi);
 	if (ret < 0) {
-		dev_err(&spi->dev, "%s: NOP1 failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: NOP1 failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
 
 	ret = wcd_spi_cmd_clkreq(spi);
 	if (ret < 0) {
-		dev_err(&spi->dev, "%s: CLK_REQ failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: CLK_REQ failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
 
 	ret = wcd_spi_cmd_nop(spi);
 	if (ret < 0) {
-		dev_err(&spi->dev, "%s: NOP2 failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: NOP2 failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -614,7 +614,7 @@ static int wcd_spi_clk_enable(struct spi_device *spi)
 		set_bit(WCD_SPI_CLK_STATE_ENABLED,
 			&wcd_spi->status_mask);
 	} else {
-		dev_err(&spi->dev, "%s: RDSR status is zero\n",
+		dev_dbg(&spi->dev, "%s: RDSR status is zero\n",
 			__func__);
 		ret = -EIO;
 	}
@@ -629,7 +629,7 @@ static int wcd_spi_clk_disable(struct spi_device *spi)
 
 	ret = wcd_spi_write_single(spi, WCD_SPI_ADDR_IPC_CTL_HOST, 0x01);
 	if (ret < 0)
-		dev_err(&spi->dev, "%s: Failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: Failed, err = %d\n",
 			__func__, ret);
 	/*
 	 * clear this bit even if clock disable failed
@@ -643,7 +643,7 @@ static int wcd_spi_clk_disable(struct spi_device *spi)
 					 WCD_SPI_ACCESS_RELEASE,
 					 WCD_SPI_AC_DATA_TRANSFER);
 		if (ret)
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: SPI access release failed, err = %d\n",
 				__func__, ret);
 	}
@@ -666,7 +666,7 @@ static int wcd_spi_clk_ctrl(struct spi_device *spi,
 	/* Reject any unbalanced disable request */
 	if (wcd_spi->clk_users < 0 ||
 	    (!request && wcd_spi->clk_users == 0)) {
-		dev_err(&spi->dev, "%s: Unbalanced clk_users %d for %s\n",
+		dev_dbg(&spi->dev, "%s: Unbalanced clk_users %d for %s\n",
 			 __func__, wcd_spi->clk_users,
 			request ? "enable" : "disable");
 		ret = -EINVAL;
@@ -683,7 +683,7 @@ static int wcd_spi_clk_ctrl(struct spi_device *spi,
 		 * as the transaction cannot be completed.
 		 */
 		if (wcd_spi_is_suspended(wcd_spi)) {
-			dev_err(&spi->dev,
+			dev_dbg(&spi->dev,
 				"%s: SPI suspended, cannot enable clk\n",
 				__func__);
 			ret = -EIO;
@@ -724,7 +724,7 @@ static int wcd_spi_clk_ctrl(struct spi_device *spi,
 		} else {
 			ret = wcd_spi_clk_disable(spi);
 			if (ret < 0)
-				dev_err(&spi->dev,
+				dev_dbg(&spi->dev,
 					"%s: Failed to disable clk err = %d\n",
 					__func__, ret);
 		}
@@ -789,7 +789,7 @@ static void wcd_spi_clk_work(struct work_struct *work)
 	WCD_SPI_MUTEX_LOCK(spi, wcd_spi->clk_mutex);
 	ret = wcd_spi_clk_disable(spi);
 	if (ret < 0)
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Failed to disable clk, err = %d\n",
 			__func__, ret);
 	WCD_SPI_MUTEX_UNLOCK(spi, wcd_spi->clk_mutex);
@@ -804,12 +804,12 @@ static int __wcd_spi_data_xfer(struct spi_device *spi,
 
 	/* Check for minimum alignment requirements */
 	if (!IS_ALIGNED(msg->remote_addr, WCD_SPI_RW_MIN_ALIGN)) {
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s addr 0x%x is not aligned to 0x%x\n",
 			__func__, msg->remote_addr, WCD_SPI_RW_MIN_ALIGN);
 		return -EINVAL;
 	} else if (msg->len % WCD_SPI_WORD_BYTE_CNT) {
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s len 0x%zx is not multiple of %d\n",
 			__func__, msg->len, WCD_SPI_WORD_BYTE_CNT);
 		return -EINVAL;
@@ -848,7 +848,7 @@ static int wcd_spi_data_xfer(struct spi_device *spi,
 	int ret, ret1;
 
 	if (msg->len <= 0) {
-		dev_err(&spi->dev, "%s: Invalid size %zd\n",
+		dev_dbg(&spi->dev, "%s: Invalid size %zd\n",
 			__func__, msg->len);
 		return -EINVAL;
 	}
@@ -857,7 +857,7 @@ static int wcd_spi_data_xfer(struct spi_device *spi,
 	ret = wcd_spi_clk_ctrl(spi, WCD_SPI_CLK_ENABLE,
 			       WCD_SPI_CLK_FLAG_IMMEDIATE);
 	if (ret < 0) {
-		dev_err(&spi->dev, "%s: clk enable failed %d\n",
+		dev_dbg(&spi->dev, "%s: clk enable failed %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -865,7 +865,7 @@ static int wcd_spi_data_xfer(struct spi_device *spi,
 	/* Perform the transaction */
 	ret = __wcd_spi_data_xfer(spi, msg, req);
 	if (ret < 0)
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Failed %s, addr = 0x%x, size = 0x%zx, err = %d\n",
 			__func__, wcd_spi_xfer_req_str(req),
 			msg->remote_addr, msg->len, ret);
@@ -874,7 +874,7 @@ static int wcd_spi_data_xfer(struct spi_device *spi,
 	ret1 = wcd_spi_clk_ctrl(spi, WCD_SPI_CLK_DISABLE,
 				WCD_SPI_CLK_FLAG_DELAYED);
 	if (ret1 < 0)
-		dev_err(&spi->dev, "%s: clk disable failed %d\n",
+		dev_dbg(&spi->dev, "%s: clk disable failed %d\n",
 			__func__, ret1);
 done:
 	return ret;
@@ -893,7 +893,7 @@ static int wcd_spi_data_write(struct spi_device *spi,
 		       struct wcd_spi_msg *msg)
 {
 	if (!spi || !msg) {
-		pr_err("%s: Invalid %s\n", __func__,
+		pr_debug("%s: Invalid %s\n", __func__,
 			(!spi) ? "spi device" : "msg");
 		return -EINVAL;
 	}
@@ -916,7 +916,7 @@ static int wcd_spi_data_read(struct spi_device *spi,
 		      struct wcd_spi_msg *msg)
 {
 	if (!spi || !msg) {
-		pr_err("%s: Invalid %s\n", __func__,
+		pr_debug("%s: Invalid %s\n", __func__,
 			(!spi) ? "spi device" : "msg");
 		return -EINVAL;
 	}
@@ -943,7 +943,7 @@ static int wdsp_spi_dload_section(struct spi_device *spi,
 
 	ret = __wcd_spi_data_xfer(spi, &msg, WCD_SPI_XFER_WRITE);
 	if (ret < 0)
-		dev_err(&spi->dev, "%s: fail addr (0x%x) size (0x%zx)\n",
+		dev_dbg(&spi->dev, "%s: fail addr (0x%x) size (0x%zx)\n",
 			__func__, msg.remote_addr, msg.len);
 	return ret;
 }
@@ -964,7 +964,7 @@ static int wdsp_spi_read_section(struct spi_device *spi, void *data)
 
 	ret = wcd_spi_data_xfer(spi, &msg, WCD_SPI_XFER_READ);
 	if (ret < 0)
-		dev_err(&spi->dev, "%s: fail addr (0x%x) size (0x%zx)\n",
+		dev_dbg(&spi->dev, "%s: fail addr (0x%x) size (0x%zx)\n",
 			__func__, msg.remote_addr, msg.len);
 	return ret;
 }
@@ -988,7 +988,7 @@ static int wdsp_spi_event_handler(struct device *dev, void *priv_data,
 					 WCD_SPI_ACCESS_REQUEST,
 					 WCD_SPI_AC_REMOTE_DOWN);
 			if (ret)
-				dev_err(&spi->dev,
+				dev_dbg(&spi->dev,
 					"%s: request access failed %d\n",
 					__func__, ret);
 		}
@@ -1009,7 +1009,7 @@ static int wdsp_spi_event_handler(struct device *dev, void *priv_data,
 					 WCD_SPI_ACCESS_RELEASE,
 					 WCD_SPI_AC_REMOTE_DOWN);
 			if (ret)
-				dev_err(&spi->dev,
+				dev_dbg(&spi->dev,
 					"%s: release access failed %d\n",
 					__func__, ret);
 		}
@@ -1020,7 +1020,7 @@ static int wdsp_spi_event_handler(struct device *dev, void *priv_data,
 		ret = wcd_spi_clk_ctrl(spi, WCD_SPI_CLK_ENABLE,
 				       WCD_SPI_CLK_FLAG_IMMEDIATE);
 		if (ret < 0)
-			dev_err(&spi->dev, "%s: clk_req failed %d\n",
+			dev_dbg(&spi->dev, "%s: clk_req failed %d\n",
 				__func__, ret);
 		break;
 
@@ -1031,7 +1031,7 @@ static int wdsp_spi_event_handler(struct device *dev, void *priv_data,
 		ret = wcd_spi_clk_ctrl(spi, WCD_SPI_CLK_DISABLE,
 				       WCD_SPI_CLK_FLAG_IMMEDIATE);
 		if (ret < 0)
-			dev_err(&spi->dev, "%s: clk unvote failed %d\n",
+			dev_dbg(&spi->dev, "%s: clk unvote failed %d\n",
 				__func__, ret);
 		break;
 
@@ -1056,7 +1056,7 @@ static int wdsp_spi_event_handler(struct device *dev, void *priv_data,
 
 	case WDSP_EVENT_GET_DEVOPS:
 		if (!data) {
-			dev_err(&spi->dev, "%s: invalid data\n",
+			dev_dbg(&spi->dev, "%s: invalid data\n",
 				__func__);
 			ret = -EINVAL;
 			break;
@@ -1088,7 +1088,7 @@ static int wcd_spi_bus_gwrite(void *context, const void *reg,
 
 	if (!reg || !val || reg_len != wcd_spi->reg_bytes ||
 	    val_len != wcd_spi->val_bytes) {
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Invalid input, reg_len = %zd, val_len = %zd",
 			__func__, reg_len, val_len);
 		return -EINVAL;
@@ -1111,7 +1111,7 @@ static int wcd_spi_bus_write(void *context, const void *data,
 	struct wcd_spi_priv *wcd_spi = spi_get_drvdata(spi);
 
 	if (count < (wcd_spi->reg_bytes + wcd_spi->val_bytes)) {
-		dev_err(&spi->dev, "%s: Invalid size %zd\n",
+		dev_dbg(&spi->dev, "%s: Invalid size %zd\n",
 			__func__, count);
 		WARN_ON(1);
 		return -EINVAL;
@@ -1137,7 +1137,7 @@ static int wcd_spi_bus_read(void *context, const void *reg,
 
 	if (!reg || !val || reg_len != wcd_spi->reg_bytes ||
 	    val_len != wcd_spi->val_bytes) {
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Invalid input, reg_len = %zd, val_len = %zd",
 			__func__, reg_len, val_len);
 		return -EINVAL;
@@ -1159,7 +1159,7 @@ static int wcd_spi_bus_read(void *context, const void *reg,
 
 	ret = spi_sync(spi, &wcd_spi->msg2);
 	if (ret) {
-		dev_err(&spi->dev, "%s: spi_sync failed, err %d\n",
+		dev_dbg(&spi->dev, "%s: spi_sync failed, err %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -1229,7 +1229,7 @@ static ssize_t wcd_spi_debugfs_mem_read(struct file *file, char __user *ubuf,
 		return -EINVAL;
 
 	if (dbg_data->size == 0 || dbg_data->addr == 0) {
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Invalid request, size = %u, addr = 0x%x\n",
 			__func__, dbg_data->size, dbg_data->addr);
 		return 0;
@@ -1247,7 +1247,7 @@ static ssize_t wcd_spi_debugfs_mem_read(struct file *file, char __user *ubuf,
 
 	ret = wcd_spi_data_read(spi, &msg);
 	if (ret < 0) {
-		dev_err(&spi->dev,
+		dev_dbg(&spi->dev,
 			"%s: Failed to read %zu bytes from addr 0x%x\n",
 			__func__, buf_size, msg.remote_addr);
 		goto done;
@@ -1372,7 +1372,7 @@ static int wcd_spi_add_ac_dev(struct device *dev,
 	pdev = platform_device_alloc("wcd-spi-ac", -1);
 	if (IS_ERR_OR_NULL(pdev)) {
 		ret = PTR_ERR(pdev);
-		dev_err(dev, "%s: pdev alloc failed, ret = %d\n",
+		dev_dbg(dev, "%s: pdev alloc failed, ret = %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -1382,7 +1382,7 @@ static int wcd_spi_add_ac_dev(struct device *dev,
 
 	ret = platform_device_add(pdev);
 	if (ret) {
-		dev_err(dev, "%s: pdev add failed, ret = %d\n",
+		dev_dbg(dev, "%s: pdev add failed, ret = %d\n",
 			__func__, ret);
 		goto dealloc_pdev;
 	}
@@ -1408,7 +1408,7 @@ static int wdsp_spi_init(struct device *dev, void *priv_data)
 
 	ret = wcd_spi_init(spi);
 	if (ret < 0)
-		dev_err(&spi->dev, "%s: Init failed, err = %d\n",
+		dev_dbg(&spi->dev, "%s: Init failed, err = %d\n",
 			__func__, ret);
 	return ret;
 }
@@ -1450,7 +1450,7 @@ static int wcd_spi_component_bind(struct device *dev,
 							 wcd_spi,
 							 &wdsp_spi_ops);
 	if (ret) {
-		dev_err(dev, "%s: register_cmpnt_ops failed, err = %d\n",
+		dev_dbg(dev, "%s: register_cmpnt_ops failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -1462,13 +1462,13 @@ static int wcd_spi_component_bind(struct device *dev,
 					   &spi->dev, &wcd_spi_regmap_cfg);
 	if (IS_ERR(wcd_spi->regmap)) {
 		ret = PTR_ERR(wcd_spi->regmap);
-		dev_err(&spi->dev, "%s: Failed to allocate regmap, err = %d\n",
+		dev_dbg(&spi->dev, "%s: Failed to allocate regmap, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
 
 	if (wcd_spi_debugfs_init(spi))
-		dev_err(&spi->dev, "%s: Failed debugfs init\n", __func__);
+		dev_dbg(&spi->dev, "%s: Failed debugfs init\n", __func__);
 
 	spi_message_init(&wcd_spi->msg1);
 	spi_message_add_tail(&wcd_spi->xfer1, &wcd_spi->msg1);
@@ -1556,7 +1556,7 @@ static int wcd_spi_probe(struct spi_device *spi)
 				   "qcom,mem-base-addr",
 				   &wcd_spi->mem_base_addr);
 	if (ret < 0) {
-		dev_err(&spi->dev, "%s: Missing %s DT entry",
+		dev_dbg(&spi->dev, "%s: Missing %s DT entry",
 			__func__, "qcom,mem-base-addr");
 		goto err_ret;
 	}
@@ -1578,7 +1578,7 @@ static int wcd_spi_probe(struct spi_device *spi)
 
 	ret = component_add(&spi->dev, &wcd_spi_component_ops);
 	if (ret) {
-		dev_err(&spi->dev, "%s: component_add failed err = %d\n",
+		dev_dbg(&spi->dev, "%s: component_add failed err = %d\n",
 			__func__, ret);
 		goto err_component_add;
 	}

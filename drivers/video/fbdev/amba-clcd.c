@@ -338,7 +338,7 @@ static int clcdfb_set_par(struct fb_info *info)
 	clcdfb_enable(fb, regs.cntl);
 
 #ifdef DEBUG
-	printk(KERN_INFO
+	no_printk(KERN_INFO
 	       "CLCD: Registers set to\n"
 	       "  %08x %08x %08x %08x\n"
 	       "  %08x %08x %08x %08x\n",
@@ -492,7 +492,7 @@ static int clcdfb_register(struct clcd_fb *fb)
 
 	fb->regs = ioremap(fb->fb.fix.mmio_start, fb->fb.fix.mmio_len);
 	if (!fb->regs) {
-		printk(KERN_ERR "CLCD: unable to remap registers\n");
+		no_printk(KERN_ERR "CLCD: unable to remap registers\n");
 		ret = -ENOMEM;
 		goto clk_unprep;
 	}
@@ -556,14 +556,14 @@ static int clcdfb_register(struct clcd_fb *fb)
 
 	fb_set_var(&fb->fb, &fb->fb.var);
 
-	dev_info(&fb->dev->dev, "%s hardware, %s display\n",
+	dev_dbg(&fb->dev->dev, "%s hardware, %s display\n",
 	         fb->board->name, fb->panel->mode.name);
 
 	ret = register_framebuffer(&fb->fb);
 	if (ret == 0)
 		goto out;
 
-	printk(KERN_ERR "CLCD: cannot register framebuffer (%d)\n", ret);
+	no_printk(KERN_ERR "CLCD: cannot register framebuffer (%d)\n", ret);
 
 	fb_dealloc_cmap(&fb->fb.cmap);
  unmap:
@@ -978,7 +978,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
 
 	ret = amba_request_regions(dev, NULL);
 	if (ret) {
-		printk(KERN_ERR "CLCD: unable to reserve regs region\n");
+		no_printk(KERN_ERR "CLCD: unable to reserve regs region\n");
 		goto out;
 	}
 
@@ -992,7 +992,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
 	fb->vendor = vendor;
 	fb->board = board;
 
-	dev_info(&fb->dev->dev, "PL%03x designer %02x rev%u at 0x%08llx\n",
+	dev_dbg(&fb->dev->dev, "PL%03x designer %02x rev%u at 0x%08llx\n",
 		amba_part(dev), amba_manf(dev), amba_rev(dev),
 		(unsigned long long)dev->res.start);
 

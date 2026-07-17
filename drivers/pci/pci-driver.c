@@ -315,7 +315,7 @@ static long local_pci_probe(void *_ddi)
 	 * Probe function should return < 0 for failure, 0 for success
 	 * Treat values > 0 as success, but warn.
 	 */
-	dev_warn(dev, "Driver probe function unexpectedly returned %d\n", rc);
+	dev_dbg(dev, "Driver probe function unexpectedly returned %d\n", rc);
 	return 0;
 }
 
@@ -1289,7 +1289,7 @@ static int pci_pm_runtime_suspend(struct device *dev)
 				pm->runtime_suspend, error);
 			return error;
 		} else if (error) {
-			dev_err(dev, "can't suspend (%pf returned %d)\n",
+			dev_dbg(dev, "can't suspend (%pf returned %d)\n",
 				pm->runtime_suspend, error);
 			return error;
 		}

@@ -116,7 +116,7 @@ void pktlog_getbuf_intsafe(struct ath_pktlog_arg *plarg)
 #endif
 
 	if (!plarg) {
-		printk("Invalid parg in %s\n", __func__);
+		no_printk("Invalid parg in %s\n", __func__);
 		return;
 	}
 
@@ -132,7 +132,7 @@ void pktlog_getbuf_intsafe(struct ath_pktlog_arg *plarg)
 	flags = plarg->flags;
 
 	if (!log_buf) {
-		printk("Invalid log_buf in %s\n", __func__);
+		no_printk("Invalid log_buf in %s\n", __func__);
 		return;
 	}
 
@@ -409,12 +409,12 @@ A_STATUS process_tx_info(struct cdp_pdev *txrx_pdev, void *data)
 	uint32_t len;
 
 	if (!txrx_pdev) {
-		printk("Invalid pdev in %s\n", __func__);
+		no_printk("Invalid pdev in %s\n", __func__);
 		return A_ERROR;
 	}
 
 	if (!pl_dev) {
-		pr_err("Invalid pktlog handle in %s\n", __func__);
+		pr_debug("Invalid pktlog handle in %s\n", __func__);
 		qdf_assert(pl_dev);
 		return A_ERROR;
 	}
@@ -525,7 +525,7 @@ A_STATUS process_tx_info(struct cdp_pdev *txrx_pdev, void *data)
 	}
 
 	if (!pl_dev) {
-		pr_err("Invalid pktlog handle in %s\n", __func__);
+		pr_debug("Invalid pktlog handle in %s\n", __func__);
 		qdf_assert(pl_dev);
 		return A_ERROR;
 	}
@@ -848,13 +848,13 @@ A_STATUS process_rx_info(void *pdev, void *data)
 	uint32_t len;
 
 	if (!pdev) {
-		printk("Invalid pdev in %s", __func__);
+		no_printk("Invalid pdev in %s", __func__);
 		return A_ERROR;
 	}
 
 	pl_dev = ((struct ol_txrx_pdev_t *)pdev)->pl_dev;
 	if (!pl_dev) {
-		printk("Invalid pl_dev in %s", __func__);
+		no_printk("Invalid pl_dev in %s", __func__);
 		return A_ERROR;
 	}
 
@@ -926,13 +926,13 @@ A_STATUS process_rx_info(void *pdev, void *data)
 	uint32_t len;
 
 	if (!pdev) {
-		printk("Invalid pdev in %s", __func__);
+		no_printk("Invalid pdev in %s", __func__);
 		return A_ERROR;
 	}
 
 	pl_dev = ((struct ol_txrx_pdev_t *)pdev)->pl_dev;
 	if (!pl_dev) {
-		printk("Invalid pl_dev in %s", __func__);
+		no_printk("Invalid pl_dev in %s", __func__);
 		return A_ERROR;
 	}
 

@@ -41,7 +41,7 @@ void __init init_random_pool(void)
 		u64 bytes_received = desc.ret[0];
 
 		if (bytes_received != SZ_512)
-			pr_warn("Did not receive the expected number of bytes from PRNG: %llu\n",
+			pr_debug("Did not receive the expected number of bytes from PRNG: %llu\n",
 				bytes_received);
 
 		dmac_inv_range(random_buffer, random_buffer +

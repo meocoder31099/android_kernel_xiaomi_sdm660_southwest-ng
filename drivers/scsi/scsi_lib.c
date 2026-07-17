@@ -1932,7 +1932,7 @@ static void scsi_request_fn(struct request_queue *q)
 		spin_unlock_irq(q->queue_lock);
 		cmd = blk_mq_rq_to_pdu(req);
 		if (cmd != req->special) {
-			printk(KERN_CRIT "impossible request in %s.\n"
+			no_printk(KERN_CRIT "impossible request in %s.\n"
 					 "please mail a stack trace to "
 					 "linux-scsi@vger.kernel.org\n",
 					 __func__);
@@ -2507,7 +2507,7 @@ int __init scsi_init_queue(void)
 					   sizeof(struct scsi_data_buffer),
 					   0, 0, NULL);
 	if (!scsi_sdb_cache) {
-		printk(KERN_ERR "SCSI: can't init scsi sdb cache\n");
+		no_printk(KERN_ERR "SCSI: can't init scsi sdb cache\n");
 		return -ENOMEM;
 	}
 
@@ -3432,7 +3432,7 @@ void *scsi_kmap_atomic_sg(struct scatterlist *sgl, int sg_count,
 	}
 
 	if (unlikely(i == sg_count)) {
-		printk(KERN_ERR "%s: Bytes in sg: %zu, requested offset %zu, "
+		no_printk(KERN_ERR "%s: Bytes in sg: %zu, requested offset %zu, "
 			"elements %d\n",
 		       __func__, sg_len, *offset, sg_count);
 		WARN_ON(1);

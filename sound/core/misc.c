@@ -99,7 +99,7 @@ void __snd_printk(unsigned int level, const char *path, int line,
 	if (!level_found && level)
 		memcpy(verbose_fmt, KERN_DEBUG, sizeof(KERN_DEBUG) - 1);
 
-	printk(verbose_fmt, sanity_file_name(path), line, &vaf);
+	no_printk(verbose_fmt, sanity_file_name(path), line, &vaf);
 #else
 	vprintk(format, args);
 #endif

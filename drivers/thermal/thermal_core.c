@@ -96,7 +96,7 @@ static void bind_previous_governor(struct thermal_zone_device *tz,
 {
 	if (tz->governor && tz->governor->bind_to_tz) {
 		if (tz->governor->bind_to_tz(tz)) {
-			dev_err(&tz->device,
+			dev_dbg(&tz->device,
 				"governor %s failed to bind and the previous one (%s) failed to bind again, thermal zone %s has no governor\n",
 				failed_gov_name, tz->governor->name, tz->type);
 			tz->governor = NULL;
@@ -177,7 +177,7 @@ int thermal_register_governor(struct thermal_governor *governor)
 
 			ret = thermal_set_governor(pos, governor);
 			if (ret)
-				dev_err(&pos->device,
+				dev_dbg(&pos->device,
 					"Failed to set governor %s for thermal zone %s: %d\n",
 					governor->name, pos->type, ret);
 		}
@@ -408,7 +408,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
 		tz->ops->notify(tz, trip, trip_type);
 
 	if (trip_type == THERMAL_TRIP_CRITICAL) {
-		dev_emerg(&tz->device,
+		dev_dbg(&tz->device,
 			  "critical temperature reached (%d C), shutting down\n",
 			  tz->temperature / 1000);
 		mutex_lock(&poweroff_lock);
@@ -471,7 +471,7 @@ static void update_temperature(struct thermal_zone_device *tz)
 	ret = thermal_zone_get_temp(tz, &temp);
 	if (ret) {
 		if (ret != -EAGAIN)
-			dev_warn(&tz->device,
+			dev_dbg(&tz->device,
 				 "failed to read out thermal zone (%d)\n",
 				 ret);
 		return;
@@ -958,7 +958,7 @@ static inline
 void print_bind_err_msg(struct thermal_zone_device *tz,
 			struct thermal_cooling_device *cdev, int ret)
 {
-	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
+	dev_dbg(&tz->device, "binding zone %s with cdev %s failed:%d\n",
 		tz->type, cdev->type, ret);
 }
 
@@ -1617,7 +1617,7 @@ int thermal_generate_netlink_event(struct thermal_zone_device *tz,
 	result = genlmsg_multicast(&thermal_event_genl_family, skb, 0,
 				   0, GFP_ATOMIC);
 	if (result)
-		dev_err(&tz->device, "Failed to send netlink event:%d", result);
+		dev_dbg(&tz->device, "Failed to send netlink event:%d", result);
 
 	return result;
 }
@@ -1761,7 +1761,7 @@ cpu_limits_store(struct device *dev,
 	unsigned int max;
 
 	if (sscanf(buf, "cpu%u %u", &cpu, &max) != CPU_LIMITS_PARAM_NUM) {
-		pr_err("input param error, can not prase param\n");
+		pr_debug("input param error, can not prase param\n");
 		return -EINVAL;
 	}
 
@@ -1816,24 +1816,24 @@ static int create_thermal_message_node(void)
 	if (!ret) {
 		ret = sysfs_create_file(&thermal_message_dev.kobj, &dev_attr_sconfig.attr);
 		if (ret < 0)
-			pr_warn("Thermal: create sconfig node failed\n");
+			pr_debug("Thermal: create sconfig node failed\n");
 
 		ret = sysfs_create_file(&thermal_message_dev.kobj, &dev_attr_boost.attr);
 		if (ret < 0)
-			pr_warn("Thermal: create boost node failed\n");
+			pr_debug("Thermal: create boost node failed\n");
 
 		ret = sysfs_create_file(&thermal_message_dev.kobj, &dev_attr_temp_state.attr);
 		if (ret < 0)
-			pr_warn("Thermal: create temp state node failed\n");
+			pr_debug("Thermal: create temp state node failed\n");
 
 		ret = sysfs_create_file(&thermal_message_dev.kobj, &dev_attr_cpu_limits.attr);
 		ret = sysfs_create_file(&thermal_message_dev.kobj, &dev_attr_board_sensor.attr);
 		if (ret < 0)
-			pr_warn("Thermal: create board sensor node failed\n");
+			pr_debug("Thermal: create board sensor node failed\n");
 
 		ret = sysfs_create_file(&thermal_message_dev.kobj, &dev_attr_board_sensor_temp.attr);
 		if (ret < 0)
-			pr_warn("Thermal: create cpu limits node failed\n");
+			pr_debug("Thermal: create cpu limits node failed\n");
 	}
 
 	return ret;
@@ -1861,7 +1861,7 @@ static int of_parse_thermal_message(void)
 	if (of_property_read_string(np, "board-sensor", &board_sensor))
 		return -EINVAL;
 
-	pr_info("%s board sensor: %s\n", __func__, board_sensor);
+	pr_debug("%s board sensor: %s\n", __func__, board_sensor);
 
 	return 0;
 }
@@ -1894,16 +1894,16 @@ static int __init thermal_init(void)
 
 	result = register_pm_notifier(&thermal_pm_nb);
 	if (result)
-		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
+		pr_debug("Thermal: Can not register suspend notifier, return %d\n",
 			result);
 
 	result = create_thermal_message_node();
 	if (result)
-		pr_warn("Thermal: create thermal message node failed, return %d\n",
+		pr_debug("Thermal: create thermal message node failed, return %d\n",
 			result);
 	result = of_parse_thermal_message();
 	if (result)
-		pr_warn("Thermal: Can not parse thermal message node, return %d\n",
+		pr_debug("Thermal: Can not parse thermal message node, return %d\n",
 			result);
 
 	return 0;

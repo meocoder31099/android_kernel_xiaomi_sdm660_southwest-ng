@@ -207,7 +207,7 @@ static int __init nf_conntrack_sane_init(void)
 
 	ret = nf_conntrack_helpers_register(sane, ports_c * 2);
 	if (ret < 0) {
-		pr_err("failed to register helpers\n");
+		pr_debug("failed to register helpers\n");
 		kfree(sane_buffer);
 		return ret;
 	}

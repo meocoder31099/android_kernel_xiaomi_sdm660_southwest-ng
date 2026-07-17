@@ -242,19 +242,19 @@ static int msm_fd_start_streaming(struct vb2_queue *q, unsigned int count)
 	int ret;
 
 	if (ctx->work_buf.fd == -1) {
-		dev_err(ctx->fd_device->dev, "Missing working buffer\n");
+		dev_dbg(ctx->fd_device->dev, "Missing working buffer\n");
 		return -EINVAL;
 	}
 
 	ret = msm_fd_hw_get(ctx->fd_device, ctx->settings.speed);
 	if (ret < 0) {
-		dev_err(ctx->fd_device->dev, "Can not acquire fd hw\n");
+		dev_dbg(ctx->fd_device->dev, "Can not acquire fd hw\n");
 		goto out;
 	}
 
 	ret = msm_fd_hw_schedule_and_start(ctx->fd_device);
 	if (ret < 0)
-		dev_err(ctx->fd_device->dev, "Can not start fd hw\n");
+		dev_dbg(ctx->fd_device->dev, "Can not start fd hw\n");
 
 out:
 	return ret;
@@ -352,9 +352,9 @@ static int msm_fd_vbif_error_handler(void *handle, uint32_t error)
 
 	if (error == CPP_VBIF_ERROR_HANG) {
 		mutex_lock(&fd->recovery_lock);
-		dev_err(fd->dev, "Handling FD VBIF Hang\n");
+		dev_dbg(fd->dev, "Handling FD VBIF Hang\n");
 		if (fd->state != MSM_FD_DEVICE_RUNNING) {
-			dev_err(fd->dev, "FD is not FD_DEVICE_RUNNING, %d\n",
+			dev_dbg(fd->dev, "FD is not FD_DEVICE_RUNNING, %d\n",
 				fd->state);
 			mutex_unlock(&fd->recovery_lock);
 			return 0;
@@ -385,7 +385,7 @@ static int msm_fd_vbif_error_handler(void *handle, uint32_t error)
 		/* Schedule and restart */
 		ret = msm_fd_hw_schedule_next_buffer(fd, 1);
 		if (ret) {
-			dev_err(fd->dev, "Cannot reschedule buffer, recovery failed\n");
+			dev_dbg(fd->dev, "Cannot reschedule buffer, recovery failed\n");
 			fd->recovery_mode = 0;
 			mutex_unlock(&fd->recovery_lock);
 			return ret;
@@ -441,14 +441,14 @@ static int msm_fd_open(struct file *file)
 	mutex_init(&ctx->lock);
 	ret = vb2_queue_init(&ctx->vb2_q);
 	if (ret < 0) {
-		dev_err(device->dev, "Error queue init\n");
+		dev_dbg(device->dev, "Error queue init\n");
 		goto error_vb2_queue_init;
 	}
 
 	ctx->mem_pool.fd_device = ctx->fd_device;
 	ctx->stats = vzalloc(sizeof(*ctx->stats) * MSM_FD_MAX_RESULT_BUFS);
 	if (!ctx->stats) {
-		dev_err(device->dev, "No memory for face statistics\n");
+		dev_dbg(device->dev, "No memory for face statistics\n");
 		ret = -ENOMEM;
 		goto error_stats_vmalloc;
 	}
@@ -456,7 +456,7 @@ static int msm_fd_open(struct file *file)
 	ret = cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_FD,
 			CAM_AHB_SVS_VOTE);
 	if (ret < 0) {
-		pr_err("%s: failed to vote for AHB\n", __func__);
+		pr_debug("%s: failed to vote for AHB\n", __func__);
 		goto error_ahb_config;
 	}
 
@@ -505,7 +505,7 @@ static int msm_fd_release(struct file *file)
 
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_FD,
 		CAM_AHB_SUSPEND_VOTE) < 0)
-		pr_err("%s: failed to remove vote for AHB\n", __func__);
+		pr_debug("%s: failed to remove vote for AHB\n", __func__);
 
 	return 0;
 }
@@ -555,14 +555,14 @@ static long msm_fd_private_ioctl(struct file *file, void *fh,
 	switch (cmd) {
 	case VIDIOC_MSM_FD_GET_RESULT:
 		if (req_result->frame_id == 0) {
-			dev_err(ctx->fd_device->dev, "Invalid frame id\n");
+			dev_dbg(ctx->fd_device->dev, "Invalid frame id\n");
 			return -EINVAL;
 		}
 
 		stats_idx = req_result->frame_id % MSM_FD_MAX_RESULT_BUFS;
 		stats = &ctx->stats[stats_idx];
 		if (req_result->frame_id != atomic_read(&stats->frame_id)) {
-			dev_err(ctx->fd_device->dev, "Stats not available\n");
+			dev_dbg(ctx->fd_device->dev, "Stats not available\n");
 			return -EINVAL;
 		}
 
@@ -575,18 +575,18 @@ static long msm_fd_private_ioctl(struct file *file, void *fh,
 					&stats->face_data[i],
 					sizeof(struct msm_fd_face_data));
 			if (ret) {
-				dev_err(ctx->fd_device->dev, "Copy to user\n");
+				dev_dbg(ctx->fd_device->dev, "Copy to user\n");
 				return -EFAULT;
 			}
 		}
 
 		if (req_result->frame_id != atomic_read(&stats->frame_id)) {
-			dev_err(ctx->fd_device->dev, "Erroneous buffer\n");
+			dev_dbg(ctx->fd_device->dev, "Erroneous buffer\n");
 			return -EINVAL;
 		}
 		break;
 	default:
-		dev_err(ctx->fd_device->dev, "Wrong ioctl type %x\n", cmd);
+		dev_dbg(ctx->fd_device->dev, "Wrong ioctl type %x\n", cmd);
 		ret = -ENOTTY;
 		break;
 	}
@@ -820,7 +820,7 @@ static int msm_fd_streamon(struct file *file,
 	ret = vb2_streamon(&ctx->vb2_q, buf_type);
 	mutex_unlock(&ctx->lock);
 	if (ret < 0)
-		dev_err(ctx->fd_device->dev, "Stream on fails\n");
+		dev_dbg(ctx->fd_device->dev, "Stream on fails\n");
 
 	return ret;
 }
@@ -841,7 +841,7 @@ static int msm_fd_streamoff(struct file *file,
 	ret = vb2_streamoff(&ctx->vb2_q, buf_type);
 	mutex_unlock(&ctx->lock);
 	if (ret < 0)
-		dev_err(ctx->fd_device->dev, "Stream off fails\n");
+		dev_dbg(ctx->fd_device->dev, "Stream off fails\n");
 
 	return ret;
 }
@@ -1103,7 +1103,7 @@ static int msm_fd_cropcap(struct file *file, void *fh, struct v4l2_cropcap *a)
 	struct fd_ctx *ctx = msm_fd_ctx_from_fh(fh);
 
 	if (!ctx->format.size) {
-		dev_err(ctx->fd_device->dev, "Cropcap fails format missing\n");
+		dev_dbg(ctx->fd_device->dev, "Cropcap fails format missing\n");
 		return -EINVAL;
 	}
 
@@ -1131,7 +1131,7 @@ static int msm_fd_g_crop(struct file *file, void *fh, struct v4l2_crop *crop)
 	struct fd_ctx *ctx = msm_fd_ctx_from_fh(fh);
 
 	if (!ctx->format.size) {
-		dev_err(ctx->fd_device->dev, "Get crop, format missing!\n");
+		dev_dbg(ctx->fd_device->dev, "Get crop, format missing!\n");
 		return -EINVAL;
 	}
 
@@ -1153,7 +1153,7 @@ static int msm_fd_s_crop(struct file *file, void *fh,
 	int min_face_size;
 
 	if (!ctx->format.size) {
-		dev_err(ctx->fd_device->dev, "Get crop, format missing!\n");
+		dev_dbg(ctx->fd_device->dev, "Get crop, format missing!\n");
 		return -EINVAL;
 	}
 
@@ -1257,7 +1257,7 @@ static void msm_fd_wq_handler(struct work_struct *work)
 	active_buf = msm_fd_hw_get_active_buffer(fd, 0);
 	if (!active_buf) {
 		/* This should never happen, something completely wrong */
-		dev_err(fd->dev, "Oops no active buffer empty queue\n");
+		dev_dbg(fd->dev, "Oops no active buffer empty queue\n");
 		MSM_FD_SPIN_UNLOCK(fd->slock, 1);
 		return;
 	}
@@ -1337,7 +1337,7 @@ static int fd_probe(struct platform_device *pdev)
 	/* Get resources */
 	ret = msm_fd_hw_get_mem_resources(pdev, fd);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail get resources\n");
+		dev_dbg(&pdev->dev, "Fail get resources\n");
 		ret = -ENODEV;
 		goto error_mem_resources;
 	}
@@ -1345,13 +1345,13 @@ static int fd_probe(struct platform_device *pdev)
 	ret = msm_camera_get_regulator_info(pdev, &fd->vdd_info,
 		&fd->num_reg);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail to get regulators\n");
+		dev_dbg(&pdev->dev, "Fail to get regulators\n");
 		goto error_get_regulator;
 	}
 	ret = msm_camera_get_clk_info_and_rates(pdev, &fd->clk_info,
 		&fd->clk, &fd->clk_rates, &fd->clk_rates_num, &fd->clk_num);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail to get clocks\n");
+		dev_dbg(&pdev->dev, "Fail to get clocks\n");
 		goto error_get_clocks;
 	}
 
@@ -1370,14 +1370,14 @@ static int fd_probe(struct platform_device *pdev)
 
 	ret = msm_camera_register_bus_client(pdev, CAM_BUS_CLIENT_FD);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail to get bus\n");
+		dev_dbg(&pdev->dev, "Fail to get bus\n");
 		goto error_get_bus;
 	}
 
 	/* Get face detect hw before read engine revision */
 	ret = msm_fd_hw_get(fd, 0);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail to get hw\n");
+		dev_dbg(&pdev->dev, "Fail to get hw\n");
 		goto error_hw_get_request_irq;
 	}
 	fd->hw_revision = msm_fd_hw_get_revision(fd);
@@ -1386,14 +1386,14 @@ static int fd_probe(struct platform_device *pdev)
 
 	ret = msm_fd_hw_request_irq(pdev, fd, msm_fd_wq_handler);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail request irq\n");
+		dev_dbg(&pdev->dev, "Fail request irq\n");
 		goto error_hw_get_request_irq;
 	}
 
 	/* v4l2 device */
 	ret = v4l2_device_register(&pdev->dev, &fd->v4l2_dev);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Failed to register v4l2 device\n");
+		dev_dbg(&pdev->dev, "Failed to register v4l2 device\n");
 		ret = -ENOENT;
 		goto error_v4l2_register;
 	}
@@ -1447,7 +1447,7 @@ static int fd_device_remove(struct platform_device *pdev)
 
 	fd = platform_get_drvdata(pdev);
 	if (fd == NULL) {
-		dev_err(&pdev->dev, "Can not get fd drvdata\n");
+		dev_dbg(&pdev->dev, "Can not get fd drvdata\n");
 		return 0;
 	}
 	video_unregister_device(&fd->video);

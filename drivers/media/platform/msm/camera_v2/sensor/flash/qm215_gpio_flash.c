@@ -37,7 +37,7 @@ static int32_t qm215_flash_low(
 	struct msm_camera_gpio_num_info *gpio_num_info = NULL;
 
 	if (!flash_ctrl) {
-		pr_err("device data NULL\n");
+		pr_debug("device data NULL\n");
 		return -EINVAL;
 	}
 
@@ -73,7 +73,7 @@ static int32_t qm215_flash_high(
 	struct msm_camera_gpio_num_info *gpio_num_info = NULL;
 
 	if (!flash_ctrl) {
-		pr_err("device data NULL\n");
+		pr_debug("device data NULL\n");
 		return -EINVAL;
 	}
 
@@ -108,14 +108,14 @@ static int32_t qm215_flash_release(
 	int32_t rc = 0;
 
 	if (!flash_ctrl) {
-		pr_err("device data NULL\n");
+		pr_debug("device data NULL\n");
 		return -EINVAL;
 	}
 
 	CDBG("Enter\n");
 	rc = flash_ctrl->func_tbl->camera_flash_off(flash_ctrl, NULL);
 	if (rc < 0) {
-		pr_err("%s:%d camera_flash_init failed rc = %d\n",
+		pr_debug("%s:%d camera_flash_init failed rc = %d\n",
 			__func__, __LINE__, rc);
 		return rc;
 	}
@@ -131,7 +131,7 @@ static int32_t qm215_flash_off(struct msm_flash_ctrl_t *flash_ctrl,
 	struct msm_camera_gpio_num_info *gpio_num_info = NULL;
 
 	if (!flash_ctrl) {
-		pr_err("device data NULL\n");
+		pr_debug("device data NULL\n");
 		return -EINVAL;
 	}
 
@@ -178,7 +178,7 @@ static int32_t qm215_platform_flash_init(struct msm_flash_ctrl_t *flash_ctrl,
 	struct msm_flash_cfg_data_t *flash_data)
 {
 	if (!flash_ctrl) {
-		pr_err("devices data NULL\n");
+		pr_debug("devices data NULL\n");
 		return -EINVAL;
 	}
 
@@ -195,7 +195,7 @@ static int32_t qm215_flash_platform_probe(struct platform_device *pdev)
 	struct msm_camera_gpio_conf *gpio_conf = NULL;
 
 	if (!pdev->dev.of_node) {
-		pr_err("of_node NULL\n");
+		pr_debug("of_node NULL\n");
 		return -EINVAL;
 	}
 	CDBG("enter probe\n");
@@ -205,7 +205,7 @@ static int32_t qm215_flash_platform_probe(struct platform_device *pdev)
 			(struct msm_flash_ctrl_t *) platform_get_drvdata(pdev);
 		CDBG("device data %pK\n", flash_ctrl);
 		if (!flash_ctrl) {
-			pr_err("of_node NULL\n");
+			pr_debug("of_node NULL\n");
 			return -EINVAL;
 		}
 		power_info = &flash_ctrl->power_info;
@@ -213,7 +213,7 @@ static int32_t qm215_flash_platform_probe(struct platform_device *pdev)
 		rc = msm_camera_request_gpio_table(gpio_conf->cam_gpio_req_tbl,
 				gpio_conf->cam_gpio_req_tbl_size, 1);
 		if (rc < 0) {
-			pr_err("%s: request gpio failed\n", __func__);
+			pr_debug("%s: request gpio failed\n", __func__);
 			return rc;
 		}
 		flash_ctrl->platform_flash_init = qm215_platform_flash_init;
@@ -236,7 +236,7 @@ static int __init qm215_gpio_flash_init_module(void)
 	CDBG("Enter\n");
 	rc = platform_driver_register(&msm_gpio_flash_platform_driver);
 	if (rc)
-		pr_err("platform probe for flash failed\n");
+		pr_debug("platform probe for flash failed\n");
 
 	return rc;
 }

@@ -195,7 +195,7 @@ static void usb_connect(struct diag_usb_info *ch)
 	num_write = diag_mempools[ch->mempool].poolsize;
 	err = usb_diag_alloc_req(ch->hdl, num_write, num_read);
 	if (err) {
-		pr_err("diag: Unable to allocate usb requests for %s, write: %d read: %d, err: %d\n",
+		pr_debug("diag: Unable to allocate usb requests for %s, write: %d read: %d, err: %d\n",
 		       ch->name, num_write, num_read, err);
 		return;
 	}
@@ -686,12 +686,12 @@ int diag_usb_register(int id, int ctxt, struct diag_mux_ops *ops)
 	unsigned char wq_name[DIAG_USB_NAME_SZ + DIAG_USB_STRING_SZ];
 
 	if (id < 0 || id >= NUM_DIAG_USB_DEV) {
-		pr_err("diag: Unable to register with USB, id: %d\n", id);
+		pr_debug("diag: Unable to register with USB, id: %d\n", id);
 		return -EIO;
 	}
 
 	if (!ops) {
-		pr_err("diag: Invalid operations for USB\n");
+		pr_debug("diag: Invalid operations for USB\n");
 		return -EIO;
 	}
 
@@ -730,7 +730,7 @@ int diag_usb_register(int id, int ctxt, struct diag_mux_ops *ops)
 	ch->hdl = usb_diag_open(ch->name, (void *)(uintptr_t)id,
 				diag_usb_notifier);
 	if (IS_ERR(ch->hdl)) {
-		pr_err("diag: Unable to open USB channel %s\n", ch->name);
+		pr_debug("diag: Unable to open USB channel %s\n", ch->name);
 		goto err;
 	}
 	ch->enabled = 1;
@@ -752,7 +752,7 @@ void diag_usb_exit(int id)
 	struct diag_usb_info *ch = NULL;
 
 	if (id < 0 || id >= NUM_DIAG_USB_DEV) {
-		pr_err("diag: In %s, incorrect id %d\n", __func__, id);
+		pr_debug("diag: In %s, incorrect id %d\n", __func__, id);
 		return;
 	}
 

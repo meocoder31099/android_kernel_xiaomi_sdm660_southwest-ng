@@ -250,7 +250,7 @@ struct ptp_clock *ptp_clock_register(struct ptp_clock_info *info,
 		kfree(worker_name);
 		if (IS_ERR(ptp->kworker)) {
 			err = PTR_ERR(ptp->kworker);
-			pr_err("failed to create ptp aux_worker %d\n", err);
+			pr_debug("failed to create ptp aux_worker %d\n", err);
 			goto kworker_err;
 		}
 	}
@@ -269,7 +269,7 @@ struct ptp_clock *ptp_clock_register(struct ptp_clock_info *info,
 		ptp->pps_source = pps_register_source(&pps, PTP_PPS_DEFAULTS);
 		if (!ptp->pps_source) {
 			err = -EINVAL;
-			pr_err("failed to register pps source\n");
+			pr_debug("failed to register pps source\n");
 			goto no_pps;
 		}
 	}
@@ -287,7 +287,7 @@ struct ptp_clock *ptp_clock_register(struct ptp_clock_info *info,
 	/* Create a posix clock and link it to the device. */
 	err = posix_clock_register(&ptp->clock, &ptp->dev);
 	if (err) {
-		pr_err("failed to create posix clock\n");
+		pr_debug("failed to create posix clock\n");
 		goto no_clock;
 	}
 
@@ -406,18 +406,18 @@ static int __init ptp_init(void)
 
 	ptp_class = class_create(THIS_MODULE, "ptp");
 	if (IS_ERR(ptp_class)) {
-		pr_err("ptp: failed to allocate class\n");
+		pr_debug("ptp: failed to allocate class\n");
 		return PTR_ERR(ptp_class);
 	}
 
 	err = alloc_chrdev_region(&ptp_devt, 0, MINORMASK + 1, "ptp");
 	if (err < 0) {
-		pr_err("ptp: failed to allocate device region\n");
+		pr_debug("ptp: failed to allocate device region\n");
 		goto no_region;
 	}
 
 	ptp_class->dev_groups = ptp_groups;
-	pr_info("PTP clock support registered\n");
+	pr_debug("PTP clock support registered\n");
 	return 0;
 
 no_region:

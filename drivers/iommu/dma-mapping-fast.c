@@ -221,7 +221,7 @@ static int __init atomic_pool_init(void)
 				  gen_pool_first_fit_order_align,
 				  NULL);
 
-		pr_info("DMA: preallocated %zu KiB pool for atomic allocations\n",
+		pr_debug("DMA: preallocated %zu KiB pool for atomic allocations\n",
 			atomic_pool_size / 1024);
 		return 0;
 	}
@@ -236,7 +236,7 @@ free_page:
 	if (!dma_release_from_contiguous(NULL, page, nr_pages))
 		__free_pages(page, pool_size_order);
 out:
-	pr_err("DMA: failed to allocate %zu KiB pool for atomic coherent allocation\n",
+	pr_debug("DMA: failed to allocate %zu KiB pool for atomic coherent allocation\n",
 		atomic_pool_size / 1024);
 	return -ENOMEM;
 }
@@ -520,13 +520,13 @@ static void *fast_smmu_alloc_atomic(struct dma_fast_smmu_mapping *mapping,
 	spin_lock_irqsave(&mapping->lock, flags);
 	dma_addr = __fast_smmu_alloc_iova(mapping, attrs, size);
 	if (dma_addr == DMA_ERROR_CODE) {
-		dev_err(mapping->dev, "no iova\n");
+		dev_dbg(mapping->dev, "no iova\n");
 		spin_unlock_irqrestore(&mapping->lock, flags);
 		goto out_free_page;
 	}
 	if (unlikely(av8l_fast_map_public(mapping->pgtbl_ops, dma_addr,
 					  page_to_phys(page), size, prot))) {
-		dev_err(mapping->dev, "no map public\n");
+		dev_dbg(mapping->dev, "no map public\n");
 		goto out_free_iova;
 	}
 	spin_unlock_irqrestore(&mapping->lock, flags);
@@ -639,7 +639,7 @@ static void *fast_smmu_alloc(struct device *dev, size_t size,
 	 */
 
 	if (count > UINT_MAX) {
-		dev_err(dev, "count: %zx exceeds UNIT_MAX\n", count);
+		dev_dbg(dev, "count: %zx exceeds UNIT_MAX\n", count);
 		return NULL;
 	}
 
@@ -655,12 +655,12 @@ static void *fast_smmu_alloc(struct device *dev, size_t size,
 
 	pages = __fast_smmu_alloc_pages(count, gfp);
 	if (!pages) {
-		dev_err(dev, "no pages\n");
+		dev_dbg(dev, "no pages\n");
 		return NULL;
 	}
 
 	if (sg_alloc_table_from_pages(&sgt, pages, count, 0, size, gfp)) {
-		dev_err(dev, "no sg tablen\n");
+		dev_dbg(dev, "no sg tablen\n");
 		goto out_free_pages;
 	}
 
@@ -679,7 +679,7 @@ static void *fast_smmu_alloc(struct device *dev, size_t size,
 	spin_lock_irqsave(&mapping->lock, flags);
 	dma_addr = __fast_smmu_alloc_iova(mapping, attrs, size);
 	if (dma_addr == DMA_ERROR_CODE) {
-		dev_err(dev, "no iova\n");
+		dev_dbg(dev, "no iova\n");
 		spin_unlock_irqrestore(&mapping->lock, flags);
 		goto out_free_sg;
 	}
@@ -691,7 +691,7 @@ static void *fast_smmu_alloc(struct device *dev, size_t size,
 				     mapping->pgtbl_ops, iova_iter,
 				     page_to_phys(miter.page),
 				     miter.length, prot))) {
-			dev_err(dev, "no map public\n");
+			dev_dbg(dev, "no map public\n");
 			/* TODO: unwind previously successful mappings */
 			goto out_free_iova;
 		}
@@ -703,7 +703,7 @@ static void *fast_smmu_alloc(struct device *dev, size_t size,
 	addr = dma_common_pages_remap(pages, size, VM_USERMAP, remap_prot,
 				      __builtin_return_address(0));
 	if (!addr) {
-		dev_err(dev, "no common pages\n");
+		dev_dbg(dev, "no common pages\n");
 		goto out_unmap;
 	}
 
@@ -900,9 +900,9 @@ static void __fast_smmu_mapped_over_stale(struct dma_fast_smmu_mapping *fast,
 
 	bitmap_idx = (unsigned long)(ptep - pmds);
 	iova = bitmap_idx << FAST_PAGE_SHIFT;
-	dev_err(fast->dev, "Mapped over stale tlb at %pa\n", &iova);
-	dev_err(fast->dev, "bitmap (failure at idx %lu):\n", bitmap_idx);
-	dev_err(fast->dev, "ptep: %p pmds: %p diff: %lu\n", ptep,
+	dev_dbg(fast->dev, "Mapped over stale tlb at %pa\n", &iova);
+	dev_dbg(fast->dev, "bitmap (failure at idx %lu):\n", bitmap_idx);
+	dev_dbg(fast->dev, "ptep: %p pmds: %p diff: %lu\n", ptep,
 		pmds, bitmap_idx);
 	print_hex_dump(KERN_ERR, "bmap: ", DUMP_PREFIX_ADDRESS,
 		       32, 8, fast->bitmap, fast->bitmap_size, false);
@@ -1095,7 +1095,7 @@ int fast_smmu_init_mapping(struct device *dev,
 	}
 
 	if (mapping->base + size > (SZ_1G * 4ULL)) {
-		dev_err(dev, "Iova end address too large\n");
+		dev_dbg(dev, "Iova end address too large\n");
 		return -EINVAL;
 	}
 
@@ -1112,7 +1112,7 @@ int fast_smmu_init_mapping(struct device *dev,
 
 	if (iommu_domain_get_attr(domain, DOMAIN_ATTR_PGTBL_INFO,
 				  &info)) {
-		dev_err(dev, "Couldn't get page table info\n");
+		dev_dbg(dev, "Couldn't get page table info\n");
 		err = -EINVAL;
 		goto release_mapping;
 	}

@@ -26,13 +26,13 @@
 #include "internal.h"
 
 /*
- * printk() could not take logbuf_lock in NMI context. Instead,
+ * no_printk() could not take logbuf_lock in NMI context. Instead,
  * it uses an alternative implementation that temporary stores
  * the strings into a per-CPU buffer. The content of the buffer
  * is later flushed into the main ring buffer via IRQ work.
  *
  * The alternative implementation is chosen transparently
- * by examinig current printk() context mask stored in @printk_context
+ * by examinig current no_printk() context mask stored in @printk_context
  * per-CPU variable.
  *
  * The implementation allows to flush the strings also from another CPU.
@@ -301,7 +301,7 @@ void printk_safe_flush_on_panic(void)
 
 #ifdef CONFIG_PRINTK_NMI
 /*
- * Safe printk() for NMI context. It uses a per-CPU buffer to
+ * Safe no_printk() for NMI context. It uses a per-CPU buffer to
  * store the message. NMIs are not nested, so there is always only
  * one writer running. But the buffer might get flushed from another
  * CPU, so we need to be careful.
@@ -328,7 +328,7 @@ void notrace printk_nmi_exit(void)
  * and the risk of losing them is more critical than eventual
  * reordering.
  *
- * It has effect only when called in NMI context. Then printk()
+ * It has effect only when called in NMI context. Then no_printk()
  * will try to store the messages into the main logbuf directly
  * and use the per-CPU buffers only as a fallback when the lock
  * is not available.
@@ -354,7 +354,7 @@ static __printf(1, 0) int vprintk_nmi(const char *fmt, va_list args)
 #endif /* CONFIG_PRINTK_NMI */
 
 /*
- * Lock-less printk(), to avoid deadlocks should the printk() recurse
+ * Lock-less no_printk(), to avoid deadlocks should the no_printk() recurse
  * into itself. It uses a per-CPU buffer to store the message, just like
  * NMI.
  */

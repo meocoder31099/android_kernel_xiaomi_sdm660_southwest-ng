@@ -747,13 +747,13 @@ struct eth_dev *gether_setup_name(struct usb_gadget *g,
 
 	if (get_ether_addr(dev_addr, net->dev_addr)) {
 		net->addr_assign_type = NET_ADDR_RANDOM;
-		dev_warn(&g->dev,
+		dev_dbg(&g->dev,
 			"using random %s ethernet address\n", "self");
 	} else {
 		net->addr_assign_type = NET_ADDR_SET;
 	}
 	if (get_ether_addr(host_addr, dev->host_mac))
-		dev_warn(&g->dev,
+		dev_dbg(&g->dev,
 			"using random %s ethernet address\n", "host");
 
 	if (ethaddr)
@@ -819,9 +819,9 @@ struct net_device *gether_setup_name_default(const char *netname)
 	snprintf(net->name, sizeof(net->name), "%s%%d", netname);
 
 	eth_random_addr(dev->dev_mac);
-	pr_warn("using random %s ethernet address\n", "self");
+	pr_debug("using random %s ethernet address\n", "self");
 	eth_random_addr(dev->host_mac);
-	pr_warn("using random %s ethernet address\n", "host");
+	pr_debug("using random %s ethernet address\n", "host");
 
 	net->netdev_ops = &eth_netdev_ops;
 

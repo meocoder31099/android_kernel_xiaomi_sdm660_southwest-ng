@@ -98,7 +98,7 @@ static int extcon_parse_pinctrl_data(struct device *dev,
 	data->pins_default = pinctrl_lookup_state(data->pctrl, "default");
 	if (IS_ERR(data->pins_default)) {
 		ret = PTR_ERR(data->pins_default);
-		dev_err(dev, "Can't get default pinctrl state, ret %d\n", ret);
+		dev_dbg(dev, "Can't get default pinctrl state, ret %d\n", ret);
 	}
 out:
 	return ret;
@@ -114,27 +114,27 @@ static int extcon_populate_data(struct device *dev,
 
 	ret = of_property_read_u32(np, "extcon-id", &data->extcon_id);
 	if (ret) {
-		dev_err(dev, "failed to read extcon-id property, %d\n", ret);
+		dev_dbg(dev, "failed to read extcon-id property, %d\n", ret);
 		goto out;
 	}
 
 	ret = of_property_read_u32(np, "irq-flags", &val);
 	if (ret) {
-		dev_err(dev, "failed to read irq-flags property, %d\n", ret);
+		dev_dbg(dev, "failed to read irq-flags property, %d\n", ret);
 		goto out;
 	}
 	data->irq_flags = val;
 
 	ret = of_property_read_u32(np, "debounce-ms", &val);
 	if (ret) {
-		dev_err(dev, "failed to read debounce-ms property, %d\n", ret);
+		dev_dbg(dev, "failed to read debounce-ms property, %d\n", ret);
 		goto out;
 	}
 	data->debounce = val;
 
 	ret = extcon_parse_pinctrl_data(dev, data);
 	if (ret)
-		dev_err(dev, "failed to parse pinctrl data\n");
+		dev_dbg(dev, "failed to parse pinctrl data\n");
 
 out:
 	return ret;
@@ -161,7 +161,7 @@ static int gpio_extcon_probe(struct platform_device *pdev)
 
 	ret = pinctrl_select_state(data->pctrl, data->pins_default);
 	if (ret < 0)
-		dev_err(dev, "pinctrl state select failed, ret %d\n", ret);
+		dev_dbg(dev, "pinctrl state select failed, ret %d\n", ret);
 
 	data->gpiod = devm_gpiod_get(dev, "extcon", GPIOD_IN);
 	if (IS_ERR(data->gpiod))
@@ -191,7 +191,7 @@ static int gpio_extcon_probe(struct platform_device *pdev)
 	/* Allocate the memory of extcon devie and register extcon device */
 	data->edev = devm_extcon_dev_allocate(dev, data->supported_cable);
 	if (IS_ERR(data->edev)) {
-		dev_err(dev, "failed to allocate extcon device\n");
+		dev_dbg(dev, "failed to allocate extcon device\n");
 		return -ENOMEM;
 	}
 
@@ -238,7 +238,7 @@ static int gpio_extcon_resume(struct device *dev)
 		state = gpiod_get_value_cansleep(data->gpiod);
 		ret = extcon_set_state_sync(data->edev, data->extcon_id, state);
 		if (ret)
-			dev_err(dev, "%s: Failed to set extcon gpio state\n",
+			dev_dbg(dev, "%s: Failed to set extcon gpio state\n",
 					__func__);
 	}
 

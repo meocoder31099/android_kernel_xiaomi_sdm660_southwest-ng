@@ -260,7 +260,7 @@ int usb_amd_find_chipset_info(void)
 	}
 
 	need_pll_quirk = info.probe_result = 1;
-	printk(KERN_DEBUG "QUIRK: Enable AMD PLL fix\n");
+	no_printk(KERN_DEBUG "QUIRK: Enable AMD PLL fix\n");
 
 commit:
 
@@ -465,7 +465,7 @@ static int usb_asmedia_wait_write(struct pci_dev *pdev)
 		pci_read_config_byte(pdev, ASMT_CONTROL_REG, &value);
 
 		if (value == 0xff) {
-			dev_err(&pdev->dev, "%s: check_ready ERROR", __func__);
+			dev_dbg(&pdev->dev, "%s: check_ready ERROR", __func__);
 			return -EIO;
 		}
 
@@ -475,7 +475,7 @@ static int usb_asmedia_wait_write(struct pci_dev *pdev)
 		udelay(50);
 	}
 
-	dev_warn(&pdev->dev, "%s: check_write_ready timeout", __func__);
+	dev_dbg(&pdev->dev, "%s: check_write_ready timeout", __func__);
 	return -ETIMEDOUT;
 }
 
@@ -648,7 +648,7 @@ void uhci_reset_hc(struct pci_dev *pdev, unsigned long base)
 	mb();
 	udelay(5);
 	if (inw(base + UHCI_USBCMD) & UHCI_USBCMD_HCRESET)
-		dev_warn(&pdev->dev, "HCRESET not completed yet!\n");
+		dev_dbg(&pdev->dev, "HCRESET not completed yet!\n");
 
 	/* Just to be safe, disable interrupt requests and
 	 * make sure the controller is stopped.
@@ -781,7 +781,7 @@ static void quirk_usb_handoff_ohci(struct pci_dev *pdev)
 			msleep(10);
 		}
 		if (wait_time <= 0)
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				 "OHCI: BIOS handoff failed (BIOS bug?) %08x\n",
 				 readl(base + OHCI_CONTROL));
 	}
@@ -911,7 +911,7 @@ static void ehci_bios_handoff(struct pci_dev *pdev,
 		 * and hope nothing goes too wrong
 		 */
 		if (try_handoff)
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				 "EHCI: BIOS handoff failed (BIOS bug?) %08x\n",
 				 cap);
 		pci_write_config_byte(pdev, offset + 2, 0);
@@ -969,7 +969,7 @@ static void quirk_usb_disable_ehci(struct pci_dev *pdev)
 		case 0: /* Illegal reserved cap, set cap=0 so we exit */
 			cap = 0; /* fall through */
 		default:
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				 "EHCI: unrecognized capability %02x\n",
 				 cap & 0xff);
 		}
@@ -1081,9 +1081,9 @@ void usb_enable_intel_xhci_ports(struct pci_dev *xhci_pdev)
 	 * the devices.
 	 */
 	if (!IS_ENABLED(CONFIG_USB_XHCI_HCD)) {
-		dev_warn(&xhci_pdev->dev,
+		dev_dbg(&xhci_pdev->dev,
 			 "CONFIG_USB_XHCI_HCD is turned off, defaulting to EHCI.\n");
-		dev_warn(&xhci_pdev->dev,
+		dev_dbg(&xhci_pdev->dev,
 				"USB 3.0 devices will work at USB 2.0 speeds.\n");
 		usb_disable_xhci_ports(xhci_pdev);
 		return;
@@ -1178,7 +1178,7 @@ static void quirk_usb_handoff_xhci(struct pci_dev *pdev)
 
 	if ((ext_cap_offset + sizeof(val)) > len) {
 		/* We're reading garbage from the controller */
-		dev_warn(&pdev->dev, "xHCI controller failing to respond");
+		dev_dbg(&pdev->dev, "xHCI controller failing to respond");
 		goto iounmap;
 	}
 	val = readl(base + ext_cap_offset);
@@ -1201,7 +1201,7 @@ static void quirk_usb_handoff_xhci(struct pci_dev *pdev)
 
 		/* Assume a buggy BIOS and take HC ownership anyway */
 		if (timeout) {
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				 "xHCI BIOS handoff failed (BIOS bug ?) %08x\n",
 				 val);
 			writel(val & ~XHCI_HC_BIOS_OWNED, base + ext_cap_offset);
@@ -1230,7 +1230,7 @@ hc_init:
 	/* Assume a buggy HC and start HC initialization anyway */
 	if (timeout) {
 		val = readl(op_reg_base + XHCI_STS_OFFSET);
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			 "xHCI HW not ready after 5 sec (HC bug?) status = 0x%x\n",
 			 val);
 	}
@@ -1245,7 +1245,7 @@ hc_init:
 			XHCI_MAX_HALT_USEC, 125);
 	if (timeout) {
 		val = readl(op_reg_base + XHCI_STS_OFFSET);
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			 "xHCI HW did not halt within %d usec status = 0x%x\n",
 			 XHCI_MAX_HALT_USEC, val);
 	}
@@ -1268,7 +1268,7 @@ static void quirk_usb_early_handoff(struct pci_dev *pdev)
 		return;
 
 	if (pci_enable_device(pdev) < 0) {
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			 "Can't enable PCI device, BIOS handoff failed.\n");
 		return;
 	}

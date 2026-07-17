@@ -116,11 +116,11 @@ static void debug_print_rmap(const struct cpu_rmap *rmap, const char *prefix)
 	unsigned index;
 	unsigned int cpu;
 
-	pr_info("cpu_rmap %p, %s:\n", rmap, prefix);
+	pr_debug("cpu_rmap %p, %s:\n", rmap, prefix);
 
 	for_each_possible_cpu(cpu) {
 		index = rmap->near[cpu].index;
-		pr_info("cpu %d -> obj %u (distance %u)\n",
+		pr_debug("cpu %d -> obj %u (distance %u)\n",
 			cpu, index, rmap->near[cpu].dist);
 	}
 }
@@ -259,7 +259,7 @@ irq_cpu_rmap_notify(struct irq_affinity_notify *notify, const cpumask_t *mask)
 
 	rc = cpu_rmap_update(glue->rmap, glue->index, mask);
 	if (rc)
-		pr_warning("irq_cpu_rmap_notify: update failed: %d\n", rc);
+		pr_debug("irq_cpu_rmap_notify: update failed: %d\n", rc);
 }
 
 /**

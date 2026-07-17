@@ -302,7 +302,7 @@ static ssize_t wsa881x_codec_version_read(struct snd_info_entry *entry,
 
 	wsa881x = (struct wsa881x_priv *) entry->private_data;
 	if (!wsa881x) {
-		pr_err("%s: wsa881x priv is null\n", __func__);
+		pr_debug("%s: wsa881x priv is null\n", __func__);
 		return -EINVAL;
 	}
 
@@ -416,14 +416,14 @@ static ssize_t wsa881x_swrslave_reg_show(struct swr_device *pdev, char __user *u
 		len = snprintf(tmp_buf, sizeof(tmp_buf), "0x%.3x: 0x%.2x\n", i,
 				(reg_val & 0xFF));
 		if (len < 0) {
-			pr_err("%s: fail to fill the buffer\n", __func__);
+			pr_debug("%s: fail to fill the buffer\n", __func__);
 			total = -EFAULT;
 			goto copy_err;
 		}
 		if ((total + len) >= count - 1)
 			break;
 		if (copy_to_user((ubuf + total), tmp_buf, len)) {
-			pr_err("%s: fail to copy reg dump\n", __func__);
+			pr_debug("%s: fail to copy reg dump\n", __func__);
 			total = -EFAULT;
 			goto copy_err;
 		}
@@ -520,7 +520,7 @@ static ssize_t codec_debug_peek_write(struct file *file,
 	if (rc == 0)
 		rc = cnt;
 	else
-		pr_err("%s: rc = %d\n", __func__, rc);
+		pr_debug("%s: rc = %d\n", __func__, rc);
 
 	return rc;
 }
@@ -556,7 +556,7 @@ static ssize_t codec_debug_write(struct file *file,
 	if (rc == 0)
 		rc = cnt;
 	else
-		pr_err("%s: rc = %d\n", __func__, rc);
+		pr_debug("%s: rc = %d\n", __func__, rc);
 
 	return rc;
 }
@@ -1175,7 +1175,7 @@ int wsa881x_set_channel_map(struct snd_soc_component *component, u8 *port,
 
 	if (!port || !ch_mask || !ch_rate ||
 		(num_port > WSA881X_MAX_SWR_PORTS)) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Invalid port=%pK, ch_mask=%pK, ch_rate=%pK\n",
 			__func__, port, ch_mask, ch_rate);
 		return -EINVAL;
@@ -1276,7 +1276,7 @@ static int32_t wsa881x_temp_reg_read(struct snd_soc_component *component,
 	u8 devnum = 0;
 
 	if (!wsa881x) {
-		dev_err(component->dev, "%s: wsa881x is NULL\n", __func__);
+		dev_dbg(component->dev, "%s: wsa881x is NULL\n", __func__);
 		return -EINVAL;
 	}
 	dev = wsa881x->swr_slave;
@@ -1287,7 +1287,7 @@ static int32_t wsa881x_temp_reg_read(struct snd_soc_component *component,
 			usleep_range(1000, 1100);
 		}
 		if (retry == 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s get devnum %d for dev addr %llx failed\n",
 				__func__, devnum, dev->addr);
 			return -EINVAL;
@@ -1374,7 +1374,7 @@ static int wsa881x_gpio_ctrl(struct wsa881x_priv *wsa881x, bool enable)
 	int ret = 0;
 
 	if (wsa881x->pd_gpio < 0) {
-		dev_err(wsa881x->dev, "%s: gpio is not valid %d\n",
+		dev_dbg(wsa881x->dev, "%s: gpio is not valid %d\n",
 			__func__, wsa881x->pd_gpio);
 		return -EINVAL;
 	}
@@ -1387,7 +1387,7 @@ static int wsa881x_gpio_ctrl(struct wsa881x_priv *wsa881x, bool enable)
 			ret = msm_cdc_pinctrl_select_sleep_state(
 							wsa881x->wsa_rst_np);
 		if (ret != 0)
-			dev_err(wsa881x->dev,
+			dev_dbg(wsa881x->dev,
 				"%s: Failed to turn state %d; ret=%d\n",
 				__func__, enable, ret);
 	} else {
@@ -1405,7 +1405,7 @@ static int wsa881x_gpio_init(struct swr_device *pdev)
 
 	wsa881x = swr_get_dev_data(pdev);
 	if (!wsa881x) {
-		dev_err(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
+		dev_dbg(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
 		return -EINVAL;
 	}
 	dev_dbg(&pdev->dev, "%s: gpio %d request with name %s\n",
@@ -1419,7 +1419,7 @@ static int wsa881x_gpio_init(struct swr_device *pdev)
 				 __func__, wsa881x->pd_gpio);
 			ret = 0;
 		} else {
-			dev_err(&pdev->dev, "%s: Failed to request gpio %d, err: %d\n",
+			dev_dbg(&pdev->dev, "%s: Failed to request gpio %d, err: %d\n",
 				__func__, wsa881x->pd_gpio, ret);
 		}
 	}
@@ -1480,7 +1480,7 @@ static int wsa881x_swr_probe(struct swr_device *pdev)
 		wsa881x->pd_gpio = of_get_named_gpio(pdev->dev.of_node,
 						     "qcom,spkr-sd-n-gpio", 0);
 		if (wsa881x->pd_gpio < 0) {
-			dev_err(&pdev->dev, "%s: %s property is not found %d\n",
+			dev_dbg(&pdev->dev, "%s: %s property is not found %d\n",
 				__func__, "qcom,spkr-sd-n-gpio",
 				wsa881x->pd_gpio);
 			goto err;
@@ -1550,7 +1550,7 @@ static int wsa881x_swr_probe(struct swr_device *pdev)
 					       &wsa881x_regmap_config);
 	if (IS_ERR(wsa881x->regmap)) {
 		ret = PTR_ERR(wsa881x->regmap);
-		dev_err(&pdev->dev, "%s: regmap_init failed %d\n",
+		dev_dbg(&pdev->dev, "%s: regmap_init failed %d\n",
 			__func__, ret);
 		goto dev_err;
 	}
@@ -1558,7 +1558,7 @@ static int wsa881x_swr_probe(struct swr_device *pdev)
 	ret = snd_soc_register_component(&pdev->dev, &soc_codec_dev_wsa881x,
 				     NULL, 0);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: Codec registration failed\n",
+		dev_dbg(&pdev->dev, "%s: Codec registration failed\n",
 			__func__);
 		goto dev_err;
 	}
@@ -1582,15 +1582,15 @@ static int wsa881x_swr_probe(struct swr_device *pdev)
 						plat_data->register_notifier;
 				wsa881x->handle = plat_data->handle;
 			} else {
-				dev_err(&pdev->dev, "%s: plat data not found\n",
+				dev_dbg(&pdev->dev, "%s: plat data not found\n",
 					__func__);
 			}
 		} else {
-			dev_err(&pdev->dev, "%s: bolero dev not found\n",
+			dev_dbg(&pdev->dev, "%s: bolero dev not found\n",
 				__func__);
 		}
 	} else {
-		dev_info(&pdev->dev, "%s: bolero node not found\n", __func__);
+		dev_dbg(&pdev->dev, "%s: bolero node not found\n", __func__);
 	}
 
 	mutex_init(&wsa881x->res_lock);
@@ -1612,7 +1612,7 @@ static int wsa881x_swr_remove(struct swr_device *pdev)
 
 	wsa881x = swr_get_dev_data(pdev);
 	if (!wsa881x) {
-		dev_err(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
+		dev_dbg(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1637,12 +1637,12 @@ static int wsa881x_swr_up(struct swr_device *pdev)
 
 	wsa881x = swr_get_dev_data(pdev);
 	if (!wsa881x) {
-		dev_err(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
+		dev_dbg(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
 		return -EINVAL;
 	}
 	ret = wsa881x_gpio_ctrl(wsa881x, true);
 	if (ret)
-		dev_err(&pdev->dev, "%s: Failed to enable gpio\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Failed to enable gpio\n", __func__);
 	else
 		wsa881x->state = WSA881X_DEV_UP;
 
@@ -1656,12 +1656,12 @@ static int wsa881x_swr_down(struct swr_device *pdev)
 
 	wsa881x = swr_get_dev_data(pdev);
 	if (!wsa881x) {
-		dev_err(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
+		dev_dbg(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
 		return -EINVAL;
 	}
 	ret = wsa881x_gpio_ctrl(wsa881x, false);
 	if (ret)
-		dev_err(&pdev->dev, "%s: Failed to disable gpio\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Failed to disable gpio\n", __func__);
 	else
 		wsa881x->state = WSA881X_DEV_DOWN;
 
@@ -1676,7 +1676,7 @@ static int wsa881x_swr_reset(struct swr_device *pdev)
 
 	wsa881x = swr_get_dev_data(pdev);
 	if (!wsa881x) {
-		dev_err(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
+		dev_dbg(&pdev->dev, "%s: wsa881x is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (wsa881x->state == WSA881X_DEV_READY) {
@@ -1708,7 +1708,7 @@ static int wsa881x_swr_resume(struct device *dev)
 	struct wsa881x_priv *wsa881x = swr_get_dev_data(to_swr_device(dev));
 
 	if (!wsa881x) {
-		dev_err(dev, "%s: wsa881x private data is NULL\n", __func__);
+		dev_dbg(dev, "%s: wsa881x private data is NULL\n", __func__);
 		return -EINVAL;
 	}
 	dev_dbg(dev, "%s: system resume\n", __func__);

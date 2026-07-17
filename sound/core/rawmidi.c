@@ -59,9 +59,9 @@ static LIST_HEAD(snd_rawmidi_devices);
 static DEFINE_MUTEX(register_mutex);
 
 #define rmidi_err(rmidi, fmt, args...) \
-	dev_err(&(rmidi)->dev, fmt, ##args)
+	dev_dbg(&(rmidi)->dev, fmt, ##args)
 #define rmidi_warn(rmidi, fmt, args...) \
-	dev_warn(&(rmidi)->dev, fmt, ##args)
+	dev_dbg(&(rmidi)->dev, fmt, ##args)
 #define rmidi_dbg(rmidi, fmt, args...) \
 	dev_dbg(&(rmidi)->dev, fmt, ##args)
 
@@ -1842,12 +1842,12 @@ static int __init alsa_rawmidi_init(void)
 	/* check device map table */
 	for (i = 0; i < SNDRV_CARDS; i++) {
 		if (midi_map[i] < 0 || midi_map[i] >= SNDRV_RAWMIDI_DEVICES) {
-			pr_err("ALSA: rawmidi: invalid midi_map[%d] = %d\n",
+			pr_debug("ALSA: rawmidi: invalid midi_map[%d] = %d\n",
 			       i, midi_map[i]);
 			midi_map[i] = 0;
 		}
 		if (amidi_map[i] < 0 || amidi_map[i] >= SNDRV_RAWMIDI_DEVICES) {
-			pr_err("ALSA: rawmidi: invalid amidi_map[%d] = %d\n",
+			pr_debug("ALSA: rawmidi: invalid amidi_map[%d] = %d\n",
 			       i, amidi_map[i]);
 			amidi_map[i] = 1;
 		}

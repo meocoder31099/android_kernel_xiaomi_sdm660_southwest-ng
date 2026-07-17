@@ -53,9 +53,9 @@
 ipc_log_string(log_ctx, x); \
 if (print) { \
 	if (dev) \
-		dev_err((dev), x); \
+		dev_dbg((dev), x); \
 	else \
-		pr_err(x); \
+		pr_debug(x); \
 } \
 } while (0)
 
@@ -109,20 +109,20 @@ static int msm_spi_pinctrl_init(struct msm_spi *dd)
 {
 	dd->pinctrl = devm_pinctrl_get(dd->dev);
 	if (IS_ERR_OR_NULL(dd->pinctrl)) {
-		dev_err(dd->dev, "Failed to get pin ctrl\n");
+		dev_dbg(dd->dev, "Failed to get pin ctrl\n");
 		return PTR_ERR(dd->pinctrl);
 	}
 	dd->pins_active = pinctrl_lookup_state(dd->pinctrl,
 				SPI_PINCTRL_STATE_DEFAULT);
 	if (IS_ERR_OR_NULL(dd->pins_active)) {
-		dev_err(dd->dev, "Failed to lookup pinctrl default state\n");
+		dev_dbg(dd->dev, "Failed to lookup pinctrl default state\n");
 		return PTR_ERR(dd->pins_active);
 	}
 
 	dd->pins_sleep = pinctrl_lookup_state(dd->pinctrl,
 				SPI_PINCTRL_STATE_SLEEP);
 	if (IS_ERR_OR_NULL(dd->pins_sleep)) {
-		dev_err(dd->dev, "Failed to lookup pinctrl sleep state\n");
+		dev_dbg(dd->dev, "Failed to lookup pinctrl sleep state\n");
 		return PTR_ERR(dd->pins_sleep);
 	}
 
@@ -140,7 +140,7 @@ static inline int msm_spi_request_gpios(struct msm_spi *dd)
 				result = gpio_request(dd->spi_gpios[i],
 						spi_rsrcs[i]);
 				if (result) {
-					dev_err(dd->dev,
+					dev_dbg(dd->dev,
 					"error %d gpio_request for pin %d\n",
 					result, dd->spi_gpios[i]);
 					goto error;
@@ -150,7 +150,7 @@ static inline int msm_spi_request_gpios(struct msm_spi *dd)
 	} else {
 		result = pinctrl_select_state(dd->pinctrl, dd->pins_active);
 		if (result) {
-			dev_err(dd->dev, "%s: Can not set %s pins\n",
+			dev_dbg(dd->dev, "%s: Can not set %s pins\n",
 			__func__, SPI_PINCTRL_STATE_DEFAULT);
 			goto error;
 		}
@@ -186,7 +186,7 @@ static inline void msm_spi_free_gpios(struct msm_spi *dd)
 	} else {
 		result = pinctrl_select_state(dd->pinctrl, dd->pins_sleep);
 		if (result)
-			dev_err(dd->dev, "%s: Can not set %s pins\n",
+			dev_dbg(dd->dev, "%s: Can not set %s pins\n",
 			__func__, SPI_PINCTRL_STATE_SLEEP);
 	}
 }
@@ -205,7 +205,7 @@ static inline int msm_spi_request_cs_gpio(struct msm_spi *dd)
 					spi_cs_rsrcs[cs_num]);
 
 				if (rc) {
-					dev_err(dd->dev,
+					dev_dbg(dd->dev,
 					"gpio_request for pin %d failed,error %d\n",
 					dd->cs_gpios[cs_num].gpio_num, rc);
 					return rc;
@@ -288,7 +288,7 @@ static void msm_spi_clock_set(struct msm_spi *dd, int speed)
 
 	rate = msm_spi_clk_max_rate(dd->clk, speed);
 	if (rate < 0) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 		"%s: no match found for requested clock frequency:%d\n",
 			__func__, speed);
 		return;
@@ -341,7 +341,7 @@ static int msm_spi_clk_path_postponed_register(struct msm_spi *dd)
 
 	if (IS_ERR_OR_NULL(dd->bus_cl_hdl)) {
 		ret = (dd->bus_cl_hdl ? PTR_ERR(dd->bus_cl_hdl) : -EAGAIN);
-		dev_err(dd->dev, "Failed bus registration Err %d\n", ret);
+		dev_dbg(dd->dev, "Failed bus registration Err %d\n", ret);
 	}
 
 	return ret;
@@ -442,7 +442,7 @@ static void msm_spi_calculate_fifo_size(struct msm_spi *dd)
 
 fifo_size_err:
 	dd->use_dma = false;
-	pr_err("%s: invalid FIFO size, SPI_IO_MODES=0x%x\n", __func__, spi_iom);
+	pr_debug("%s: invalid FIFO size, SPI_IO_MODES=0x%x\n", __func__, spi_iom);
 }
 
 static void msm_spi_read_word_from_fifo(struct msm_spi *dd)
@@ -521,7 +521,7 @@ static inline int msm_spi_wait_valid(struct msm_spi *dd)
 	while (!msm_spi_is_valid_state(dd)) {
 		if (time_after(jiffies, timeout)) {
 			if (!msm_spi_is_valid_state(dd)) {
-				dev_err(dd->dev, "Invalid SPI operational state\n");
+				dev_dbg(dd->dev, "Invalid SPI operational state\n");
 				return -ETIMEDOUT;
 			} else
 				return 0;
@@ -714,14 +714,14 @@ static int msm_spi_bam_pipe_connect(struct msm_spi *dd,
 
 	ret = sps_connect(pipe->handle, config);
 	if (ret) {
-		dev_err(dd->dev, "%s: sps_connect(%s:0x%pK):%d\n",
+		dev_dbg(dd->dev, "%s: sps_connect(%s:0x%pK):%d\n",
 				__func__, pipe->name, pipe->handle, ret);
 		return ret;
 	}
 
 	ret = sps_register_event(pipe->handle, &event);
 	if (ret) {
-		dev_err(dd->dev, "%s sps_register_event(hndl:0x%pK %s):%d\n",
+		dev_dbg(dd->dev, "%s sps_register_event(hndl:0x%pK %s):%d\n",
 				__func__, pipe->handle, pipe->name, ret);
 		msm_spi_bam_pipe_disconnect(dd, pipe);
 		return ret;
@@ -783,7 +783,7 @@ msm_spi_bam_process_rx(struct msm_spi *dd, u32 *bytes_to_send, u32 desc_cnt)
 				+ dd->bam.curr_rx_bytes_recvd,
 			data_xfr_size, dd, prod_flags);
 	if (ret < 0) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 		"%s: Failed to queue producer BAM transfer\n",
 		__func__);
 		return ret;
@@ -820,7 +820,7 @@ msm_spi_bam_process_tx(struct msm_spi *dd, u32 *bytes_to_send, u32 desc_cnt)
 				+ dd->bam.curr_tx_bytes_sent,
 			data_xfr_size, dd, cons_flags);
 	if (ret < 0) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 		"%s: Failed to queue consumer BAM transfer\n",
 		__func__);
 		return ret;
@@ -861,7 +861,7 @@ msm_spi_bam_begin_transfer(struct msm_spi *dd)
 	msm_spi_set_mx_counts(dd, n_words_xfr);
 	ret = msm_spi_set_state(dd, SPI_OP_STATE_RUN);
 	if (ret < 0) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 			"%s: Failed to set QUP state to run\n",
 			__func__);
 		goto xfr_err;
@@ -915,7 +915,7 @@ msm_spi_bam_next_transfer(struct msm_spi *dd)
 		if (msm_spi_set_state(dd, SPI_OP_STATE_RESET))
 			return 0;
 		if ((msm_spi_bam_begin_transfer(dd)) < 0) {
-			dev_err(dd->dev, "%s: BAM transfer setup failed\n",
+			dev_dbg(dd->dev, "%s: BAM transfer setup failed\n",
 				__func__);
 			return 0;
 		}
@@ -949,7 +949,7 @@ static inline irqreturn_t msm_spi_qup_irq(int irq, void *dev_id)
 	struct msm_spi *dd = dev_id;
 
 	if (pm_runtime_suspended(dd->dev)) {
-		dev_warn(dd->dev, "QUP: pm runtime suspend, irq:%d\n", irq);
+		dev_dbg(dd->dev, "QUP: pm runtime suspend, irq:%d\n", irq);
 		return ret;
 	}
 	if (readl_relaxed(dd->base + SPI_ERROR_FLAGS) ||
@@ -1097,16 +1097,16 @@ static irqreturn_t msm_spi_error_irq(int irq, void *dev_id)
 
 	spi_err = readl_relaxed(dd->base + SPI_ERROR_FLAGS);
 	if (spi_err & SPI_ERR_OUTPUT_OVER_RUN_ERR)
-		dev_warn(master->dev.parent, "SPI output overrun error\n");
+		dev_dbg(master->dev.parent, "SPI output overrun error\n");
 	if (spi_err & SPI_ERR_INPUT_UNDER_RUN_ERR)
-		dev_warn(master->dev.parent, "SPI input underrun error\n");
+		dev_dbg(master->dev.parent, "SPI input underrun error\n");
 	if (spi_err & SPI_ERR_OUTPUT_UNDER_RUN_ERR)
-		dev_warn(master->dev.parent, "SPI output underrun error\n");
+		dev_dbg(master->dev.parent, "SPI output underrun error\n");
 	msm_spi_get_clk_err(dd, &spi_err);
 	if (spi_err & SPI_ERR_CLK_OVER_RUN_ERR)
-		dev_warn(master->dev.parent, "SPI clock overrun error\n");
+		dev_dbg(master->dev.parent, "SPI clock overrun error\n");
 	if (spi_err & SPI_ERR_CLK_UNDER_RUN_ERR)
-		dev_warn(master->dev.parent, "SPI clock underrun error\n");
+		dev_dbg(master->dev.parent, "SPI clock underrun error\n");
 	msm_spi_clear_error_flags(dd);
 	msm_spi_ack_clk_err(dd);
 	/* Ensure clearing of QUP_ERROR_FLAGS was completed */
@@ -1413,7 +1413,7 @@ static int msm_spi_process_transfer(struct msm_spi *dd)
 
 	ret = msm_spi_set_state(dd, SPI_OP_STATE_RESET);
 	if (ret < 0) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 			"%s: Error setting QUP to reset-state\n",
 			__func__);
 		return ret;
@@ -1424,7 +1424,7 @@ static int msm_spi_process_transfer(struct msm_spi *dd)
 	if (dd->tx_mode == SPI_BAM_MODE) {
 		ret = msm_spi_dma_map_buffers(dd);
 		if (ret < 0) {
-			pr_err("%s(): Error Mapping DMA buffers\n", __func__);
+			pr_debug("%s(): Error Mapping DMA buffers\n", __func__);
 			dd->tx_mode = SPI_MODE_NONE;
 			dd->rx_mode = SPI_MODE_NONE;
 			return ret;
@@ -1451,7 +1451,7 @@ static int msm_spi_process_transfer(struct msm_spi *dd)
 		msm_spi_start_write(dd, read_count);
 	} else {
 		if ((msm_spi_bam_begin_transfer(dd)) < 0) {
-			dev_err(dd->dev, "%s: BAM transfer setup failed\n",
+			dev_dbg(dd->dev, "%s: BAM transfer setup failed\n",
 				__func__);
 			status = -EIO;
 			goto transfer_end;
@@ -1467,7 +1467,7 @@ static int msm_spi_process_transfer(struct msm_spi *dd)
 	 */
 	if (dd->tx_mode != SPI_BAM_MODE)
 		if (msm_spi_set_state(dd, SPI_OP_STATE_RUN)) {
-			dev_warn(dd->dev,
+			dev_dbg(dd->dev,
 				"%s: Failed to set QUP to run-state. Mode:%d\n",
 				__func__, dd->tx_mode);
 			goto transfer_end;
@@ -1478,7 +1478,7 @@ static int msm_spi_process_transfer(struct msm_spi *dd)
 		if (dd->write_buf &&
 		    !wait_for_completion_timeout(&dd->tx_transfer_complete,
 		    timeout)) {
-			dev_err(dd->dev, "%s: SPI Tx transaction timeout\n",
+			dev_dbg(dd->dev, "%s: SPI Tx transaction timeout\n",
 				__func__);
 			status = -EIO;
 			break;
@@ -1487,7 +1487,7 @@ static int msm_spi_process_transfer(struct msm_spi *dd)
 		if (dd->read_buf &&
 		    !wait_for_completion_timeout(&dd->rx_transfer_complete,
 		    timeout)) {
-			dev_err(dd->dev, "%s: SPI Rx transaction timeout\n",
+			dev_dbg(dd->dev, "%s: SPI Rx transaction timeout\n",
 				__func__);
 			status = -EIO;
 			break;
@@ -1520,7 +1520,7 @@ static inline void msm_spi_set_cs(struct spi_device *spi, bool set_flag)
 
 	rc = pm_runtime_get_sync(dd->dev);
 	if (rc < 0) {
-		dev_err(dd->dev, "Failure during runtime get,rc=%d\n", rc);
+		dev_dbg(dd->dev, "Failure during runtime get,rc=%d\n", rc);
 		return;
 	}
 
@@ -1538,7 +1538,7 @@ static inline void msm_spi_set_cs(struct spi_device *spi, bool set_flag)
 	/* Serve only under mutex lock as RT suspend may cause a race */
 	mutex_lock(&dd->core_lock);
 	if (dd->suspended) {
-		dev_err(dd->dev, "%s: SPI operational state=%d Invalid\n",
+		dev_dbg(dd->dev, "%s: SPI operational state=%d Invalid\n",
 			__func__, dd->suspended);
 		mutex_unlock(&dd->core_lock);
 		return;
@@ -1607,7 +1607,7 @@ static int get_local_resources(struct msm_spi *dd)
 	if (dd->pdata->gpio_config) {
 		ret = dd->pdata->gpio_config();
 		if (ret) {
-			dev_err(dd->dev,
+			dev_dbg(dd->dev,
 					"%s: error configuring GPIOs\n",
 					__func__);
 			goto ret_err;
@@ -1661,7 +1661,7 @@ static int msm_spi_transfer_one(struct spi_master *master,
 	    (xfer->bits_per_word &&
 	     (xfer->bits_per_word < 4 || xfer->bits_per_word > 32)) ||
 	    (xfer->tx_buf == NULL && xfer->rx_buf == NULL)) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 			"Invalid transfer: %d Hz, %d bpw tx=%pK, rx=%pK\n",
 			xfer->speed_hz, xfer->bits_per_word,
 			xfer->tx_buf, xfer->rx_buf);
@@ -1696,7 +1696,7 @@ static int msm_spi_transfer_one(struct spi_master *master,
 	}
 
 	if (dd->suspended || !msm_spi_is_valid_state(dd)) {
-		dev_err(dd->dev, "%s: SPI operational state not valid\n",
+		dev_dbg(dd->dev, "%s: SPI operational state not valid\n",
 			__func__);
 		status_error = 1;
 	}
@@ -1742,7 +1742,7 @@ static int msm_spi_pm_get_sync(struct device *dev)
 	 * active mode only if client requests anything on the bus
 	 */
 	if (!pm_runtime_enabled(dev)) {
-		dev_info(dev, "%s: pm_runtime not enabled\n", __func__);
+		dev_dbg(dev, "%s: pm_runtime not enabled\n", __func__);
 		ret = msm_spi_pm_resume_runtime(dev);
 	} else {
 		ret = pm_runtime_get_sync(dev);
@@ -1756,7 +1756,7 @@ static int msm_spi_pm_put_sync(struct device *dev)
 	int ret = 0;
 
 	if (!pm_runtime_enabled(dev)) {
-		dev_info(dev, "%s: pm_runtime not enabled\n", __func__);
+		dev_dbg(dev, "%s: pm_runtime not enabled\n", __func__);
 		ret = msm_spi_pm_suspend_runtime(dev);
 	} else {
 		pm_runtime_mark_last_busy(dev);
@@ -1841,12 +1841,12 @@ static int msm_spi_setup(struct spi_device *spi)
 	u32              mask;
 
 	if (spi->bits_per_word < 4 || spi->bits_per_word > 32) {
-		dev_err(&spi->dev, "%s: invalid bits_per_word %d\n",
+		dev_dbg(&spi->dev, "%s: invalid bits_per_word %d\n",
 			__func__, spi->bits_per_word);
 		return -EINVAL;
 	}
 	if (spi->chip_select > SPI_NUM_CHIPSELECTS-1) {
-		dev_err(&spi->dev, "%s, chip select %d exceeds max value %d\n",
+		dev_dbg(&spi->dev, "%s, chip select %d exceeds max value %d\n",
 			__func__, spi->chip_select, SPI_NUM_CHIPSELECTS - 1);
 		return -EINVAL;
 	}
@@ -2092,7 +2092,7 @@ static int msm_spi_bam_pipe_init(struct msm_spi *dd,
 	pipe->handle = NULL;
 	pipe_handle  = sps_alloc_endpoint();
 	if (!pipe_handle) {
-		dev_err(dd->dev, "%s: Failed to allocate BAM endpoint\n"
+		dev_dbg(dd->dev, "%s: Failed to allocate BAM endpoint\n"
 								, __func__);
 		return -ENOMEM;
 	}
@@ -2100,7 +2100,7 @@ static int msm_spi_bam_pipe_init(struct msm_spi *dd,
 	memset(pipe_conf, 0, sizeof(*pipe_conf));
 	rc = sps_get_config(pipe_handle, pipe_conf);
 	if (rc) {
-		dev_err(dd->dev, "%s: Failed to get BAM pipe config\n"
+		dev_dbg(dd->dev, "%s: Failed to get BAM pipe config\n"
 			, __func__);
 		goto config_err;
 	}
@@ -2127,7 +2127,7 @@ static int msm_spi_bam_pipe_init(struct msm_spi *dd,
 				&pipe_conf->desc.phys_base,
 				GFP_KERNEL);
 	if (!pipe_conf->desc.base) {
-		dev_err(dd->dev, "%s: Failed allocate BAM pipe memory\n"
+		dev_dbg(dd->dev, "%s: Failed allocate BAM pipe memory\n"
 			, __func__);
 		rc = -ENOMEM;
 		goto config_err;
@@ -2172,7 +2172,7 @@ static int msm_spi_bam_init(struct msm_spi *dd)
 
 		rc = sps_register_bam_device(&bam_props, &bam_handle);
 		if (rc) {
-			dev_err(dd->dev,
+			dev_dbg(dd->dev,
 				"%s: Failed to register BAM device\n",
 				__func__);
 			return rc;
@@ -2184,7 +2184,7 @@ static int msm_spi_bam_init(struct msm_spi *dd)
 
 	rc = msm_spi_bam_pipe_init(dd, SPI_BAM_PRODUCER_PIPE);
 	if (rc) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 			"%s: Failed to init producer BAM-pipe\n",
 			__func__);
 		goto bam_init_error;
@@ -2192,7 +2192,7 @@ static int msm_spi_bam_init(struct msm_spi *dd)
 
 	rc = msm_spi_bam_pipe_init(dd, SPI_BAM_CONSUMER_PIPE);
 	if (rc) {
-		dev_err(dd->dev,
+		dev_dbg(dd->dev,
 			"%s: Failed to init consumer BAM-pipe\n",
 			__func__);
 		goto bam_init_error;
@@ -2251,7 +2251,7 @@ static int msm_spi_dt_to_pdata_populate(struct platform_device *pdev,
 			ret = 0;
 			break;
 		default:
-			dev_err(&pdev->dev, "%d is an unknown DT entry type\n",
+			dev_dbg(&pdev->dev, "%d is an unknown DT entry type\n",
 								itr->type);
 			ret = -EBADE;
 		}
@@ -2263,7 +2263,7 @@ static int msm_spi_dt_to_pdata_populate(struct platform_device *pdev,
 			*((int *)itr->ptr_data) = itr->default_val;
 
 			if (itr->status < DT_OPT) {
-				dev_err(&pdev->dev, "Missing '%s' DT entry\n",
+				dev_dbg(&pdev->dev, "Missing '%s' DT entry\n",
 								itr->dt_name);
 
 				/* cont on err to dump all missing entries */
@@ -2337,13 +2337,13 @@ static struct msm_spi_platform_data *msm_spi_dt_to_pdata(
 
 	if (pdata->use_bam) {
 		if (!pdata->bam_consumer_pipe_index) {
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 			"missing qcom,bam-consumer-pipe-index entry in device-tree\n");
 			pdata->use_bam = false;
 		}
 
 		if (!pdata->bam_producer_pipe_index) {
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 			"missing qcom,bam-producer-pipe-index entry in device-tree\n");
 			pdata->use_bam = false;
 		}
@@ -2368,7 +2368,7 @@ static int msm_spi_bam_get_resources(struct msm_spi *dd,
 	resource = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						"spi_bam_physical");
 	if (!resource) {
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Missing spi_bam_physical entry in DT\n",
 			__func__);
 		return -ENXIO;
@@ -2379,7 +2379,7 @@ static int msm_spi_bam_get_resources(struct msm_spi *dd,
 	dd->bam.base = devm_ioremap(&pdev->dev, dd->bam.phys_addr,
 					bam_mem_size);
 	if (!dd->bam.base) {
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Failed to ioremap(spi_bam_physical)\n",
 			__func__);
 		return -ENXIO;
@@ -2387,7 +2387,7 @@ static int msm_spi_bam_get_resources(struct msm_spi *dd,
 
 	dd->bam.irq = platform_get_irq_byname(pdev, "spi_bam_irq");
 	if (dd->bam.irq < 0) {
-		dev_warn(&pdev->dev, "%s: Missing spi_bam_irq entry in DT\n",
+		dev_dbg(&pdev->dev, "%s: Missing spi_bam_irq entry in DT\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -2410,7 +2410,7 @@ static int init_resources(struct platform_device *pdev)
 	if (dd->pdata && dd->pdata->use_pinctrl) {
 		rc = msm_spi_pinctrl_init(dd);
 		if (rc) {
-			dev_err(&pdev->dev, "%s: pinctrl init failed\n",
+			dev_dbg(&pdev->dev, "%s: pinctrl init failed\n",
 					 __func__);
 			return rc;
 		}
@@ -2420,14 +2420,14 @@ static int init_resources(struct platform_device *pdev)
 
 	dd->clk = clk_get(&pdev->dev, "core_clk");
 	if (IS_ERR(dd->clk)) {
-		dev_err(&pdev->dev, "%s: unable to get core_clk\n", __func__);
+		dev_dbg(&pdev->dev, "%s: unable to get core_clk\n", __func__);
 		rc = PTR_ERR(dd->clk);
 		goto err_clk_get;
 	}
 
 	dd->pclk = clk_get(&pdev->dev, "iface_clk");
 	if (IS_ERR(dd->pclk)) {
-		dev_err(&pdev->dev, "%s: unable to get iface_clk\n", __func__);
+		dev_dbg(&pdev->dev, "%s: unable to get iface_clk\n", __func__);
 		rc = PTR_ERR(dd->pclk);
 		goto err_pclk_get;
 	}
@@ -2437,7 +2437,7 @@ static int init_resources(struct platform_device *pdev)
 
 	rc = clk_prepare_enable(dd->clk);
 	if (rc) {
-		dev_err(&pdev->dev, "%s: unable to enable core_clk\n",
+		dev_dbg(&pdev->dev, "%s: unable to enable core_clk\n",
 			__func__);
 		goto err_clk_enable;
 	}
@@ -2445,7 +2445,7 @@ static int init_resources(struct platform_device *pdev)
 	clk_enabled = 1;
 	rc = clk_prepare_enable(dd->pclk);
 	if (rc) {
-		dev_err(&pdev->dev, "%s: unable to enable iface_clk\n",
+		dev_dbg(&pdev->dev, "%s: unable to enable iface_clk\n",
 		__func__);
 		goto err_pclk_enable;
 	}
@@ -2456,7 +2456,7 @@ static int init_resources(struct platform_device *pdev)
 		enum msm_spi_qup_version ver =
 					msm_spi_get_qup_hw_ver(&pdev->dev, dd);
 		if (dd->qup_ver != ver)
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 			"%s: HW version different then assumed by probe\n",
 			__func__);
 	}
@@ -2472,7 +2472,7 @@ static int init_resources(struct platform_device *pdev)
 	if (dd->use_dma) {
 		rc = dd->dma_init(dd);
 		if (rc) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"%s: failed to init DMA. Disabling DMA mode\n",
 				__func__);
 			dd->use_dma = false;
@@ -2542,7 +2542,7 @@ static int msm_spi_probe(struct platform_device *pdev)
 	master = spi_alloc_master(&pdev->dev, sizeof(struct msm_spi));
 	if (!master) {
 		rc = -ENOMEM;
-		dev_err(&pdev->dev, "master allocation failed\n");
+		dev_dbg(&pdev->dev, "master allocation failed\n");
 		goto err_probe_exit;
 	}
 
@@ -2564,14 +2564,14 @@ static int msm_spi_probe(struct platform_device *pdev)
 		master->dev.of_node = pdev->dev.of_node;
 		pdata = msm_spi_dt_to_pdata(pdev, dd);
 		if (!pdata) {
-			dev_err(&pdev->dev, "platform data allocation failed\n");
+			dev_dbg(&pdev->dev, "platform data allocation failed\n");
 			rc = -ENOMEM;
 			goto err_probe_exit;
 		}
 
 		rc = of_alias_get_id(pdev->dev.of_node, "spi");
 		if (rc < 0)
-			dev_warn(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"using default bus_num %d\n", pdev->id);
 		else
 			master->bus_num = pdev->id = rc;
@@ -2612,7 +2612,7 @@ static int msm_spi_probe(struct platform_device *pdev)
 		if (pdata->dma_config) {
 			rc = pdata->dma_config();
 			if (rc) {
-				dev_warn(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"%s: DM mode not supported\n",
 					__func__);
 				dd->use_dma = false;
@@ -2624,7 +2624,7 @@ static int msm_spi_probe(struct platform_device *pdev)
 
 		rc = msm_spi_bam_get_resources(dd, pdev, master);
 		if (rc) {
-			dev_warn(dd->dev,
+			dev_dbg(dd->dev,
 					"%s: Failed to get BAM resources\n",
 					__func__);
 			goto skip_dma_resources;
@@ -2668,14 +2668,14 @@ skip_dma_resources:
 
 	rc = sysfs_create_group(&(dd->dev->kobj), &dev_attr_grp);
 	if (rc) {
-		dev_err(&pdev->dev, "failed to create dev. attrs : %d\n", rc);
+		dev_dbg(&pdev->dev, "failed to create dev. attrs : %d\n", rc);
 		goto err_attrs;
 	}
 	spi_debugfs_init(dd);
 #ifdef CONFIG_IPC_LOGGING
 	dd->ipc_logs = ipc_log_context_create(4, dev_name(dd->dev), 0);
 	if (!dd->ipc_logs)
-		dev_info(&pdev->dev, "%s: failed to create ipc log cntxt\n",
+		dev_dbg(&pdev->dev, "%s: failed to create ipc log cntxt\n",
 							__func__);
 
 	spi_ipc(dd->ipc_logs, false, dd->dev, "%s: success\n", __func__);

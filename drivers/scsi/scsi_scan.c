@@ -156,7 +156,7 @@ int scsi_complete_async_scans(void)
 	list_add_tail(&data->list, &scanning_hosts);
 	spin_unlock(&async_scan_lock);
 
-	printk(KERN_INFO "scsi: waiting for bus probes to complete ...\n");
+	no_printk(KERN_INFO "scsi: waiting for bus probes to complete ...\n");
 	wait_for_completion(&data->prev_finished);
 
 	spin_lock(&async_scan_lock);
@@ -309,7 +309,7 @@ out_device_destroy:
 	__scsi_remove_device(sdev);
 out:
 	if (display_failure_msg)
-		printk(ALLOC_FAILURE_MSG, __func__);
+		no_printk(ALLOC_FAILURE_MSG, __func__);
 	return NULL;
 }
 
@@ -429,7 +429,7 @@ static struct scsi_target *scsi_alloc_target(struct device *parent,
 
 	starget = kzalloc(size, GFP_KERNEL);
 	if (!starget) {
-		printk(KERN_ERR "%s: allocation failure\n", __func__);
+		no_printk(KERN_ERR "%s: allocation failure\n", __func__);
 		return NULL;
 	}
 	dev = &starget->dev;
@@ -463,7 +463,7 @@ static struct scsi_target *scsi_alloc_target(struct device *parent,
 
 		if(error) {
 			if (error != -ENXIO)
-				dev_err(dev, "target allocation failed, error %d\n", error);
+				dev_dbg(dev, "target allocation failed, error %d\n", error);
 			/* don't want scsi_target_reap to do the final
 			 * put because it will be under the host lock */
 			scsi_target_destroy(starget);
@@ -1347,7 +1347,7 @@ retry:
 	lun_data = kmalloc(length, GFP_KERNEL |
 			   (sdev->host->unchecked_isa_dma ? __GFP_DMA : 0));
 	if (!lun_data) {
-		printk(ALLOC_FAILURE_MSG, __func__);
+		no_printk(ALLOC_FAILURE_MSG, __func__);
 		goto out;
 	}
 

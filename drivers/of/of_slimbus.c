@@ -29,7 +29,7 @@ int of_register_slim_devices(struct slim_controller *ctrl)
 
 		prop = of_find_property(node, "elemental-addr", NULL);
 		if (!prop || prop->length != 6) {
-			dev_err(&ctrl->dev, "of_slim: invalid E-addr\n");
+			dev_dbg(&ctrl->dev, "of_slim: invalid E-addr\n");
 			continue;
 		}
 		name = kzalloc(SLIMBUS_NAME_SIZE, GFP_KERNEL);
@@ -38,7 +38,7 @@ int of_register_slim_devices(struct slim_controller *ctrl)
 			goto of_slim_err;
 		}
 		if (of_modalias_node(node, name, SLIMBUS_NAME_SIZE) < 0) {
-			dev_err(&ctrl->dev, "of_slim: modalias failure on %s\n",
+			dev_dbg(&ctrl->dev, "of_slim: modalias failure on %s\n",
 				node->full_name);
 			kfree(name);
 			continue;
@@ -54,7 +54,7 @@ int of_register_slim_devices(struct slim_controller *ctrl)
 		temp = krealloc(binfo, (n + 1) * sizeof(struct slim_boardinfo),
 					GFP_KERNEL);
 		if (!temp) {
-			dev_err(&ctrl->dev, "out of memory\n");
+			dev_dbg(&ctrl->dev, "out of memory\n");
 			kfree(name);
 			kfree(slim);
 			ret = -ENOMEM;

@@ -544,7 +544,7 @@ void kgsl_context_dump(struct kgsl_context *context)
 	device = context->device;
 
 	if (kgsl_context_detached(context)) {
-		dev_err(device->dev, "  context[%u]: context detached\n",
+		dev_dbg(device->dev, "  context[%u]: context detached\n",
 			context->id);
 	} else if (device->ftbl->drawctxt_dump != NULL)
 		device->ftbl->drawctxt_dump(device, context);
@@ -595,7 +595,7 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 	 */
 	spin_lock(&proc_priv->ctxt_count_lock);
 	if (atomic_read(&proc_priv->ctxt_count) > KGSL_MAX_CONTEXTS_PER_PROC) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "Per process context limit reached for pid %u\n",
 			     pid_nr(dev_priv->process_priv->pid));
 		spin_unlock(&proc_priv->ctxt_count_lock);
@@ -619,7 +619,7 @@ int kgsl_context_init(struct kgsl_device_private *dev_priv,
 
 	if (id < 0) {
 		if (id == -ENOSPC)
-			dev_warn(device->dev,
+			dev_dbg(device->dev,
 				      "cannot have more than %zu contexts due to memstore limitation\n",
 				      KGSL_MEMSTORE_MAX);
 		atomic_dec(&proc_priv->ctxt_count);
@@ -841,7 +841,7 @@ static int kgsl_resume_device(struct kgsl_device *device)
 		if (device->state == KGSL_STATE_ACTIVE)
 			device->ftbl->idle(device);
 		kgsl_pwrctrl_change_state(device, KGSL_STATE_SLUMBER);
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "resume invoked without a suspend\n");
 	}
 
@@ -1132,11 +1132,11 @@ static int kgsl_close_device(struct kgsl_device *device)
 		 * and then start complaining about it
 		 */
 		if (kgsl_active_count_wait(device, 0)) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"Waiting for the active count to become 0\n");
 
 			while (kgsl_active_count_wait(device, 0))
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"Still waiting for the active count\n");
 		}
 
@@ -1265,13 +1265,13 @@ static int kgsl_open(struct inode *inodep, struct file *filep)
 
 	device = kgsl_get_minor(minor);
 	if (device == NULL) {
-		pr_err("kgsl: No device found\n");
+		pr_debug("kgsl: No device found\n");
 		return -ENODEV;
 	}
 
 	result = pm_runtime_get_sync(&device->pdev->dev);
 	if (result < 0) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "Runtime PM: Unable to wake up the device, rc = %d\n",
 			     result);
 		return result;
@@ -3659,7 +3659,7 @@ struct kgsl_mem_entry *gpumem_alloc_entry(
 	/* Cap the alignment bits to the highest number we can handle */
 	align = MEMFLAGS(flags, KGSL_MEMALIGN_MASK, KGSL_MEMALIGN_SHIFT);
 	if (align >= ilog2(KGSL_MAX_ALIGN)) {
-		dev_info(dev_priv->device->dev,
+		dev_dbg(dev_priv->device->dev,
 			"Alignment too large; restricting to %dK\n",
 			KGSL_MAX_ALIGN >> 10);
 
@@ -4569,7 +4569,7 @@ void kgsl_sparse_bind(struct kgsl_process_private *private,
 		}
 
 		if (ret)
-			pr_err("kgsl: unable to '%s' ret %ld virt_id %d,phys_id %d, virt_offset %16.16llX,phys_offset %16.16llX, size %16.16llX,flags %16.16llX\n",
+			pr_debug("kgsl: unable to '%s' ret %ld virt_id %d,phys_id %d, virt_offset %16.16llX,phys_offset %16.16llX, size %16.16llX,flags %16.16llX\n",
 					name, ret, sparse_node->virt_id,
 					sparse_node->obj.id,
 					sparse_node->obj.virtoffset,
@@ -4685,7 +4685,7 @@ kgsl_mmap_memstore(struct kgsl_device *device, struct vm_area_struct *vma)
 	vma->vm_flags &= ~VM_MAYWRITE;
 
 	if (memdesc->size  !=  vma_size) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "memstore bad size: %d should be %llu\n",
 			     vma_size, memdesc->size);
 		return -EINVAL;
@@ -4697,7 +4697,7 @@ kgsl_mmap_memstore(struct kgsl_device *device, struct vm_area_struct *vma)
 				device->memstore.physaddr >> PAGE_SHIFT,
 				 vma_size, vma->vm_page_prot);
 	if (result != 0)
-		dev_err(device->dev, "remap_pfn_range failed: %d\n",
+		dev_dbg(device->dev, "remap_pfn_range failed: %d\n",
 			     result);
 
 	return result;
@@ -5256,7 +5256,7 @@ static int _register_device(struct kgsl_device *device)
 	mutex_unlock(&kgsl_driver.devlock);
 
 	if (minor == ARRAY_SIZE(kgsl_driver.devp)) {
-		pr_err("kgsl: minor devices exhausted\n");
+		pr_debug("kgsl: minor devices exhausted\n");
 		return -ENODEV;
 	}
 
@@ -5272,7 +5272,7 @@ static int _register_device(struct kgsl_device *device)
 		kgsl_driver.devp[minor] = NULL;
 		mutex_unlock(&kgsl_driver.devlock);
 		ret = PTR_ERR(device->dev);
-		pr_err("kgsl: device_create(%s): %d\n", device->name, ret);
+		pr_debug("kgsl: device_create(%s): %d\n", device->name, ret);
 		return ret;
 	}
 
@@ -5298,7 +5298,7 @@ int kgsl_request_irq(struct platform_device *pdev, const  char *name,
 	ret = devm_request_irq(&pdev->dev, num, handler, irqflags, name, data);
 
 	if (ret)
-		dev_err(&pdev->dev, "Unable to get interrupt %s: %d\n",
+		dev_dbg(&pdev->dev, "Unable to get interrupt %s: %d\n",
 			name, ret);
 
 	return ret ? ret : num;
@@ -5351,7 +5351,7 @@ int kgsl_device_platform_probe(struct kgsl_device *device)
 
 	if (IS_ERR(device->events_worker)) {
 		status = PTR_ERR(device->events_worker);
-		dev_err(device->dev, "Failed to create events worker ret=%d\n", status);
+		dev_dbg(device->dev, "Failed to create events worker ret=%d\n", status);
 		goto error_pwrctrl_close;
 	}
 
@@ -5359,7 +5359,7 @@ int kgsl_device_platform_probe(struct kgsl_device *device)
 
 	if (!devm_request_mem_region(device->dev, device->reg_phys,
 				device->reg_len, device->name)) {
-		dev_err(device->dev, "request_mem_region failed\n");
+		dev_dbg(device->dev, "request_mem_region failed\n");
 		status = -ENODEV;
 		goto error_pwrctrl_close;
 	}
@@ -5368,7 +5368,7 @@ int kgsl_device_platform_probe(struct kgsl_device *device)
 					device->reg_len);
 
 	if (device->reg_virt == NULL) {
-		dev_err(device->dev, "ioremap failed\n");
+		dev_dbg(device->dev, "ioremap failed\n");
 		status = -ENODEV;
 		goto error_pwrctrl_close;
 	}
@@ -5537,7 +5537,7 @@ static int __init kgsl_core_init(void)
 
 	if (result < 0) {
 
-		pr_err("kgsl: alloc_chrdev_region failed err = %d\n", result);
+		pr_debug("kgsl: alloc_chrdev_region failed err = %d\n", result);
 		goto err;
 	}
 
@@ -5548,7 +5548,7 @@ static int __init kgsl_core_init(void)
 		ARRAY_SIZE(kgsl_driver.devp));
 
 	if (result) {
-		pr_err("kgsl: cdev_add() failed, dev_num= %d,result= %d\n",
+		pr_debug("kgsl: cdev_add() failed, dev_num= %d,result= %d\n",
 				kgsl_driver.major, result);
 		goto err;
 	}
@@ -5557,7 +5557,7 @@ static int __init kgsl_core_init(void)
 
 	if (IS_ERR(kgsl_driver.class)) {
 		result = PTR_ERR(kgsl_driver.class);
-		pr_err("kgsl: failed to create class for kgsl\n");
+		pr_debug("kgsl: failed to create class for kgsl\n");
 		goto err;
 	}
 
@@ -5569,7 +5569,7 @@ static int __init kgsl_core_init(void)
 	dev_set_name(&kgsl_driver.virtdev, "kgsl");
 	result = device_register(&kgsl_driver.virtdev);
 	if (result) {
-		pr_err("kgsl: driver_register failed\n");
+		pr_debug("kgsl: driver_register failed\n");
 		goto err;
 	}
 
@@ -5595,7 +5595,7 @@ static int __init kgsl_core_init(void)
 		WQ_HIGHPRI | WQ_MEM_RECLAIM | WQ_SYSFS, 0);
 
 	if (!kgsl_driver.workqueue) {
-		pr_err("kgsl: Failed to allocate kgsl workqueue\n");
+		pr_debug("kgsl: Failed to allocate kgsl workqueue\n");
 		result = -ENOMEM;
 		goto err;
 	}
@@ -5604,7 +5604,7 @@ static int __init kgsl_core_init(void)
 		WQ_HIGHPRI | WQ_MEM_RECLAIM, 0);
 
 	if (!kgsl_driver.mem_workqueue) {
-		pr_err("kgsl: Failed to allocate mem workqueue\n");
+		pr_debug("kgsl: Failed to allocate mem workqueue\n");
 		result = -ENOMEM;
 		goto err;
 	}
@@ -5617,7 +5617,7 @@ static int __init kgsl_core_init(void)
 		kthread_worker_fn, &kgsl_driver.worker, "kgsl_worker_thread");
 
 	if (IS_ERR(kgsl_driver.worker_thread)) {
-		pr_err("kgsl: unable to start kgsl thread\n");
+		pr_debug("kgsl: unable to start kgsl thread\n");
 		goto err;
 	}
 

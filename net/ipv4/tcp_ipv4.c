@@ -2911,7 +2911,7 @@ static void __init bpf_iter_register(void)
 {
 	tcp_reg_info.ctx_arg_info[0].btf_id = btf_sock_ids[BTF_SOCK_TYPE_SOCK_COMMON];
 	if (bpf_iter_reg_target(&tcp_reg_info))
-		pr_warn("Warning: could not register bpf iterator tcp\n");
+		pr_debug("Warning: could not register bpf iterator tcp\n");
 }
 
 #endif

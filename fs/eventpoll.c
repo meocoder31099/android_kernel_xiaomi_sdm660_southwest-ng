@@ -1339,7 +1339,7 @@ static int reverse_path_check_proc(void *priv, void *cookie, int call_nests)
 			if (error != 0)
 				break;
 		} else {
-			printk(KERN_ERR "reverse_path_check_proc: "
+			no_printk(KERN_ERR "reverse_path_check_proc: "
 				"file is not an ep!\n");
 		}
 	}

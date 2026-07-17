@@ -32,7 +32,7 @@
 
 #ifdef MSM_CAMERA_TZ_I2C_VERBOSE
 	#define CDBG(fmt, args...) \
-		pr_info(CONFIG_MSM_SEC_CCI_TA_NAME "::%s:%d -\n" fmt, \
+		pr_debug(CONFIG_MSM_SEC_CCI_TA_NAME "::%s:%d -\n" fmt, \
 		__func__, __LINE__, ##args)
 #else /* MSM_CAMERA_TZ_I2C_VERBOSE */
 	#define CDBG(fmt, args...) \
@@ -128,7 +128,7 @@ static int32_t msm_camera_tz_i2c_is_sensor_secure(
 	uint32_t index;
 
 	if (client == NULL) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -159,7 +159,7 @@ static int32_t msm_camera_tz_i2c_ta_power_up(
 	CDBG("Enter\n");
 
 	if (sensor_secure == NULL) {
-		pr_err("%s:%d - Bad parameter\n",
+		pr_debug("%s:%d - Bad parameter\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -168,7 +168,7 @@ static int32_t msm_camera_tz_i2c_ta_power_up(
 	if ((ta_qseecom_handle == NULL) ||
 		(sensor_id < 0) ||
 		(sensor_id >= MAX_CAMERAS)) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -186,7 +186,7 @@ static int32_t msm_camera_tz_i2c_ta_power_up(
 			(void *)cmd, cmd_len, (void *)rsp, rsp_len);
 
 		if (rc < 0) {
-			pr_err("%s:%d - Unable to get sensor secure status, rc=%d\n",
+			pr_debug("%s:%d - Unable to get sensor secure status, rc=%d\n",
 				__func__, __LINE__,
 				rc);
 			return rc;
@@ -214,7 +214,7 @@ static int32_t msm_camera_tz_i2c_ta_power_down(
 	if ((ta_qseecom_handle == NULL) ||
 		(sensor_id < 0) ||
 		(sensor_id >= MAX_CAMERAS)) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -232,7 +232,7 @@ static int32_t msm_camera_tz_i2c_ta_power_down(
 			(void *)cmd, cmd_len, (void *)rsp, rsp_len);
 
 		if (rc < 0) {
-			pr_err("%s:%d - Failed: rc=%d\n",
+			pr_debug("%s:%d - Failed: rc=%d\n",
 				__func__, __LINE__,
 				rc);
 			return rc;
@@ -256,7 +256,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_generic(
 	if ((client == NULL) ||
 		(sensor_id < 0) ||
 		(sensor_id >= MAX_CAMERAS)) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -279,7 +279,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_generic(
 			(void *)cmd, cmd_len, (void *)rsp, rsp_len);
 
 		if (rc < 0) {
-			pr_err("%s:%d - Failed: rc=%d\n",
+			pr_debug("%s:%d - Failed: rc=%d\n",
 				__func__, __LINE__,
 				rc);
 			return rc;
@@ -315,7 +315,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_read(
 		(data == NULL) ||
 		(sensor_id < 0) ||
 		(sensor_id >= MAX_CAMERAS)) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -339,7 +339,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_read(
 			(void *)cmd, cmd_len, (void *)rsp, rsp_len);
 
 		if (rc < 0) {
-			pr_err("%s:%d - Failed: rc=%d\n",
+			pr_debug("%s:%d - Failed: rc=%d\n",
 				__func__, __LINE__,
 				rc);
 			return rc;
@@ -377,7 +377,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_write(
 	if ((client == NULL) ||
 		(sensor_id < 0) ||
 		(sensor_id >= MAX_CAMERAS)) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -402,7 +402,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_write(
 			(void *)cmd, cmd_len, (void *)rsp, rsp_len);
 
 		if (rc < 0) {
-			pr_err("%s:%d - Failed:, rc=%d\n",
+			pr_debug("%s:%d - Failed:, rc=%d\n",
 				__func__, __LINE__,
 				rc);
 			return rc;
@@ -437,7 +437,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_util(
 	if ((client == NULL) ||
 		(sensor_id < 0) ||
 		(sensor_id >= MAX_CAMERAS)) {
-		pr_err("%s:%d - Bad parameters\n",
+		pr_debug("%s:%d - Bad parameters\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
@@ -460,7 +460,7 @@ static int32_t msm_camera_tz_i2c_ta_cci_util(
 			(void *)cmd, cmd_len, (void *)rsp, rsp_len);
 
 		if (rc < 0) {
-			pr_err("%s:%d - Failed: rc=%d\n",
+			pr_debug("%s:%d - Failed: rc=%d\n",
 				__func__, __LINE__,
 				rc);
 			return rc;
@@ -573,12 +573,12 @@ int32_t msm_camera_tz_i2c_register_sensor(
 	struct msm_sensor_ctrl_t *s_ctrl = (struct msm_sensor_ctrl_t *)s_ctrl_p;
 
 	if (s_ctrl == NULL) {
-		pr_err("%s:%d - invalid parameter)\n",
+		pr_debug("%s:%d - invalid parameter)\n",
 			__func__, __LINE__);
 		return -EINVAL;
 	}
 	if (s_ctrl->id >= MAX_CAMERAS) {
-		pr_err("%s:%d - invalid ID: %d\n",
+		pr_debug("%s:%d - invalid ID: %d\n",
 			__func__, __LINE__, s_ctrl->id);
 		return -EINVAL;
 	}

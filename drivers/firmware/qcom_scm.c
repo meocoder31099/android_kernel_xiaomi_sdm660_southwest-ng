@@ -225,7 +225,7 @@ int qcom_scm_pas_init_image(u32 peripheral, const void *metadata, size_t size)
 	mdata_buf = dma_alloc_coherent(__scm->dev, size, &mdata_phys,
 				       GFP_KERNEL);
 	if (!mdata_buf) {
-		dev_err(__scm->dev, "Allocation of metadata buffer failed.\n");
+		dev_dbg(__scm->dev, "Allocation of metadata buffer failed.\n");
 		return -ENOMEM;
 	}
 	memcpy(mdata_buf, metadata, size);
@@ -379,12 +379,12 @@ static void qcom_scm_set_download_mode(bool enable)
 		ret = __qcom_scm_io_writel(__scm->dev, __scm->dload_mode_addr,
 					   enable ? QCOM_SCM_SET_DLOAD_MODE : 0);
 	} else {
-		dev_err(__scm->dev,
+		dev_dbg(__scm->dev,
 			"No available mechanism for setting download mode\n");
 	}
 
 	if (ret)
-		dev_err(__scm->dev, "failed to set download mode: %d\n", ret);
+		dev_dbg(__scm->dev, "failed to set download mode: %d\n", ret);
 }
 
 static int qcom_scm_find_dload_address(struct device *dev, u64 *addr)
@@ -500,7 +500,7 @@ int qcom_scm_assign_mem(phys_addr_t mem_addr, size_t mem_sz,
 				    ptr_phys, src_sz, dest_phys, dest_sz);
 	dma_free_coherent(__scm->dev, ptr_sz, ptr, ptr_phys);
 	if (ret) {
-		dev_err(__scm->dev,
+		dev_dbg(__scm->dev,
 			"Assign memory protection call failed %d.\n", ret);
 		return -EINVAL;
 	}
@@ -529,7 +529,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
 		scm->core_clk = devm_clk_get(&pdev->dev, "core");
 		if (IS_ERR(scm->core_clk)) {
 			if (PTR_ERR(scm->core_clk) != -EPROBE_DEFER)
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"failed to acquire core clk\n");
 			return PTR_ERR(scm->core_clk);
 		}
@@ -539,7 +539,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
 		scm->iface_clk = devm_clk_get(&pdev->dev, "iface");
 		if (IS_ERR(scm->iface_clk)) {
 			if (PTR_ERR(scm->iface_clk) != -EPROBE_DEFER)
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"failed to acquire iface clk\n");
 			return PTR_ERR(scm->iface_clk);
 		}
@@ -549,7 +549,7 @@ static int qcom_scm_probe(struct platform_device *pdev)
 		scm->bus_clk = devm_clk_get(&pdev->dev, "bus");
 		if (IS_ERR(scm->bus_clk)) {
 			if (PTR_ERR(scm->bus_clk) != -EPROBE_DEFER)
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"failed to acquire bus clk\n");
 			return PTR_ERR(scm->bus_clk);
 		}

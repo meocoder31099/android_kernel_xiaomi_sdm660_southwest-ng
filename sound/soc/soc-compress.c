@@ -37,7 +37,7 @@ static int soc_compr_components_open(struct snd_compr_stream *cstream,
 
 		ret = component->driver->compr_ops->open(cstream);
 		if (ret < 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"Compress ASoC: can't open platform %s: %d\n",
 				component->name, ret);
 
@@ -85,7 +85,7 @@ static int soc_compr_open(struct snd_compr_stream *cstream)
 	if (cpu_dai->driver->cops && cpu_dai->driver->cops->startup) {
 		ret = cpu_dai->driver->cops->startup(cstream, cpu_dai);
 		if (ret < 0) {
-			dev_err(cpu_dai->dev,
+			dev_dbg(cpu_dai->dev,
 				"Compress ASoC: can't open interface %s: %d\n",
 				cpu_dai->name, ret);
 			goto out;
@@ -99,7 +99,7 @@ static int soc_compr_open(struct snd_compr_stream *cstream)
 	if (rtd->dai_link->compr_ops && rtd->dai_link->compr_ops->startup) {
 		ret = rtd->dai_link->compr_ops->startup(cstream);
 		if (ret < 0) {
-			dev_err(rtd->dev,
+			dev_dbg(rtd->dev,
 				"Compress ASoC: %s startup failed: %d\n",
 				rtd->dai_link->name, ret);
 			goto machine_err;
@@ -161,7 +161,7 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 	if (cpu_dai->driver->cops && cpu_dai->driver->cops->startup) {
 		ret = cpu_dai->driver->cops->startup(cstream, cpu_dai);
 		if (ret < 0) {
-			dev_err(cpu_dai->dev,
+			dev_dbg(cpu_dai->dev,
 				"Compress ASoC: can't open interface %s: %d\n",
 				cpu_dai->name, ret);
 			goto be_unwind;
@@ -175,7 +175,7 @@ static int soc_compr_open_fe(struct snd_compr_stream *cstream)
 	if (fe->dai_link->compr_ops && fe->dai_link->compr_ops->startup) {
 		ret = fe->dai_link->compr_ops->startup(cstream);
 		if (ret < 0) {
-			pr_err("Compress ASoC: %s startup failed: %d\n",
+			pr_debug("Compress ASoC: %s startup failed: %d\n",
 			       fe->dai_link->name, ret);
 			goto machine_err;
 		}
@@ -317,7 +317,7 @@ static int soc_compr_free_fe(struct snd_compr_stream *cstream)
 
 	ret = dpcm_be_dai_hw_free(fe, stream);
 	if (ret < 0)
-		dev_err(fe->dev, "Compressed ASoC: hw_free failed: %d\n", ret);
+		dev_dbg(fe->dev, "Compressed ASoC: hw_free failed: %d\n", ret);
 
 	ret = dpcm_be_dai_shutdown(fe, stream);
 
@@ -1055,7 +1055,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 	int playback = 0, capture = 0;
 
 	if (rtd->num_codecs > 1) {
-		dev_err(rtd->card->dev,
+		dev_dbg(rtd->card->dev,
 			"Compress ASoC: Multicodec not supported\n");
 		return -EINVAL;
 	}
@@ -1074,7 +1074,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 	 * should be set, check for that (xor)
 	 */
 	if (playback + capture != 1) {
-		dev_err(rtd->card->dev,
+		dev_dbg(rtd->card->dev,
 			"Compress ASoC: Invalid direction for P %d, C %d\n",
 			playback, capture);
 		return -EINVAL;
@@ -1104,7 +1104,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 				rtd->dai_link->dpcm_playback,
 				rtd->dai_link->dpcm_capture, &be_pcm);
 		if (ret < 0) {
-			dev_err(rtd->card->dev,
+			dev_dbg(rtd->card->dev,
 				"Compress ASoC: can't create compressed for %s: %d\n",
 				rtd->dai_link->name, ret);
 			goto compr_err;
@@ -1140,7 +1140,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 				new_name, compr);
 	if (ret < 0) {
 		component = rtd->codec_dai->component;
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"Compress ASoC: can't create compress for codec %s: %d\n",
 			component->name, ret);
 		goto compr_err;
@@ -1158,7 +1158,7 @@ int snd_soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 		if (component->driver->pcm_new) {
 			ret = component->driver->pcm_new(rtd);
 			if (ret < 0) {
-				pr_err("asoc: compress pcm constructor failed\n");
+				pr_debug("asoc: compress pcm constructor failed\n");
 				goto compr_err;
 			}
 		}

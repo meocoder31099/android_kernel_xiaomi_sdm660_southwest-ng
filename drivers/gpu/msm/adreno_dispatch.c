@@ -638,7 +638,7 @@ static int sendcmd(struct adreno_device *adreno_dev,
 		 */
 
 		if (ret != -ENOENT && ret != -ENOSPC && ret != -EPROTO)
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "Unable to submit command to the ringbuffer %d\n",
 				     ret);
 		return ret;
@@ -1691,7 +1691,7 @@ static inline const char *_kgsl_context_comm(struct kgsl_context *context)
 }
 
 #define pr_fault(_d, _c, fmt, args...) \
-		dev_err((_d)->dev, "%s[%d]: " fmt, \
+		dev_dbg((_d)->dev, "%s[%d]: " fmt, \
 		_kgsl_context_comm((_c)->context), \
 		pid_nr((_c)->context->proc_priv->pid), ##args)
 
@@ -1718,7 +1718,7 @@ static void adreno_fault_header(struct kgsl_device *device,
 				get_api_type_str(drawctxt->type),
 				drawobj->timestamp);
 		else
-			dev_err(device->dev, "RB[%d] : %s fault and GX is OFF\n",
+			dev_dbg(device->dev, "RB[%d] : %s fault and GX is OFF\n",
 				id, type);
 
 		return;
@@ -1755,12 +1755,12 @@ static void adreno_fault_header(struct kgsl_device *device,
 				"%s fault rb %d rb sw r/w %4.4x/%4.4x\n",
 				type, rb->id, rptr, rb->wptr);
 	} else {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"RB[%d] : %s fault status %8.8X rb %4.4x/%4.4x ib1 %16.16llX/%4.4x ib2 %16.16llX/%4.4x\n",
 			id, type, status, rptr, wptr, ib1base, ib1sz, ib2base,
 			ib2sz);
 		if (rb != NULL)
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"RB[%d] : %s fault rb sw r/w %4.4x/%4.4x\n",
 				rb->id, type, rptr, rb->wptr);
 	}
@@ -2168,7 +2168,7 @@ static int dispatcher_do_fault(struct adreno_device *adreno_dev)
 		(adreno_is_a5xx(adreno_dev) || adreno_is_a6xx(adreno_dev)) &&
 		smmu_stalled) {
 		mutex_unlock(&device->mutex);
-		dev_err(device->dev, "SMMU is stalled without a pagefault\n");
+		dev_dbg(device->dev, "SMMU is stalled without a pagefault\n");
 		return -EBUSY;
 	}
 
@@ -2940,7 +2940,7 @@ int adreno_dispatcher_idle(struct adreno_device *adreno_dev)
 		ret = -ETIMEDOUT;
 		WARN(1, "Dispatcher halt timeout\n");
 	} else if (ret < 0) {
-		dev_err(device->dev, "Dispatcher halt failed %d\n", ret);
+		dev_dbg(device->dev, "Dispatcher halt failed %d\n", ret);
 	} else {
 		ret = 0;
 	}

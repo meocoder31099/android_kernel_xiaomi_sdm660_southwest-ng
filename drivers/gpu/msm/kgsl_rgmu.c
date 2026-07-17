@@ -29,7 +29,7 @@ static int rgmu_irq_probe(struct kgsl_device *device)
 				oob_irq_handler, IRQF_TRIGGER_HIGH,
 				"kgsl-oob", device);
 	if (ret) {
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Request kgsl-oob interrupt failed:%d\n", ret);
 		return ret;
 	}
@@ -42,7 +42,7 @@ static int rgmu_irq_probe(struct kgsl_device *device)
 			rgmu_irq_handler, IRQF_TRIGGER_HIGH,
 			"kgsl-rgmu", device);
 	if (ret)
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Request kgsl-rgmu interrupt failed:%d\n", ret);
 
 	return ret;
@@ -56,7 +56,7 @@ static int rgmu_regulators_probe(struct rgmu_device *rgmu,
 	rgmu->cx_gdsc = devm_regulator_get(&rgmu->pdev->dev, "vddcx");
 	if (IS_ERR_OR_NULL(rgmu->cx_gdsc)) {
 		ret = PTR_ERR(rgmu->cx_gdsc);
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Couldn't get CX gdsc error:%d\n", ret);
 		rgmu->cx_gdsc = NULL;
 		return ret;
@@ -65,7 +65,7 @@ static int rgmu_regulators_probe(struct rgmu_device *rgmu,
 	rgmu->gx_gdsc = devm_regulator_get(&rgmu->pdev->dev, "vdd");
 	if (IS_ERR_OR_NULL(rgmu->gx_gdsc)) {
 		ret = PTR_ERR(rgmu->gx_gdsc);
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Couldn't get GX gdsc error:%d\n", ret);
 		rgmu->gx_gdsc = NULL;
 		return ret;
@@ -84,14 +84,14 @@ static int rgmu_clocks_probe(struct rgmu_device *rgmu, struct device_node *node)
 	of_property_for_each_string(node, "clock-names", prop, cname) {
 
 		if (i >= ARRAY_SIZE(rgmu->clks)) {
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 				"dt: too many RGMU clocks defined\n");
 			return -EINVAL;
 		}
 
 		c = devm_clk_get(&rgmu->pdev->dev, cname);
 		if (IS_ERR_OR_NULL(c)) {
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 				"dt: Couldn't get clock: %s\n", cname);
 			return PTR_ERR(c);
 		}
@@ -113,7 +113,7 @@ static inline int rgmu_clk_set_rate(struct clk *grp_clk, unsigned int freq)
 	int ret = clk_set_rate(grp_clk, freq);
 
 	if (ret)
-		pr_err("%s set freq %d failed:%d\n",
+		pr_debug("%s set freq %d failed:%d\n",
 				__clk_get_name(grp_clk), freq, ret);
 
 	return ret;
@@ -139,16 +139,16 @@ static void rgmu_disable_clks(struct kgsl_device *device)
 		 */
 		ret = regulator_enable(rgmu->gx_gdsc);
 		if (ret)
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 					"Fail to enable gx gdsc:%d\n", ret);
 
 		ret = regulator_disable(rgmu->gx_gdsc);
 		if (ret)
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 					"Fail to disable gx gdsc:%d\n", ret);
 
 		if (gmu_dev_ops->gx_is_on(device))
-			dev_err(&rgmu->pdev->dev, "gx is stuck on\n");
+			dev_dbg(&rgmu->pdev->dev, "gx is stuck on\n");
 	}
 
 	for (j = 0; j < ARRAY_SIZE(rgmu->clks); j++)
@@ -181,7 +181,7 @@ static int rgmu_enable_clks(struct kgsl_device *device)
 	for (j = 0; j < ARRAY_SIZE(rgmu->clks); j++) {
 		ret = clk_prepare_enable(rgmu->clks[j]);
 		if (ret) {
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 					"Fail(%d) to enable gpucc clk idx %d\n",
 					ret, j);
 			return ret;
@@ -204,7 +204,7 @@ static void rgmu_disable_gdsc(struct kgsl_device *device)
 
 	ret = regulator_disable(rgmu->cx_gdsc);
 	if (ret) {
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Failed to disable CX gdsc:%d\n", ret);
 		return;
 	}
@@ -224,7 +224,7 @@ static void rgmu_disable_gdsc(struct kgsl_device *device)
 	} while (!(time_after(jiffies, t)));
 
 	if (regulator_is_enabled(rgmu->cx_gdsc))
-		dev_err(&rgmu->pdev->dev, "RGMU CX gdsc off timeout\n");
+		dev_dbg(&rgmu->pdev->dev, "RGMU CX gdsc off timeout\n");
 }
 
 static int rgmu_enable_gdsc(struct rgmu_device *rgmu)
@@ -236,7 +236,7 @@ static int rgmu_enable_gdsc(struct rgmu_device *rgmu)
 
 	ret = regulator_enable(rgmu->cx_gdsc);
 	if (ret)
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 			"Fail to enable CX gdsc:%d\n", ret);
 
 	return ret;
@@ -333,13 +333,13 @@ static int rgmu_probe(struct kgsl_device *device, struct device_node *node)
 	res = platform_get_resource_byname(rgmu->pdev,
 			IORESOURCE_MEM, "kgsl_rgmu");
 	if (res == NULL) {
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"platform_get_resource failed\n");
 		return -EINVAL;
 	}
 
 	if (res->start == 0 || resource_size(res) == 0) {
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Register region is invalid\n");
 		return -EINVAL;
 	}
@@ -350,7 +350,7 @@ static int rgmu_probe(struct kgsl_device *device, struct device_node *node)
 			resource_size(res));
 
 	if (device->gmu_core.reg_virt == NULL) {
-		dev_err(&rgmu->pdev->dev, "Unable to remap rgmu registers\n");
+		dev_dbg(&rgmu->pdev->dev, "Unable to remap rgmu registers\n");
 		return -ENODEV;
 	}
 

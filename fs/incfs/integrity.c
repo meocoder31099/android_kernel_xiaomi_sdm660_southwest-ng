@@ -36,7 +36,7 @@ struct incfs_hash_alg *incfs_get_hash_alg(enum incfs_hash_tree_algorithm id)
 	if (IS_ERR(shash)) {
 		int err = PTR_ERR(shash);
 
-		pr_err("Can't allocate hash alg %s, error code:%d",
+		pr_debug("Can't allocate hash alg %s, error code:%d",
 			result->name, err);
 		return ERR_PTR(err);
 	}
@@ -165,7 +165,7 @@ struct mtree *incfs_alloc_mtree(struct mem_range signature,
 	/* First pass: calculate how many blocks in each tree level. */
 	for (lvl = 0; blocks > 1; lvl++) {
 		if (lvl >= INCFS_MAX_MTREE_LEVELS) {
-			pr_err("incfs: too much data in mtree");
+			pr_debug("incfs: too much data in mtree");
 			goto err;
 		}
 

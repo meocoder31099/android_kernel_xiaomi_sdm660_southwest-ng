@@ -311,7 +311,7 @@ static void wacom_feature_mapping(struct hid_device *hdev,
 	case HID_DG_INPUTMODE:
 		/* Ignore if value index is out of bounds. */
 		if (usage->usage_index >= field->report_count) {
-			dev_err(&hdev->dev, "HID_DG_INPUTMODE out of range\n");
+			dev_dbg(&hdev->dev, "HID_DG_INPUTMODE out of range\n");
 			break;
 		}
 
@@ -2343,7 +2343,7 @@ static int wacom_parse_and_register(struct wacom *wacom, bool wireless)
 	    features->type != WIRELESS) {
 		error = features->type == HID_GENERIC ? -ENODEV : 0;
 
-		dev_warn(&hdev->dev, "Unknown device_type for '%s'. %s.",
+		dev_dbg(&hdev->dev, "Unknown device_type for '%s'. %s.",
 			 hdev->name,
 			 error ? "Ignoring" : "Assuming pen");
 

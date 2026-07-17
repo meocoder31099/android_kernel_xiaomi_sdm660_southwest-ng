@@ -88,7 +88,7 @@ static int audio_ext_clk_prepare(struct clk_hw *hw)
 		ret = pinctrl_select_state(pnctrl_info->pinctrl,
 				pnctrl_info->active);
 		if (ret) {
-			pr_err("%s: active state select failed with %d\n",
+			pr_debug("%s: active state select failed with %d\n",
 				__func__, ret);
 			return -EIO;
 		}
@@ -109,7 +109,7 @@ static void audio_ext_clk_unprepare(struct clk_hw *hw)
 		ret = pinctrl_select_state(pnctrl_info->pinctrl,
 					   pnctrl_info->sleep);
 		if (ret) {
-			pr_err("%s: sleep state select failed with %d\n",
+			pr_debug("%s: sleep state select failed with %d\n",
 				__func__, ret);
 			return;
 		}
@@ -158,7 +158,7 @@ static int lpass_hw_vote_prepare(struct clk_hw *hw)
 			"LPASS_HW_MACRO",
 			&clk_priv->lpass_core_hwvote_client_handle);
 		if (ret < 0) {
-			pr_err("%s lpass core hw vote failed %d\n",
+			pr_debug("%s lpass core hw vote failed %d\n",
 				__func__, ret);
 			return ret;
 		}
@@ -171,7 +171,7 @@ static int lpass_hw_vote_prepare(struct clk_hw *hw)
 			"LPASS_HW_DCODEC",
 			&clk_priv->lpass_audio_hwvote_client_handle);
 		if (ret < 0) {
-			pr_err("%s lpass audio hw vote failed %d\n",
+			pr_debug("%s lpass audio hw vote failed %d\n",
 				__func__, ret);
 			return ret;
 		}
@@ -192,7 +192,7 @@ static void lpass_hw_vote_unprepare(struct clk_hw *hw)
 			AFE_LPASS_CORE_HW_MACRO_BLOCK,
 			clk_priv->lpass_core_hwvote_client_handle);
 		if (ret < 0) {
-			pr_err("%s lpass core hw vote failed %d\n",
+			pr_debug("%s lpass core hw vote failed %d\n",
 				__func__, ret);
 		}
 	}
@@ -204,7 +204,7 @@ static void lpass_hw_vote_unprepare(struct clk_hw *hw)
 			AFE_LPASS_CORE_HW_DCODEC_BLOCK,
 			clk_priv->lpass_audio_hwvote_client_handle);
 		if (ret < 0) {
-			pr_err("%s lpass audio hw unvote failed %d\n",
+			pr_debug("%s lpass audio hw unvote failed %d\n",
 				__func__, ret);
 		}
 	}
@@ -428,14 +428,14 @@ static int audio_get_pinctrl(struct platform_device *pdev)
 
 	pnctrl_info = &clk_priv->audio_clk.pnctrl_info;
 	if (pnctrl_info->pinctrl) {
-		dev_err(dev, "%s: already requested before\n",
+		dev_dbg(dev, "%s: already requested before\n",
 			__func__);
 		return -EINVAL;
 	}
 
 	pinctrl = devm_pinctrl_get(dev);
 	if (IS_ERR_OR_NULL(pinctrl)) {
-		dev_err(dev, "%s: Unable to get pinctrl handle\n",
+		dev_dbg(dev, "%s: Unable to get pinctrl handle\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -443,13 +443,13 @@ static int audio_get_pinctrl(struct platform_device *pdev)
 	/* get all state handles from Device Tree */
 	pnctrl_info->sleep = pinctrl_lookup_state(pinctrl, "sleep");
 	if (IS_ERR(pnctrl_info->sleep)) {
-		dev_err(dev, "%s: could not get sleep pinstate\n",
+		dev_dbg(dev, "%s: could not get sleep pinstate\n",
 			__func__);
 		goto err;
 	}
 	pnctrl_info->active = pinctrl_lookup_state(pinctrl, "active");
 	if (IS_ERR(pnctrl_info->active)) {
-		dev_err(dev, "%s: could not get active pinstate\n",
+		dev_dbg(dev, "%s: could not get active pinstate\n",
 			__func__);
 		goto err;
 	}
@@ -457,7 +457,7 @@ static int audio_get_pinctrl(struct platform_device *pdev)
 	ret = pinctrl_select_state(pnctrl_info->pinctrl,
 				   pnctrl_info->sleep);
 	if (ret) {
-		dev_err(dev, "%s: Disable TLMM pins failed with %d\n",
+		dev_dbg(dev, "%s: Disable TLMM pins failed with %d\n",
 			__func__, ret);
 		goto err;
 	}
@@ -468,7 +468,7 @@ static int audio_get_pinctrl(struct platform_device *pdev)
 	} else {
 		pnctrl_info->base = ioremap(reg, sizeof(u32));
 		if (pnctrl_info->base ==  NULL) {
-			dev_err(dev, "%s ioremap failed\n", __func__);
+			dev_dbg(dev, "%s ioremap failed\n", __func__);
 			goto err;
 		}
 	}
@@ -516,7 +516,7 @@ static int audio_get_clk_data(struct platform_device *pdev)
 	clkhw = &clk_priv->audio_clk.fact.hw;
 	audio_clk = devm_clk_register(&pdev->dev, clkhw);
 	if (IS_ERR(audio_clk)) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: clock register failed for clk_src = %d\\n",
 			__func__, clk_priv->clk_src);
 		ret = PTR_ERR(audio_clk);
@@ -527,7 +527,7 @@ static int audio_get_clk_data(struct platform_device *pdev)
 	ret = of_clk_add_provider(pdev->dev.of_node,
 			 of_clk_src_onecell_get, clk_data);
 	if (ret)
-		dev_err(&pdev->dev, "%s: clock add failed for clk_src = %d\n",
+		dev_dbg(&pdev->dev, "%s: clock add failed for clk_src = %d\n",
 			__func__, clk_priv->clk_src);
 
 	return ret;
@@ -548,13 +548,13 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 			"qcom,codec-ext-clk-src",
 			&clk_src);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: could not get clk source, ret = %d\n",
+		dev_dbg(&pdev->dev, "%s: could not get clk source, ret = %d\n",
 				__func__, ret);
 		return ret;
 	}
 
 	if (clk_src >= AUDIO_EXT_CLK_MAX) {
-		dev_err(&pdev->dev, "%s: Invalid clk source = %d\n",
+		dev_dbg(&pdev->dev, "%s: Invalid clk source = %d\n",
 				__func__, clk_src);
 		return -EINVAL;
 	}
@@ -604,7 +604,7 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 	if (use_pinctrl) {
 		ret = audio_get_pinctrl(pdev);
 		if (ret) {
-			dev_err(&pdev->dev, "%s: Parsing PMI pinctrl failed\n",
+			dev_dbg(&pdev->dev, "%s: Parsing PMI pinctrl failed\n",
 				__func__);
 			return ret;
 		}
@@ -615,7 +615,7 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 	if (clk_gpio > 0) {
 		ret = gpio_request(clk_gpio, "EXT_CLK");
 		if (ret) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Request ext clk gpio failed %d, err:%d\n",
 				clk_gpio, ret);
 			return ret;
@@ -628,7 +628,7 @@ static int audio_ref_clk_probe(struct platform_device *pdev)
 
 	ret = audio_get_clk_data(pdev);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: clk_init is failed\n",
+		dev_dbg(&pdev->dev, "%s: clk_init is failed\n",
 			__func__);
 		if (use_pinctrl)
 			audio_put_pinctrl(pdev);

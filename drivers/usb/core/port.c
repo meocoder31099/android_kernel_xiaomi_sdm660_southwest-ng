@@ -580,7 +580,7 @@ int usb_hub_create_port_device(struct usb_hub *hub, int port1)
 	retval = dev_pm_qos_expose_flags(&port_dev->dev,
 			PM_QOS_FLAG_NO_POWER_OFF);
 	if (retval < 0) {
-		dev_warn(&port_dev->dev, "failed to expose pm_qos_no_poweroff\n");
+		dev_dbg(&port_dev->dev, "failed to expose pm_qos_no_poweroff\n");
 		return 0;
 	}
 

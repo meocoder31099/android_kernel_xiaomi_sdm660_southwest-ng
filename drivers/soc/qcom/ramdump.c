@@ -177,7 +177,7 @@ static ssize_t ramdump_read(struct file *filep, char __user *buf, size_t count,
 	srcu_idx = srcu_read_lock(&rd_dev->rd_srcu);
 
 	if (rd_dev->abort_ramdump) {
-		pr_err("Ramdump(%s): Ramdump aborted\n", rd_dev->name);
+		pr_debug("Ramdump(%s): Ramdump aborted\n", rd_dev->name);
 		rd_dev->ramdump_status = -1;
 		ret = -ETIME;
 		goto ramdump_done;
@@ -222,7 +222,7 @@ static ssize_t ramdump_read(struct file *filep, char __user *buf, size_t count,
 	origdevice_mem = device_mem;
 
 	if (device_mem == NULL) {
-		pr_err("Ramdump(%s): Unable to ioremap: addr %lx, size %zd\n",
+		pr_debug("Ramdump(%s): Unable to ioremap: addr %lx, size %zd\n",
 			rd_dev->name, addr, copy_size);
 		rd_dev->ramdump_status = -1;
 		ret = -ENOMEM;
@@ -260,7 +260,7 @@ static ssize_t ramdump_read(struct file *filep, char __user *buf, size_t count,
 		memcpy(alignbuf, device_mem, alignsize);
 
 	if (copy_to_user(buf, finalbuf, copy_size)) {
-		pr_err("Ramdump(%s): Couldn't copy all data to user.",
+		pr_debug("Ramdump(%s): Couldn't copy all data to user.",
 			rd_dev->name);
 		rd_dev->ramdump_status = -1;
 		ret = -EFAULT;
@@ -320,7 +320,7 @@ static int ramdump_devnode_init(void)
 	ret = alloc_chrdev_region(&ramdump_dev, 0, RAMDUMP_NUM_DEVICES,
 				  RAMDUMP_NAME);
 	if (ret < 0) {
-		pr_warn("%s: unable to allocate major\n", __func__);
+		pr_debug("%s: unable to allocate major\n", __func__);
 		return ret;
 	}
 
@@ -335,7 +335,7 @@ void *create_ramdump_device(const char *dev_name, struct device *parent)
 	struct ramdump_device *rd_dev;
 
 	if (!dev_name) {
-		pr_err("%s: Invalid device name.\n", __func__);
+		pr_debug("%s: Invalid device name.\n", __func__);
 		return NULL;
 	}
 
@@ -356,7 +356,7 @@ void *create_ramdump_device(const char *dev_name, struct device *parent)
 	minor = ida_simple_get(&rd_minor_id, 0, RAMDUMP_NUM_DEVICES,
 			GFP_KERNEL);
 	if (minor < 0) {
-		pr_err("%s: No more minor numbers left! rc:%d\n", __func__,
+		pr_debug("%s: No more minor numbers left! rc:%d\n", __func__,
 			minor);
 		ret = -ENODEV;
 		goto fail_out_of_minors;
@@ -370,7 +370,7 @@ void *create_ramdump_device(const char *dev_name, struct device *parent)
 		rd_dev->complete_ramdump = of_property_read_bool(
 				parent->of_node, "qcom,complete-ramdump");
 		if (!rd_dev->complete_ramdump)
-			dev_info(parent,
+			dev_dbg(parent,
 			"for %s segments only will be dumped.", dev_name);
 	}
 
@@ -382,7 +382,7 @@ void *create_ramdump_device(const char *dev_name, struct device *parent)
 				   rd_dev, rd_dev->name);
 	if (IS_ERR(rd_dev->dev)) {
 		ret = PTR_ERR(rd_dev->dev);
-		pr_err("%s: device_create failed for %s (%d)", __func__,
+		pr_debug("%s: device_create failed for %s (%d)", __func__,
 				dev_name, ret);
 		goto fail_return_minor;
 	}
@@ -394,7 +394,7 @@ void *create_ramdump_device(const char *dev_name, struct device *parent)
 
 	ret = cdev_add(&rd_dev->cdev, MKDEV(MAJOR(ramdump_dev), minor), 1);
 	if (ret < 0) {
-		pr_err("%s: cdev_add failed for %s (%d)", __func__,
+		pr_debug("%s: cdev_add failed for %s (%d)", __func__,
 				dev_name, ret);
 		goto fail_cdev_add;
 	}
@@ -453,7 +453,7 @@ static int _do_ramdump(void *handle, struct ramdump_segment *segments,
 	 */
 	mutex_lock(&rd_dev->consumer_lock);
 	if (!rd_dev->consumers) {
-		pr_err("Ramdump(%s): No consumers. Aborting..\n", rd_dev->name);
+		pr_debug("Ramdump(%s): No consumers. Aborting..\n", rd_dev->name);
 		mutex_unlock(&rd_dev->consumer_lock);
 		return -EPIPE;
 	}
@@ -518,7 +518,7 @@ static int _do_ramdump(void *handle, struct ramdump_segment *segments,
 			msecs_to_jiffies(RAMDUMP_WAIT_MSECS));
 
 	if (!ret) {
-		pr_err("Ramdump(%s): Timed out waiting for userspace.\n",
+		pr_debug("Ramdump(%s): Timed out waiting for userspace.\n",
 			rd_dev->name);
 		ret = -EPIPE;
 		rd_dev->abort_ramdump = true;
@@ -579,7 +579,7 @@ static int _do_minidump(void *handle, struct ramdump_segment *segments,
 	 */
 	mutex_lock(&rd_dev->consumer_lock);
 	if (!rd_dev->consumers) {
-		pr_err("Ramdump(%s): No consumers. Aborting..\n", rd_dev->name);
+		pr_debug("Ramdump(%s): No consumers. Aborting..\n", rd_dev->name);
 		mutex_unlock(&rd_dev->consumer_lock);
 		return -EPIPE;
 	}
@@ -653,7 +653,7 @@ static int _do_minidump(void *handle, struct ramdump_segment *segments,
 			msecs_to_jiffies(RAMDUMP_WAIT_MSECS));
 
 	if (!ret) {
-		pr_err("Ramdump(%s): Timed out waiting for userspace.\n",
+		pr_debug("Ramdump(%s): Timed out waiting for userspace.\n",
 		       rd_dev->name);
 		ret = -EPIPE;
 		rd_dev->abort_ramdump = true;

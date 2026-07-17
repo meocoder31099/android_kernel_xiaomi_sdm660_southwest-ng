@@ -80,7 +80,7 @@ static int dma_mmu_remap_num;
 void __init dma_contiguous_early_fixup(phys_addr_t base, unsigned long size)
 {
 	if (dma_mmu_remap_num >= ARRAY_SIZE(dma_mmu_remap)) {
-		pr_err("ARM64: Not enough slots for DMA fixup reserved regions!\n");
+		pr_debug("ARM64: Not enough slots for DMA fixup reserved regions!\n");
 		return;
 	}
 	dma_mmu_remap[dma_mmu_remap_num].base = base;
@@ -410,7 +410,7 @@ void create_pgtable_mapping(phys_addr_t start, phys_addr_t end)
 	unsigned long virt = (unsigned long)phys_to_virt(start);
 
 	if (virt < VMALLOC_START) {
-		pr_warn("BUG: not creating mapping for %pa at 0x%016lx - outside kernel range\n",
+		pr_debug("BUG: not creating mapping for %pa at 0x%016lx - outside kernel range\n",
 			&start, virt);
 		return;
 	}
@@ -429,7 +429,7 @@ static void __init create_mapping_noalloc(phys_addr_t phys, unsigned long virt,
 				  phys_addr_t size, pgprot_t prot)
 {
 	if (virt < VMALLOC_START) {
-		pr_warn("BUG: not creating mapping for %pa at 0x%016lx - outside kernel range\n",
+		pr_debug("BUG: not creating mapping for %pa at 0x%016lx - outside kernel range\n",
 			&phys, virt);
 		return;
 	}
@@ -456,7 +456,7 @@ static void update_mapping_prot(phys_addr_t phys, unsigned long virt,
 				phys_addr_t size, pgprot_t prot)
 {
 	if (virt < VMALLOC_START) {
-		pr_warn("BUG: not updating mapping for %pa at 0x%016lx - outside kernel range\n",
+		pr_debug("BUG: not updating mapping for %pa at 0x%016lx - outside kernel range\n",
 			&phys, virt);
 		return;
 	}
@@ -1293,16 +1293,16 @@ void __init early_fixmap_init(void)
 	if ((pmdp != fixmap_pmd(fix_to_virt(FIX_BTMAP_BEGIN)))
 	     || pmdp != fixmap_pmd(fix_to_virt(FIX_BTMAP_END))) {
 		WARN_ON(1);
-		pr_warn("pmdp %p != %p, %p\n",
+		pr_debug("pmdp %p != %p, %p\n",
 			pmdp, fixmap_pmd(fix_to_virt(FIX_BTMAP_BEGIN)),
 			fixmap_pmd(fix_to_virt(FIX_BTMAP_END)));
-		pr_warn("fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
+		pr_debug("fix_to_virt(FIX_BTMAP_BEGIN): %08lx\n",
 			fix_to_virt(FIX_BTMAP_BEGIN));
-		pr_warn("fix_to_virt(FIX_BTMAP_END):   %08lx\n",
+		pr_debug("fix_to_virt(FIX_BTMAP_END):   %08lx\n",
 			fix_to_virt(FIX_BTMAP_END));
 
-		pr_warn("FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
-		pr_warn("FIX_BTMAP_BEGIN:     %d\n", FIX_BTMAP_BEGIN);
+		pr_debug("FIX_BTMAP_END:       %d\n", FIX_BTMAP_END);
+		pr_debug("FIX_BTMAP_BEGIN:     %d\n", FIX_BTMAP_BEGIN);
 	}
 }
 

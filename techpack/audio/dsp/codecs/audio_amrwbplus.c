@@ -57,7 +57,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 
 	switch (cmd) {
 	case AUDIO_START:
-		pr_err("%s[%pK]: AUDIO_START session_id[%d]\n", __func__,
+		pr_debug("%s[%pK]: AUDIO_START session_id[%d]\n", __func__,
 			audio, audio->ac->session);
 		if (audio->feedback == NON_TUNNEL_MODE) {
 			/* Configure PCM output block */
@@ -65,7 +65,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			audio->pcm_cfg.sample_rate,
 			audio->pcm_cfg.channel_count);
 			if (rc < 0) {
-				pr_err("pcm output block config failed\n");
+				pr_debug("pcm output block config failed\n");
 				break;
 			}
 		}
@@ -90,7 +90,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		rc = q6asm_media_format_block_amrwbplus(audio->ac,
 							&q6_amrwbplus_cfg);
 		if (rc < 0) {
-			pr_err("q6asm_media_format_block_amrwb+ failed...\n");
+			pr_debug("q6asm_media_format_block_amrwb+ failed...\n");
 			break;
 		}
 		rc = audio_aio_enable(audio);
@@ -100,7 +100,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("Audio Start procedure failed rc=%d\n", rc);
+			pr_debug("Audio Start procedure failed rc=%d\n", rc);
 			break;
 		}
 		pr_debug("%s:AUDIO_START sessionid[%d]enable[%d]\n", __func__,
@@ -111,7 +111,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 
 		break;
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 		break;
 	}
@@ -134,12 +134,12 @@ static long audio_ioctl(struct file *file, unsigned int cmd,
 			if (copy_to_user((void *)arg, audio->codec_cfg,
 				sizeof(struct msm_audio_amrwbplus_config_v2))) {
 				rc = -EFAULT;
-				pr_err("%s: copy_to_user for AUDIO_GET_AMRWBPLUS_CONFIG_V2 failed\n",
+				pr_debug("%s: copy_to_user for AUDIO_GET_AMRWBPLUS_CONFIG_V2 failed\n",
 					__func__);
 				break;
 			}
 			} else {
-				pr_err("%s: wb+ config v2 invalid parameters\n"
+				pr_debug("%s: wb+ config v2 invalid parameters\n"
 					, __func__);
 				rc = -EFAULT;
 				break;
@@ -151,12 +151,12 @@ static long audio_ioctl(struct file *file, unsigned int cmd,
 			if (copy_from_user(audio->codec_cfg, (void *)arg,
 				sizeof(struct msm_audio_amrwbplus_config_v2))) {
 				rc = -EFAULT;
-				pr_err("%s: copy_from_user for AUDIO_SET_AMRWBPLUS_CONFIG_V2 failed\n",
+				pr_debug("%s: copy_from_user for AUDIO_SET_AMRWBPLUS_CONFIG_V2 failed\n",
 					__func__);
 				break;
 			}
 			} else {
-				pr_err("%s: wb+ config invalid parameters\n",
+				pr_debug("%s: wb+ config invalid parameters\n",
 					__func__);
 				rc = -EFAULT;
 				break;
@@ -232,11 +232,11 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 			if (copy_to_user((void *)arg, &amrwbplus_config_32,
 				sizeof(amrwbplus_config_32))) {
 				rc = -EFAULT;
-				pr_err("%s: copy_to_user for AUDIO_GET_AMRWBPLUS_CONFIG_V2_32 failed\n"
+				pr_debug("%s: copy_to_user for AUDIO_GET_AMRWBPLUS_CONFIG_V2_32 failed\n"
 					, __func__);
 			}
 		} else {
-			pr_err("%s: wb+ Get config v2 invalid parameters\n"
+			pr_debug("%s: wb+ Get config v2 invalid parameters\n"
 				, __func__);
 			rc = -EFAULT;
 		}
@@ -251,7 +251,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 			if (copy_from_user(&amrwbplus_config_32, (void *)arg,
 			sizeof(struct msm_audio_amrwbplus_config_v2_32))) {
 				rc = -EFAULT;
-				pr_err("%s: copy_from_user for AUDIO_SET_AMRWBPLUS_CONFIG_V2_32 failed\n"
+				pr_debug("%s: copy_from_user for AUDIO_SET_AMRWBPLUS_CONFIG_V2_32 failed\n"
 					, __func__);
 				break;
 			}
@@ -273,7 +273,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 			amrwbplus_config->amr_lsf_idx =
 					amrwbplus_config_32.amr_lsf_idx;
 		} else {
-			pr_err("%s: wb+ config invalid parameters\n",
+			pr_debug("%s: wb+ config invalid parameters\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -316,7 +316,7 @@ static int audio_open(struct inode *inode, struct file *file)
 	q6asm_audio_client_alloc((app_cb) q6_audio_cb, (void *)audio);
 
 	if (!audio->ac) {
-		pr_err("Could not allocate memory for audio client\n");
+		pr_debug("Could not allocate memory for audio client\n");
 		kfree(audio->codec_cfg);
 		kfree(audio);
 		return -ENOMEM;
@@ -333,7 +333,7 @@ static int audio_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_LINEAR_PCM,
 					FORMAT_AMR_WB_PLUS);
 		if (rc < 0) {
-			pr_err("amrwbplus NT mode Open failed rc=%d\n", rc);
+			pr_debug("amrwbplus NT mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
@@ -344,14 +344,14 @@ static int audio_open(struct inode *inode, struct file *file)
 			!(file->f_mode & FMODE_READ)) {
 		rc = q6asm_open_write(audio->ac, FORMAT_AMR_WB_PLUS);
 		if (rc < 0) {
-			pr_err("wb+ T mode Open failed rc=%d\n", rc);
+			pr_debug("wb+ T mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->feedback = TUNNEL_MODE;
 		audio->buf_cfg.meta_info_enable = 0x00;
 	} else {
-		pr_err("audio_amrwbplus Not supported mode\n");
+		pr_debug("audio_amrwbplus Not supported mode\n");
 		rc = -EACCES;
 		goto fail;
 	}

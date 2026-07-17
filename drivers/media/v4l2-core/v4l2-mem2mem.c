@@ -35,7 +35,7 @@ module_param(debug, bool, 0644);
 #define dprintk(fmt, arg...)						\
 	do {								\
 		if (debug)						\
-			printk(KERN_DEBUG "%s: " fmt, __func__, ## arg);\
+			no_printk(KERN_DEBUG "%s: " fmt, __func__, ## arg);\
 	} while (0)
 
 

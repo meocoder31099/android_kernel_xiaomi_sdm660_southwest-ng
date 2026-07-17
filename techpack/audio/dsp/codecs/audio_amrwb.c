@@ -35,7 +35,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 					audio->pcm_cfg.sample_rate,
 					audio->pcm_cfg.channel_count);
 			if (rc < 0) {
-				pr_err("pcm output block config failed\n");
+				pr_debug("pcm output block config failed\n");
 				break;
 			}
 		}
@@ -47,7 +47,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("Audio Start procedure failed rc=%d\n", rc);
+			pr_debug("Audio Start procedure failed rc=%d\n", rc);
 			break;
 		}
 		pr_debug("%s: AUDIO_START sessionid[%d]enable[%d]\n", __func__,
@@ -80,7 +80,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 					audio->pcm_cfg.sample_rate,
 					audio->pcm_cfg.channel_count);
 			if (rc < 0) {
-				pr_err("%s: pcm output block config failed rc=%d\n",
+				pr_debug("%s: pcm output block config failed rc=%d\n",
 					__func__, rc);
 				break;
 			}
@@ -93,7 +93,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("%s: Audio Start procedure failed rc=%d\n",
+			pr_debug("%s: Audio Start procedure failed rc=%d\n",
 				__func__, rc);
 			break;
 		}
@@ -134,13 +134,13 @@ static int audio_open(struct inode *inode, struct file *file)
 					     (void *)audio);
 
 	if (!audio->ac) {
-		pr_err("Could not allocate memory for audio client\n");
+		pr_debug("Could not allocate memory for audio client\n");
 		kfree(audio);
 		return -ENOMEM;
 	}
 	rc = audio_aio_open(audio, file);
 	if (rc < 0) {
-		pr_err("%s: audio_aio_open rc=%d\n",
+		pr_debug("%s: audio_aio_open rc=%d\n",
 			__func__, rc);
 		goto fail;
 	}
@@ -150,7 +150,7 @@ static int audio_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_LINEAR_PCM,
 					   FORMAT_AMRWB);
 		if (rc < 0) {
-			pr_err("NT mode Open failed rc=%d\n", rc);
+			pr_debug("NT mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
@@ -161,14 +161,14 @@ static int audio_open(struct inode *inode, struct file *file)
 			!(file->f_mode & FMODE_READ)) {
 		rc = q6asm_open_write(audio->ac, FORMAT_AMRWB);
 		if (rc < 0) {
-			pr_err("T mode Open failed rc=%d\n", rc);
+			pr_debug("T mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->feedback = TUNNEL_MODE;
 		audio->buf_cfg.meta_info_enable = 0x00;
 	} else {
-		pr_err("Not supported mode\n");
+		pr_debug("Not supported mode\n");
 		rc = -EACCES;
 		goto fail;
 	}
@@ -182,7 +182,7 @@ static int audio_open(struct inode *inode, struct file *file)
 	if (IS_ERR(audio->dentry))
 		pr_debug("debugfs_create_file failed\n");
 #endif
-	pr_info("%s: AMRWB dec success mode[%d]session[%d]\n", __func__,
+	pr_debug("%s: AMRWB dec success mode[%d]session[%d]\n", __func__,
 						audio->feedback,
 						audio->ac->session);
 	return 0;

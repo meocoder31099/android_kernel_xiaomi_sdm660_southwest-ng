@@ -63,7 +63,7 @@ int syscore_suspend(void)
 	list_for_each_entry_reverse(ops, &syscore_ops_list, node)
 		if (ops->suspend) {
 			if (initcall_debug)
-				pr_info("PM: Calling %pF\n", ops->suspend);
+				pr_debug("PM: Calling %pF\n", ops->suspend);
 			ret = ops->suspend();
 			if (ret)
 				goto err_out;
@@ -77,7 +77,7 @@ int syscore_suspend(void)
  err_out:
 	log_suspend_abort_reason("System core suspend callback %pF failed",
 		ops->suspend);
-	pr_err("PM: System core suspend callback %pF failed.\n", ops->suspend);
+	pr_debug("PM: System core suspend callback %pF failed.\n", ops->suspend);
 
 	list_for_each_entry_continue(ops, &syscore_ops_list, node)
 		if (ops->resume)
@@ -103,7 +103,7 @@ void syscore_resume(void)
 	list_for_each_entry(ops, &syscore_ops_list, node)
 		if (ops->resume) {
 			if (initcall_debug)
-				pr_info("PM: Calling %pF\n", ops->resume);
+				pr_debug("PM: Calling %pF\n", ops->resume);
 			ops->resume();
 			WARN_ONCE(!irqs_disabled(),
 				"Interrupts enabled after %pF\n", ops->resume);
@@ -125,7 +125,7 @@ void syscore_shutdown(void)
 	list_for_each_entry_reverse(ops, &syscore_ops_list, node)
 		if (ops->shutdown) {
 			if (initcall_debug)
-				pr_info("PM: Calling %pF\n", ops->shutdown);
+				pr_debug("PM: Calling %pF\n", ops->shutdown);
 			ops->shutdown();
 		}
 

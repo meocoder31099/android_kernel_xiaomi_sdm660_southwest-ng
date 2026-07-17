@@ -605,7 +605,7 @@ static int get_device_info(struct us_data *us, const struct usb_device_id *id,
 	usb_stor_adjust_quirks(us->pusb_dev, &us->fflags);
 
 	if (us->fflags & US_FL_IGNORE_DEVICE) {
-		dev_info(pdev, "device ignored\n");
+		dev_dbg(pdev, "device ignored\n");
 		return -ENODEV;
 	}
 
@@ -617,7 +617,7 @@ static int get_device_info(struct us_data *us, const struct usb_device_id *id,
 		us->fflags &= ~US_FL_GO_SLOW;
 
 	if (us->fflags)
-		dev_info(pdev, "Quirks match for vid %04x pid %04x: %lx\n",
+		dev_dbg(pdev, "Quirks match for vid %04x pid %04x: %lx\n",
 				le16_to_cpu(dev->descriptor.idVendor),
 				le16_to_cpu(dev->descriptor.idProduct),
 				us->fflags);
@@ -643,7 +643,7 @@ static int get_device_info(struct us_data *us, const struct usb_device_id *id,
 			us->protocol == idesc->bInterfaceProtocol)
 			msg += 2;
 		if (msg >= 0 && !(us->fflags & US_FL_NEED_OVERRIDE))
-			dev_notice(pdev, "This device "
+			dev_dbg(pdev, "This device "
 					"(%04x,%04x,%04x S %02x P %02x)"
 					" has %s in unusual_devs.h (kernel"
 					" %s)\n"
@@ -792,7 +792,7 @@ static int usb_stor_acquire_resources(struct us_data *us)
 	/* Start up our control thread */
 	th = kthread_run(usb_stor_control_thread, us, "usb-storage");
 	if (IS_ERR(th)) {
-		dev_warn(&us->pusb_intf->dev,
+		dev_dbg(&us->pusb_intf->dev,
 				"Unable to start control thread\n");
 		return PTR_ERR(th);
 	}
@@ -943,7 +943,7 @@ int usb_stor_probe1(struct us_data **pus,
 	struct us_data *us;
 	int result;
 
-	dev_info(&intf->dev, "USB Mass Storage device detected\n");
+	dev_dbg(&intf->dev, "USB Mass Storage device detected\n");
 
 	/*
 	 * Ask the SCSI layer to allocate a host structure, with extra
@@ -951,7 +951,7 @@ int usb_stor_probe1(struct us_data **pus,
 	 */
 	host = scsi_host_alloc(sht, sizeof(*us));
 	if (!host) {
-		dev_warn(&intf->dev, "Unable to allocate the scsi host\n");
+		dev_dbg(&intf->dev, "Unable to allocate the scsi host\n");
 		return -ENOMEM;
 	}
 
@@ -1055,7 +1055,7 @@ int usb_stor_probe2(struct us_data *us)
 					dev_name(&us->pusb_intf->dev));
 	result = scsi_add_host(us_to_host(us), dev);
 	if (result) {
-		dev_warn(dev,
+		dev_dbg(dev,
 				"Unable to add the scsi host\n");
 		goto HostAddErr;
 	}

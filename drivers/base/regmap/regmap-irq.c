@@ -81,7 +81,7 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
 	if (d->chip->runtime_pm) {
 		ret = pm_runtime_get_sync(map->dev);
 		if (ret < 0)
-			dev_err(map->dev, "IRQ sync failed to resume: %d\n",
+			dev_dbg(map->dev, "IRQ sync failed to resume: %d\n",
 				ret);
 	}
 
@@ -104,7 +104,7 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
 			ret = regmap_irq_update_bits(d, reg,
 					d->mask_buf_def[i], ~d->mask_buf[i]);
 			if (ret < 0)
-				dev_err(d->map->dev,
+				dev_dbg(d->map->dev,
 					"Failed to sync unmasks in %x\n",
 					reg);
 			unmask_offset = d->chip->unmask_base -
@@ -119,7 +119,7 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
 					 d->mask_buf_def[i], d->mask_buf[i]);
 		}
 		if (ret != 0)
-			dev_err(d->map->dev, "Failed to sync masks in %x\n",
+			dev_dbg(d->map->dev, "Failed to sync masks in %x\n",
 				reg);
 
 		reg = d->chip->wake_base +
@@ -134,7 +134,7 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
 							 d->mask_buf_def[i],
 							 d->wake_buf[i]);
 			if (ret != 0)
-				dev_err(d->map->dev,
+				dev_dbg(d->map->dev,
 					"Failed to sync wakes in %x: %d\n",
 					reg, ret);
 		}
@@ -158,7 +158,7 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
 			if (d->chip->clear_ack)
 				ret = regmap_write(map, reg, 0x0);
 			if (ret != 0)
-				dev_err(d->map->dev, "Failed to ack 0x%x: %d\n",
+				dev_dbg(d->map->dev, "Failed to ack 0x%x: %d\n",
 					reg, ret);
 		}
 	}
@@ -175,7 +175,7 @@ static void regmap_irq_sync_unlock(struct irq_data *data)
 			ret = regmap_irq_update_bits(d, reg,
 				d->type_buf_def[i], d->type_buf[i]);
 		if (ret != 0)
-			dev_err(d->map->dev, "Failed to sync type in %x\n",
+			dev_dbg(d->map->dev, "Failed to sync type in %x\n",
 				reg);
 	}
 
@@ -290,7 +290,7 @@ static irqreturn_t regmap_irq_thread(int irq, void *d)
 	if (chip->runtime_pm) {
 		ret = pm_runtime_get_sync(map->dev);
 		if (ret < 0) {
-			dev_err(map->dev, "IRQ thread failed to resume: %d\n",
+			dev_dbg(map->dev, "IRQ thread failed to resume: %d\n",
 				ret);
 			pm_runtime_put(map->dev);
 			goto exit;
@@ -313,7 +313,7 @@ static irqreturn_t regmap_irq_thread(int irq, void *d)
 				       data->status_reg_buf,
 				       chip->num_regs);
 		if (ret != 0) {
-			dev_err(map->dev, "Failed to read IRQ status: %d\n",
+			dev_dbg(map->dev, "Failed to read IRQ status: %d\n",
 				ret);
 			goto exit;
 		}
@@ -343,7 +343,7 @@ static irqreturn_t regmap_irq_thread(int irq, void *d)
 					  &data->status_buf[i]);
 
 			if (ret != 0) {
-				dev_err(map->dev,
+				dev_dbg(map->dev,
 					"Failed to read IRQ status: %d\n",
 					ret);
 				if (chip->runtime_pm)
@@ -371,7 +371,7 @@ static irqreturn_t regmap_irq_thread(int irq, void *d)
 			if (chip->clear_ack)
 				ret = regmap_write(map, reg, 0x0);
 			if (ret != 0)
-				dev_err(map->dev, "Failed to ack 0x%x: %d\n",
+				dev_dbg(map->dev, "Failed to ack 0x%x: %d\n",
 					reg, ret);
 		}
 	}
@@ -460,7 +460,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 	if (irq_base) {
 		irq_base = irq_alloc_descs(irq_base, 0, chip->num_irqs, 0);
 		if (irq_base < 0) {
-			dev_warn(map->dev, "Failed to allocate IRQs: %d\n",
+			dev_dbg(map->dev, "Failed to allocate IRQs: %d\n",
 				 irq_base);
 			return irq_base;
 		}
@@ -558,7 +558,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 			ret = regmap_irq_update_bits(d, reg,
 					 d->mask_buf[i], d->mask_buf[i]);
 		if (ret != 0) {
-			dev_err(map->dev, "Failed to set masks in 0x%x: %d\n",
+			dev_dbg(map->dev, "Failed to set masks in 0x%x: %d\n",
 				reg, ret);
 			goto err_alloc;
 		}
@@ -571,7 +571,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 			(i * map->reg_stride * d->irq_reg_stride);
 		ret = regmap_read(map, reg, &d->status_buf[i]);
 		if (ret != 0) {
-			dev_err(map->dev, "Failed to read IRQ status: %d\n",
+			dev_dbg(map->dev, "Failed to read IRQ status: %d\n",
 				ret);
 			goto err_alloc;
 		}
@@ -589,7 +589,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 			if (chip->clear_ack)
 				ret = regmap_write(map, reg, 0x0);
 			if (ret != 0) {
-				dev_err(map->dev, "Failed to ack 0x%x: %d\n",
+				dev_dbg(map->dev, "Failed to ack 0x%x: %d\n",
 					reg, ret);
 				goto err_alloc;
 			}
@@ -612,7 +612,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 							 d->mask_buf_def[i],
 							 d->wake_buf[i]);
 			if (ret != 0) {
-				dev_err(map->dev, "Failed to set masks in 0x%x: %d\n",
+				dev_dbg(map->dev, "Failed to set masks in 0x%x: %d\n",
 					reg, ret);
 				goto err_alloc;
 			}
@@ -638,7 +638,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 				ret = regmap_irq_update_bits(d, reg,
 					d->type_buf_def[i], 0x0);
 			if (ret != 0) {
-				dev_err(map->dev,
+				dev_dbg(map->dev,
 					"Failed to set type in 0x%x: %x\n",
 					reg, ret);
 				goto err_alloc;
@@ -655,7 +655,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 						  chip->num_irqs,
 						  &regmap_domain_ops, d);
 	if (!d->domain) {
-		dev_err(map->dev, "Failed to create IRQ domain\n");
+		dev_dbg(map->dev, "Failed to create IRQ domain\n");
 		ret = -ENOMEM;
 		goto err_alloc;
 	}
@@ -664,7 +664,7 @@ int regmap_add_irq_chip(struct regmap *map, int irq, int irq_flags,
 				   irq_flags | IRQF_ONESHOT,
 				   chip->name, d);
 	if (ret != 0) {
-		dev_err(map->dev, "Failed to request IRQ %d for %s: %d\n",
+		dev_dbg(map->dev, "Failed to request IRQ %d for %s: %d\n",
 			irq, chip->name, ret);
 		goto err_domain;
 	}

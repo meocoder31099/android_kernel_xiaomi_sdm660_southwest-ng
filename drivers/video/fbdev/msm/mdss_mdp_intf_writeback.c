@@ -262,7 +262,7 @@ static int mdss_mdp_writeback_cdm_setup(struct mdss_mdp_writeback_ctx *ctx,
 		break;
 	case MDSS_MDP_CHROMA_H1V2:
 	default:
-		pr_err("%s: unsupported chroma sampling type\n", __func__);
+		pr_debug("%s: unsupported chroma sampling type\n", __func__);
 		return -EINVAL;
 	}
 
@@ -280,7 +280,7 @@ static void mdss_mdp_writeback_cwb_overflow(void *arg)
 	struct mdss_overlay_private *mdp5_data = NULL;
 	struct mdss_mdp_writeback_ctx *ctx = NULL;
 
-	pr_err("Buffer overflow triggered ctl=%d\n", ctl->num);
+	pr_debug("Buffer overflow triggered ctl=%d\n", ctl->num);
 	MDSS_XLOG(ctl->num);
 	if (!ctl->mfd)
 		return;
@@ -305,7 +305,7 @@ static void mdss_mdp_writeback_cwb_overflow(void *arg)
 	}
 
 	if (!atomic_add_unless(&mdp5_data->wb_busy, -1, 0))
-		pr_err("Invalid state for WB\n");
+		pr_debug("Invalid state for WB\n");
 
 	wake_up_all(&mdp5_data->wb_waitq);
 }
@@ -342,7 +342,7 @@ static void mdss_mdp_writeback_cwb_intr_done(void *arg)
 	queue_work(mdp5_data->cwb.cwb_work_queue, &mdp5_data->cwb.cwb_work);
 
 	if (!atomic_add_unless(&mdp5_data->wb_busy, -1, 0))
-		pr_err("Invalid state for WB\n");
+		pr_debug("Invalid state for WB\n");
 
 	wake_up_all(&mdp5_data->wb_waitq);
 }
@@ -389,7 +389,7 @@ static int mdss_mdp_writeback_format_setup(struct mdss_mdp_writeback_ctx *ctx,
 
 	fmt = mdss_mdp_get_format_params(format);
 	if (!fmt) {
-		pr_err("wb format=%d not supported\n", format);
+		pr_debug("wb format=%d not supported\n", format);
 		return -EINVAL;
 	}
 
@@ -404,7 +404,7 @@ static int mdss_mdp_writeback_format_setup(struct mdss_mdp_writeback_ctx *ctx,
 	if (ctl->cdm) {
 		rc = mdss_mdp_writeback_cdm_setup(ctx, ctl->cdm, fmt);
 		if (rc) {
-			pr_err("%s: CDM config failed with error %d\n",
+			pr_debug("%s: CDM config failed with error %d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -426,7 +426,7 @@ static int mdss_mdp_writeback_format_setup(struct mdss_mdp_writeback_ctx *ctx,
 			break;
 		case MDSS_MDP_CHROMA_H1V2:
 		default:
-			pr_err("unsupported wb chroma samp=%d\n", chroma_samp);
+			pr_debug("unsupported wb chroma samp=%d\n", chroma_samp);
 			return -EINVAL;
 		}
 	}
@@ -547,7 +547,7 @@ int mdss_mdp_writeback_prepare_cwb(struct mdss_mdp_ctl *ctl,
 
 	ret = mdss_mdp_writeback_format_setup(ctx, buffer->format, ctl);
 	if (ret) {
-		pr_err("format setup failed for cwb\n");
+		pr_debug("format setup failed for cwb\n");
 		return ret;
 	}
 
@@ -557,7 +557,7 @@ int mdss_mdp_writeback_prepare_cwb(struct mdss_mdp_ctl *ctl,
 	 */
 	fmt = mdss_mdp_get_format_params(buffer->format);
 	if (!fmt) {
-		pr_err("invalid format for cwb\n");
+		pr_debug("invalid format for cwb\n");
 		return -EINVAL;
 	}
 	mdss_mdp_get_plane_sizes(fmt, ctx->img_width,
@@ -567,14 +567,14 @@ int mdss_mdp_writeback_prepare_cwb(struct mdss_mdp_ctl *ctl,
 		total_buf_len += data->p[i].len;
 
 	if (total_buf_len < ps.total_size) {
-		pr_err("Buffer size=%lu, expected size=%d\n", total_buf_len,
+		pr_debug("Buffer size=%lu, expected size=%d\n", total_buf_len,
 				ps.total_size);
 		return -EINVAL;
 	}
 
 	ret = mdss_mdp_writeback_addr_setup(ctx, wb_arg->data);
 	if (ret) {
-		pr_err("cwb writeback data setup error\n");
+		pr_debug("cwb writeback data setup error\n");
 		return ret;
 	}
 	mdss_mdp_set_intr_callback(ctx->intr_type, ctx->intf_num,
@@ -637,7 +637,7 @@ static int mdss_mdp_writeback_prepare_wfd(struct mdss_mdp_ctl *ctl, void *arg)
 
 	ret = mdss_mdp_writeback_format_setup(ctx, ctl->dst_format, ctl);
 	if (ret) {
-		pr_err("format setup failed\n");
+		pr_debug("format setup failed\n");
 		return ret;
 	}
 
@@ -665,14 +665,14 @@ static int mdss_mdp_writeback_prepare_rot(struct mdss_mdp_ctl *ctl, void *arg)
 
 	entry = (struct mdss_rot_entry *) wb_args->priv_data;
 	if (!entry) {
-		pr_err("unable to retrieve rot session ctl=%d\n", ctl->num);
+		pr_debug("unable to retrieve rot session ctl=%d\n", ctl->num);
 		return -ENODEV;
 	}
 	item = &entry->item;
 	perf = entry->perf;
 	mdata = ctl->mdata;
 	if (!mdata) {
-		pr_err("no mdata attached to ctl=%d\n", ctl->num);
+		pr_debug("no mdata attached to ctl=%d\n", ctl->num);
 		return -ENODEV;
 	}
 	pr_debug("rot setup wb_num=%d\n", ctx->wb_num);
@@ -718,7 +718,7 @@ static int mdss_mdp_wb_add_vsync_handler(struct mdss_mdp_ctl *ctl,
 
 	ctx = (struct mdss_mdp_writeback_ctx *) ctl->priv_data;
 	if (!ctx) {
-		pr_err("invalid ctx for ctl=%d\n", ctl->num);
+		pr_debug("invalid ctx for ctl=%d\n", ctl->num);
 		ret = -ENODEV;
 		goto exit;
 	}
@@ -746,7 +746,7 @@ static int mdss_mdp_wb_remove_vsync_handler(struct mdss_mdp_ctl *ctl,
 	}
 	ctx = (struct mdss_mdp_writeback_ctx *) ctl->priv_data;
 	if (!ctx) {
-		pr_err("invalid ctx for ctl=%d\n", ctl->num);
+		pr_debug("invalid ctx for ctl=%d\n", ctl->num);
 		ret = -ENODEV;
 		goto exit;
 	}
@@ -799,7 +799,7 @@ static void mdss_mdp_writeback_intr_done(void *arg)
 	ktime_t vsync_time;
 
 	if (!ctx) {
-		pr_err("invalid ctx\n");
+		pr_debug("invalid ctx\n");
 		return;
 	}
 	vsync_time = ktime_get();
@@ -920,7 +920,7 @@ static int mdss_mdp_wb_wait4comp(struct mdss_mdp_ctl *ctl, void *arg)
 
 	ctx = (struct mdss_mdp_writeback_ctx *) ctl->priv_data;
 	if (!ctx) {
-		pr_err("invalid ctx\n");
+		pr_debug("invalid ctx\n");
 		return -ENODEV;
 	}
 
@@ -1004,7 +1004,7 @@ static int mdss_mdp_writeback_display(struct mdss_mdp_ctl *ctl, void *arg)
 		return -ENODEV;
 
 	if (ctx->comp_cnt) {
-		pr_err("previous kickoff not completed yet, ctl=%d\n",
+		pr_debug("previous kickoff not completed yet, ctl=%d\n",
 					ctl->num);
 		return -EPERM;
 	}
@@ -1025,7 +1025,7 @@ static int mdss_mdp_writeback_display(struct mdss_mdp_ctl *ctl, void *arg)
 
 	ret = mdss_mdp_writeback_addr_setup(ctx, wb_args->data);
 	if (ret) {
-		pr_err("writeback data setup error ctl=%d\n", ctl->num);
+		pr_debug("writeback data setup error ctl=%d\n", ctl->num);
 		return ret;
 	}
 
@@ -1052,7 +1052,7 @@ static int mdss_mdp_writeback_display(struct mdss_mdp_ctl *ctl, void *arg)
 
 	ret = mdss_iommu_ctrl(1);
 	if (IS_ERR_VALUE((unsigned long) ret)) {
-		pr_err("IOMMU attach failed\n");
+		pr_debug("IOMMU attach failed\n");
 		return ret;
 	}
 	mdss_mdp_clk_ctrl(MDP_BLOCK_POWER_ON);
@@ -1089,7 +1089,7 @@ void *mdss_mdp_writeback_get_ctx_for_cwb(struct mdss_mdp_ctl *ctl)
 		kzalloc(sizeof(struct mdss_mdp_writeback_ctx), GFP_KERNEL);
 
 	if (cwb_ctx == NULL) {
-		pr_err("fail to allocate CWB context\n");
+		pr_debug("fail to allocate CWB context\n");
 		return NULL;
 	}
 
@@ -1125,12 +1125,12 @@ int mdss_mdp_writeback_start(struct mdss_mdp_ctl *ctl)
 	ctx = mdss_mdp_writeback_get_ctx(ctl->opmode);
 	if (ctx) {
 		if (ctx->ref_cnt) {
-			pr_err("writeback id: %d in use\n", wb->num);
+			pr_debug("writeback id: %d in use\n", wb->num);
 			return -EBUSY;
 		}
 		ctx->ref_cnt++;
 	} else {
-		pr_err("unable to get wb context for wb id: %d\n", wb->num);
+		pr_debug("unable to get wb context for wb id: %d\n", wb->num);
 		return -EINVAL;
 	}
 
@@ -1154,7 +1154,7 @@ int mdss_mdp_writeback_start(struct mdss_mdp_ctl *ctl)
 		mixer_type) && fmt->is_yuv) {
 		ctl->cdm = mdss_mdp_cdm_init(ctl, MDP_CDM_CDWN_OUTPUT_WB);
 		if (IS_ERR_OR_NULL(ctl->cdm)) {
-			pr_err("cdm block already in use\n");
+			pr_debug("cdm block already in use\n");
 			ctl->cdm = NULL;
 			return -EBUSY;
 		}
@@ -1190,7 +1190,7 @@ int mdss_mdp_writeback_start(struct mdss_mdp_ctl *ctl)
 int mdss_mdp_writeback_display_commit(struct mdss_mdp_ctl *ctl, void *arg)
 {
 	if (ctl->shared_lock && !mutex_is_locked(ctl->shared_lock)) {
-		pr_err("shared mutex is not locked before commit on ctl=%d\n",
+		pr_debug("shared mutex is not locked before commit on ctl=%d\n",
 			ctl->num);
 		return -EINVAL;
 	}

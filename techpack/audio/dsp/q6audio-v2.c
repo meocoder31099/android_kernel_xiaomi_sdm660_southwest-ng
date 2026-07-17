@@ -784,7 +784,7 @@ int q6audio_get_port_id(u16 port_id)
 	case RT_PROXY_PORT_002_TX:
 		return RT_PROXY_PORT_002_TX;
 	default:
-		pr_warn("%s: Invalid port_id %d\n", __func__, port_id);
+		pr_debug("%s: Invalid port_id %d\n", __func__, port_id);
 		return -EINVAL;
 	}
 }

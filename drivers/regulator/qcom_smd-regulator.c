@@ -700,7 +700,7 @@ static int rpm_regulator_init_vreg(struct qcom_rpm_reg *vreg, struct device *dev
 			break;
 
 	if (!rpm_data->name) {
-		dev_err(dev, "Unknown regulator %pOFn\n", node);
+		dev_dbg(dev, "Unknown regulator %pOFn\n", node);
 		return -EINVAL;
 	}
 
@@ -723,7 +723,7 @@ static int rpm_regulator_init_vreg(struct qcom_rpm_reg *vreg, struct device *dev
 	rdev = devm_regulator_register(dev, &vreg->desc, &config);
 	if (IS_ERR(rdev)) {
 		ret = PTR_ERR(rdev);
-		dev_err(dev, "%pOFn: devm_regulator_register() failed, ret=%d\n", node, ret);
+		dev_dbg(dev, "%pOFn: devm_regulator_register() failed, ret=%d\n", node, ret);
 		return ret;
 	}
 
@@ -741,7 +741,7 @@ static int rpm_reg_probe(struct platform_device *pdev)
 
 	rpm = dev_get_drvdata(pdev->dev.parent);
 	if (!rpm) {
-		dev_err(&pdev->dev, "Unable to retrieve handle to rpm\n");
+		dev_dbg(&pdev->dev, "Unable to retrieve handle to rpm\n");
 		return -ENODEV;
 	}
 

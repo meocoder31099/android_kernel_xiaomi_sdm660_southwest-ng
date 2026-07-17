@@ -2071,26 +2071,26 @@ static loff_t iomap_swapfile_activate_actor(struct inode *inode, loff_t pos,
 		break;
 	case IOMAP_INLINE:
 		/* No inline data. */
-		pr_err("swapon: file is inline\n");
+		pr_debug("swapon: file is inline\n");
 		return -EINVAL;
 	default:
-		pr_err("swapon: file has unallocated extents\n");
+		pr_debug("swapon: file has unallocated extents\n");
 		return -EINVAL;
 	}
 
 	/* No uncommitted metadata or shared blocks. */
 	if (iomap->flags & IOMAP_F_DIRTY) {
-		pr_err("swapon: file is not committed\n");
+		pr_debug("swapon: file is not committed\n");
 		return -EINVAL;
 	}
 	if (iomap->flags & IOMAP_F_SHARED) {
-		pr_err("swapon: file has shared extents\n");
+		pr_debug("swapon: file has shared extents\n");
 		return -EINVAL;
 	}
 
 	/* Only one bdev per swap file. */
 	if (iomap->bdev != isi->sis->bdev) {
-		pr_err("swapon: file is on multiple devices\n");
+		pr_debug("swapon: file is on multiple devices\n");
 		return -EINVAL;
 	}
 

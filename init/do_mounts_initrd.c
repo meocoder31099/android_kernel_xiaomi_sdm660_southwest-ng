@@ -84,26 +84,26 @@ static void __init handle_initrd(void)
 	ROOT_DEV = new_decode_dev(real_root_dev);
 	mount_root();
 
-	printk(KERN_NOTICE "Trying to move old root to /initrd ... ");
+	no_printk(KERN_NOTICE "Trying to move old root to /initrd ... ");
 	error = ksys_mount("/old", "/root/initrd", NULL, MS_MOVE, NULL);
 	if (!error)
-		printk("okay\n");
+		no_printk("okay\n");
 	else {
 		int fd = ksys_open("/dev/root.old", O_RDWR, 0);
 		if (error == -ENOENT)
-			printk("/initrd does not exist. Ignored.\n");
+			no_printk("/initrd does not exist. Ignored.\n");
 		else
-			printk("failed\n");
-		printk(KERN_NOTICE "Unmounting old root\n");
+			no_printk("failed\n");
+		no_printk(KERN_NOTICE "Unmounting old root\n");
 		ksys_umount("/old", MNT_DETACH);
-		printk(KERN_NOTICE "Trying to free ramdisk memory ... ");
+		no_printk(KERN_NOTICE "Trying to free ramdisk memory ... ");
 		if (fd < 0) {
 			error = fd;
 		} else {
 			error = ksys_ioctl(fd, BLKFLSBUF, 0);
 			ksys_close(fd);
 		}
-		printk(!error ? "okay\n" : "failed\n");
+		no_printk(!error ? "okay\n" : "failed\n");
 	}
 }
 

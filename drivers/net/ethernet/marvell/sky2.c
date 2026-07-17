@@ -179,11 +179,11 @@ static int gm_phy_write(struct sky2_hw *hw, unsigned port, u16 reg, u16 val)
 		udelay(10);
 	}
 
-	dev_warn(&hw->pdev->dev, "%s: phy write timeout\n", hw->dev[port]->name);
+	dev_dbg(&hw->pdev->dev, "%s: phy write timeout\n", hw->dev[port]->name);
 	return -ETIMEDOUT;
 
 io_error:
-	dev_err(&hw->pdev->dev, "%s: phy I/O error\n", hw->dev[port]->name);
+	dev_dbg(&hw->pdev->dev, "%s: phy I/O error\n", hw->dev[port]->name);
 	return -EIO;
 }
 
@@ -207,10 +207,10 @@ static int __gm_phy_read(struct sky2_hw *hw, unsigned port, u16 reg, u16 *val)
 		udelay(10);
 	}
 
-	dev_warn(&hw->pdev->dev, "%s: phy read timeout\n", hw->dev[port]->name);
+	dev_dbg(&hw->pdev->dev, "%s: phy read timeout\n", hw->dev[port]->name);
 	return -ETIMEDOUT;
 io_error:
-	dev_err(&hw->pdev->dev, "%s: phy I/O error\n", hw->dev[port]->name);
+	dev_dbg(&hw->pdev->dev, "%s: phy I/O error\n", hw->dev[port]->name);
 	return -EIO;
 }
 
@@ -1255,7 +1255,7 @@ map_page_error:
 
 mapping_error:
 	if (net_ratelimit())
-		dev_warn(&pdev->dev, "%s: rx mapping error\n",
+		dev_dbg(&pdev->dev, "%s: rx mapping error\n",
 			 skb->dev->name);
 	return -EIO;
 }
@@ -1734,7 +1734,7 @@ static int sky2_setup_irq(struct sky2_hw *hw, const char *name)
 			  (hw->flags & SKY2_HW_USE_MSI) ? 0 : IRQF_SHARED,
 			  name, hw);
 	if (err)
-		dev_err(&pdev->dev, "cannot assign irq %d\n", pdev->irq);
+		dev_dbg(&pdev->dev, "cannot assign irq %d\n", pdev->irq);
 	else {
 		hw->flags |= SKY2_HW_IRQ_SETUP;
 
@@ -1999,7 +1999,7 @@ mapping_unwind:
 
 mapping_error:
 	if (net_ratelimit())
-		dev_warn(&hw->pdev->dev, "%s: tx mapping error\n", dev->name);
+		dev_dbg(&hw->pdev->dev, "%s: tx mapping error\n", dev->name);
 	dev_kfree_skb_any(skb);
 	return NETDEV_TX_OK;
 }
@@ -2687,7 +2687,7 @@ static void sky2_rx_checksum(struct sky2_port *sky2, u32 status)
 		skb->ip_summed = CHECKSUM_COMPLETE;
 		skb->csum = le16_to_cpu(status);
 	} else {
-		dev_notice(&sky2->hw->pdev->dev,
+		dev_dbg(&sky2->hw->pdev->dev,
 			   "%s: receive checksum problem (status = %#x)\n",
 			   sky2->netdev->name, status);
 
@@ -2804,7 +2804,7 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
 
 		default:
 			if (net_ratelimit())
-				pr_warn("unknown status opcode 0x%x\n", opcode);
+				pr_debug("unknown status opcode 0x%x\n", opcode);
 		}
 	} while (hw->st_idx != idx);
 
@@ -2875,7 +2875,7 @@ static void sky2_hw_intr(struct sky2_hw *hw)
 		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_ON);
 		pci_err = sky2_pci_read16(hw, PCI_STATUS);
 		if (net_ratelimit())
-			dev_err(&pdev->dev, "PCI hardware error (0x%x)\n",
+			dev_dbg(&pdev->dev, "PCI hardware error (0x%x)\n",
 			        pci_err);
 
 		sky2_pci_write16(hw, PCI_STATUS,
@@ -2892,7 +2892,7 @@ static void sky2_hw_intr(struct sky2_hw *hw)
 		sky2_write32(hw, Y2_CFG_AER + PCI_ERR_UNCOR_STATUS,
 			     0xfffffffful);
 		if (net_ratelimit())
-			dev_err(&pdev->dev, "PCI Express error (0x%x)\n", err);
+			dev_dbg(&pdev->dev, "PCI Express error (0x%x)\n", err);
 
 		sky2_read32(hw, Y2_CFG_AER + PCI_ERR_UNCOR_STATUS);
 		sky2_write8(hw, B2_TST_CTRL1, TST_CFG_WRITE_OFF);
@@ -2936,7 +2936,7 @@ static void sky2_le_error(struct sky2_hw *hw, unsigned port, u16 q)
 	struct net_device *dev = hw->dev[port];
 	u16 idx = sky2_read16(hw, Y2_QADDR(q, PREF_UNIT_GET_IDX));
 
-	dev_err(&hw->pdev->dev, "%s: descriptor error q=%#x get=%u put=%u\n",
+	dev_dbg(&hw->pdev->dev, "%s: descriptor error q=%#x get=%u put=%u\n",
 		dev->name, (unsigned) q, (unsigned) idx,
 		(unsigned) sky2_read16(hw, Y2_QADDR(q, PREF_UNIT_PUT_IDX)));
 
@@ -3012,7 +3012,7 @@ static void sky2_watchdog(struct timer_list *t)
 static void sky2_err_intr(struct sky2_hw *hw, u32 status)
 {
 	if (net_ratelimit())
-		dev_warn(&hw->pdev->dev, "error interrupt status=%#x\n", status);
+		dev_dbg(&hw->pdev->dev, "error interrupt status=%#x\n", status);
 
 	if (status & Y2_IS_HW_ERR)
 		sky2_hw_intr(hw);
@@ -3176,7 +3176,7 @@ static int sky2_init(struct sky2_hw *hw)
 	case CHIP_ID_YUKON_EC:
 		/* This rev is really old, and requires untested workarounds */
 		if (hw->chip_rev == CHIP_REV_YU_EC_A1) {
-			dev_err(&hw->pdev->dev, "unsupported revision Yukon-EC rev A1\n");
+			dev_dbg(&hw->pdev->dev, "unsupported revision Yukon-EC rev A1\n");
 			return -EOPNOTSUPP;
 		}
 		hw->flags = SKY2_HW_GIGABIT | SKY2_HW_RSS_BROKEN;
@@ -3222,7 +3222,7 @@ static int sky2_init(struct sky2_hw *hw)
 		break;
 
 	default:
-		dev_err(&hw->pdev->dev, "unsupported chip type 0x%x\n",
+		dev_dbg(&hw->pdev->dev, "unsupported chip type 0x%x\n",
 			hw->chip_id);
 		return -EOPNOTSUPP;
 	}
@@ -3290,7 +3290,7 @@ static void sky2_reset(struct sky2_hw *hw)
 
 		/* If error bit is stuck on ignore it */
 		if (sky2_read32(hw, B0_HWE_ISRC) & Y2_IS_PCI_EXP)
-			dev_info(&pdev->dev, "ignoring stuck error report bit\n");
+			dev_dbg(&pdev->dev, "ignoring stuck error report bit\n");
 		else
 			hwe_mask |= Y2_IS_PCI_EXP;
 	}
@@ -4286,7 +4286,7 @@ static int sky2_vpd_wait(const struct sky2_hw *hw, int cap, u16 busy)
 	while ( (sky2_pci_read16(hw, cap + PCI_VPD_ADDR) & PCI_VPD_ADDR_F) == busy) {
 		/* Can take up to 10.6 ms for write */
 		if (time_after(jiffies, start + HZ/4)) {
-			dev_err(&hw->pdev->dev, "VPD cycle timed out\n");
+			dev_dbg(&hw->pdev->dev, "VPD cycle timed out\n");
 			return -ETIMEDOUT;
 		}
 		msleep(1);
@@ -4880,7 +4880,7 @@ static int sky2_test_msi(struct sky2_hw *hw)
 
 	err = request_irq(pdev->irq, sky2_test_intr, 0, DRV_NAME, hw);
 	if (err) {
-		dev_err(&pdev->dev, "cannot assign irq %d\n", pdev->irq);
+		dev_dbg(&pdev->dev, "cannot assign irq %d\n", pdev->irq);
 		return err;
 	}
 
@@ -4893,7 +4893,7 @@ static int sky2_test_msi(struct sky2_hw *hw)
 
 	if (!(hw->flags & SKY2_HW_USE_MSI)) {
 		/* MSI test failed, go back to INTx mode */
-		dev_info(&pdev->dev, "No interrupt generated using MSI, "
+		dev_dbg(&pdev->dev, "No interrupt generated using MSI, "
 			 "switching to INTx mode.\n");
 
 		err = -EOPNOTSUPP;
@@ -4975,7 +4975,7 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	err = pci_enable_device(pdev);
 	if (err) {
-		dev_err(&pdev->dev, "cannot enable PCI device\n");
+		dev_dbg(&pdev->dev, "cannot enable PCI device\n");
 		goto err_out;
 	}
 
@@ -4986,19 +4986,19 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	 */
 	err = pci_read_config_dword(pdev, PCI_DEV_REG2, &reg);
 	if (err) {
-		dev_err(&pdev->dev, "PCI read config failed\n");
+		dev_dbg(&pdev->dev, "PCI read config failed\n");
 		goto err_out_disable;
 	}
 
 	if (~reg == 0) {
-		dev_err(&pdev->dev, "PCI configuration read error\n");
+		dev_dbg(&pdev->dev, "PCI configuration read error\n");
 		err = -EIO;
 		goto err_out_disable;
 	}
 
 	err = pci_request_regions(pdev, DRV_NAME);
 	if (err) {
-		dev_err(&pdev->dev, "cannot obtain PCI resources\n");
+		dev_dbg(&pdev->dev, "cannot obtain PCI resources\n");
 		goto err_out_disable;
 	}
 
@@ -5009,14 +5009,14 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		using_dac = 1;
 		err = pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64));
 		if (err < 0) {
-			dev_err(&pdev->dev, "unable to obtain 64 bit DMA "
+			dev_dbg(&pdev->dev, "unable to obtain 64 bit DMA "
 				"for consistent allocations\n");
 			goto err_out_free_regions;
 		}
 	} else {
 		err = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
 		if (err) {
-			dev_err(&pdev->dev, "no usable DMA configuration\n");
+			dev_dbg(&pdev->dev, "no usable DMA configuration\n");
 			goto err_out_free_regions;
 		}
 	}
@@ -5029,7 +5029,7 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	reg &= ~PCI_REV_DESC;
 	err = pci_write_config_dword(pdev, PCI_DEV_REG2, reg);
 	if (err) {
-		dev_err(&pdev->dev, "PCI write config failed\n");
+		dev_dbg(&pdev->dev, "PCI write config failed\n");
 		goto err_out_free_regions;
 	}
 #endif
@@ -5048,7 +5048,7 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	hw->regs = ioremap_nocache(pci_resource_start(pdev, 0), 0x4000);
 	if (!hw->regs) {
-		dev_err(&pdev->dev, "cannot map device registers\n");
+		dev_dbg(&pdev->dev, "cannot map device registers\n");
 		goto err_out_free_hw;
 	}
 
@@ -5065,7 +5065,7 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 		goto err_out_reset;
 	}
 
-	dev_info(&pdev->dev, "Yukon-2 %s chip revision %d\n",
+	dev_dbg(&pdev->dev, "Yukon-2 %s chip revision %d\n",
 		 sky2_name(hw->chip_id, buf1, sizeof(buf1)), hw->chip_rev);
 
 	sky2_reset(hw);
@@ -5092,7 +5092,7 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	err = register_netdev(dev);
 	if (err) {
-		dev_err(&pdev->dev, "cannot register net device\n");
+		dev_dbg(&pdev->dev, "cannot register net device\n");
 		goto err_out_free_netdev;
 	}
 
@@ -5109,7 +5109,7 @@ static int sky2_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 		err = register_netdev(dev1);
 		if (err) {
-			dev_err(&pdev->dev, "cannot register second net device\n");
+			dev_dbg(&pdev->dev, "cannot register second net device\n");
 			goto err_out_free_dev1;
 		}
 
@@ -5238,7 +5238,7 @@ static int sky2_resume(struct device *dev)
 	/* Re-enable all clocks */
 	err = pci_write_config_dword(pdev, PCI_DEV_REG3, 0);
 	if (err) {
-		dev_err(&pdev->dev, "PCI write config failed\n");
+		dev_dbg(&pdev->dev, "PCI write config failed\n");
 		goto out;
 	}
 
@@ -5250,7 +5250,7 @@ static int sky2_resume(struct device *dev)
 	return 0;
 out:
 
-	dev_err(&pdev->dev, "resume failed (%d)\n", err);
+	dev_dbg(&pdev->dev, "resume failed (%d)\n", err);
 	pci_disable_device(pdev);
 	return err;
 }
@@ -5294,7 +5294,7 @@ static struct pci_driver sky2_driver = {
 
 static int __init sky2_init_module(void)
 {
-	pr_info("driver version " DRV_VERSION "\n");
+	pr_debug("driver version " DRV_VERSION "\n");
 
 	sky2_debug_init();
 	return pci_register_driver(&sky2_driver);

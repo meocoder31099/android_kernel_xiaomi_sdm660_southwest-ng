@@ -190,11 +190,11 @@ void wcnss_prealloc_check_memory_leak(void)
 			continue;
 
 		if (j == 0) {
-			pr_err("wcnss_prealloc: Memory leak detected\n");
+			pr_debug("wcnss_prealloc: Memory leak detected\n");
 			j++;
 		}
 
-		pr_err("Size: %zu, addr: %pK, backtrace:\n",
+		pr_debug("Size: %zu, addr: %pK, backtrace:\n",
 		       wcnss_allocs[i].size, wcnss_allocs[i].ptr);
 		print_stack_trace(&wcnss_allocs[i].trace, 1);
 	}
@@ -280,19 +280,19 @@ static int __init wcnss_pre_alloc_init(void)
 
 	ret = wcnss_prealloc_init();
 	if (ret) {
-		pr_err("%s: Failed to init the prealloc pool\n", __func__);
+		pr_debug("%s: Failed to init the prealloc pool\n", __func__);
 		return ret;
 	}
 
 #ifdef CONFIG_DEBUG_FS
 	debug_base = debugfs_create_dir(PRE_ALLOC_DEBUGFS_DIR, NULL);
 	if (IS_ERR_OR_NULL(debug_base)) {
-		pr_err("%s: Failed to create debugfs dir\n", __func__);
+		pr_debug("%s: Failed to create debugfs dir\n", __func__);
 	} else if (IS_ERR_OR_NULL(debugfs_create_file
 				  (PRE_ALLOC_DEBUGFS_FILE_OBJ,
 				   0644, debug_base, NULL,
 				   &prealloc_memory_stats_fops))) {
-		pr_err("%s: Failed to create debugfs file\n", __func__);
+		pr_debug("%s: Failed to create debugfs file\n", __func__);
 		debugfs_remove_recursive(debug_base);
 	}
 #endif

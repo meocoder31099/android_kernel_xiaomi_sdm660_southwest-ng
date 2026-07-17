@@ -30,7 +30,7 @@ static int get_num(const char *const str[], const char *name)
 		i++;
 	} while (str[i] != NULL);
 
-	pr_err("Error: string %s not found\n", name);
+	pr_debug("Error: string %s not found\n", name);
 	return -EINVAL;
 }
 
@@ -45,7 +45,7 @@ static struct msm_bus_scale_pdata *get_pdata(struct device *dev,
 	bool mem_err = false;
 
 	if (!dev) {
-		pr_err("Error: Null device\n");
+		pr_debug("Error: Null device\n");
 		return NULL;
 	}
 
@@ -59,14 +59,14 @@ static struct msm_bus_scale_pdata *get_pdata(struct device *dev,
 	ret = of_property_read_string(of_node, "qcom,msm-bus,name",
 		&pdata->name);
 	if (ret) {
-		pr_err("Error: Client name not found\n");
+		pr_debug("Error: Client name not found\n");
 		goto err;
 	}
 
 	ret = of_property_read_u32(of_node, "qcom,msm-bus,num-cases",
 		&num_usecases);
 	if (ret) {
-		pr_err("Error: num-usecases not found\n");
+		pr_debug("Error: num-usecases not found\n");
 		goto err;
 	}
 
@@ -93,12 +93,12 @@ static struct msm_bus_scale_pdata *get_pdata(struct device *dev,
 		vec_arr = of_get_property(of_node,
 					"qcom,msm-bus,vectors-alc", &len);
 		if (vec_arr == NULL) {
-			pr_err("Error: Lat vector array not found\n");
+			pr_debug("Error: Lat vector array not found\n");
 			goto err;
 		}
 
 		if (len != num_usecases * sizeof(uint32_t) * 2) {
-			pr_err("Error: Length-error on getting vectors\n");
+			pr_debug("Error: Length-error on getting vectors\n");
 			goto err;
 		}
 
@@ -125,18 +125,18 @@ static struct msm_bus_scale_pdata *get_pdata(struct device *dev,
 	ret = of_property_read_u32(of_node, "qcom,msm-bus,num-paths",
 		&num_paths);
 	if (ret) {
-		pr_err("Error: num_paths not found\n");
+		pr_debug("Error: num_paths not found\n");
 		goto err;
 	}
 
 	vec_arr = of_get_property(of_node, "qcom,msm-bus,vectors-KBps", &len);
 	if (vec_arr == NULL) {
-		pr_err("Error: Vector array not found\n");
+		pr_debug("Error: Vector array not found\n");
 		goto err;
 	}
 
 	if (len != num_usecases * num_paths * sizeof(uint32_t) * 4) {
-		pr_err("Error: Length-error on getting vectors\n");
+		pr_debug("Error: Length-error on getting vectors\n");
 		goto err;
 	}
 
@@ -146,7 +146,7 @@ static struct msm_bus_scale_pdata *get_pdata(struct device *dev,
 			sizeof(struct msm_bus_vectors), GFP_KERNEL);
 		if (!usecase[i].vectors) {
 			mem_err = true;
-			pr_err("Error: Mem alloc failure in vectors\n");
+			pr_debug("Error: Mem alloc failure in vectors\n");
 			goto err;
 		}
 
@@ -191,14 +191,14 @@ struct msm_bus_scale_pdata *msm_bus_cl_get_pdata(struct platform_device *pdev)
 	struct msm_bus_scale_pdata *pdata = NULL;
 
 	if (!pdev) {
-		pr_err("Error: Null Platform device\n");
+		pr_debug("Error: Null Platform device\n");
 		return NULL;
 	}
 
 	of_node = pdev->dev.of_node;
 	pdata = get_pdata(&pdev->dev, of_node);
 	if (!pdata) {
-		pr_err("client has to provide missing entry for successful registration\n");
+		pr_debug("client has to provide missing entry for successful registration\n");
 		return NULL;
 	}
 
@@ -229,7 +229,7 @@ struct msm_bus_scale_pdata *msm_bus_cl_get_pdata_from_dev(struct device *dev)
 
 	pdata = get_pdata(dev, of_node);
 	if (!pdata) {
-		pr_err("client has to provide missing entry for successful registration\n");
+		pr_debug("client has to provide missing entry for successful registration\n");
 		return NULL;
 	}
 
@@ -259,18 +259,18 @@ struct msm_bus_scale_pdata *msm_bus_pdata_from_node(
 	struct msm_bus_scale_pdata *pdata = NULL;
 
 	if (!pdev) {
-		pr_err("Error: Null Platform device\n");
+		pr_debug("Error: Null Platform device\n");
 		return NULL;
 	}
 
 	if (!of_node) {
-		pr_err("Error: Null of_node passed to bus driver\n");
+		pr_debug("Error: Null of_node passed to bus driver\n");
 		return NULL;
 	}
 
 	pdata = get_pdata(&pdev->dev, of_node);
 	if (!pdata) {
-		pr_err("client has to provide missing entry for successful registration\n");
+		pr_debug("client has to provide missing entry for successful registration\n");
 		return NULL;
 	}
 
@@ -300,13 +300,13 @@ static int *get_arr(struct platform_device *pdev,
 
 	arr = devm_kzalloc(&pdev->dev, size, GFP_KERNEL);
 	if (ZERO_OR_NULL_PTR(arr)) {
-		pr_err("Error: Failed to alloc mem for %s\n", prop);
+		pr_debug("Error: Failed to alloc mem for %s\n", prop);
 		return NULL;
 	}
 
 	ret = of_property_read_u32_array(node, prop, (u32 *)arr, *nports);
 	if (ret) {
-		pr_err("Error in reading property: %s\n", prop);
+		pr_debug("Error in reading property: %s\n", prop);
 		goto err;
 	}
 
@@ -341,19 +341,19 @@ static u64 *get_th_params(struct platform_device *pdev,
 	ret_arr = devm_kzalloc(&pdev->dev, (*nports * sizeof(u64)),
 							GFP_KERNEL);
 	if (ZERO_OR_NULL_PTR(ret_arr)) {
-		pr_err("Error: Failed to alloc mem for ret arr %s\n", prop);
+		pr_debug("Error: Failed to alloc mem for ret arr %s\n", prop);
 		return NULL;
 	}
 
 	arr = kzalloc(size, GFP_KERNEL);
 	if ((ZERO_OR_NULL_PTR(arr))) {
-		pr_err("Error: Failed to alloc temp mem for %s\n", prop);
+		pr_debug("Error: Failed to alloc temp mem for %s\n", prop);
 		return NULL;
 	}
 
 	ret = of_property_read_u32_array(node, prop, (u32 *)arr, *nports);
 	if (ret) {
-		pr_err("Error in reading property: %s\n", prop);
+		pr_debug("Error in reading property: %s\n", prop);
 		goto err;
 	}
 
@@ -391,7 +391,7 @@ static struct msm_bus_node_info *get_nodes(struct device_node *of_node,
 	info = devm_kzalloc(&pdev->dev, sizeof(struct msm_bus_node_info) *
 			pdata->len, GFP_KERNEL);
 	if (ZERO_OR_NULL_PTR(info)) {
-		pr_err("Failed to alloc memory for nodes: %d\n", pdata->len);
+		pr_debug("Failed to alloc memory for nodes: %d\n", pdata->len);
 		goto err;
 	}
 
@@ -403,11 +403,11 @@ static struct msm_bus_node_info *get_nodes(struct device_node *of_node,
 		ret = of_property_read_string(child_node, "label",
 			&info[i].name);
 		if (ret)
-			pr_err("Error reading node label\n");
+			pr_debug("Error reading node label\n");
 
 		ret = of_property_read_u32(child_node, "cell-id", &info[i].id);
 		if (ret) {
-			pr_err("Error reading node id\n");
+			pr_debug("Error reading node id\n");
 			goto err;
 		}
 
@@ -445,7 +445,7 @@ static struct msm_bus_node_info *get_nodes(struct device_node *of_node,
 		else {
 			ret =  get_num(hw_sel_name, sel_str);
 			if (ret < 0) {
-				pr_err("Invalid hw-sel\n");
+				pr_debug("Invalid hw-sel\n");
 				goto err;
 			}
 
@@ -467,9 +467,9 @@ static struct msm_bus_node_info *get_nodes(struct device_node *of_node,
 						"qcom,bimc,bw", &num_bw);
 
 		if (num_bw != info[i].num_thresh) {
-			pr_err("%s:num_bw %d must equal num_thresh %d\n",
+			pr_debug("%s:num_bw %d must equal num_thresh %d\n",
 				__func__, num_bw, info[i].num_thresh);
-			pr_err("%s:Err setting up dual conf for %s\n",
+			pr_debug("%s:Err setting up dual conf for %s\n",
 				__func__, info[i].name);
 			goto err;
 		}
@@ -486,7 +486,7 @@ static struct msm_bus_node_info *get_nodes(struct device_node *of_node,
 		else {
 			ret = get_num(mode_sel_name, sel_str);
 			if (ret < 0) {
-				pr_err("Unknown mode :%s\n", sel_str);
+				pr_debug("Unknown mode :%s\n", sel_str);
 				goto err;
 			}
 
@@ -503,7 +503,7 @@ static struct msm_bus_node_info *get_nodes(struct device_node *of_node,
 		else {
 			ret = get_num(mode_sel_name, sel_str);
 			if (ret < 0) {
-				pr_err("Unknown mode :%s\n", sel_str);
+				pr_debug("Unknown mode :%s\n", sel_str);
 				goto err;
 			}
 
@@ -607,7 +607,7 @@ void msm_bus_of_get_nfab(struct platform_device *pdev,
 	int ret, nfab = 0;
 
 	if (!pdev) {
-		pr_err("Error: Null platform device\n");
+		pr_debug("Error: Null platform device\n");
 		return;
 	}
 
@@ -631,7 +631,7 @@ struct msm_bus_fabric_registration
 	u32 temp;
 
 	if (!pdev) {
-		pr_err("Error: Null platform device\n");
+		pr_debug("Error: Null platform device\n");
 		return NULL;
 	}
 
@@ -645,7 +645,7 @@ struct msm_bus_fabric_registration
 
 	ret = of_property_read_string(of_node, "label", &pdata->name);
 	if (ret) {
-		pr_err("Error: label not found\n");
+		pr_debug("Error: label not found\n");
 		goto err;
 	}
 	pr_debug("Fab_of: Read name: %s\n", pdata->name);
@@ -653,7 +653,7 @@ struct msm_bus_fabric_registration
 	ret = of_property_read_u32(of_node, "cell-id",
 		&pdata->id);
 	if (ret) {
-		pr_err("Error: num-usecases not found\n");
+		pr_debug("Error: num-usecases not found\n");
 		goto err;
 	}
 	pr_debug("Fab_of: Read id: %u\n", pdata->id);
@@ -681,7 +681,7 @@ struct msm_bus_fabric_registration
 	ret = of_property_read_u32(of_node, "qcom,ntieredslaves",
 		&pdata->ntieredslaves);
 	if (ret) {
-		pr_err("Error: ntieredslaves not found\n");
+		pr_debug("Error: ntieredslaves not found\n");
 		goto err;
 	}
 
@@ -691,7 +691,7 @@ struct msm_bus_fabric_registration
 
 	ret = of_property_read_string(of_node, "qcom,hw-sel", &sel_str);
 	if (ret) {
-		pr_err("Error: hw_sel not found\n");
+		pr_debug("Error: hw_sel not found\n");
 		goto err;
 	} else {
 		ret = get_num(hw_sel_name, sel_str);
@@ -721,7 +721,7 @@ struct msm_bus_fabric_registration
 						&temp);
 
 	if (ret) {
-		pr_err("nr-lim threshold not specified\n");
+		pr_debug("nr-lim threshold not specified\n");
 		pdata->nr_lim_thresh = 0;
 	} else {
 		pdata->nr_lim_thresh = KBTOB(temp);
@@ -730,7 +730,7 @@ struct msm_bus_fabric_registration
 	ret = of_property_read_u32(of_node, "qcom,eff-fact",
 						&pdata->eff_fact);
 	if (ret) {
-		pr_err("Fab eff-factor not present\n");
+		pr_debug("Fab eff-factor not present\n");
 		pdata->eff_fact = 0;
 	}
 

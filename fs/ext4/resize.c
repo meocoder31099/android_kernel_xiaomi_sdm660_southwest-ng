@@ -154,7 +154,7 @@ static int verify_group_input(struct super_block *sb,
 		input->blocks_count - 2 - overhead - sbi->s_itb_per_group;
 
 	if (test_opt(sb, DEBUG))
-		printk(KERN_DEBUG "EXT4-fs: adding %s group %u: %u blocks "
+		no_printk(KERN_DEBUG "EXT4-fs: adding %s group %u: %u blocks "
 		       "(%d free, %u reserved)\n",
 		       ext4_bg_has_super(sb, input->group) ? "normal" :
 		       "no-super", input->group, input->blocks_count,
@@ -400,7 +400,7 @@ next_group:
 		int i;
 		group = group_data[0].group;
 
-		printk(KERN_DEBUG "EXT4-fs: adding a flex group with "
+		no_printk(KERN_DEBUG "EXT4-fs: adding a flex group with "
 		       "%u groups, flexbg size is %u:\n", flex_gd->count,
 		       flexbg_size);
 
@@ -837,7 +837,7 @@ static int add_new_gdb(handle_t *handle, struct inode *inode,
 	int err;
 
 	if (test_opt(sb, DEBUG))
-		printk(KERN_DEBUG
+		no_printk(KERN_DEBUG
 		       "EXT4-fs: ext4_add_new_gdb: adding group block %lu\n",
 		       gdb_num);
 
@@ -1087,7 +1087,7 @@ static int reserve_backup_gdb(handle_t *handle, struct inode *inode,
 	for (i = 0; i < reserved_gdb; i++) {
 		int err2;
 		data = (__le32 *)primary[i]->b_data;
-		/* printk("reserving backup %lu[%u] = %lu\n",
+		/* no_printk("reserving backup %lu[%u] = %lu\n",
 		       primary[i]->b_blocknr, gdbackups,
 		       blk + primary[i]->b_blocknr); */
 		data[gdbackups] = cpu_to_le32(blk + primary[i]->b_blocknr);
@@ -1489,7 +1489,7 @@ static void ext4_update_super(struct super_block *sb,
 	es->s_overhead_clusters = cpu_to_le32(sbi->s_overhead);
 
 	if (test_opt(sb, DEBUG))
-		printk(KERN_DEBUG "EXT4-fs: added group %u:"
+		no_printk(KERN_DEBUG "EXT4-fs: added group %u:"
 		       "%llu blocks(%llu free %llu reserved)\n", flex_gd->count,
 		       blocks_count, free_blocks, reserved_blocks);
 }
@@ -1778,7 +1778,7 @@ errout:
 
 	if (!err) {
 		if (test_opt(sb, DEBUG))
-			printk(KERN_DEBUG "EXT4-fs: extended group to %llu "
+			no_printk(KERN_DEBUG "EXT4-fs: extended group to %llu "
 			       "blocks\n", ext4_blocks_count(es));
 		update_backups(sb, ext4_group_first_block_no(sb, 0),
 			       (char *)es, sizeof(struct ext4_super_block), 0);

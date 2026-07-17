@@ -58,7 +58,7 @@ int apr_tal_write(struct apr_svc_ch_dev *apr_ch, void *data,
 	spin_unlock_irqrestore(&apr_ch->w_lock, flags);
 
 	if (rc)
-		pr_err("%s: Unable to send the packet, rc:%d\n", __func__, rc);
+		pr_debug("%s: Unable to send the packet, rc:%d\n", __func__, rc);
 	else
 		rc = len;
 
@@ -128,7 +128,7 @@ struct apr_svc_ch_dev *apr_tal_open(uint32_t clnt, uint32_t dest, uint32_t dl,
 
 	if ((clnt != APR_CLIENT_AUDIO) || (dest >= APR_DEST_MAX) ||
 	    (dl != APR_DL_SMD)) {
-		pr_err("%s: Invalid params, clnt:%d, dest:%d, dl:%d\n",
+		pr_debug("%s: Invalid params, clnt:%d, dest:%d, dl:%d\n",
 		       __func__, clnt, dest, dl);
 		return NULL;
 	}
@@ -139,7 +139,7 @@ struct apr_svc_ch_dev *apr_tal_open(uint32_t clnt, uint32_t dest, uint32_t dl,
 			(apr_ch->channel_state == APR_CH_CONNECTED), 5 * HZ);
 
 		if (rc == 0) {
-			pr_err("%s: TIMEOUT for APR_CH_CONNECTED event\n",
+			pr_debug("%s: TIMEOUT for APR_CH_CONNECTED event\n",
 				__func__);
 			rc = -ETIMEDOUT;
 			goto unlock;
@@ -189,7 +189,7 @@ static int apr_tal_rpmsg_callback(struct rpmsg_device *rpdev,
 	unsigned long flags;
 
 	if (!apr_ch || !data) {
-		pr_err("%s: Invalid apr_ch or ptr\n", __func__);
+		pr_debug("%s: Invalid apr_ch or ptr\n", __func__);
 		return -EINVAL;
 	}
 
@@ -214,15 +214,15 @@ static int apr_tal_rpmsg_probe(struct rpmsg_device *rpdev)
 				   "mbox-names", &dest);
 
 	if(ret < 0){
-		pr_err("%s no parent source pid found\n", __func__);
+		pr_debug("%s no parent source pid found\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!strcmp(rpdev->id.name, "apr_audio_svc")) {
-		dev_info(&rpdev->dev, "%s: Channel[%s] state[Up]\n",
+		dev_dbg(&rpdev->dev, "%s: Channel[%s] state[Up]\n",
 			 __func__, rpdev->id.name);
 	} else {
-		dev_err(&rpdev->dev, "%s, Invalid Channel [%s]\n",
+		dev_dbg(&rpdev->dev, "%s, Invalid Channel [%s]\n",
 			__func__, rpdev->id.name);
 		return -EINVAL;
 	}
@@ -241,7 +241,7 @@ static int apr_tal_rpmsg_probe(struct rpmsg_device *rpdev)
 		dev_set_drvdata(&rpdev->dev, apr_ch);
 		wake_up(&apr_ch->wait);
 	} else {
-		dev_err(&rpdev->dev, "%s, unsupported dest %s\n",
+		dev_dbg(&rpdev->dev, "%s, unsupported dest %s\n",
 			__func__, dest);
 		return -EINVAL;
 	}
@@ -254,11 +254,11 @@ static void apr_tal_rpmsg_remove(struct rpmsg_device *rpdev)
 	struct apr_svc_ch_dev *apr_ch = dev_get_drvdata(&rpdev->dev);
 
 	if (!apr_ch) {
-		dev_err(&rpdev->dev, "%s: Invalid apr_ch\n", __func__);
+		dev_dbg(&rpdev->dev, "%s: Invalid apr_ch\n", __func__);
 		return;
 	}
 
-	dev_info(&rpdev->dev, "%s: Channel[%s] state[Down]\n",
+	dev_dbg(&rpdev->dev, "%s: Channel[%s] state[Down]\n",
 		 __func__, rpdev->id.name);
 	apr_ch->handle = NULL;
 	apr_ch->channel_state = APR_CH_DISCONNECTED;

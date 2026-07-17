@@ -185,7 +185,7 @@ static void qmi_send_new_lookup(struct qmi_handle *qmi, struct qmi_service *svc)
 	if (qmi->sock) {
 		ret = kernel_sendmsg(qmi->sock, &msg, &iv, 1, sizeof(pkt));
 		if (ret < 0)
-			pr_err("failed to send lookup registration: %d\n", ret);
+			pr_debug("failed to send lookup registration: %d\n", ret);
 	}
 	mutex_unlock(&qmi->sock_lock);
 }
@@ -250,7 +250,7 @@ static void qmi_send_new_server(struct qmi_handle *qmi, struct qmi_service *svc)
 	if (qmi->sock) {
 		ret = kernel_sendmsg(qmi->sock, &msg, &iv, 1, sizeof(pkt));
 		if (ret < 0)
-			pr_err("send service registration failed: %d\n", ret);
+			pr_debug("send service registration failed: %d\n", ret);
 	}
 	mutex_unlock(&qmi->sock_lock);
 }
@@ -319,7 +319,7 @@ int qmi_txn_init(struct qmi_handle *qmi, struct qmi_txn *txn,
 	mutex_lock(&qmi->txn_lock);
 	ret = idr_alloc_cyclic(&qmi->txns, txn, 0, U16_MAX, GFP_KERNEL);
 	if (ret < 0)
-		pr_err("failed to allocate transaction id\n");
+		pr_debug("failed to allocate transaction id\n");
 
 	txn->id = ret;
 	mutex_unlock(&qmi->txn_lock);
@@ -411,7 +411,7 @@ static void qmi_invoke_handler(struct qmi_handle *qmi, struct sockaddr_qrtr *sq,
 
 	ret = qmi_decode_message(buf, len, handler->ei, dest);
 	if (ret < 0)
-		pr_err("failed to decode incoming message\n");
+		pr_debug("failed to decode incoming message\n");
 	else
 		handler->fn(qmi, sq, txn, dest);
 
@@ -484,7 +484,7 @@ static void qmi_handle_message(struct qmi_handle *qmi,
 		return;
 
 	if (len < sizeof(*hdr)) {
-		pr_err("ignoring short QMI packet\n");
+		pr_debug("ignoring short QMI packet\n");
 		return;
 	}
 
@@ -503,7 +503,7 @@ static void qmi_handle_message(struct qmi_handle *qmi,
 		if (txn->dest && txn->ei) {
 			ret = qmi_decode_message(buf, len, txn->ei, txn->dest);
 			if (ret < 0)
-				pr_err("failed to decode incoming message\n");
+				pr_debug("failed to decode incoming message\n");
 
 			txn->result = ret;
 			complete(&txn->completion);
@@ -551,7 +551,7 @@ static void qmi_data_ready_work(struct work_struct *work)
 		}
 
 		if (msglen < 0) {
-			pr_err("qmi recvmsg failed: %zd\n", msglen);
+			pr_debug("qmi recvmsg failed: %zd\n", msglen);
 			break;
 		}
 
@@ -677,7 +677,7 @@ int qmi_handle_init(struct qmi_handle *qmi, size_t recv_buf_size,
 
 	qmi->sock = qmi_sock_create(qmi, &qmi->sq);
 	if (IS_ERR(qmi->sock)) {
-		pr_err("failed to create QMI socket\n");
+		pr_debug("failed to create QMI socket\n");
 		ret = PTR_ERR(qmi->sock);
 		goto err_destroy_wq;
 	}
@@ -792,7 +792,7 @@ static ssize_t qmi_send_message(struct qmi_handle *qmi,
 	if (qmi->sock) {
 		ret = kernel_sendmsg(qmi->sock, &msghdr, &iv, 1, len);
 		if (ret < 0)
-			pr_info("failed to send QMI message %d\n", ret);
+			pr_debug("failed to send QMI message %d\n", ret);
 	} else {
 		ret = -EPIPE;
 	}

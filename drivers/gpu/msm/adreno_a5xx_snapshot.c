@@ -792,7 +792,7 @@ static void _a5xx_do_crashdump(struct kgsl_device *device)
 	kgsl_regwrite(device, A5XX_CP_CNTL, 0);
 
 	if (!(reg & 0x4)) {
-		dev_err(device->dev, "Crash dump timed out: 0x%X\n", reg);
+		dev_dbg(device->dev, "Crash dump timed out: 0x%X\n", reg);
 		return;
 	}
 

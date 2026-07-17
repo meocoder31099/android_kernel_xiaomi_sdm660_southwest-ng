@@ -650,7 +650,7 @@ static int clk_find_vdd_level(struct clk_core *clk, unsigned long rate)
 			break;
 
 	if (level == clk->num_rate_max) {
-		pr_err("Rate %lu for %s is greater than highest Fmax\n", rate,
+		pr_debug("Rate %lu for %s is greater than highest Fmax\n", rate,
 				clk->name);
 		return -EINVAL;
 	}
@@ -842,7 +842,7 @@ static int clk_vdd_class_init(struct clk_vdd_class *vdd)
 
 		ret = clk_vote_vdd_level(vdd, vdd->num_levels - 1);
 		if (ret) {
-			pr_err("failed to vote for %s, ret=%d\n",
+			pr_debug("failed to vote for %s, ret=%d\n",
 				vdd->class_name, ret);
 			goto done;
 		}
@@ -1437,7 +1437,7 @@ static int clk_disable_unused(void)
 	struct clk_handoff_vdd *v, *v_temp;
 
 	if (clk_ignore_unused) {
-		pr_warn("clk: Not disabling unused clocks\n");
+		pr_debug("clk: Not disabling unused clocks\n");
 		return 0;
 	}
 
@@ -2531,7 +2531,7 @@ static int clk_core_set_rate_nolock(struct clk_core *core,
 	ret = clk_change_rate(top);
 	set_rate_nesting_count--;
 	if (ret) {
-		pr_err("%s: failed to set %s clock to run at %lu\n", __func__,
+		pr_debug("%s: failed to set %s clock to run at %lu\n", __func__,
 				top->name, req_rate);
 		clk_propagate_rate_change(top, ABORT_RATE_CHANGE);
 		clk_vote_safe_vdd();
@@ -2673,7 +2673,7 @@ int clk_set_rate_range(struct clk *clk, unsigned long min, unsigned long max)
 		return 0;
 
 	if (min > max) {
-		pr_err("%s: clk %s dev %s con %s: invalid range [%lu, %lu]\n",
+		pr_debug("%s: clk %s dev %s con %s: invalid range [%lu, %lu]\n",
 		       __func__, clk->core->name, clk->dev_id, clk->con_id,
 		       min, max);
 		return -EINVAL;
@@ -3523,7 +3523,7 @@ static int clock_debug_rate_set(void *data, u64 val)
 
 	ret = clk_set_rate(core->hw->clk, val);
 	if (ret)
-		pr_err("clk_set_rate(%lu) failed (%d)\n",
+		pr_debug("clk_set_rate(%lu) failed (%d)\n",
 				(unsigned long)val, ret);
 
 	if (core->ops->bus_vote)
@@ -3611,9 +3611,9 @@ do {							\
 	if (m)						\
 		seq_printf(m, fmt, ##__VA_ARGS__);	\
 	else if (c)					\
-		pr_cont(fmt, ##__VA_ARGS__);		\
+		pr_debug(fmt, ##__VA_ARGS__);		\
 	else						\
-		pr_info(fmt, ##__VA_ARGS__);		\
+		pr_debug(fmt, ##__VA_ARGS__);		\
 } while (0)
 
 static int clock_debug_print_clock(struct clk_core *c, struct seq_file *s)
@@ -4107,21 +4107,21 @@ static int __clk_core_init(struct clk_core *core)
 	if (core->ops->set_rate &&
 	    !((core->ops->round_rate || core->ops->determine_rate) &&
 	      core->ops->recalc_rate)) {
-		pr_err("%s: %s must implement .round_rate or .determine_rate in addition to .recalc_rate\n",
+		pr_debug("%s: %s must implement .round_rate or .determine_rate in addition to .recalc_rate\n",
 		       __func__, core->name);
 		ret = -EINVAL;
 		goto out;
 	}
 
 	if (core->ops->set_parent && !core->ops->get_parent) {
-		pr_err("%s: %s must implement .get_parent & .set_parent\n",
+		pr_debug("%s: %s must implement .get_parent & .set_parent\n",
 		       __func__, core->name);
 		ret = -EINVAL;
 		goto out;
 	}
 
 	if (core->num_parents > 1 && !core->ops->get_parent) {
-		pr_err("%s: %s must implement .get_parent as it has multi parents\n",
+		pr_debug("%s: %s must implement .get_parent as it has multi parents\n",
 		       __func__, core->name);
 		ret = -EINVAL;
 		goto out;
@@ -4129,7 +4129,7 @@ static int __clk_core_init(struct clk_core *core)
 
 	if (core->ops->set_rate_and_parent &&
 			!(core->ops->set_parent && core->ops->set_rate)) {
-		pr_err("%s: %s must implement .set_parent & .set_rate\n",
+		pr_debug("%s: %s must implement .set_parent & .set_rate\n",
 				__func__, core->name);
 		ret = -EINVAL;
 		goto out;
@@ -4418,7 +4418,7 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
 	if (core->vdd_class) {
 		ret = clk_vdd_class_init(core->vdd_class);
 		if (ret) {
-			pr_err("Failed to initialize vdd class\n");
+			pr_debug("Failed to initialize vdd class\n");
 			goto fail_parent_names;
 		}
 	}
@@ -4567,7 +4567,7 @@ void clk_unregister(struct clk *clk)
 	clk_prepare_lock();
 
 	if (clk->core->ops == &clk_nodrv_ops) {
-		pr_err("%s: unregistered clock: %s\n", __func__,
+		pr_debug("%s: unregistered clock: %s\n", __func__,
 		       clk->core->name);
 		goto unlock;
 	}
@@ -4592,11 +4592,11 @@ void clk_unregister(struct clk *clk)
 	hlist_del_init(&clk->core->child_node);
 
 	if (clk->core->prepare_count)
-		pr_warn("%s: unregistering prepared clock: %s\n",
+		pr_debug("%s: unregistering prepared clock: %s\n",
 					__func__, clk->core->name);
 
 	if (clk->core->protect_count)
-		pr_warn("%s: unregistering protected clock: %s\n",
+		pr_debug("%s: unregistering protected clock: %s\n",
 					__func__, clk->core->name);
 
 	kref_put(&clk->core->ref, __clk_release);
@@ -4641,14 +4641,14 @@ static int derive_device_list(struct device **device_list,
 		device_list[j] = NULL;
 		dev_node = of_parse_phandle(np, clk_handle_name, j);
 		if (!dev_node) {
-			pr_err("Unable to get device_node pointer for %s opp-handle (%s)\n",
+			pr_debug("Unable to get device_node pointer for %s opp-handle (%s)\n",
 					core->name, clk_handle_name);
 			return -ENODEV;
 		}
 
 		pdev = of_find_device_by_node(dev_node);
 		if (!pdev) {
-			pr_err("Unable to find platform_device node for %s opp-handle\n",
+			pr_debug("Unable to find platform_device node for %s opp-handle\n",
 						core->name);
 			return -ENODEV;
 		}
@@ -4669,14 +4669,14 @@ static int clk_get_voltage(struct clk_core *core, unsigned long rate, int n)
 	} else {
 		level = clk_find_vdd_level(core, rate);
 		if (level < 0) {
-			pr_err("Could not find vdd level\n");
+			pr_debug("Could not find vdd level\n");
 			return -EINVAL;
 		}
 		corner = vdd->vdd_uv[level];
 	}
 
 	if (!corner) {
-		pr_err("%s: Unable to find vdd level for rate %lu\n",
+		pr_debug("%s: Unable to find vdd level for rate %lu\n",
 					core->name, rate);
 		return -EINVAL;
 	}
@@ -4694,14 +4694,14 @@ static int clk_add_and_print_opp(struct clk_hw *hw,
 	for (j = 0; j < count; j++) {
 		ret = dev_pm_opp_add(device_list[j], rate, uv);
 		if (ret) {
-			pr_err("%s: couldn't add OPP for %lu - err: %d\n",
+			pr_debug("%s: couldn't add OPP for %lu - err: %d\n",
 						core->name, rate, ret);
 			return ret;
 		}
 
 		if (n == 0 || n == core->num_rate_max - 1 ||
 					rate == clk_hw_round_rate(hw, INT_MAX))
-			pr_info("%s: set OPP pair(%lu Hz: %u uV) on %s\n",
+			pr_debug("%s: set OPP pair(%lu Hz: %u uV) on %s\n",
 						core->name, rate, uv,
 						dev_name(device_list[j]));
 	}
@@ -4724,12 +4724,12 @@ static void clk_populate_clock_opp_table(struct device_node *np,
 		ret = snprintf(clk_handle_name, ARRAY_SIZE(clk_handle_name),
 				"qcom,%s-opp-handle", core->name);
 		if (ret < strlen(core->name) + LEN_OPP_HANDLE) {
-			pr_err("%s: Failed to hold clk_handle_name\n",
+			pr_debug("%s: Failed to hold clk_handle_name\n",
 							core->name);
 			return;
 		}
 	} else {
-		pr_err("clk name (%s) too large to fit in clk_handle_name\n",
+		pr_debug("clk name (%s) too large to fit in clk_handle_name\n",
 							core->name);
 		return;
 	}
@@ -4745,7 +4745,7 @@ static void clk_populate_clock_opp_table(struct device_node *np,
 		ret = derive_device_list(device_list, core, np,
 					clk_handle_name, count);
 		if (ret < 0) {
-			pr_err("Failed to fill device_list for %s\n",
+			pr_debug("Failed to fill device_list for %s\n",
 						clk_handle_name);
 			goto err_derive_device_list;
 		}
@@ -4757,7 +4757,7 @@ static void clk_populate_clock_opp_table(struct device_node *np,
 	for (n = 0; ; n++) {
 		rrate = clk_hw_round_rate(hw, rate + 1);
 		if (!rrate) {
-			pr_err("clk_round_rate failed for %s\n",
+			pr_debug("clk_round_rate failed for %s\n",
 							core->name);
 			goto err_derive_device_list;
 		}
@@ -5093,7 +5093,7 @@ struct clk *of_clk_src_onecell_get(struct of_phandle_args *clkspec, void *data)
 	unsigned int idx = clkspec->args[0];
 
 	if (idx >= clk_data->clk_num) {
-		pr_err("%s: invalid clock index %u\n", __func__, idx);
+		pr_debug("%s: invalid clock index %u\n", __func__, idx);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -5108,7 +5108,7 @@ of_clk_hw_onecell_get(struct of_phandle_args *clkspec, void *data)
 	unsigned int idx = clkspec->args[0];
 
 	if (idx >= hw_data->num) {
-		pr_err("%s: invalid index %u\n", __func__, idx);
+		pr_debug("%s: invalid index %u\n", __func__, idx);
 		return ERR_PTR(-EINVAL);
 	}
 

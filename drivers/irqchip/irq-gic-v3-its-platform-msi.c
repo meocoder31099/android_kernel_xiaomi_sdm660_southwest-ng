@@ -101,17 +101,17 @@ static int __init its_pmsi_init_one(struct fwnode_handle *fwnode,
 
 	parent = irq_find_matching_fwnode(fwnode, DOMAIN_BUS_NEXUS);
 	if (!parent || !msi_get_domain_info(parent)) {
-		pr_err("%s: unable to locate ITS domain\n", name);
+		pr_debug("%s: unable to locate ITS domain\n", name);
 		return -ENXIO;
 	}
 
 	if (!platform_msi_create_irq_domain(fwnode, &its_pmsi_domain_info,
 					    parent)) {
-		pr_err("%s: unable to create platform domain\n", name);
+		pr_debug("%s: unable to create platform domain\n", name);
 		return -ENXIO;
 	}
 
-	pr_info("Platform MSI: %s domain created\n", name);
+	pr_debug("Platform MSI: %s domain created\n", name);
 	return 0;
 }
 
@@ -130,7 +130,7 @@ its_pmsi_parse_madt(struct acpi_subtable_header *header,
 			      (long)its_entry->base_address);
 	domain_handle = iort_find_domain_token(its_entry->translation_id);
 	if (!domain_handle) {
-		pr_err("%s: Unable to locate ITS domain handle\n", node_name);
+		pr_debug("%s: Unable to locate ITS domain handle\n", node_name);
 		goto out;
 	}
 

@@ -350,13 +350,13 @@ static int of_get_fmax_vdd_class(struct platform_device *pdev,
 	u32 *array;
 
 	if (!of_find_property(of, prop_name, &prop_len)) {
-		dev_err(&pdev->dev, "missing %s\n", prop_name);
+		dev_dbg(&pdev->dev, "missing %s\n", prop_name);
 		return -EINVAL;
 	}
 
 	prop_len /= sizeof(u32);
 	if (prop_len % num) {
-		dev_err(&pdev->dev, "bad length %d\n", prop_len);
+		dev_dbg(&pdev->dev, "bad length %d\n", prop_len);
 		return -EINVAL;
 	}
 
@@ -408,7 +408,7 @@ static int gpucc_660_probe(struct platform_device *pdev)
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (res == NULL) {
-		dev_err(&pdev->dev, "Failed to get resources\n");
+		dev_dbg(&pdev->dev, "Failed to get resources\n");
 		return -EINVAL;
 	}
 
@@ -424,7 +424,7 @@ static int gpucc_660_probe(struct platform_device *pdev)
 	vdd_dig.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_dig_gfx");
 	if (IS_ERR(vdd_dig.regulator[0])) {
 		if (!(PTR_ERR(vdd_dig.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_dig regulator\n");
 		return PTR_ERR(vdd_dig.regulator[0]);
 	}
@@ -433,7 +433,7 @@ static int gpucc_660_probe(struct platform_device *pdev)
 	vdd_mx.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_mx_gfx");
 	if (IS_ERR(vdd_mx.regulator[0])) {
 		if (!(PTR_ERR(vdd_mx.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_mx regulator\n");
 		return PTR_ERR(vdd_mx.regulator[0]);
 	}
@@ -442,7 +442,7 @@ static int gpucc_660_probe(struct platform_device *pdev)
 	vdd_gfx.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_gfx");
 	if (IS_ERR(vdd_gfx.regulator[0])) {
 		if (!(PTR_ERR(vdd_gfx.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_gfx regulator\n");
 		return PTR_ERR(vdd_gfx.regulator[0]);
 	}
@@ -469,13 +469,13 @@ static int gpucc_660_probe(struct platform_device *pdev)
 
 	ret = qcom_cc_really_probe(pdev, &gpucc_660_desc, regmap);
 	if (ret) {
-		dev_err(&pdev->dev, "Failed to register GPUCC clocks\n");
+		dev_dbg(&pdev->dev, "Failed to register GPUCC clocks\n");
 		return ret;
 	}
 
 	clk_prepare_enable(gpucc_cxo_clk.clkr.hw.clk);
 
-	dev_info(&pdev->dev, "Registered GPUCC clocks\n");
+	dev_dbg(&pdev->dev, "Registered GPUCC clocks\n");
 
 	return ret;
 }
@@ -530,11 +530,11 @@ static int gpu_660_probe(struct platform_device *pdev)
 
 	ret = qcom_cc_really_probe(pdev, &gpu_660_desc, regmap);
 	if (ret) {
-		dev_err(&pdev->dev, "Failed to register GPU RBCPR clocks\n");
+		dev_dbg(&pdev->dev, "Failed to register GPU RBCPR clocks\n");
 		return ret;
 	}
 
-	dev_info(&pdev->dev, "Registered GPU RBCPR clocks\n");
+	dev_dbg(&pdev->dev, "Registered GPU RBCPR clocks\n");
 
 	return ret;
 }

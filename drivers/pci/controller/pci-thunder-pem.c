@@ -348,7 +348,7 @@ static void thunder_pem_reserve_range(struct device *dev, int seg,
 	else
 		kfree(regionid);
 
-	dev_info(dev, "%pR %s reserved\n", r,
+	dev_dbg(dev, "%pR %s reserved\n", r,
 		 res ? "has been" : "could not be");
 }
 
@@ -433,7 +433,7 @@ static int thunder_pem_platform_init(struct pci_config_window *cfg)
 	 */
 	res_pem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
 	if (!res_pem) {
-		dev_err(dev, "missing \"reg[1]\"property\n");
+		dev_dbg(dev, "missing \"reg[1]\"property\n");
 		return -EINVAL;
 	}
 

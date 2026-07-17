@@ -266,7 +266,7 @@ int driver_deferred_probe_check_state(struct device *dev)
 			dev_WARN(dev, "deferred probe timeout, ignoring dependency");
 			return -ETIMEDOUT;
 		}
-		dev_warn(dev, "ignoring dependency for device, assuming no driver");
+		dev_dbg(dev, "ignoring dependency for device, assuming no driver");
 		return -ENODEV;
 	}
 	return -EPROBE_DEFER;
@@ -282,7 +282,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
 
 	mutex_lock(&deferred_probe_mutex);
 	list_for_each_entry(p, &deferred_probe_pending_list, deferred_probe)
-		dev_info(p->device, "deferred probe pending\n");
+		dev_dbg(p->device, "deferred probe pending\n");
 	mutex_unlock(&deferred_probe_mutex);
 }
 static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
@@ -353,7 +353,7 @@ bool device_is_bound(struct device *dev)
 static void driver_bound(struct device *dev)
 {
 	if (device_is_bound(dev)) {
-		printk(KERN_WARNING "%s: device %s already bound\n",
+		no_printk(KERN_WARNING "%s: device %s already bound\n",
 			__func__, kobject_name(&dev->kobj));
 		return;
 	}
@@ -503,7 +503,7 @@ static int really_probe(struct device *dev, struct device_driver *drv)
 	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
 		 drv->bus->name, __func__, drv->name, dev_name(dev));
 	if (!list_empty(&dev->devres_head)) {
-		dev_crit(dev, "Resources present before probing\n");
+		dev_dbg(dev, "Resources present before probing\n");
 		ret = -EBUSY;
 		goto done;
 	}
@@ -521,7 +521,7 @@ re_probe:
 		goto probe_failed;
 
 	if (driver_sysfs_add(dev)) {
-		printk(KERN_ERR "%s: driver_sysfs_add(%s) failed\n",
+		no_printk(KERN_ERR "%s: driver_sysfs_add(%s) failed\n",
 			__func__, dev_name(dev));
 		goto probe_failed;
 	}
@@ -601,7 +601,7 @@ pinctrl_bind_failed:
 		break;
 	default:
 		/* driver matched but the probe failed */
-		printk(KERN_WARNING
+		no_printk(KERN_WARNING
 		       "%s: probe of %s failed with error %d\n",
 		       drv->name, dev_name(dev), ret);
 	}
@@ -628,7 +628,7 @@ static int really_probe_debug(struct device *dev, struct device_driver *drv)
 	ret = really_probe(dev, drv);
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, calltime);
-	printk(KERN_DEBUG "probe of %s returned %d after %lld usecs\n",
+	no_printk(KERN_DEBUG "probe of %s returned %d after %lld usecs\n",
 	       dev_name(dev), ret, (s64) ktime_to_us(delta));
 	return ret;
 }

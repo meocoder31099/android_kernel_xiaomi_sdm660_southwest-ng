@@ -640,7 +640,7 @@ augment_tree_propagate_check(struct rb_node *n)
 
 	if (!found) {
 		va = rb_entry(n, struct vmap_area, rb_node);
-		pr_emerg("tree is corrupted: %lu, %lu\n",
+		pr_debug("tree is corrupted: %lu, %lu\n",
 			va_size(va), va->subtree_max_size);
 	}
 
@@ -929,7 +929,7 @@ find_vmap_lowest_match_check(unsigned long size)
 	va_2 = find_vmap_lowest_linear_match(size, 1, vstart);
 
 	if (va_1 != va_2)
-		pr_emerg("not lowest: t: 0x%p, l: 0x%p, v: 0x%lx\n",
+		pr_debug("not lowest: t: 0x%p, l: 0x%p, v: 0x%lx\n",
 			va_1, va_2, vstart);
 }
 #endif
@@ -1198,7 +1198,7 @@ overflow:
 	}
 
 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit())
-		pr_warn("vmap allocation for size %lu failed: use vmalloc=<size> to increase size\n",
+		pr_debug("vmap allocation for size %lu failed: use vmalloc=<size> to increase size\n",
 			size);
 
 	kmem_cache_free(vmap_area_cachep, va);

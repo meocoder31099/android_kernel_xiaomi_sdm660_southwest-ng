@@ -176,7 +176,7 @@ static long ioctl_permit_fill(struct file *f, void __user *arg)
 		break;
 
 	default:
-		pr_warn("Invalid file private data");
+		pr_debug("Invalid file private data");
 		error = -EFAULT;
 		goto out;
 	}
@@ -455,7 +455,7 @@ static void notify_create(struct file *pending_reads_file,
 	}
 out:
 	if (error)
-		pr_warn("%s failed with error %d\n", __func__, error);
+		pr_debug("%s failed with error %d\n", __func__, error);
 
 	dput(dir);
 	dput(file);
@@ -788,7 +788,7 @@ static long ioctl_create_mapped_file(struct file *file, void __user *arg)
 	/* Validate file mapping is in range */
 	source_file_name = file_id_to_str(args.source_file_id);
 	if (!source_file_name) {
-		pr_warn("Failed to alloc source_file_name\n");
+		pr_debug("Failed to alloc source_file_name\n");
 		error = -ENOMEM;
 		goto out;
 	}
@@ -796,18 +796,18 @@ static long ioctl_create_mapped_file(struct file *file, void __user *arg)
 	source_file_dentry = incfs_lookup_dentry(mi->mi_index_dir,
 						       source_file_name);
 	if (!source_file_dentry) {
-		pr_warn("Source file does not exist\n");
+		pr_debug("Source file does not exist\n");
 		error = -EINVAL;
 		goto out;
 	}
 	if (IS_ERR(source_file_dentry)) {
-		pr_warn("Error opening source file\n");
+		pr_debug("Error opening source file\n");
 		error = PTR_ERR(source_file_dentry);
 		source_file_dentry = NULL;
 		goto out;
 	}
 	if (!d_really_is_positive(source_file_dentry)) {
-		pr_warn("Source file dentry negative\n");
+		pr_debug("Source file dentry negative\n");
 		error = -EINVAL;
 		goto out;
 	}
@@ -818,14 +818,14 @@ static long ioctl_create_mapped_file(struct file *file, void __user *arg)
 		goto out;
 
 	if (error != sizeof(size_attr_value)) {
-		pr_warn("Mapped file has no size attr\n");
+		pr_debug("Mapped file has no size attr\n");
 		error = -EINVAL;
 		goto out;
 	}
 
 	source_file_size = le64_to_cpu(size_attr_value);
 	if (args.source_offset + args.size > source_file_size) {
-		pr_warn("Mapped file out of range\n");
+		pr_debug("Mapped file out of range\n");
 		error = -EINVAL;
 		goto out;
 	}

@@ -219,7 +219,7 @@ static int get_codec_version(struct sdm660_cdc_priv *sdm660_cdc)
 	else if (sdm660_cdc->pmic_rev == TOMBAK_1_0)
 		return TOMBAK_1_0;
 
-	pr_err("%s: unsupported codec version\n", __func__);
+	pr_debug("%s: unsupported codec version\n", __func__);
 	return UNSUPPORTED;
 }
 
@@ -346,7 +346,7 @@ void msm_anlg_cdc_spk_ext_pa_cb(
 	struct sdm660_cdc_priv *sdm660_cdc;
 
 	if (!component) {
-		pr_err("%s: NULL codec pointer!\n", __func__);
+		pr_debug("%s: NULL codec pointer!\n", __func__);
 		return;
 	}
 
@@ -429,13 +429,13 @@ static struct firmware_cal *msm_anlg_cdc_get_hwdep_fw_cal(
 	struct snd_soc_component *component = wcd_mbhc->component;
 
 	if (!component) {
-		pr_err("%s: NULL codec pointer\n", __func__);
+		pr_debug("%s: NULL codec pointer\n", __func__);
 		return NULL;
 	}
 	sdm660_cdc = snd_soc_component_get_drvdata(component);
 	hwdep_cal = wcdcal_get_fw_cal(sdm660_cdc->fw_data, type);
 	if (!hwdep_cal) {
-		dev_err(component->dev, "%s: cal not sent by %d\n",
+		dev_dbg(component->dev, "%s: cal not sent by %d\n",
 				__func__, type);
 		return NULL;
 	}
@@ -556,7 +556,7 @@ static void msm_anlg_cdc_mbhc_common_micb_ctrl(
 		val = (enable ? 0x04 : 0x00);
 		break;
 	default:
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Invalid event received\n", __func__);
 		return;
 	};
@@ -1148,7 +1148,7 @@ static void msm_anlg_cdc_boost_mode_sequence(
 			msm_anlg_cdc_boost_on(component);
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -1171,7 +1171,7 @@ static void msm_anlg_cdc_boost_mode_sequence(
 			/* nothing to do as boost on forever */
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -1194,7 +1194,7 @@ static void msm_anlg_cdc_boost_mode_sequence(
 			msm_anlg_cdc_boost_on(component);
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -1226,7 +1226,7 @@ static void msm_anlg_cdc_boost_mode_sequence(
 			/* nothing to do as boost on forever */
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -1249,7 +1249,7 @@ static int msm_anlg_cdc_dt_parse_vreg_info(struct device *dev,
 	regnode = of_parse_phandle(dev->of_node, prop_name, 0);
 
 	if (!regnode) {
-		dev_err(dev, "Looking up %s property in node %s failed\n",
+		dev_dbg(dev, "Looking up %s property in node %s failed\n",
 			prop_name, dev->of_node->full_name);
 		return -ENODEV;
 	}
@@ -1265,7 +1265,7 @@ static int msm_anlg_cdc_dt_parse_vreg_info(struct device *dev,
 	prop = of_get_property(dev->of_node, prop_name, &len);
 
 	if (!prop || (len != (2 * sizeof(__be32)))) {
-		dev_err(dev, "%s %s property\n",
+		dev_dbg(dev, "%s %s property\n",
 			prop ? "invalid format" : "no", prop_name);
 		return -EINVAL;
 	}
@@ -1277,7 +1277,7 @@ static int msm_anlg_cdc_dt_parse_vreg_info(struct device *dev,
 
 	ret = of_property_read_u32(dev->of_node, prop_name, &prop_val);
 	if (ret) {
-		dev_err(dev, "Looking up %s property in node %s failed",
+		dev_dbg(dev, "Looking up %s property in node %s failed",
 			prop_name, dev->of_node->full_name);
 		return -EFAULT;
 	}
@@ -1306,7 +1306,7 @@ static void msm_anlg_cdc_dt_parse_boost_info(
 	}
 	if (boost_voltage < MIN_BOOST_VOLTAGE ||
 			boost_voltage > MAX_BOOST_VOLTAGE) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"Incorrect boost voltage. Reverting to default\n");
 		boost_voltage = DEFAULT_BOOST_VOLTAGE;
 	}
@@ -1348,7 +1348,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 
 	static_cnt = of_property_count_strings(dev->of_node, static_prop_name);
 	if (static_cnt < 0) {
-		dev_err(dev, "%s: Failed to get static supplies %d\n", __func__,
+		dev_dbg(dev, "%s: Failed to get static supplies %d\n", __func__,
 			static_cnt);
 		ret = -EINVAL;
 		goto err;
@@ -1361,7 +1361,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 
 	WARN_ON(static_cnt <= 0 || ond_cnt < 0);
 	if ((static_cnt + ond_cnt) > ARRAY_SIZE(pdata->regulator)) {
-		dev_err(dev, "%s: Num of supplies %u > max supported %zd\n",
+		dev_dbg(dev, "%s: Num of supplies %u > max supported %zd\n",
 				__func__, (static_cnt + ond_cnt),
 					ARRAY_SIZE(pdata->regulator));
 		ret = -EINVAL;
@@ -1373,7 +1373,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 						    static_prop_name, idx,
 						    &name);
 		if (ret) {
-			dev_err(dev, "%s: of read string %s idx %d error %d\n",
+			dev_dbg(dev, "%s: of read string %s idx %d error %d\n",
 				__func__, static_prop_name, idx, ret);
 			goto err;
 		}
@@ -1384,7 +1384,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 						&pdata->regulator[idx],
 						name, false);
 		if (ret) {
-			dev_err(dev, "%s:err parsing vreg for %s idx %d\n",
+			dev_dbg(dev, "%s:err parsing vreg for %s idx %d\n",
 				__func__, name, idx);
 			goto err;
 		}
@@ -1394,7 +1394,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 		ret = of_property_read_string_index(dev->of_node, ond_prop_name,
 						    i, &name);
 		if (ret) {
-			dev_err(dev, "%s: err parsing on_demand for %s idx %d\n",
+			dev_dbg(dev, "%s: err parsing on_demand for %s idx %d\n",
 				__func__, ond_prop_name, i);
 			goto err;
 		}
@@ -1405,7 +1405,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 						&pdata->regulator[idx],
 						name, true);
 		if (ret) {
-			dev_err(dev, "%s: err parsing vreg on_demand for %s idx %d\n",
+			dev_dbg(dev, "%s: err parsing vreg on_demand for %s idx %d\n",
 				__func__, name, idx);
 			goto err;
 		}
@@ -1415,7 +1415,7 @@ static struct sdm660_cdc_pdata *msm_anlg_cdc_populate_dt_pdata(
 	return pdata;
 err:
 	devm_kfree(dev, pdata);
-	dev_err(dev, "%s: Failed to populate DT data ret = %d\n",
+	dev_dbg(dev, "%s: Failed to populate DT data ret = %d\n",
 		__func__, ret);
 	return NULL;
 }
@@ -1432,7 +1432,7 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 	struct on_demand_supply *supply;
 
 	if (w->shift >= ON_DEMAND_SUPPLIES_MAX) {
-		dev_err(component->dev, "%s: error index > MAX Demand supplies",
+		dev_dbg(component->dev, "%s: error index > MAX Demand supplies",
 			__func__);
 		ret = -EINVAL;
 		goto out;
@@ -1445,7 +1445,7 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 	WARN_ONCE(!supply->supply, "%s isn't defined\n",
 		  on_demand_supply_name[w->shift]);
 	if (!supply->supply) {
-		dev_err(component->dev, "%s: err supply not present ond for %d",
+		dev_dbg(component->dev, "%s: err supply not present ond for %d",
 			__func__, w->shift);
 		goto out;
 	}
@@ -1456,7 +1456,7 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 						    supply->min_uv,
 						    supply->max_uv);
 			if (ret) {
-				dev_err(component->dev,
+				dev_dbg(component->dev,
 					"Setting regulator voltage(en) for micbias with err = %d\n",
 					ret);
 				goto out;
@@ -1464,7 +1464,7 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 			ret = regulator_set_load(supply->supply,
 						 supply->optimum_ua);
 			if (ret < 0) {
-				dev_err(component->dev,
+				dev_dbg(component->dev,
 					"Setting regulator optimum mode(en) failed for micbias with err = %d\n",
 					ret);
 				goto out;
@@ -1472,7 +1472,7 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 			ret = regulator_enable(supply->supply);
 		}
 		if (ret)
-			dev_err(component->dev, "%s: Failed to enable %s\n",
+			dev_dbg(component->dev, "%s: Failed to enable %s\n",
 				__func__,
 				on_demand_supply_name[w->shift]);
 		break;
@@ -1485,21 +1485,21 @@ static int msm_anlg_cdc_codec_enable_on_demand_supply(
 		if (atomic_dec_return(&supply->ref) == 0) {
 			ret = regulator_disable(supply->supply);
 			if (ret)
-				dev_err(component->dev, "%s: Failed to disable %s\n",
+				dev_dbg(component->dev, "%s: Failed to disable %s\n",
 					__func__,
 					on_demand_supply_name[w->shift]);
 			ret = regulator_set_voltage(supply->supply,
 						    0,
 						    supply->max_uv);
 			if (ret) {
-				dev_err(component->dev,
+				dev_dbg(component->dev,
 					"Setting regulator voltage(dis) failed for micbias with err = %d\n",
 					ret);
 				goto out;
 			}
 			ret = regulator_set_load(supply->supply, 0);
 			if (ret < 0)
-				dev_err(component->dev,
+				dev_dbg(component->dev,
 					"Setting regulator optimum mode(dis) failed for micbias with err = %d\n",
 					ret);
 		}
@@ -1656,7 +1656,7 @@ static int msm_anlg_cdc_pa_gain_get(struct snd_kcontrol *kcontrol,
 		} else if (ear_pa_gain == 0x03) {
 			ucontrol->value.integer.value[0] = 0;
 		} else {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: ERROR: Unsupported Ear Gain = 0x%x\n",
 				__func__, ear_pa_gain);
 			return -EINVAL;
@@ -1670,7 +1670,7 @@ static int msm_anlg_cdc_pa_gain_get(struct snd_kcontrol *kcontrol,
 		} else if (ear_pa_gain == 0x01) {
 			ucontrol->value.integer.value[0] = 3;
 		} else  {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: ERROR: Unsupported Ear Gain = 0x%x\n",
 				__func__, ear_pa_gain);
 			return -EINVAL;
@@ -1746,7 +1746,7 @@ static int msm_anlg_cdc_hph_mode_get(struct snd_kcontrol *kcontrol,
 	} else if (sdm660_cdc->hph_mode == HD2_MODE) {
 		ucontrol->value.integer.value[0] = 1;
 	} else  {
-		dev_err(component->dev, "%s: ERROR: Default HPH Mode= %d\n",
+		dev_dbg(component->dev, "%s: ERROR: Default HPH Mode= %d\n",
 			__func__, sdm660_cdc->hph_mode);
 	}
 
@@ -1800,7 +1800,7 @@ static int msm_anlg_cdc_boost_option_get(struct snd_kcontrol *kcontrol,
 	} else if (sdm660_cdc->boost_option == BOOST_ON_FOREVER) {
 		ucontrol->value.integer.value[0] = 3;
 	} else  {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: ERROR: Unsupported Boost option= %d\n",
 			__func__, sdm660_cdc->boost_option);
 		return -EINVAL;
@@ -1838,7 +1838,7 @@ static int msm_anlg_cdc_boost_option_set(struct snd_kcontrol *kcontrol,
 		msm_anlg_cdc_boost_on(component);
 		break;
 	default:
-		pr_err("%s: invalid boost option: %d\n", __func__,
+		pr_debug("%s: invalid boost option: %d\n", __func__,
 					sdm660_cdc->boost_option);
 		return -EINVAL;
 	}
@@ -1860,7 +1860,7 @@ static int msm_anlg_cdc_spk_boost_get(struct snd_kcontrol *kcontrol,
 	} else if (sdm660_cdc->spk_boost_set == true) {
 		ucontrol->value.integer.value[0] = 1;
 	} else  {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 				"%s: ERROR: Unsupported Speaker Boost = %d\n",
 				__func__, sdm660_cdc->spk_boost_set);
 		return -EINVAL;
@@ -2056,7 +2056,7 @@ static int tombak_get_hph_type(struct snd_kcontrol *kcontrol,
 	struct wcd_mbhc *mbhc;
 
 	if (!priv) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: sdm660_cdc-wcd private data is NULL\n",
 			 __func__);
 		return -EINVAL;
@@ -2064,7 +2064,7 @@ static int tombak_get_hph_type(struct snd_kcontrol *kcontrol,
 
 	mbhc = &priv->mbhc;
 	if (!mbhc) {
-		dev_err(component->dev, "%s: mbhc not initialized\n", __func__);
+		dev_dbg(component->dev, "%s: mbhc not initialized\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2225,7 +2225,7 @@ static int msm_anlg_cdc_codec_enable_adc(struct snd_soc_dapm_widget *w,
 		 (w->reg == MSM89XX_PMIC_ANALOG_TX_3_EN))
 		init_bit_shift = 4;
 	else {
-		dev_err(component->dev, "%s: Error, invalid adc register\n",
+		dev_dbg(component->dev, "%s: Error, invalid adc register\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -2319,7 +2319,7 @@ static int msm_anlg_cdc_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 				0x10, 0x10);
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -2357,7 +2357,7 @@ static int msm_anlg_cdc_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 				MSM89XX_PMIC_ANALOG_SPKR_DAC_CTL, 0x10, 0x00);
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -2394,7 +2394,7 @@ static int msm_anlg_cdc_codec_enable_spk_pa(struct snd_soc_dapm_widget *w,
 		case BYPASS_ALWAYS:
 			break;
 		default:
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: invalid boost option: %d\n", __func__,
 				sdm660_cdc->boost_option);
 			break;
@@ -2540,7 +2540,7 @@ static int msm_anlg_cdc_enable_ext_mb_source(struct wcd_mbhc *wcd_mbhc,
 	}
 
 	if (ret)
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to %s external micbias source\n",
 			__func__, turn_on ? "enable" : "disabled");
 	else
@@ -2573,7 +2573,7 @@ static int msm_anlg_cdc_codec_enable_micbias(struct snd_soc_dapm_widget *w,
 		micb_int_reg = MSM89XX_PMIC_ANALOG_MICB_1_INT_RBIAS;
 		break;
 	default:
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Error, invalid micbias register 0x%x\n",
 			__func__, w->reg);
 		return -EINVAL;
@@ -2725,7 +2725,7 @@ static int sdm660_wcd_codec_enable_vdd_spkr(struct snd_soc_dapm_widget *w,
 		if (sdm660_cdc->spkdrv_reg) {
 			ret = regulator_enable(sdm660_cdc->spkdrv_reg);
 			if (ret)
-				dev_err(component->dev,
+				dev_dbg(component->dev,
 					"%s Failed to enable spkdrv reg %s\n",
 					__func__, MSM89XX_VDD_SPKDRV_NAME);
 		}
@@ -2734,7 +2734,7 @@ static int sdm660_wcd_codec_enable_vdd_spkr(struct snd_soc_dapm_widget *w,
 		if (sdm660_cdc->spkdrv_reg) {
 			ret = regulator_disable(sdm660_cdc->spkdrv_reg);
 			if (ret)
-				dev_err(component->dev,
+				dev_dbg(component->dev,
 					"%s: Failed to disable spkdrv_reg %s\n",
 					__func__, MSM89XX_VDD_SPKDRV_NAME);
 		}
@@ -3212,7 +3212,7 @@ static int msm_anlg_cdc_startup(struct snd_pcm_substream *substream,
 	 * So return error.
 	 */
 	if (test_bit(BUS_DOWN, &sdm660_cdc->status_mask)) {
-		dev_err(dai->component->dev, "Error, Device is not up post SSR\n");
+		dev_dbg(dai->component->dev, "Error, Device is not up post SSR\n");
 		return -EINVAL;
 	}
 	return 0;
@@ -3239,7 +3239,7 @@ int msm_anlg_cdc_mclk_enable(struct snd_soc_component *component,
 		msm_anlg_cdc_codec_enable_clock_block(component, 1);
 	} else {
 		if (!sdm660_cdc->int_mclk0_enabled) {
-			dev_err(component->dev, "Error, MCLK already diabled\n");
+			dev_dbg(component->dev, "Error, MCLK already diabled\n");
 			return -EINVAL;
 		}
 		sdm660_cdc->int_mclk0_enabled = false;
@@ -3822,7 +3822,7 @@ static void msm_anlg_cdc_update_micbias_regulator(
 		}
 	}
 
-	dev_err(sdm660_cdc->dev, "Error: regulator not found:%s\n", name);
+	dev_dbg(sdm660_cdc->dev, "Error: regulator not found:%s\n", name);
 }
 
 static int msm_anlg_cdc_device_down(struct snd_soc_component *component)
@@ -4103,7 +4103,7 @@ static ssize_t msm_anlg_codec_version_read(struct snd_info_entry *entry,
 
 	sdm660_cdc_priv = (struct sdm660_cdc_priv *) entry->private_data;
 	if (!sdm660_cdc_priv) {
-		pr_err("%s: sdm660_cdc_priv is null\n", __func__);
+		pr_debug("%s: sdm660_cdc_priv is null\n", __func__);
 		return -EINVAL;
 	}
 
@@ -4180,7 +4180,7 @@ int msm_anlg_codec_info_create_codec_entry(struct snd_info_entry *codec_root,
 				      AUDIO_NOTIFIER_ADSP_DOMAIN,
 				      &sdm660_cdc_priv->audio_ssr_nb);
 	if (ret < 0) {
-		pr_err("%s: Audio notifier register failed ret = %d\n",
+		pr_debug("%s: Audio notifier register failed ret = %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -4285,7 +4285,7 @@ static int msm_anlg_cdc_soc_probe(struct snd_soc_component *component)
 	ret = wcd_cal_create_hwdep(sdm660_cdc->fw_data,
 			WCD9XXX_CODEC_HWDEP_NODE, component);
 	if (ret < 0) {
-		dev_err(component->dev, "%s hwdep failed %d\n", __func__, ret);
+		dev_dbg(component->dev, "%s hwdep failed %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -4340,7 +4340,7 @@ static int msm_anlg_cdc_enable_static_supplies_to_optimum(
 
 		rc = regulator_enable(sdm660_cdc->supplies[i].consumer);
 		if (rc) {
-			dev_err(sdm660_cdc->dev, "Failed to enable %s: %d\n",
+			dev_dbg(sdm660_cdc->dev, "Failed to enable %s: %d\n",
 			       sdm660_cdc->supplies[i].supply, rc);
 			break;
 		}
@@ -4349,7 +4349,7 @@ static int msm_anlg_cdc_enable_static_supplies_to_optimum(
 				pdata->regulator[i].min_uv,
 				pdata->regulator[i].max_uv);
 		if (ret) {
-			dev_err(sdm660_cdc->dev,
+			dev_dbg(sdm660_cdc->dev,
 				"Setting volt failed for regulator %s err %d\n",
 				sdm660_cdc->supplies[i].supply, ret);
 		}
@@ -4384,7 +4384,7 @@ static int msm_anlg_cdc_disable_static_supplies_to_optimum(
 		regulator_set_load(sdm660_cdc->supplies[i].consumer, 0);
 		ret = regulator_disable(sdm660_cdc->supplies[i].consumer);
 		if (ret)
-			dev_err(sdm660_cdc->dev, "Failed to disable %s: %d\n",
+			dev_dbg(sdm660_cdc->dev, "Failed to disable %s: %d\n",
 			       sdm660_cdc->supplies[i].supply, ret);
 
 		dev_dbg(sdm660_cdc->dev, "Regulator %s disable\n",
@@ -4451,7 +4451,7 @@ static int msm_anlg_cdc_init_supplies(struct sdm660_cdc_priv *sdm660_cdc,
 
 	sdm660_cdc->num_of_supplies = 0;
 	if (ARRAY_SIZE(pdata->regulator) > MAX_REGULATOR) {
-		dev_err(sdm660_cdc->dev, "%s: Array Size out of bound\n",
+		dev_dbg(sdm660_cdc->dev, "%s: Array Size out of bound\n",
 			__func__);
 		ret = -EINVAL;
 		goto err;
@@ -4469,7 +4469,7 @@ static int msm_anlg_cdc_init_supplies(struct sdm660_cdc_priv *sdm660_cdc,
 				      sdm660_cdc->num_of_supplies,
 				      sdm660_cdc->supplies);
 	if (ret != 0) {
-		dev_err(sdm660_cdc->dev,
+		dev_dbg(sdm660_cdc->dev,
 			"Failed to get supplies: err = %d\n",
 			ret);
 		goto err_supplies;
@@ -4484,7 +4484,7 @@ static int msm_anlg_cdc_init_supplies(struct sdm660_cdc_priv *sdm660_cdc,
 					sdm660_cdc->supplies[i].consumer,
 					0, pdata->regulator[i].max_uv);
 			if (ret) {
-				dev_err(sdm660_cdc->dev,
+				dev_dbg(sdm660_cdc->dev,
 					"Setting regulator voltage failed for regulator %s err = %d\n",
 					sdm660_cdc->supplies[i].supply, ret);
 				goto err_supplies;
@@ -4492,7 +4492,7 @@ static int msm_anlg_cdc_init_supplies(struct sdm660_cdc_priv *sdm660_cdc,
 			ret = regulator_set_load(
 				sdm660_cdc->supplies[i].consumer, 0);
 			if (ret < 0) {
-				dev_err(sdm660_cdc->dev,
+				dev_dbg(sdm660_cdc->dev,
 					"Setting regulator optimum mode failed for regulator %s err = %d\n",
 					sdm660_cdc->supplies[i].supply, ret);
 				goto err_supplies;
@@ -4505,7 +4505,7 @@ static int msm_anlg_cdc_init_supplies(struct sdm660_cdc_priv *sdm660_cdc,
 					    pdata->regulator[i].min_uv,
 					    pdata->regulator[i].max_uv);
 		if (ret) {
-			dev_err(sdm660_cdc->dev,
+			dev_dbg(sdm660_cdc->dev,
 				"Setting regulator voltage failed for regulator %s err = %d\n",
 				sdm660_cdc->supplies[i].supply, ret);
 			goto err_supplies;
@@ -4513,7 +4513,7 @@ static int msm_anlg_cdc_init_supplies(struct sdm660_cdc_priv *sdm660_cdc,
 		ret = regulator_set_load(sdm660_cdc->supplies[i].consumer,
 					 pdata->regulator[i].optimum_ua);
 		if (ret < 0) {
-			dev_err(sdm660_cdc->dev,
+			dev_dbg(sdm660_cdc->dev,
 				"Setting regulator optimum mode failed for regulator %s err = %d\n",
 				sdm660_cdc->supplies[i].supply, ret);
 			goto err_supplies;
@@ -4542,7 +4542,7 @@ static int msm_anlg_cdc_enable_static_supplies(
 			continue;
 		ret = regulator_enable(sdm660_cdc->supplies[i].consumer);
 		if (ret) {
-			dev_err(sdm660_cdc->dev, "Failed to enable %s\n",
+			dev_dbg(sdm660_cdc->dev, "Failed to enable %s\n",
 			       sdm660_cdc->supplies[i].supply);
 			break;
 		}
@@ -4591,12 +4591,12 @@ static void msm_anlg_add_child_devices(struct work_struct *work)
 	pdata = container_of(work, struct sdm660_cdc_priv,
 			     msm_anlg_add_child_devices_work);
 	if (!pdata) {
-		pr_err("%s: Memory for pdata does not exist\n",
+		pr_debug("%s: Memory for pdata does not exist\n",
 			__func__);
 		return;
 	}
 	if (!pdata->dev->of_node) {
-		dev_err(pdata->dev,
+		dev_dbg(pdata->dev,
 			"%s: DT node for pdata does not exist\n", __func__);
 		return;
 	}
@@ -4612,7 +4612,7 @@ static void msm_anlg_add_child_devices(struct work_struct *work)
 
 		pdev = platform_device_alloc(plat_dev_name, -1);
 		if (!pdev) {
-			dev_err(pdata->dev, "%s: pdev memory alloc failed\n",
+			dev_dbg(pdata->dev, "%s: pdev memory alloc failed\n",
 				__func__);
 			ret = -ENOMEM;
 			goto err;
@@ -4624,7 +4624,7 @@ static void msm_anlg_add_child_devices(struct work_struct *work)
 			ret = platform_device_add_data(pdev, platdata,
 						       sizeof(*platdata));
 			if (ret) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"%s: cannot add plat data ctrl:%d\n",
 					__func__, ctrl_num);
 				goto fail_pdev_add;
@@ -4633,7 +4633,7 @@ static void msm_anlg_add_child_devices(struct work_struct *work)
 
 		ret = platform_device_add(pdev);
 		if (ret) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"%s: Cannot add platform device\n",
 				__func__);
 			goto fail_pdev_add;
@@ -4645,7 +4645,7 @@ static void msm_anlg_add_child_devices(struct work_struct *work)
 					struct msm_dig_ctrl_data),
 					GFP_KERNEL);
 			if (!temp) {
-				dev_err(&pdev->dev, "out of memory\n");
+				dev_dbg(&pdev->dev, "out of memory\n");
 				ret = -ENOMEM;
 				goto err;
 			}
@@ -4677,7 +4677,7 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 	adsp_state = apr_get_subsys_state();
 	if (adsp_state != APR_SUBSYS_LOADED ||
 		!q6core_is_adsp_ready()) {
-		dev_err(&pdev->dev, "Adsp is not loaded yet %d\n",
+		dev_dbg(&pdev->dev, "Adsp is not loaded yet %d\n",
 			adsp_state);
 		return -EPROBE_DEFER;
 	}
@@ -4694,7 +4694,7 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 		pdata = pdev->dev.platform_data;
 	}
 	if (pdata == NULL) {
-		dev_err(&pdev->dev, "%s:Platform data failed to populate\n",
+		dev_dbg(&pdev->dev, "%s:Platform data failed to populate\n",
 			__func__);
 		goto rtn;
 	}
@@ -4708,13 +4708,13 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 	sdm660_cdc->dev = &pdev->dev;
 	ret = msm_anlg_cdc_init_supplies(sdm660_cdc, pdata);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: Fail to enable Codec supplies\n",
+		dev_dbg(&pdev->dev, "%s: Fail to enable Codec supplies\n",
 			__func__);
 		goto rtn;
 	}
 	ret = msm_anlg_cdc_enable_static_supplies(sdm660_cdc, pdata);
 	if (ret) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Fail to enable Codec pre-reset supplies\n",
 			__func__);
 		goto rtn;
@@ -4725,7 +4725,7 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 	wcd9xxx_spmi_set_dev(pdev, 0);
 	wcd9xxx_spmi_set_dev(pdev, 1);
 	if (wcd9xxx_spmi_irq_init()) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: irq initialization failed\n", __func__);
 	} else {
 		dev_dbg(&pdev->dev,
@@ -4735,7 +4735,7 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 
 	sdm660_cdc->regmap = dev_get_regmap(sdm660_cdc->dev->parent, NULL);
 	if (IS_ERR_OR_NULL((void *)(sdm660_cdc->regmap))) {
-		dev_err(&pdev->dev, "%s:regmap init failed\n", __func__);
+		dev_dbg(&pdev->dev, "%s:regmap init failed\n", __func__);
 		return -EINVAL;
 	}
 
@@ -4744,7 +4744,7 @@ static int msm_anlg_cdc_probe(struct platform_device *pdev)
 				     msm_anlg_cdc_i2s_dai,
 				     ARRAY_SIZE(msm_anlg_cdc_i2s_dai));
 	if (ret) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s:snd_soc_register_component failed with error %d\n",
 			__func__, ret);
 		goto err_supplies;

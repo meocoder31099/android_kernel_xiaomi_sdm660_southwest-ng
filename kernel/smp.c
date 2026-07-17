@@ -236,7 +236,7 @@ static void flush_smp_call_function_queue(bool warn_cpu_offline)
 		 * because we are not invoking the IPI handlers yet.
 		 */
 		llist_for_each_entry(csd, entry, llist)
-			pr_warn("IPI callback %pS sent to offline CPU\n",
+			pr_debug("IPI callback %pS sent to offline CPU\n",
 				csd->func);
 	}
 
@@ -571,7 +571,7 @@ static int __init boot_cpus(char *str)
 {
 	alloc_bootmem_cpumask_var(&boot_cpu_mask);
 	if (cpulist_parse(str, boot_cpu_mask) < 0) {
-		pr_warn("SMP: Incorrect boot_cpus cpumask\n");
+		pr_debug("SMP: Incorrect boot_cpus cpumask\n");
 		return -EINVAL;
 	}
 	have_boot_cpu_mask = true;
@@ -613,7 +613,7 @@ void __init smp_init(void)
 	idle_threads_init();
 	cpuhp_threads_init();
 
-	pr_info("Bringing up secondary CPUs ...\n");
+	pr_debug("Bringing up secondary CPUs ...\n");
 
 	/* FIXME: This should be done in userspace --RR */
 	for_each_present_cpu(cpu) {
@@ -626,7 +626,7 @@ void __init smp_init(void)
 
 	num_nodes = num_online_nodes();
 	num_cpus  = num_online_cpus();
-	pr_info("Brought up %d node%s, %d CPU%s\n",
+	pr_debug("Brought up %d node%s, %d CPU%s\n",
 		num_nodes, (num_nodes > 1 ? "s" : ""),
 		num_cpus,  (num_cpus  > 1 ? "s" : ""));
 

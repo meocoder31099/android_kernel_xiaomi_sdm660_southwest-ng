@@ -383,7 +383,7 @@ static irqreturn_t atkbd_interrupt(struct serio *serio, unsigned char data,
 
 #if !defined(__i386__) && !defined (__x86_64__)
 	if ((flags & (SERIO_FRAME | SERIO_PARITY)) && (~flags & SERIO_TIMEOUT) && !atkbd->resend && atkbd->write) {
-		dev_warn(&serio->dev, "Frame/parity error: %02x\n", flags);
+		dev_dbg(&serio->dev, "Frame/parity error: %02x\n", flags);
 		serio_write(serio, ATKBD_CMD_RESEND);
 		atkbd->resend = true;
 		goto out;
@@ -437,7 +437,7 @@ static irqreturn_t atkbd_interrupt(struct serio *serio, unsigned char data,
 	case ATKBD_RET_ACK:
 	case ATKBD_RET_NAK:
 		if (printk_ratelimit())
-			dev_warn(&serio->dev,
+			dev_dbg(&serio->dev,
 				 "Spurious %s on %s. "
 				 "Some program might be trying to access hardware directly.\n",
 				 data == ATKBD_RET_ACK ? "ACK" : "NAK", serio->phys);
@@ -464,12 +464,12 @@ static irqreturn_t atkbd_interrupt(struct serio *serio, unsigned char data,
 	case ATKBD_KEY_NULL:
 		break;
 	case ATKBD_KEY_UNKNOWN:
-		dev_warn(&serio->dev,
+		dev_dbg(&serio->dev,
 			 "Unknown key %s (%s set %d, code %#x on %s).\n",
 			 atkbd->release ? "released" : "pressed",
 			 atkbd->translated ? "translated" : "raw",
 			 atkbd->set, code, serio->phys);
-		dev_warn(&serio->dev,
+		dev_dbg(&serio->dev,
 			 "Use 'setkeycodes %s%02x <keycode>' to make it known.\n",
 			 code & 0x80 ? "e0" : "", code & 0x7f);
 		input_sync(dev);
@@ -693,7 +693,7 @@ static int atkbd_activate(struct atkbd *atkbd)
  */
 
 	if (ps2_command(ps2dev, NULL, ATKBD_CMD_ENABLE)) {
-		dev_err(&ps2dev->serio->dev,
+		dev_dbg(&ps2dev->serio->dev,
 			"Failed to enable keyboard on %s\n",
 			ps2dev->serio->phys);
 		return -1;
@@ -712,7 +712,7 @@ static void atkbd_deactivate(struct atkbd *atkbd)
 	struct ps2dev *ps2dev = &atkbd->ps2dev;
 
 	if (ps2_command(ps2dev, NULL, ATKBD_CMD_RESET_DIS))
-		dev_err(&ps2dev->serio->dev,
+		dev_dbg(&ps2dev->serio->dev,
 			"Failed to deactivate keyboard on %s\n",
 			ps2dev->serio->phys);
 }
@@ -772,7 +772,7 @@ static int atkbd_probe(struct atkbd *atkbd)
 
 	if (atkbd_reset)
 		if (ps2_command(ps2dev, NULL, ATKBD_CMD_RESET_BAT))
-			dev_warn(&ps2dev->serio->dev,
+			dev_dbg(&ps2dev->serio->dev,
 				 "keyboard reset failed on %s\n",
 				 ps2dev->serio->phys);
 
@@ -809,7 +809,7 @@ static int atkbd_probe(struct atkbd *atkbd)
 	atkbd->id = (param[0] << 8) | param[1];
 
 	if (atkbd->id == 0xaca1 && atkbd->translated) {
-		dev_err(&ps2dev->serio->dev,
+		dev_dbg(&ps2dev->serio->dev,
 			"NCD terminal keyboards are only supported on non-translating controllers. "
 			"Use i8042.direct=1 to disable translation.\n");
 		return -1;

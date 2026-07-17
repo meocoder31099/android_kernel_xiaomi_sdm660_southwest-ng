@@ -463,7 +463,7 @@ static void sctp_v6_copy_ip_options(struct sock *sk, struct sock *newsk)
 	if (opt) {
 		opt = ipv6_dup_options(newsk, opt);
 		if (!opt)
-			pr_err("%s: Failed to copy ip options\n", __func__);
+			pr_debug("%s: Failed to copy ip options\n", __func__);
 	}
 	RCU_INIT_POINTER(newnp->opt, opt);
 	rcu_read_unlock();

@@ -197,7 +197,7 @@ int __init jbd2_journal_init_revoke_record_cache(void)
 					SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY);
 
 	if (!jbd2_revoke_record_cache) {
-		pr_emerg("JBD2: failed to create revoke_record cache\n");
+		pr_debug("JBD2: failed to create revoke_record cache\n");
 		return -ENOMEM;
 	}
 	return 0;
@@ -209,7 +209,7 @@ int __init jbd2_journal_init_revoke_table_cache(void)
 	jbd2_revoke_table_cache = KMEM_CACHE(jbd2_revoke_table_s,
 					     SLAB_TEMPORARY);
 	if (!jbd2_revoke_table_cache) {
-		pr_emerg("JBD2: failed to create revoke_table cache\n");
+		pr_debug("JBD2: failed to create revoke_table cache\n");
 		return -ENOMEM;
 	}
 	return 0;

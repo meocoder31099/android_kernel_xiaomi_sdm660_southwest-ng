@@ -169,9 +169,9 @@ static void __av8l_check_for_stale_tlb(av8l_fast_iopte *ptep)
 		atomic_notifier_call_chain(
 			&av8l_notifier_list, MAPPED_OVER_STALE_TLB,
 			(void *) ptep);
-		pr_err("Tried to map over a non-vacant pte: 0x%llx @ %p\n",
+		pr_debug("Tried to map over a non-vacant pte: 0x%llx @ %p\n",
 		       *ptep, ptep);
-		pr_err("Nearby memory:\n");
+		pr_debug("Nearby memory:\n");
 		print_hex_dump(KERN_ERR, "pgtbl: ", DUMP_PREFIX_ADDRESS,
 			       32, 8, ptep - 16, 32 * sizeof(*ptep), false);
 	}
@@ -809,7 +809,7 @@ static int __init av8l_fast_do_selftests(void)
 
 	failed += av8l_fast_positive_testing();
 
-	pr_err("selftest: completed with %d failures\n", failed);
+	pr_debug("selftest: completed with %d failures\n", failed);
 
 	return 0;
 }

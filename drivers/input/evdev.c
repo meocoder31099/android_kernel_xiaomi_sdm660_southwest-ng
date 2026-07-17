@@ -1351,7 +1351,7 @@ static int evdev_connect(struct input_handler *handler, struct input_dev *dev,
 	minor = input_get_new_minor(EVDEV_MINOR_BASE, EVDEV_MINORS, true);
 	if (minor < 0) {
 		error = minor;
-		pr_err("failed to reserve new minor: %d\n", error);
+		pr_debug("failed to reserve new minor: %d\n", error);
 		return error;
 	}
 

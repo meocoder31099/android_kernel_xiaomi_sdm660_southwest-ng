@@ -435,7 +435,7 @@ static int snd_hwdep_dev_register(struct snd_device *device)
 				  hwdep->card, hwdep->device,
 				  &snd_hwdep_f_ops, hwdep, &hwdep->dev);
 	if (err < 0) {
-		dev_err(&hwdep->dev, "unable to register\n");
+		dev_dbg(&hwdep->dev, "unable to register\n");
 		list_del(&hwdep->list);
 		mutex_unlock(&register_mutex);
 		return err;
@@ -446,12 +446,12 @@ static int snd_hwdep_dev_register(struct snd_device *device)
 	if (hwdep->oss_type >= 0) {
 		if (hwdep->oss_type == SNDRV_OSS_DEVICE_TYPE_DMFM &&
 		    hwdep->device)
-			dev_warn(&hwdep->dev,
+			dev_dbg(&hwdep->dev,
 				 "only hwdep device 0 can be registered as OSS direct FM device!\n");
 		else if (snd_register_oss_device(hwdep->oss_type,
 						 card, hwdep->device,
 						 &snd_hwdep_f_ops, hwdep) < 0)
-			dev_warn(&hwdep->dev,
+			dev_dbg(&hwdep->dev,
 				 "unable to register OSS compatibility device\n");
 		else
 			hwdep->ossreg = 1;

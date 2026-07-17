@@ -25,13 +25,13 @@ static int of_batterydata_read_lut(const struct device_node *np,
 
 	prop = of_find_property(np, "qcom,lut-col-legend", NULL);
 	if (!prop) {
-		pr_err("%s: No col legend found\n", np->name);
+		pr_debug("%s: No col legend found\n", np->name);
 		return -EINVAL;
 	} else if (!prop->value) {
-		pr_err("%s: No col legend value found, np->name\n", np->name);
+		pr_debug("%s: No col legend value found, np->name\n", np->name);
 		return -ENODATA;
 	} else if (prop->length > max_cols * sizeof(int)) {
-		pr_err("%s: Too many columns\n", np->name);
+		pr_debug("%s: Too many columns\n", np->name);
 		return -EINVAL;
 	}
 
@@ -48,10 +48,10 @@ static int of_batterydata_read_lut(const struct device_node *np,
 		/* single row lut */
 		rows = 1;
 	} else if (!prop->value) {
-		pr_err("%s: No row legend value found\n", np->name);
+		pr_debug("%s: No row legend value found\n", np->name);
 		return -ENODATA;
 	} else if (prop->length > max_rows * sizeof(int)) {
-		pr_err("%s: Too many rows\n", np->name);
+		pr_debug("%s: Too many rows\n", np->name);
 		return -EINVAL;
 	}
 
@@ -65,13 +65,13 @@ static int of_batterydata_read_lut(const struct device_node *np,
 
 	prop = of_find_property(np, "qcom,lut-data", NULL);
 	if (!prop) {
-		pr_err("prop 'qcom,lut-data' not found\n");
+		pr_debug("prop 'qcom,lut-data' not found\n");
 		return -EINVAL;
 	}
 	data = prop->value;
 	size = prop->length/sizeof(int);
 	if (size != cols * rows) {
-		pr_err("%s: data size mismatch, %dx%d != %d\n",
+		pr_debug("%s: data size mismatch, %dx%d != %d\n",
 				np->name, cols, rows, size);
 		return -EINVAL;
 	}
@@ -96,7 +96,7 @@ static int of_batterydata_read_sf_lut(struct device_node *data_node,
 		pr_debug("No lut provided, skipping\n");
 		return 0;
 	} else if (!node) {
-		pr_err("Couldn't find %s node.\n", name);
+		pr_debug("Couldn't find %s node.\n", name);
 		return -EINVAL;
 	}
 
@@ -104,7 +104,7 @@ static int of_batterydata_read_sf_lut(struct device_node *data_node,
 			&lut->cols, &lut->rows, lut->row_entries,
 			lut->percent, *lut->sf);
 	if (rc) {
-		pr_err("Failed to read %s node.\n", name);
+		pr_debug("Failed to read %s node.\n", name);
 		return rc;
 	}
 
@@ -121,14 +121,14 @@ static int of_batterydata_read_pc_temp_ocv_lut(struct device_node *data_node,
 		pr_debug("No lut provided, skipping\n");
 		return 0;
 	} else if (!node) {
-		pr_err("Couldn't find %s node.\n", name);
+		pr_debug("Couldn't find %s node.\n", name);
 		return -EINVAL;
 	}
 	rc = of_batterydata_read_lut(node, PC_TEMP_COLS, PC_TEMP_ROWS,
 			&lut->cols, &lut->rows, lut->temp, lut->percent,
 			*lut->ocv);
 	if (rc) {
-		pr_err("Failed to read %s node.\n", name);
+		pr_debug("Failed to read %s node.\n", name);
 		return rc;
 	}
 
@@ -152,7 +152,7 @@ static int of_batterydata_read_ibat_temp_acc_lut(struct device_node *data_node,
 			&lut->cols, &lut->rows, lut->temp, lut->ibat,
 			*lut->acc);
 	if (rc) {
-		pr_err("Failed to read %s node.\n", name);
+		pr_debug("Failed to read %s node.\n", name);
 		return rc;
 	}
 
@@ -169,14 +169,14 @@ static int of_batterydata_read_single_row_lut(struct device_node *data_node,
 		pr_debug("No lut provided, skipping\n");
 		return 0;
 	} else if (!node) {
-		pr_err("Couldn't find %s node.\n", name);
+		pr_debug("Couldn't find %s node.\n", name);
 		return -EINVAL;
 	}
 
 	rc = of_batterydata_read_lut(node, MAX_SINGLE_LUT_COLS, 1,
 			&lut->cols, NULL, lut->x, NULL, lut->y);
 	if (rc) {
-		pr_err("Failed to read %s node.\n", name);
+		pr_debug("Failed to read %s node.\n", name);
 		return rc;
 	}
 
@@ -192,14 +192,14 @@ static int of_batterydata_read_batt_id_kohm(const struct device_node *np,
 
 	prop = of_find_property(np, "qcom,batt-id-kohm", NULL);
 	if (!prop) {
-		pr_err("%s: No battery id resistor found\n", np->name);
+		pr_debug("%s: No battery id resistor found\n", np->name);
 		return -EINVAL;
 	} else if (!prop->value) {
-		pr_err("%s: No battery id resistor value found, np->name\n",
+		pr_debug("%s: No battery id resistor value found, np->name\n",
 						np->name);
 		return -ENODATA;
 	} else if (prop->length > MAX_BATT_ID_NUM * sizeof(__be32)) {
-		pr_err("%s: Too many battery id resistors\n", np->name);
+		pr_debug("%s: Too many battery id resistors\n", np->name);
 		return -EINVAL;
 	}
 
@@ -223,7 +223,7 @@ do {									\
 		property = -EINVAL;					\
 		rc = 0;							\
 	} else if (rc) {						\
-		pr_err("Error reading " #qpnp_dt_property		\
+		pr_debug("Error reading " #qpnp_dt_property		\
 				" property rc = %d\n", rc);		\
 	}								\
 } while (0)
@@ -258,7 +258,7 @@ static int of_batterydata_load_battery_data(struct device_node *node,
 	rc = of_property_read_string(node, "qcom,battery-type",
 					&batt_data->battery_type);
 	if (rc) {
-		pr_err("Error reading qcom,battery-type property rc=%d\n", rc);
+		pr_debug("Error reading qcom,battery-type property rc=%d\n", rc);
 		batt_data->battery_type = NULL;
 		return rc;
 	}
@@ -330,7 +330,7 @@ struct device_node *of_batterydata_get_best_profile(
 		if (rc == -EINVAL) {
 			id_range_pct = 0;
 		} else {
-			pr_err("failed to read battery id range\n");
+			pr_debug("failed to read battery id range\n");
 			return ERR_PTR(-ENXIO);
 		}
 	}
@@ -394,14 +394,14 @@ struct device_node *of_batterydata_get_best_profile(
 			}
 		}
 		if (best_node)
-			pr_info("Use unknown battery data\n");
+			pr_debug("Use unknown battery data\n");
 #elif defined(CONFIG_MACH_MI)
 		/* now that best_node is null, there is no need to
 		 * check whether generic node is null. */
 		best_node = generic_node;
-		pr_err("No battery data found, use generic one\n");
+		pr_debug("No battery data found, use generic one\n");
 #else
-		pr_err("No battery data found\n");
+		pr_debug("No battery data found\n");
 #endif
 		return best_node;
 	}
@@ -409,7 +409,7 @@ struct device_node *of_batterydata_get_best_profile(
 	/* check that profile id is in range of the measured batt_id */
 	if (abs(best_id_kohm - batt_id_kohm) >
 			((best_id_kohm * id_range_pct) / 100)) {
-		pr_err("out of range: profile id %d batt id %d pct %d\n",
+		pr_debug("out of range: profile id %d batt id %d pct %d\n",
 			best_id_kohm, batt_id_kohm, id_range_pct);
 		return NULL;
 	}
@@ -417,9 +417,9 @@ struct device_node *of_batterydata_get_best_profile(
 	rc = of_property_read_string(best_node, "qcom,battery-type",
 							&battery_type);
 	if (!rc)
-		pr_info("%s found\n", battery_type);
+		pr_debug("%s found\n", battery_type);
 	else
-		pr_info("%s found\n", best_node->name);
+		pr_debug("%s found\n", best_node->name);
 
 	return best_node;
 }
@@ -443,7 +443,7 @@ struct device_node *of_batterydata_get_best_aged_profile(
 		if (rc == -EINVAL) {
 			id_range_pct = 0;
 		} else {
-			pr_err("failed to read battery id range\n");
+			pr_debug("failed to read battery id range\n");
 			return ERR_PTR(-ENXIO);
 		}
 	}
@@ -477,14 +477,14 @@ struct device_node *of_batterydata_get_best_aged_profile(
 	}
 
 	if (best_node == NULL) {
-		pr_err("No battery data found\n");
+		pr_debug("No battery data found\n");
 		return best_node;
 	}
 
 	/* check that profile id is in range of the measured batt_id */
 	if (abs(best_id_kohm - batt_id_kohm) >
 			((best_id_kohm * id_range_pct) / 100)) {
-		pr_err("out of range: profile id %d batt id %d pct %d\n",
+		pr_debug("out of range: profile id %d batt id %d pct %d\n",
 			best_id_kohm, batt_id_kohm, id_range_pct);
 		return NULL;
 	}
@@ -492,10 +492,10 @@ struct device_node *of_batterydata_get_best_aged_profile(
 	rc = of_property_read_string(best_node, "qcom,battery-type",
 							&battery_type);
 	if (!rc)
-		pr_info("%s age level %d found\n", battery_type,
+		pr_debug("%s age level %d found\n", battery_type,
 			*avail_age_level);
 	else
-		pr_info("%s age level %d found\n", best_node->name,
+		pr_debug("%s age level %d found\n", best_node->name,
 			*avail_age_level);
 
 	return best_node;
@@ -517,7 +517,7 @@ int of_batterydata_get_aged_profile_count(
 		if (rc == -EINVAL) {
 			id_range_pct = 0;
 		} else {
-			pr_err("failed to read battery id range\n");
+			pr_debug("failed to read battery id range\n");
 			return -ENXIO;
 		}
 	}
@@ -546,7 +546,7 @@ int of_batterydata_get_aged_profile_count(
 	}
 
 	if (i <= 1) {
-		pr_err("Less number of profiles to support SOH\n");
+		pr_debug("Less number of profiles to support SOH\n");
 		return -EINVAL;
 	}
 
@@ -573,7 +573,7 @@ int of_batterydata_read_soh_aged_profiles(
 		if (rc == -EINVAL) {
 			id_range_pct = 0;
 		} else {
-			pr_err("failed to read battery id range\n");
+			pr_debug("failed to read battery id range\n");
 			return -ENXIO;
 		}
 	}
@@ -602,7 +602,7 @@ int of_batterydata_read_soh_aged_profiles(
 		rc = of_property_count_elems_of_size(node, "qcom,soh-range",
 						sizeof(u32));
 		if (rc != 2) {
-			pr_err("Incorrect element size for qcom,soh-range, rc=%d\n",
+			pr_debug("Incorrect element size for qcom,soh-range, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -610,12 +610,12 @@ int of_batterydata_read_soh_aged_profiles(
 		rc = of_property_read_u32_array(node, "qcom,soh-range", temp,
 						2);
 		if (rc < 0) {
-			pr_err("Error in reading qcom,soh-range, rc=%d\n", rc);
+			pr_debug("Error in reading qcom,soh-range, rc=%d\n", rc);
 			return rc;
 		}
 
 		if (temp[0] > 100 || temp[1] > 100 || (temp[0] > temp[1])) {
-			pr_err("Incorrect SOH range [%d %d]\n", temp[0],
+			pr_debug("Incorrect SOH range [%d %d]\n", temp[0],
 				temp[1]);
 			return -ERANGE;
 		}
@@ -673,15 +673,15 @@ int of_batterydata_read_data(struct device_node *batterydata_container_node,
 	}
 
 	if (best_node == NULL) {
-		pr_err("No battery data found\n");
+		pr_debug("No battery data found\n");
 		return -ENODATA;
 	}
 	rc = of_property_read_string(best_node, "qcom,battery-type",
 							&battery_type);
 	if (!rc)
-		pr_info("%s loaded\n", battery_type);
+		pr_debug("%s loaded\n", battery_type);
 	else
-		pr_info("%s loaded\n", best_node->name);
+		pr_debug("%s loaded\n", best_node->name);
 
 	return of_batterydata_load_battery_data(best_node,
 					best_id_kohm, batt_data);

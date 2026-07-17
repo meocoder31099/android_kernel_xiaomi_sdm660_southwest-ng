@@ -150,7 +150,7 @@ static void mmc_bus_shutdown(struct device *dev)
 	if (host->bus_ops->shutdown) {
 		ret = host->bus_ops->shutdown(host);
 		if (ret)
-			pr_warn("%s: error %d during shutdown\n",
+			pr_debug("%s: error %d during shutdown\n",
 				mmc_hostname(host), ret);
 	}
 }
@@ -188,7 +188,7 @@ static int mmc_bus_resume(struct device *dev)
 
 	ret = host->bus_ops->resume(host);
 	if (ret)
-		pr_warn("%s: error %d during resume (card was removed?)\n",
+		pr_debug("%s: error %d during resume (card was removed?)\n",
 			mmc_hostname(host), ret);
 
 skip_full_resume:
@@ -358,13 +358,13 @@ int mmc_add_card(struct mmc_card *card)
 		uhs_bus_speed_mode = uhs_speeds[card->sd_bus_speed];
 
 	if (mmc_host_is_spi(card->host)) {
-		pr_info("%s: new %s%s%s card on SPI\n",
+		pr_debug("%s: new %s%s%s card on SPI\n",
 			mmc_hostname(card->host),
 			mmc_card_hs(card) ? "high speed " : "",
 			mmc_card_ddr52(card) ? "DDR " : "",
 			type);
 	} else {
-		pr_info("%s: new %s%s%s%s%s%s card at address %04x\n",
+		pr_debug("%s: new %s%s%s%s%s%s card at address %04x\n",
 			mmc_hostname(card->host),
 			mmc_card_uhs(card) ? "ultra high speed " :
 			(mmc_card_hs(card) ? "high speed " : ""),
@@ -383,7 +383,7 @@ int mmc_add_card(struct mmc_card *card)
 	if (mmc_card_sdio(card)) {
 		ret = device_init_wakeup(&card->dev, true);
 		if (ret)
-			pr_err("%s: %s: failed to init wakeup: %d\n",
+			pr_debug("%s: %s: failed to init wakeup: %d\n",
 				mmc_hostname(card->host), __func__, ret);
 	}
 
@@ -412,10 +412,10 @@ void mmc_remove_card(struct mmc_card *card)
 
 	if (mmc_card_present(card)) {
 		if (mmc_host_is_spi(card->host)) {
-			pr_info("%s: SPI card removed\n",
+			pr_debug("%s: SPI card removed\n",
 				mmc_hostname(card->host));
 		} else {
-			pr_info("%s: card %04x removed\n",
+			pr_debug("%s: card %04x removed\n",
 				mmc_hostname(card->host), card->rca);
 		}
 		device_del(&card->dev);

@@ -288,7 +288,7 @@ enum dma_status dma_sync_wait(struct dma_chan *chan, dma_cookie_t cookie)
 	do {
 		status = dma_async_is_tx_complete(chan, cookie, NULL, NULL);
 		if (time_after_eq(jiffies, dma_sync_wait_timeout)) {
-			dev_err(chan->device->dev, "%s: timeout!\n", __func__);
+			dev_dbg(chan->device->dev, "%s: timeout!\n", __func__);
 			return DMA_ERROR;
 		}
 		if (status != DMA_IN_PROGRESS)
@@ -342,7 +342,7 @@ static int __init dma_channel_table_init(void)
 	}
 
 	if (err) {
-		pr_err("initialization failure\n");
+		pr_debug("initialization failure\n");
 		for_each_dma_cap_mask(cap, dma_cap_mask_all)
 			free_percpu(channel_table[cap]);
 	}
@@ -920,70 +920,70 @@ int dma_async_device_register(struct dma_device *device)
 
 	/* validate device routines */
 	if (!device->dev) {
-		pr_err("DMAdevice must have dev\n");
+		pr_debug("DMAdevice must have dev\n");
 		return -EIO;
 	}
 
 	device->owner = device->dev->driver->owner;
 
 	if (dma_has_cap(DMA_MEMCPY, device->cap_mask) && !device->device_prep_dma_memcpy) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_MEMCPY");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_XOR, device->cap_mask) && !device->device_prep_dma_xor) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_XOR");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_XOR_VAL, device->cap_mask) && !device->device_prep_dma_xor_val) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_XOR_VAL");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_PQ, device->cap_mask) && !device->device_prep_dma_pq) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_PQ");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_PQ_VAL, device->cap_mask) && !device->device_prep_dma_pq_val) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_PQ_VAL");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_MEMSET, device->cap_mask) && !device->device_prep_dma_memset) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_MEMSET");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_INTERRUPT, device->cap_mask) && !device->device_prep_dma_interrupt) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_INTERRUPT");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_CYCLIC, device->cap_mask) && !device->device_prep_dma_cyclic) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_CYCLIC");
 		return -EIO;
 	}
 
 	if (dma_has_cap(DMA_INTERLEAVE, device->cap_mask) && !device->device_prep_interleaved_dma) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Device claims capability %s, but op is not defined\n",
 			"DMA_INTERLEAVE");
 		return -EIO;
@@ -991,13 +991,13 @@ int dma_async_device_register(struct dma_device *device)
 
 
 	if (!device->device_tx_status) {
-		dev_err(device->dev, "Device tx_status is not defined\n");
+		dev_dbg(device->dev, "Device tx_status is not defined\n");
 		return -EIO;
 	}
 
 
 	if (!device->device_issue_pending) {
-		dev_err(device->dev, "Device issue_pending is not defined\n");
+		dev_dbg(device->dev, "Device issue_pending is not defined\n");
 		return -EIO;
 	}
 
@@ -1053,7 +1053,7 @@ int dma_async_device_register(struct dma_device *device)
 	}
 
 	if (!chancnt) {
-		dev_err(device->dev, "%s: device has no channels!\n", __func__);
+		dev_dbg(device->dev, "%s: device has no channels!\n", __func__);
 		rc = -ENODEV;
 		goto err_out;
 	}
@@ -1322,7 +1322,7 @@ dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
 
 	while (tx->cookie == -EBUSY) {
 		if (time_after_eq(jiffies, dma_sync_wait_timeout)) {
-			dev_err(tx->chan->device->dev,
+			dev_dbg(tx->chan->device->dev,
 				"%s timeout waiting for descriptor submission\n",
 				__func__);
 			return DMA_ERROR;

@@ -74,7 +74,7 @@ struct msm_slim_dai_data *msm_slim_get_dai_data(
 			return dai_data_t;
 	}
 
-	dev_err(dai->dev,
+	dev_dbg(dai->dev,
 		"%s: no dai data found for dai_id %d\n",
 		__func__, dai->id);
 	return NULL;
@@ -89,7 +89,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 	int rc, rc1, i;
 
 	if (!dma_data || !dma_data->sdev) {
-		pr_err("%s: Invalid %s\n", __func__,
+		pr_debug("%s: Invalid %s\n", __func__,
 		       (!dma_data) ? "dma_data" : "slim_device");
 		return -EINVAL;
 	}
@@ -99,7 +99,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 	dai_data = msm_slim_get_dai_data(drv_data, dai);
 
 	if (!dai_data) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: Invalid dai_data for dai_id %d\n",
 			__func__, dai->id);
 		return -EINVAL;
@@ -112,7 +112,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 
 	if (enable) {
 		if (!(dai_data->status & DAI_STATE_PREPARED)) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s: dai id (%d) has invalid state 0x%x\n",
 				__func__, dai->id, dai_data->status);
 			return -EINVAL;
@@ -123,7 +123,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 					 &(dma_data->ph),
 					 sizeof(dma_data->ph));
 		if (rc < 0) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s:alloc mgrport failed rc %d\n",
 				__func__, rc);
 			goto done;
@@ -133,7 +133,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 					  dai_data->ch_cnt,
 					  &(dai_data->port_cfg));
 		if (rc < 0) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s: config mgrport failed rc %d\n",
 				__func__, rc);
 			goto err_done;
@@ -144,7 +144,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 					       &dma_data->ph, 1,
 					       dai_data->chan_h[i]);
 			if (rc < 0) {
-				dev_err(&sdev->dev,
+				dev_dbg(&sdev->dev,
 					"%s: slim_connect_sink failed, ch = %d, err = %d\n",
 					__func__, i, rc);
 				goto err_done;
@@ -155,7 +155,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 				     dai_data->grph,
 				     SLIM_CH_ACTIVATE, true);
 		if (rc < 0) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s: slim activate ch failed, err = %d\n",
 				__func__, rc);
 			goto err_done;
@@ -164,7 +164,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 		SET_DAI_STATE(dai_data->status, DAI_STATE_RUNNING);
 	} else {
 		if (!(dai_data->status & DAI_STATE_RUNNING)) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s: dai id (%d) has invalid state 0x%x\n",
 				__func__, dai->id, dai_data->status);
 			return -EINVAL;
@@ -174,7 +174,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 				     dai_data->grph,
 				     SLIM_CH_REMOVE, true);
 		if (rc < 0) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s: slim activate ch failed, err = %d\n",
 				__func__, rc);
 			goto done;
@@ -183,7 +183,7 @@ static int msm_dai_slim_ch_ctl(struct msm_slim_dma_data *dma_data,
 		rc = slim_dealloc_mgrports(sdev,
 					   &dma_data->ph, 1);
 		if (rc < 0) {
-			dev_err(&sdev->dev,
+			dev_dbg(&sdev->dev,
 				"%s: dealloc mgrport failed, err = %d\n",
 				__func__, rc);
 			goto done;
@@ -198,7 +198,7 @@ err_done:
 	rc1 = slim_dealloc_mgrports(sdev,
 				   &dma_data->ph, 1);
 	if (rc1 < 0)
-		dev_err(&sdev->dev,
+		dev_dbg(&sdev->dev,
 			"%s: dealloc mgrport failed, err = %d\n",
 			__func__, rc1);
 done:
@@ -216,7 +216,7 @@ static int msm_dai_slim_hw_params(
 
 	dai_data = msm_slim_get_dai_data(drv_data, dai);
 	if (!dai_data) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: Invalid dai_data for dai_id %d\n",
 			__func__, dai->id);
 		rc = -EINVAL;
@@ -224,7 +224,7 @@ static int msm_dai_slim_hw_params(
 	}
 
 	if (!dai_data->ch_cnt || dai_data->ch_cnt != params_channels(params)) {
-		dev_err(dai->dev, "%s: invalid ch_cnt %d %d\n",
+		dev_dbg(dai->dev, "%s: invalid ch_cnt %d %d\n",
 			__func__, dai_data->ch_cnt, params_channels(params));
 		rc = -EINVAL;
 		goto done;
@@ -248,7 +248,7 @@ static int msm_dai_slim_hw_params(
 		dai_data->bits = 32;
 		break;
 	default:
-		dev_err(dai->dev, "%s: invalid format %d\n", __func__,
+		dev_dbg(dai->dev, "%s: invalid format %d\n", __func__,
 			params_format(params));
 		rc = -EINVAL;
 		goto done;
@@ -276,7 +276,7 @@ static int msm_dai_slim_set_channel_map(struct snd_soc_dai *dai,
 
 	dai_data = msm_slim_get_dai_data(drv_data, dai);
 	if (!dai_data) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: Invalid dai_data for dai_id %d\n",
 			__func__, dai->id);
 		return -EINVAL;
@@ -285,7 +285,7 @@ static int msm_dai_slim_set_channel_map(struct snd_soc_dai *dai,
 	dai_drv = dai_data->dai_drv;
 
 	if (tx_num > dai_drv->capture.channels_max) {
-		dev_err(dai->dev, "%s: tx_num %u max out master port cnt\n",
+		dev_dbg(dai->dev, "%s: tx_num %u max out master port cnt\n",
 			__func__, tx_num);
 		return -EINVAL;
 	}
@@ -309,14 +309,14 @@ static int msm_dai_slim_prepare(struct snd_pcm_substream *substream,
 
 	dai_data = msm_slim_get_dai_data(drv_data, dai);
 	if (!dai_data) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: Invalid dai_data for dai %d\n",
 			__func__, dai->id);
 		return -EINVAL;
 	}
 
 	if (!(dai_data->status & DAI_STATE_INITIALIZED)) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: dai id (%d) has invalid state 0x%x\n",
 			__func__, dai->id, dai_data->status);
 		return -EINVAL;
@@ -336,7 +336,7 @@ static int msm_dai_slim_prepare(struct snd_pcm_substream *substream,
 		rc = slim_query_ch(drv_data->sdev, dai_data->sh_ch[i],
 				   &dai_data->chan_h[i]);
 		if (rc) {
-			dev_err(dai->dev, "%s:query chan handle failed rc %d\n",
+			dev_dbg(dai->dev, "%s:query chan handle failed rc %d\n",
 				__func__, rc);
 			goto error_chan_query;
 		}
@@ -353,7 +353,7 @@ static int msm_dai_slim_prepare(struct snd_pcm_substream *substream,
 			    dai_data->ch_cnt, true, &dai_data->grph);
 
 	if (rc) {
-		dev_err(dai->dev, "%s:define chan failed rc %d\n",
+		dev_dbg(dai->dev, "%s:define chan failed rc %d\n",
 				__func__, rc);
 		goto error_define_chan;
 	}
@@ -381,7 +381,7 @@ static void msm_dai_slim_shutdown(struct snd_pcm_substream *stream,
 	dai_data = msm_slim_get_dai_data(drv_data, dai);
 	dma_data = snd_soc_dai_get_dma_data(dai, stream);
 	if (!dma_data || !dai_data) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: Invalid %s\n", __func__,
 			(!dma_data) ? "dma_data" : "dai_data");
 		return;
@@ -389,7 +389,7 @@ static void msm_dai_slim_shutdown(struct snd_pcm_substream *stream,
 
 	if ((!(dai_data->status & DAI_STATE_PREPARED)) ||
 	     dai_data->status & DAI_STATE_RUNNING) {
-		dev_err(dai->dev,
+		dev_dbg(dai->dev,
 			"%s: dai id (%d) has invalid state 0x%x\n",
 			__func__, dai->id, dai_data->status);
 		return;
@@ -398,7 +398,7 @@ static void msm_dai_slim_shutdown(struct snd_pcm_substream *stream,
 	for (i = 0; i < dai_data->ch_cnt; i++) {
 		rc = slim_dealloc_ch(drv_data->sdev, dai_data->chan_h[i]);
 		if (rc) {
-			dev_err(dai->dev,
+			dev_dbg(dai->dev,
 				"%s: dealloc_ch failed, err = %d\n",
 				__func__, rc);
 		}
@@ -496,7 +496,7 @@ static int msm_dai_slim_populate_dai_data(struct device *dev,
 					sizeof(u16) * num_ch,
 					GFP_KERNEL);
 		if (!dai_data_t->chan_h) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"%s: DAI ID %d, Failed to alloc channel handles\n",
 				__func__, i);
 			rc = -ENOMEM;
@@ -507,7 +507,7 @@ static int msm_dai_slim_populate_dai_data(struct device *dev,
 					sizeof(u16) * num_ch,
 					GFP_KERNEL);
 		if (!dai_data_t->sh_ch) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"%s: DAI ID %d, Failed to alloc sh_ch\n",
 				__func__, i);
 			rc = -ENOMEM;
@@ -540,7 +540,7 @@ static int msm_dai_slim_dev_probe(struct slim_device *sdev)
 
 	if (!dev->of_node ||
 	    !dev->of_node->parent) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"%s: Invalid %s\n", __func__,
 			(!dev->of_node) ? "of_node" : "parent_of_node");
 		return -EINVAL;
@@ -550,7 +550,7 @@ static int msm_dai_slim_dev_probe(struct slim_device *sdev)
 					 "qcom,apps-ch-pipes",
 					 &apps_ch_pipes);
 	if (rc) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"%s: Failed to lookup property %s in node %s, err = %d\n",
 			__func__, "qcom,apps-ch-pipes",
 			dev->of_node->parent->full_name, rc);
@@ -559,7 +559,7 @@ static int msm_dai_slim_dev_probe(struct slim_device *sdev)
 
 	max_channels = hweight_long(apps_ch_pipes);
 	if (max_channels <= 0) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"%s: Invalid apps owned ports %d\n",
 			__func__, max_channels);
 		goto err_ret;
@@ -586,7 +586,7 @@ static int msm_dai_slim_dev_probe(struct slim_device *sdev)
 
 	rc = msm_dai_slim_populate_dai_data(dev, drv_data);
 	if (rc) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"%s: failed to setup dai_data, err = %d\n",
 			__func__, rc);
 		goto err_populate_dai;
@@ -595,7 +595,7 @@ static int msm_dai_slim_dev_probe(struct slim_device *sdev)
 	rc = snd_soc_register_component(&sdev->dev, &msm_dai_slim_component,
 					msm_slim_dais, NUM_SLIM_DAIS);
 	if (rc < 0) {
-		dev_err(dev, "%s: failed to register DAI, err = %d\n",
+		dev_dbg(dev, "%s: failed to register DAI, err = %d\n",
 			__func__, rc);
 		goto err_reg_comp;
 	}
@@ -640,7 +640,7 @@ int __init msm_dai_slim_init(void)
 
 	rc = slim_driver_register(&msm_dai_slim_driver);
 	if (rc)
-		pr_err("%s: failed to register with slimbus driver rc = %d",
+		pr_debug("%s: failed to register with slimbus driver rc = %d",
 			__func__, rc);
 	return rc;
 }

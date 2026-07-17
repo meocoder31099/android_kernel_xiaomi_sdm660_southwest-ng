@@ -46,7 +46,7 @@ static int ion_cma_allocate(struct ion_heap *heap, struct ion_buffer *buffer,
 
 	if (ion_heap_is_cma_heap_type(buffer->heap->type) &&
 	    is_secure_allocation(buffer->flags)) {
-		pr_err("%s: CMA heap doesn't support secure allocations\n",
+		pr_debug("%s: CMA heap doesn't support secure allocations\n",
 		       __func__);
 		return -EINVAL;
 	}
@@ -167,7 +167,7 @@ static int ion_secure_cma_allocate(struct ion_heap *heap,
 
 	ret = ion_cma_allocate(heap, buffer, len, flags);
 	if (ret) {
-		dev_err(heap->priv, "Unable to allocate cma buffer");
+		dev_dbg(heap->priv, "Unable to allocate cma buffer");
 		goto out;
 	}
 
@@ -193,7 +193,7 @@ static void *ion_secure_cma_map_kernel(struct ion_heap *heap,
 				       struct ion_buffer *buffer)
 {
 	if (!hlos_accessible_buffer(buffer)) {
-		pr_info("%s: Mapping non-HLOS accessible buffer disallowed\n",
+		pr_debug("%s: Mapping non-HLOS accessible buffer disallowed\n",
 			__func__);
 		return NULL;
 	}
@@ -205,7 +205,7 @@ static int ion_secure_cma_map_user(struct ion_heap *mapper,
 				   struct vm_area_struct *vma)
 {
 	if (!hlos_accessible_buffer(buffer)) {
-		pr_info("%s: Mapping non-HLOS accessible buffer disallowed\n",
+		pr_debug("%s: Mapping non-HLOS accessible buffer disallowed\n",
 			__func__);
 		return -EINVAL;
 	}

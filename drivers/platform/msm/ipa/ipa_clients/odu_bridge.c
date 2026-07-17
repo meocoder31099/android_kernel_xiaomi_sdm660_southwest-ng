@@ -42,7 +42,7 @@
 	} while (0)
 #define ODU_BRIDGE_ERR(fmt, args...) \
 	do { \
-		pr_err(ODU_BRIDGE_DRV_NAME " %s:%d " fmt, \
+		pr_debug(ODU_BRIDGE_DRV_NAME " %s:%d " fmt, \
 			__func__, __LINE__, ## args); \
 		IPA_IPC_LOGGING(ipa_get_ipc_logbuf(), \
 			ODU_BRIDGE_DRV_NAME " %s:%d " fmt, ## args); \
@@ -75,7 +75,7 @@
 	do { \
 		ret = 0;\
 		if (ipa_get_hw_type() == IPA_HW_None) { \
-			pr_err("IPA HW is unknown\n"); \
+			pr_debug("IPA HW is unknown\n"); \
 			ret = -EFAULT; \
 		} \
 		else if (ipa_get_hw_type() < IPA_HW_v3_0) \

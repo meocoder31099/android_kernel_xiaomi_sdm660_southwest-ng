@@ -175,14 +175,14 @@ static void pdphy_create_debugfs_entries(struct usb_pdphy *pdphy)
 
 	pdphy->debug_root = debugfs_create_dir("usb-pdphy", NULL);
 	if (!pdphy->debug_root) {
-		dev_warn(pdphy->dev, "Couldn't create debug dir\n");
+		dev_dbg(pdphy->dev, "Couldn't create debug dir\n");
 		return;
 	}
 
 	ent = debugfs_create_file("status", 0400, pdphy->debug_root, pdphy,
 				  &status_ops);
 	if (!ent) {
-		dev_warn(pdphy->dev, "Couldn't create status file\n");
+		dev_dbg(pdphy->dev, "Couldn't create status file\n");
 		debugfs_remove(pdphy->debug_root);
 	}
 }
@@ -199,21 +199,21 @@ static int pdphy_enable_power(struct usb_pdphy *pdphy, bool on)
 
 	ret = regulator_set_load(pdphy->vdd_pdphy, VDD_PDPHY_HPM_LOAD);
 	if (ret < 0) {
-		dev_err(pdphy->dev, "Unable to set HPM of vdd_pdphy:%d\n", ret);
+		dev_dbg(pdphy->dev, "Unable to set HPM of vdd_pdphy:%d\n", ret);
 		return ret;
 	}
 
 	ret = regulator_set_voltage(pdphy->vdd_pdphy, VDD_PDPHY_VOL_MIN,
 						VDD_PDPHY_VOL_MAX);
 	if (ret) {
-		dev_err(pdphy->dev,
+		dev_dbg(pdphy->dev,
 				"set voltage failed for vdd_pdphy:%d\n", ret);
 		goto put_pdphy_vdd_lpm;
 	}
 
 	ret = regulator_enable(pdphy->vdd_pdphy);
 	if (ret) {
-		dev_err(pdphy->dev, "Unable to enable vdd_pdphy:%d\n", ret);
+		dev_dbg(pdphy->dev, "Unable to enable vdd_pdphy:%d\n", ret);
 		goto unset_pdphy_vdd;
 	}
 
@@ -223,18 +223,18 @@ static int pdphy_enable_power(struct usb_pdphy *pdphy, bool on)
 disable_pdphy_vdd:
 	ret = regulator_disable(pdphy->vdd_pdphy);
 	if (ret)
-		dev_err(pdphy->dev, "Unable to disable vdd_pdphy:%d\n", ret);
+		dev_dbg(pdphy->dev, "Unable to disable vdd_pdphy:%d\n", ret);
 
 unset_pdphy_vdd:
 	ret = regulator_set_voltage(pdphy->vdd_pdphy, 0, VDD_PDPHY_VOL_MAX);
 	if (ret)
-		dev_err(pdphy->dev,
+		dev_dbg(pdphy->dev,
 			"Unable to set (0) voltage for vdd_pdphy:%d\n", ret);
 
 put_pdphy_vdd_lpm:
 	ret = regulator_set_load(pdphy->vdd_pdphy, 0);
 	if (ret < 0)
-		dev_err(pdphy->dev, "Unable to set (0) HPM of vdd_pdphy\n");
+		dev_dbg(pdphy->dev, "Unable to set (0) HPM of vdd_pdphy\n");
 
 	return ret;
 }
@@ -282,7 +282,7 @@ static int pdphy_reg_read(struct usb_pdphy *pdphy, u8 *val, u16 addr, int count)
 
 	ret = regmap_bulk_read(pdphy->regmap, pdphy->base + addr, val, count);
 	if (ret) {
-		dev_err(pdphy->dev, "read failed: addr=0x%04x, ret=%d\n",
+		dev_dbg(pdphy->dev, "read failed: addr=0x%04x, ret=%d\n",
 			pdphy->base + addr, ret);
 		return ret;
 	}
@@ -299,7 +299,7 @@ static int pdphy_bulk_reg_write(struct usb_pdphy *pdphy, u16 addr,
 	ret = regmap_bulk_write(pdphy->regmap, pdphy->base + addr,
 			val, val_cnt);
 	if (ret) {
-		dev_err(pdphy->dev, "bulk write failed: addr=0x%04x, ret=%d\n",
+		dev_dbg(pdphy->dev, "bulk write failed: addr=0x%04x, ret=%d\n",
 				pdphy->base + addr, ret);
 		return ret;
 	}
@@ -321,7 +321,7 @@ static int pdphy_masked_write(struct usb_pdphy *pdphy, u16 addr,
 
 	ret = regmap_update_bits(pdphy->regmap, pdphy->base + addr, mask, val);
 	if (ret) {
-		dev_err(pdphy->dev, "write failed: addr=0x%04x, ret=%d\n",
+		dev_dbg(pdphy->dev, "write failed: addr=0x%04x, ret=%d\n",
 				pdphy->base + addr, ret);
 		return ret;
 	}
@@ -354,12 +354,12 @@ int pd_phy_open(struct pd_phy_params *params)
 	struct usb_pdphy *pdphy = __pdphy;
 
 	if (!pdphy) {
-		pr_err("%s: pdphy not found\n", __func__);
+		pr_debug("%s: pdphy not found\n", __func__);
 		return -ENODEV;
 	}
 
 	if (pdphy->is_opened) {
-		dev_err(pdphy->dev, "%s: already opened\n", __func__);
+		dev_dbg(pdphy->dev, "%s: already opened\n", __func__);
 		return -EBUSY;
 	}
 
@@ -423,7 +423,7 @@ int pd_phy_signal(enum pd_sig_type sig)
 	dev_dbg(pdphy->dev, "%s: type %d\n", __func__, sig);
 
 	if (!pdphy) {
-		pr_err("%s: pdphy not found\n", __func__);
+		pr_debug("%s: pdphy not found\n", __func__);
 		return -ENODEV;
 	}
 
@@ -451,7 +451,7 @@ int pd_phy_signal(enum pd_sig_type sig)
 		pdphy->tx_status != -EINPROGRESS,
 		ms_to_ktime(HARD_RESET_COMPLETE_TIME));
 	if (ret) {
-		dev_err(pdphy->dev, "%s: failed ret %d\n", __func__, ret);
+		dev_dbg(pdphy->dev, "%s: failed ret %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -477,7 +477,7 @@ int pd_phy_write(u16 hdr, const u8 *data, size_t data_len, enum pd_sop_type sop)
 	unsigned int msg_rx_cnt;
 
 	if (!pdphy) {
-		pr_err("%s: pdphy not found\n", __func__);
+		pr_debug("%s: pdphy not found\n", __func__);
 		return -ENODEV;
 	}
 
@@ -492,14 +492,14 @@ int pd_phy_write(u16 hdr, const u8 *data, size_t data_len, enum pd_sop_type sop)
 			__func__, hdr, sop);
 
 	if (data_len > USB_PDPHY_MAX_DATA_OBJ_LEN) {
-		dev_err(pdphy->dev, "%s: invalid data object len %zu\n",
+		dev_dbg(pdphy->dev, "%s: invalid data object len %zu\n",
 			__func__, data_len);
 		return -EINVAL;
 	}
 
 	ret = pdphy_reg_read(pdphy, &val, USB_PDPHY_RX_ACKNOWLEDGE, 1);
 	if (ret || val) {
-		dev_err(pdphy->dev, "%s: RX message pending\n", __func__);
+		dev_dbg(pdphy->dev, "%s: RX message pending\n", __func__);
 		return -EBUSY;
 	}
 
@@ -541,7 +541,7 @@ int pd_phy_write(u16 hdr, const u8 *data, size_t data_len, enum pd_sop_type sop)
 		val |= TX_CONTROL_RETRY_COUNT(3);
 
 	if (msg_rx_cnt != pdphy->msg_rx_cnt) {
-		dev_err(pdphy->dev, "%s: RX message arrived\n", __func__);
+		dev_dbg(pdphy->dev, "%s: RX message arrived\n", __func__);
 		return -EBUSY;
 	}
 
@@ -553,7 +553,7 @@ int pd_phy_write(u16 hdr, const u8 *data, size_t data_len, enum pd_sop_type sop)
 		pdphy->tx_status != -EINPROGRESS,
 		ms_to_ktime(RECEIVER_RESPONSE_TIME));
 	if (ret) {
-		dev_err(pdphy->dev, "%s: failed ret %d\n", __func__, ret);
+		dev_dbg(pdphy->dev, "%s: failed ret %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -570,12 +570,12 @@ void pd_phy_close(void)
 	struct usb_pdphy *pdphy = __pdphy;
 
 	if (!pdphy) {
-		pr_err("%s: pdphy not found\n", __func__);
+		pr_debug("%s: pdphy not found\n", __func__);
 		return;
 	}
 
 	if (!pdphy->is_opened) {
-		dev_err(pdphy->dev, "%s: not opened\n", __func__);
+		dev_dbg(pdphy->dev, "%s: not opened\n", __func__);
 		return;
 	}
 
@@ -619,7 +619,7 @@ static irqreturn_t pdphy_msg_tx_irq(int irq, void *data)
 		pdphy->msg_tx_failed_cnt++;
 		pdphy->tx_status = -EFAULT;
 	} else {
-		dev_err(pdphy->dev, "spurious irq #%d received\n", irq);
+		dev_dbg(pdphy->dev, "spurious irq #%d received\n", irq);
 		return IRQ_NONE;
 	}
 
@@ -651,7 +651,7 @@ static irqreturn_t pdphy_sig_rx_irq_thread(int irq, void *data)
 
 	frame_type = rx_status & RX_FRAME_TYPE;
 	if (frame_type != HARD_RESET_SIG) {
-		dev_err(pdphy->dev, "%s:unsupported frame type %d\n",
+		dev_dbg(pdphy->dev, "%s:unsupported frame type %d\n",
 			__func__, frame_type);
 		goto done;
 	}
@@ -712,7 +712,7 @@ static irqreturn_t pdphy_msg_rx_irq(int irq, void *data)
 		goto done;
 
 	if (!size || size > 31) {
-		dev_err(pdphy->dev, "%s: invalid size %d\n", __func__, size);
+		dev_dbg(pdphy->dev, "%s: invalid size %d\n", __func__, size);
 		goto done;
 	}
 
@@ -722,7 +722,7 @@ static irqreturn_t pdphy_msg_rx_irq(int irq, void *data)
 
 	frame_type = rx_status & RX_FRAME_TYPE;
 	if (frame_type == SOPII_MSG) {
-		dev_err(pdphy->dev, "%s:unsupported frame type %d\n",
+		dev_dbg(pdphy->dev, "%s:unsupported frame type %d\n",
 			__func__, frame_type);
 		goto done;
 	}
@@ -768,7 +768,7 @@ static int pdphy_request_irq(struct usb_pdphy *pdphy,
 
 	*irq_num = of_irq_get_byname(node, irq_name);
 	if (*irq_num < 0) {
-		dev_err(pdphy->dev, "Unable to get %s irq\n", irq_name);
+		dev_dbg(pdphy->dev, "Unable to get %s irq\n", irq_name);
 		ret = -ENXIO;
 	}
 
@@ -776,7 +776,7 @@ static int pdphy_request_irq(struct usb_pdphy *pdphy,
 	ret = devm_request_threaded_irq(pdphy->dev, *irq_num, irq_handler,
 			thread_fn, flags, irq_name, pdphy);
 	if (ret < 0) {
-		dev_err(pdphy->dev, "Unable to request %s irq: %d\n",
+		dev_dbg(pdphy->dev, "Unable to request %s irq: %d\n",
 				irq_name, ret);
 		ret = -ENXIO;
 	}
@@ -796,7 +796,7 @@ static int pdphy_probe(struct platform_device *pdev)
 
 	pdphy->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!pdphy->regmap) {
-		dev_err(&pdev->dev, "Couldn't get parent's regmap\n");
+		dev_dbg(&pdev->dev, "Couldn't get parent's regmap\n");
 		return -EINVAL;
 	}
 
@@ -804,7 +804,7 @@ static int pdphy_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(pdev->dev.of_node, "reg", &base);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "failed to get reg base address ret = %d\n",
+		dev_dbg(&pdev->dev, "failed to get reg base address ret = %d\n",
 			ret);
 		return ret;
 	}
@@ -816,7 +816,7 @@ static int pdphy_probe(struct platform_device *pdev)
 
 	pdphy->vdd_pdphy = devm_regulator_get(&pdev->dev, "vdd-pdphy");
 	if (IS_ERR(pdphy->vdd_pdphy)) {
-		dev_err(&pdev->dev, "unable to get vdd-pdphy\n");
+		dev_dbg(&pdev->dev, "unable to get vdd-pdphy\n");
 		return PTR_ERR(pdphy->vdd_pdphy);
 	}
 
@@ -869,7 +869,7 @@ static int pdphy_probe(struct platform_device *pdev)
 
 	pdphy->usbpd = usbpd_create(&pdev->dev);
 	if (IS_ERR(pdphy->usbpd)) {
-		dev_err(&pdev->dev, "usbpd_create failed: %ld\n",
+		dev_dbg(&pdev->dev, "usbpd_create failed: %ld\n",
 				PTR_ERR(pdphy->usbpd));
 		__pdphy = NULL;
 		return PTR_ERR(pdphy->usbpd);

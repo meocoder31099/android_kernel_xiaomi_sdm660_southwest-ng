@@ -482,7 +482,7 @@ int bsg_register_queue(struct request_queue *q, struct device *parent,
 	ret = idr_alloc(&bsg_minor_idr, bcd, 0, BSG_MAX_DEVS, GFP_KERNEL);
 	if (ret < 0) {
 		if (ret == -ENOSPC) {
-			printk(KERN_ERR "bsg: too many bsg devices\n");
+			no_printk(KERN_ERR "bsg: too many bsg devices\n");
 			ret = -EINVAL;
 		}
 		goto unlock;
@@ -559,7 +559,7 @@ static int __init bsg_init(void)
 	if (ret)
 		goto unregister_chrdev;
 
-	printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
+	no_printk(KERN_INFO BSG_DESCRIPTION " version " BSG_VERSION
 	       " loaded (major %d)\n", bsg_major);
 	return 0;
 unregister_chrdev:

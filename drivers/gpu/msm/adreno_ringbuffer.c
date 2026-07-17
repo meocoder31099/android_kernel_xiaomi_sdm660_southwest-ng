@@ -1183,7 +1183,7 @@ int adreno_ringbuffer_submitcmd(struct adreno_device *adreno_dev,
 		 * the upper layers know how to handle it
 		 */
 		if (ret != -ENOSPC && ret != -ENOENT)
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "Unable to switch draw context: %d\n",
 				     ret);
 		goto done;

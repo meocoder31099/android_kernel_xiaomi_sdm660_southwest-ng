@@ -99,13 +99,13 @@ static atomic_t swapin_readahead_hits = ATOMIC_INIT(4);
 
 void show_swap_cache_info(void)
 {
-	printk("%lu pages in swap cache\n", total_swapcache_pages());
-	printk("Swap cache stats: add %lu, delete %lu, find %lu/%lu\n",
+	no_printk("%lu pages in swap cache\n", total_swapcache_pages());
+	no_printk("Swap cache stats: add %lu, delete %lu, find %lu/%lu\n",
 		swap_cache_info.add_total, swap_cache_info.del_total,
 		swap_cache_info.find_success, swap_cache_info.find_total);
-	printk("Free swap  = %ldkB\n",
+	no_printk("Free swap  = %ldkB\n",
 		get_nr_swap_pages() << (PAGE_SHIFT - 10));
-	printk("Total swap = %lukB\n", total_swap_pages << (PAGE_SHIFT - 10));
+	no_printk("Total swap = %lukB\n", total_swap_pages << (PAGE_SHIFT - 10));
 }
 
 /*
@@ -848,12 +848,12 @@ static int __init swap_init_sysfs(void)
 
 	swap_kobj = kobject_create_and_add("swap", mm_kobj);
 	if (!swap_kobj) {
-		pr_err("failed to create swap kobject\n");
+		pr_debug("failed to create swap kobject\n");
 		return -ENOMEM;
 	}
 	err = sysfs_create_group(swap_kobj, &swap_attr_group);
 	if (err) {
-		pr_err("failed to register swap group\n");
+		pr_debug("failed to register swap group\n");
 		goto delete_obj;
 	}
 	return 0;

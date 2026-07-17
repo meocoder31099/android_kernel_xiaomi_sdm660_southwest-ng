@@ -177,18 +177,18 @@ static void ext4_es_print_tree(struct inode *inode)
 	struct ext4_es_tree *tree;
 	struct rb_node *node;
 
-	printk(KERN_DEBUG "status extents for inode %lu:", inode->i_ino);
+	no_printk(KERN_DEBUG "status extents for inode %lu:", inode->i_ino);
 	tree = &EXT4_I(inode)->i_es_tree;
 	node = rb_first(&tree->root);
 	while (node) {
 		struct extent_status *es;
 		es = rb_entry(node, struct extent_status, rb_node);
-		printk(KERN_DEBUG " [%u/%u) %llu %x",
+		no_printk(KERN_DEBUG " [%u/%u) %llu %x",
 		       es->es_lblk, es->es_len,
 		       ext4_es_pblock(es), ext4_es_status(es));
 		node = rb_next(node);
 	}
-	printk(KERN_DEBUG "\n");
+	no_printk(KERN_DEBUG "\n");
 }
 #else
 #define ext4_es_print_tree(inode)
@@ -384,7 +384,7 @@ static int ext4_es_can_be_merged(struct extent_status *es1,
 		return 0;
 
 	if (((__u64) es1->es_len) + es2->es_len > EXT_MAX_BLOCKS) {
-		pr_warn("ES assertion failed when merging extents. "
+		pr_debug("ES assertion failed when merging extents. "
 			"The sum of lengths of es1 (%d) and es2 (%d) "
 			"is bigger than allowed file size (%d)\n",
 			es1->es_len, es2->es_len, EXT_MAX_BLOCKS);
@@ -491,7 +491,7 @@ static void ext4_es_insert_extent_ext_check(struct inode *inode,
 		 */
 		if (!ext4_es_is_written(es) && !ext4_es_is_unwritten(es)) {
 			if (in_range(es->es_lblk, ee_block, ee_len)) {
-				pr_warn("ES insert assertion failed for "
+				pr_debug("ES insert assertion failed for "
 					"inode: %lu we can find an extent "
 					"at block [%d/%d/%llu/%c], but we "
 					"want to add a delayed/hole extent "
@@ -510,7 +510,7 @@ static void ext4_es_insert_extent_ext_check(struct inode *inode,
 		 */
 		if (es->es_lblk < ee_block ||
 		    ext4_es_pblock(es) != ee_start + es->es_lblk - ee_block) {
-			pr_warn("ES insert assertion failed for inode: %lu "
+			pr_debug("ES insert assertion failed for inode: %lu "
 				"ex_status [%d/%d/%llu/%c] != "
 				"es_status [%d/%d/%llu/%c]\n", inode->i_ino,
 				ee_block, ee_len, ee_start,
@@ -520,7 +520,7 @@ static void ext4_es_insert_extent_ext_check(struct inode *inode,
 		}
 
 		if (ee_status ^ es_status) {
-			pr_warn("ES insert assertion failed for inode: %lu "
+			pr_debug("ES insert assertion failed for inode: %lu "
 				"ex_status [%d/%d/%llu/%c] != "
 				"es_status [%d/%d/%llu/%c]\n", inode->i_ino,
 				ee_block, ee_len, ee_start,
@@ -533,7 +533,7 @@ static void ext4_es_insert_extent_ext_check(struct inode *inode,
 		 * that we don't want to add an written/unwritten extent.
 		 */
 		if (!ext4_es_is_delayed(es) && !ext4_es_is_hole(es)) {
-			pr_warn("ES insert assertion failed for inode: %lu "
+			pr_debug("ES insert assertion failed for inode: %lu "
 				"can't find an extent at block %d but we want "
 				"to add a written/unwritten extent "
 				"[%d/%d/%llu/%x]\n", inode->i_ino,
@@ -569,7 +569,7 @@ static void ext4_es_insert_extent_ind_check(struct inode *inode,
 			 * We want to add a delayed/hole extent but this
 			 * block has been allocated.
 			 */
-			pr_warn("ES insert assertion failed for inode: %lu "
+			pr_debug("ES insert assertion failed for inode: %lu "
 				"We can find blocks but we want to add a "
 				"delayed/hole extent [%d/%d/%llu/%x]\n",
 				inode->i_ino, es->es_lblk, es->es_len,
@@ -577,13 +577,13 @@ static void ext4_es_insert_extent_ind_check(struct inode *inode,
 			return;
 		} else if (ext4_es_is_written(es)) {
 			if (retval != es->es_len) {
-				pr_warn("ES insert assertion failed for "
+				pr_debug("ES insert assertion failed for "
 					"inode: %lu retval %d != es_len %d\n",
 					inode->i_ino, retval, es->es_len);
 				return;
 			}
 			if (map.m_pblk != ext4_es_pblock(es)) {
-				pr_warn("ES insert assertion failed for "
+				pr_debug("ES insert assertion failed for "
 					"inode: %lu m_pblk %llu != "
 					"es_pblk %llu\n",
 					inode->i_ino, map.m_pblk,
@@ -599,7 +599,7 @@ static void ext4_es_insert_extent_ind_check(struct inode *inode,
 		}
 	} else if (retval == 0) {
 		if (ext4_es_is_written(es)) {
-			pr_warn("ES insert assertion failed for inode: %lu "
+			pr_debug("ES insert assertion failed for inode: %lu "
 				"We can't find the block but we want to add "
 				"a written extent [%d/%d/%llu/%x]\n",
 				inode->i_ino, es->es_lblk, es->es_len,

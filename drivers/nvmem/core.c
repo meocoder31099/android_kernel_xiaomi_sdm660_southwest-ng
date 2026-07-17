@@ -155,7 +155,7 @@ static void nvmem_cell_add(struct nvmem_cell *cell)
 	sysfs_attr_init(&nvmem_cell_attr->attr);
 	rval = device_create_bin_file(&cell->nvmem->dev, nvmem_cell_attr);
 	if (rval)
-		dev_err(&cell->nvmem->dev,
+		dev_dbg(&cell->nvmem->dev,
 			"Failed to create cell binary file %d\n", rval);
 
 	mutex_unlock(&nvmem_mutex);
@@ -178,7 +178,7 @@ static int nvmem_cell_info_to_nvmem_cell(struct nvmem_device *nvmem,
 					   BITS_PER_BYTE);
 
 	if (!IS_ALIGNED(cell->offset, nvmem->stride)) {
-		dev_err(&nvmem->dev,
+		dev_dbg(&nvmem->dev,
 			"cell %s unaligned to nvmem stride %d\n",
 			cell->name, nvmem->stride);
 		return -EINVAL;
@@ -289,7 +289,7 @@ static int nvmem_add_cells_from_of(struct nvmem_device *nvmem)
 		if (!addr)
 			continue;
 		if (len < 2 * sizeof(u32)) {
-			dev_err(dev, "nvmem: invalid reg on %pOF\n", child);
+			dev_dbg(dev, "nvmem: invalid reg on %pOF\n", child);
 			of_node_put(child);
 			return -EINVAL;
 		}
@@ -317,7 +317,7 @@ static int nvmem_add_cells_from_of(struct nvmem_device *nvmem)
 					BITS_PER_BYTE);
 
 		if (!IS_ALIGNED(cell->offset, nvmem->stride)) {
-			dev_err(dev, "cell %s unaligned to nvmem stride %d\n",
+			dev_dbg(dev, "cell %s unaligned to nvmem stride %d\n",
 				cell->name, nvmem->stride);
 			/* Cells already added will be freed later. */
 			kfree(cell);
@@ -541,7 +541,7 @@ static struct nvmem_device *__nvmem_device_get(struct device_node *np,
 		return ERR_PTR(-EPROBE_DEFER);
 
 	if (!try_module_get(nvmem->owner)) {
-		dev_err(&nvmem->dev,
+		dev_dbg(&nvmem->dev,
 			"could not increase module refcount for cell %s\n",
 			nvmem->name);
 

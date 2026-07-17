@@ -103,7 +103,7 @@ static int bt_vreg_init(struct bt_power_vreg_data *vreg)
 	if (IS_ERR(vreg->reg)) {
 		rc = PTR_ERR(vreg->reg);
 		vreg->reg = NULL;
-		pr_err("%s: regulator_get(%s) failed. rc=%d\n",
+		pr_debug("%s: regulator_get(%s) failed. rc=%d\n",
 			__func__, vreg->name, rc);
 		goto out;
 	}
@@ -727,7 +727,7 @@ static int bluetooth_power_rfkill_probe(struct platform_device *pdev)
 			      pdev->dev.platform_data);
 
 	if (!rfkill) {
-		dev_err(&pdev->dev, "rfkill allocate failed\n");
+		dev_dbg(&pdev->dev, "rfkill allocate failed\n");
 		return -ENOMEM;
 	}
 
@@ -742,7 +742,7 @@ static int bluetooth_power_rfkill_probe(struct platform_device *pdev)
 
 	ret = rfkill_register(rfkill);
 	if (ret) {
-		dev_err(&pdev->dev, "rfkill register failed=%d\n", ret);
+		dev_dbg(&pdev->dev, "rfkill register failed=%d\n", ret);
 		rfkill_destroy(rfkill);
 		return ret;
 	}
@@ -794,7 +794,7 @@ static int bt_dt_parse_vreg_info(struct device *dev,
 				"%s-voltage-level", vreg_name);
 		prop = of_get_property(np, prop_name, &len);
 		if (!prop || (len != (2 * sizeof(__be32)))) {
-			dev_warn(dev, "%s %s property\n",
+			dev_dbg(dev, "%s %s property\n",
 				prop ? "invalid format" : "no", prop_name);
 		} else {
 			vreg->low_vol_level = be32_to_cpup(&prop[0]);

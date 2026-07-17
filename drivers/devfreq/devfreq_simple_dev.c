@@ -60,7 +60,7 @@ static int dev_target(struct device *dev, unsigned long *freq, u32 flags)
 
 	rfreq = clk_round_rate(d->clk, d->freq_in_khz ? *freq * 1000 : *freq);
 	if (IS_ERR_VALUE(rfreq)) {
-		dev_err(dev, "devfreq: Cannot find matching frequency for %lu\n",
+		dev_dbg(dev, "devfreq: Cannot find matching frequency for %lu\n",
 			*freq);
 		return rfreq;
 	}
@@ -113,7 +113,7 @@ static int parse_freq_table(struct device *dev, struct dev_data *d)
 	for (i = 0; i < len; i++) {
 		f = clk_round_rate(d->clk, data[i] * 1000);
 		if (IS_ERR_VALUE(f))
-			dev_warn(dev, "Unable to find dev rate for %d KHz\n",
+			dev_dbg(dev, "Unable to find dev rate for %d KHz\n",
 				 data[i]);
 		else
 			p->freq_table[j++] = f / 1000;
@@ -122,7 +122,7 @@ static int parse_freq_table(struct device *dev, struct dev_data *d)
 	devm_kfree(dev, data);
 
 	if (p->max_state == 0) {
-		dev_err(dev, "Error parsing property %s!\n", PROP_TBL);
+		dev_dbg(dev, "Error parsing property %s!\n", PROP_TBL);
 		return -EINVAL;
 	}
 

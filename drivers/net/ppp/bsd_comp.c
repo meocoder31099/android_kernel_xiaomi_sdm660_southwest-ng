@@ -528,7 +528,7 @@ static unsigned short *lens_ptr(struct bsd_db *db, int idx)
   {
     if ((unsigned int) idx > (unsigned int) db->maxmaxcode)
       {
-	printk ("<9>ppp: lens_ptr(%d) > max\n", idx);
+	no_printk ("<9>ppp: lens_ptr(%d) > max\n", idx);
 	idx = 0;
       }
     return lens_ptrx (db, idx);
@@ -538,7 +538,7 @@ static struct bsd_dict *dict_ptr(struct bsd_db *db, int idx)
   {
     if ((unsigned int) idx >= (unsigned int) db->hsize)
       {
-	printk ("<9>ppp: dict_ptr(%d) > max\n", idx);
+	no_printk ("<9>ppp: dict_ptr(%d) > max\n", idx);
 	idx = 0;
       }
     return dict_ptrx (db, idx);
@@ -876,7 +876,7 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
       {
 	if (db->debug)
 	  {
-	    printk("bsd_decomp%d: bad sequence # %d, expected %d\n",
+	    no_printk("bsd_decomp%d: bad sequence # %d, expected %d\n",
 		   db->unit, seq, db->seqno - 1);
 	  }
 	return DECOMP_ERROR;
@@ -938,7 +938,7 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
 	      {
 		if (db->debug)
 		  {
-		    printk("bsd_decomp%d: bad CLEAR\n", db->unit);
+		    no_printk("bsd_decomp%d: bad CLEAR\n", db->unit);
 		  }
 		return DECOMP_FATALERROR;	/* probably a bug */
 	      }
@@ -952,9 +952,9 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
 	  {
 	    if (db->debug)
 	      {
-		printk("bsd_decomp%d: bad code 0x%x oldcode=0x%x ",
+		no_printk("bsd_decomp%d: bad code 0x%x oldcode=0x%x ",
 		       db->unit, incode, oldcode);
-		printk("max_ent=0x%x explen=%d seqno=%d\n",
+		no_printk("max_ent=0x%x explen=%d seqno=%d\n",
 		       max_ent, explen, db->seqno);
 	      }
 	    return DECOMP_FATALERROR;	/* probably a bug */
@@ -978,9 +978,9 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
 	  {
 	    if (db->debug)
 	      {
-		printk("bsd_decomp%d: ran out of mru\n", db->unit);
+		no_printk("bsd_decomp%d: ran out of mru\n", db->unit);
 #ifdef DEBUG
-		printk("  len=%d, finchar=0x%x, codelen=%d, explen=%d\n",
+		no_printk("  len=%d, finchar=0x%x, codelen=%d, explen=%d\n",
 		       ilen, finchar, codelen, explen);
 #endif
 	      }
@@ -1003,19 +1003,19 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
 	      {
 		if (codelen <= 0)
 		  {
-		    printk("bsd_decomp%d: fell off end of chain ", db->unit);
-		    printk("0x%x at 0x%x by 0x%x, max_ent=0x%x\n",
+		    no_printk("bsd_decomp%d: fell off end of chain ", db->unit);
+		    no_printk("0x%x at 0x%x by 0x%x, max_ent=0x%x\n",
 			   incode, finchar, dictp2->cptr, max_ent);
 		  }
 		else
 		  {
 		    if (dictp->codem1 != finchar-1)
 		      {
-			printk("bsd_decomp%d: bad code chain 0x%x "
+			no_printk("bsd_decomp%d: bad code chain 0x%x "
 			       "finchar=0x%x ",
 			       db->unit, incode, finchar);
 
-			printk("oldcode=0x%x cptr=0x%x codem1=0x%x\n",
+			no_printk("oldcode=0x%x cptr=0x%x codem1=0x%x\n",
 			       oldcode, dictp2->cptr, dictp->codem1);
 		      }
 		  }
@@ -1030,7 +1030,7 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
 #ifdef DEBUG
 	if (--codelen != 0)
 	  {
-	    printk("bsd_decomp%d: short by %d after code 0x%x, max_ent=0x%x\n",
+	    no_printk("bsd_decomp%d: short by %d after code 0x%x, max_ent=0x%x\n",
 		   db->unit, codelen, incode, max_ent);
 	  }
 #endif
@@ -1118,7 +1118,7 @@ static int bsd_decompress (void *state, unsigned char *ibuf, int isize,
       {
 	if (db->debug)
 	  {
-	    printk("bsd_decomp%d: peer should have cleared dictionary on %d\n",
+	    no_printk("bsd_decomp%d: peer should have cleared dictionary on %d\n",
 		   db->unit, db->seqno - 1);
 	  }
       }
@@ -1155,7 +1155,7 @@ static int __init bsdcomp_init(void)
 {
 	int answer = ppp_register_compressor(&ppp_bsd_compress);
 	if (answer == 0)
-		printk(KERN_INFO "PPP BSD Compression module registered\n");
+		no_printk(KERN_INFO "PPP BSD Compression module registered\n");
 	return answer;
 }
 

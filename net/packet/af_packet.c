@@ -1341,7 +1341,7 @@ static void packet_sock_destruct(struct sock *sk)
 	WARN_ON(refcount_read(&sk->sk_wmem_alloc));
 
 	if (!sock_flag(sk, SOCK_DEAD)) {
-		pr_err("Attempt to release alive packet socket: %p\n", sk);
+		pr_debug("Attempt to release alive packet socket: %p\n", sk);
 		return;
 	}
 
@@ -2598,7 +2598,7 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
 		nr_frags = skb_shinfo(skb)->nr_frags;
 
 		if (unlikely(nr_frags >= MAX_SKB_FRAGS)) {
-			pr_err("Packet exceed the number of skb frags(%lu)\n",
+			pr_debug("Packet exceed the number of skb frags(%lu)\n",
 			       MAX_SKB_FRAGS);
 			return -EFAULT;
 		}
@@ -2643,7 +2643,7 @@ static int tpacket_parse_header(struct packet_sock *po, void *frame,
 		break;
 	}
 	if (unlikely(tp_len > size_max)) {
-		pr_err("packet size is too long (%d > %d)\n", tp_len, size_max);
+		pr_debug("packet size is too long (%d > %d)\n", tp_len, size_max);
 		return -EMSGSIZE;
 	}
 
@@ -4486,7 +4486,7 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 						tpacket_rcv : packet_rcv;
 		skb_queue_purge(rb_queue);
 		if (atomic_long_read(&po->mapped))
-			pr_err("packet_mmap: vma is busy: %ld\n",
+			pr_debug("packet_mmap: vma is busy: %ld\n",
 			       atomic_long_read(&po->mapped));
 	}
 	mutex_unlock(&po->pg_vec_lock);

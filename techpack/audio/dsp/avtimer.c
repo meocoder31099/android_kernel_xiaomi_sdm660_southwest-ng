@@ -72,7 +72,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 	uint32_t *payload1;
 
 	if (!data) {
-		pr_err("%s: Invalid params\n", __func__);
+		pr_debug("%s: Invalid params\n", __func__);
 		return -EINVAL;
 	}
 	pr_debug("%s: core msg: payload len = %u, apr resp opcode = 0x%X\n",
@@ -83,7 +83,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 	case APR_BASIC_RSP_RESULT:{
 
 		if (!data->payload_size) {
-			pr_err("%s: APR_BASIC_RSP_RESULT No Payload ",
+			pr_debug("%s: APR_BASIC_RSP_RESULT No Payload ",
 					__func__);
 			return 0;
 		}
@@ -91,7 +91,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		payload1 = data->payload;
 
 		if (data->payload_size < 2 * sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -102,7 +102,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 			__func__, payload1[1]);
 			break;
 		default:
-			pr_err("Invalid cmd rsp[0x%x][0x%x]\n",
+			pr_debug("Invalid cmd rsp[0x%x][0x%x]\n",
 					payload1[0], payload1[1]);
 			break;
 		}
@@ -122,7 +122,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 
 	case AVCS_CMD_RSP_REMOTE_AVTIMER_VOTE_REQUEST:
 		if (data->payload_size < sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -134,7 +134,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		wake_up(&avtimer.adsp_resp_wait);
 		break;
 	default:
-		pr_err("%s: Message adspcore svc: %d\n",
+		pr_debug("%s: Message adspcore svc: %d\n",
 				__func__, data->opcode);
 		break;
 	}
@@ -149,7 +149,7 @@ int avcs_core_open(void)
 					aprv2_core_fn_q, TEMP_PORT, NULL);
 	pr_debug("%s: Open_q %p\n", __func__, avtimer.core_handle_q);
 	if (!avtimer.core_handle_q) {
-		pr_err("%s: Unable to register CORE\n", __func__);
+		pr_debug("%s: Unable to register CORE\n", __func__);
 		return -EINVAL;
 	}
 	return 0;
@@ -162,7 +162,7 @@ static int avcs_core_disable_avtimer(int timerhandle)
 	struct adsp_avt_timer payload;
 
 	if (!timerhandle) {
-		pr_err("%s: Invalid timer handle\n", __func__);
+		pr_debug("%s: Invalid timer handle\n", __func__);
 		return -EINVAL;
 	}
 	memset(&payload, 0, sizeof(payload));
@@ -186,7 +186,7 @@ static int avcs_core_disable_avtimer(int timerhandle)
 		rc = apr_send_pkt(avtimer.core_handle_q,
 						(uint32_t *)&payload);
 		if (rc < 0)
-			pr_err("%s: Enable AVtimer failed op[0x%x]rc[%d]\n",
+			pr_debug("%s: Enable AVtimer failed op[0x%x]rc[%d]\n",
 				__func__, payload.hdr.opcode, rc);
 		else
 			rc = 0;
@@ -200,7 +200,7 @@ static int avcs_core_enable_avtimer(char *client_name)
 	struct adsp_avt_timer payload;
 
 	if (!client_name) {
-		pr_err("%s: Invalid params\n", __func__);
+		pr_debug("%s: Invalid params\n", __func__);
 		return -EINVAL;
 	}
 	memset(&payload, 0, sizeof(payload));
@@ -226,7 +226,7 @@ static int avcs_core_enable_avtimer(char *client_name)
 		rc = apr_send_pkt(avtimer.core_handle_q,
 						(uint32_t *)&payload);
 		if (rc < 0) {
-			pr_err("%s: Enable AVtimer failed op[0x%x]rc[%d]\n",
+			pr_debug("%s: Enable AVtimer failed op[0x%x]rc[%d]\n",
 				__func__, payload.hdr.opcode, rc);
 			goto bail;
 		} else
@@ -235,7 +235,7 @@ static int avcs_core_enable_avtimer(char *client_name)
 			(avtimer.enable_timer_resp_received == 1),
 			msecs_to_jiffies(TIMEOUT_MS));
 		if (!ret) {
-			pr_err("%s: wait_event timeout for Enable timer\n",
+			pr_debug("%s: wait_event timeout for Enable timer\n",
 					__func__);
 			rc = -ETIMEDOUT;
 		}
@@ -293,7 +293,7 @@ static void reset_work(struct work_struct *work)
 		schedule_delayed_work(&avtimer.ssr_dwork,
 			  msecs_to_jiffies(Q6_READY_RETRY));
 	} else {
-		pr_err("%s: Q6 failed responding after multiple retries\n",
+		pr_debug("%s: Q6 failed responding after multiple retries\n",
 							__func__);
 		avtimer.num_retries = Q6_READY_MAX_RETRIES;
 	}
@@ -425,7 +425,7 @@ static long avtimer_ioctl(struct file *file, unsigned int ioctl_num,
 		rc = avcs_core_query_timer(&avtimer_tick);
 
 		if (rc) {
-			pr_err("%s: Error: Invalid AV Timer tick, rc = %d\n",
+			pr_debug("%s: Error: Invalid AV Timer tick, rc = %d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -434,14 +434,14 @@ static long avtimer_ioctl(struct file *file, unsigned int ioctl_num,
 		__func__, avtimer_tick);
 		if (copy_to_user((void __user *)ioctl_param, &avtimer_tick,
 		    sizeof(avtimer_tick))) {
-			pr_err("%s: copy_to_user failed\n", __func__);
+			pr_debug("%s: copy_to_user failed\n", __func__);
 			return -EFAULT;
 		}
 	}
 		break;
 
 	default:
-		pr_err("%s: invalid cmd\n", __func__);
+		pr_debug("%s: invalid cmd\n", __func__);
 		return -EINVAL;
 	}
 	return 0;
@@ -464,20 +464,20 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 	uint32_t clk_mult_val;
 
 	if (!pdev) {
-		pr_err("%s: Invalid params\n", __func__);
+		pr_debug("%s: Invalid params\n", __func__);
 		return -EINVAL;
 	}
 	reg_lsb = platform_get_resource_byname(pdev,
 		IORESOURCE_MEM, "avtimer_lsb_addr");
 	if (!reg_lsb) {
-		dev_err(&pdev->dev, "%s: Looking up %s property",
+		dev_dbg(&pdev->dev, "%s: Looking up %s property",
 			"avtimer_lsb_addr", __func__);
 		return -EINVAL;
 	}
 	reg_msb = platform_get_resource_byname(pdev,
 		IORESOURCE_MEM, "avtimer_msb_addr");
 	if (!reg_msb) {
-		dev_err(&pdev->dev, "%s: Looking up %s property",
+		dev_dbg(&pdev->dev, "%s: Looking up %s property",
 			"avtimer_msb_addr", __func__);
 		return -EINVAL;
 	}
@@ -486,7 +486,7 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 	avtimer.p_avtimer_lsw = devm_ioremap_nocache(&pdev->dev,
 				reg_lsb->start, resource_size(reg_lsb));
 	if (!avtimer.p_avtimer_lsw) {
-		dev_err(&pdev->dev, "%s: ioremap failed for lsb avtimer register",
+		dev_dbg(&pdev->dev, "%s: ioremap failed for lsb avtimer register",
 			__func__);
 		return -ENOMEM;
 	}
@@ -494,7 +494,7 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 	avtimer.p_avtimer_msw = devm_ioremap_nocache(&pdev->dev,
 				reg_msb->start, resource_size(reg_msb));
 	if (!avtimer.p_avtimer_msw) {
-		dev_err(&pdev->dev, "%s: ioremap failed for msb avtimer register",
+		dev_dbg(&pdev->dev, "%s: ioremap failed for msb avtimer register",
 			__func__);
 		goto unmap;
 	}
@@ -508,7 +508,7 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 	}
 
 	if (result < 0) {
-		dev_err(&pdev->dev, "%s: Registering avtimer device failed\n",
+		dev_dbg(&pdev->dev, "%s: Registering avtimer device failed\n",
 			__func__);
 		goto unmap;
 	}
@@ -516,7 +516,7 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 	avtimer.avtimer_class = class_create(THIS_MODULE, "avtimer");
 	if (IS_ERR(avtimer.avtimer_class)) {
 		result = PTR_ERR(avtimer.avtimer_class);
-		dev_err(&pdev->dev, "%s: Error creating avtimer class: %d\n",
+		dev_dbg(&pdev->dev, "%s: Error creating avtimer class: %d\n",
 			__func__, result);
 		goto unregister_chrdev_region;
 	}
@@ -525,7 +525,7 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 	result = cdev_add(&avtimer.myc, dev, 1);
 
 	if (result < 0) {
-		dev_err(&pdev->dev, "%s: Registering file operations failed\n",
+		dev_dbg(&pdev->dev, "%s: Registering file operations failed\n",
 			__func__);
 		goto class_destroy;
 	}
@@ -534,7 +534,7 @@ static int dev_avtimer_probe(struct platform_device *pdev)
 			NULL, avtimer.myc.dev, NULL, "avtimer");
 	if (IS_ERR(device_handle)) {
 		result = PTR_ERR(device_handle);
-		pr_err("%s: device_create failed: %d\n", __func__, result);
+		pr_debug("%s: device_create failed: %d\n", __func__, result);
 		goto class_destroy;
 	}
 	init_waitqueue_head(&avtimer.adsp_resp_wait);
@@ -614,7 +614,7 @@ int  __init avtimer_init(void)
 
 	rc = platform_driver_register(&dev_avtimer_driver);
 	if (rc < 0) {
-		pr_err("%s: platform_driver_register failed\n", __func__);
+		pr_debug("%s: platform_driver_register failed\n", __func__);
 		goto error_platform_driver;
 	}
 	pr_debug("%s: dev_avtimer_init : done\n", __func__);
@@ -622,7 +622,7 @@ int  __init avtimer_init(void)
 	return 0;
 error_platform_driver:
 
-	pr_err("%s: encounterd error\n", __func__);
+	pr_debug("%s: encounterd error\n", __func__);
 	return rc;
 }
 

@@ -683,7 +683,7 @@ static int opp_notify(struct notifier_block *nb,
 
 	if (kgsl_pwr_limits_set_freq(pwr->cooling_pwr_limit,
 			pwr->pwrlevels[max_level].gpu_freq)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"Failed to set cooling thermal limit via limits fw\n");
 		mutex_lock(&device->mutex);
 		pwr->thermal_pwrlevel = max_level;
@@ -777,7 +777,7 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 					kgsl_pwrscale_midframe_timer;
 			kgsl_midframe->device = device;
 		} else
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "Failed to enable-midframe-timer feature\n");
 	}
 
@@ -805,7 +805,7 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 
 	pwrscale->devfreq_wq = create_freezable_workqueue("kgsl_devfreq_wq");
 	if (!pwrscale->devfreq_wq) {
-		dev_err(device->dev, "Failed to allocate kgsl devfreq workqueue\n");
+		dev_dbg(device->dev, "Failed to allocate kgsl devfreq workqueue\n");
 		device->pwrscale.enabled = false;
 		return -ENOMEM;
 	}
@@ -848,7 +848,7 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 				NULL);
 
 		if (IS_ERR_OR_NULL(bus_devfreq))
-			dev_err(device->dev, "Bus scaling not enabled\n");
+			dev_dbg(device->dev, "Bus scaling not enabled\n");
 		else
 			pwrscale->gpu_profile.bus_devfreq = bus_devfreq;
 	}

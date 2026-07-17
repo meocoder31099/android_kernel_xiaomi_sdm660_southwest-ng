@@ -823,7 +823,7 @@ static void xpad_presence_work(struct work_struct *work)
 		error = xpad_init_input(xpad);
 		if (error) {
 			/* complain only, not much else we can do here */
-			dev_err(&xpad->dev->dev,
+			dev_dbg(&xpad->dev->dev,
 				"unable to init device: %d\n", error);
 		} else {
 			rcu_assign_pointer(xpad->x360w_dev, xpad->dev);
@@ -1014,7 +1014,7 @@ static void xpad_irq_in(struct urb *urb)
 exit:
 	retval = usb_submit_urb(urb, GFP_ATOMIC);
 	if (retval)
-		dev_err(dev, "%s - usb_submit_urb failed with result %d\n",
+		dev_dbg(dev, "%s - usb_submit_urb failed with result %d\n",
 			__func__, retval);
 }
 
@@ -1093,7 +1093,7 @@ static int xpad_try_sending_next_out_packet(struct usb_xpad *xpad)
 		usb_anchor_urb(xpad->irq_out, &xpad->irq_out_anchor);
 		error = usb_submit_urb(xpad->irq_out, GFP_ATOMIC);
 		if (error) {
-			dev_err(&xpad->intf->dev,
+			dev_dbg(&xpad->intf->dev,
 				"%s - usb_submit_urb failed with result %d\n",
 				__func__, error);
 			usb_unanchor_urb(xpad->irq_out);
@@ -1141,7 +1141,7 @@ static void xpad_irq_out(struct urb *urb)
 		usb_anchor_urb(urb, &xpad->irq_out_anchor);
 		error = usb_submit_urb(urb, GFP_ATOMIC);
 		if (error) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"%s - usb_submit_urb failed with result %d\n",
 				__func__, error);
 			usb_unanchor_urb(urb);
@@ -1194,7 +1194,7 @@ static void xpad_stop_output(struct usb_xpad *xpad)
 	if (xpad->xtype != XTYPE_UNKNOWN) {
 		if (!usb_wait_anchor_empty_timeout(&xpad->irq_out_anchor,
 						   5000)) {
-			dev_warn(&xpad->intf->dev,
+			dev_dbg(&xpad->intf->dev,
 				 "timed out waiting for output URB to complete, killing\n");
 			usb_kill_anchored_urbs(&xpad->irq_out_anchor);
 		}

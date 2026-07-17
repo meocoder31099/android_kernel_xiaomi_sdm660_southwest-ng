@@ -30,7 +30,7 @@ static int audio_in_pause(struct q6audio_in  *audio)
 
 	rc = q6asm_cmd(audio->ac, CMD_PAUSE);
 	if (rc < 0)
-		pr_err("%s:session id %d: pause cmd failed rc=%d\n", __func__,
+		pr_debug("%s:session id %d: pause cmd failed rc=%d\n", __func__,
 				audio->ac->session, rc);
 
 	return rc;
@@ -46,14 +46,14 @@ static int audio_in_flush(struct q6audio_in  *audio)
 		/* Implicitly issue a pause to the encoder before flushing */
 		rc = audio_in_pause(audio);
 		if (rc < 0) {
-			pr_err("%s:session id %d: pause cmd failed rc=%d\n",
+			pr_debug("%s:session id %d: pause cmd failed rc=%d\n",
 				 __func__, audio->ac->session, rc);
 			return rc;
 		}
 
 		rc = q6asm_cmd(audio->ac, CMD_FLUSH);
 		if (rc < 0) {
-			pr_err("%s:session id %d: flush cmd failed rc=%d\n",
+			pr_debug("%s:session id %d: flush cmd failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			return rc;
 		}
@@ -115,7 +115,7 @@ int audio_in_disable(struct q6audio_in  *audio)
 
 		rc = q6asm_cmd(audio->ac, CMD_CLOSE);
 		if (rc < 0)
-			pr_err("%s:session id %d: Failed to close the session rc=%d\n",
+			pr_debug("%s:session id %d: Failed to close the session rc=%d\n",
 				__func__, audio->ac->session,
 				rc);
 		audio->stopped = 1;
@@ -141,7 +141,7 @@ int audio_in_buf_alloc(struct q6audio_in *audio)
 				ALIGN_BUF_SIZE(audio->pcm_cfg.buffer_size),
 				audio->pcm_cfg.buffer_count);
 			if (rc < 0) {
-				pr_err("%s:session id %d: Buffer Alloc failed\n",
+				pr_debug("%s:session id %d: Buffer Alloc failed\n",
 						__func__,
 						audio->ac->session);
 				rc = -ENOMEM;
@@ -153,7 +153,7 @@ int audio_in_buf_alloc(struct q6audio_in *audio)
 				ALIGN_BUF_SIZE(audio->str_cfg.buffer_size),
 				audio->str_cfg.buffer_count);
 		if (rc < 0) {
-			pr_err("%s:session id %d: Buffer Alloc failed rc=%d\n",
+			pr_debug("%s:session id %d: Buffer Alloc failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 			rc = -ENOMEM;
 			break;
@@ -165,7 +165,7 @@ int audio_in_buf_alloc(struct q6audio_in *audio)
 				ALIGN_BUF_SIZE(audio->str_cfg.buffer_size),
 				audio->str_cfg.buffer_count);
 		if (rc < 0) {
-			pr_err("%s:session id %d: Buffer Alloc failed rc=%d\n",
+			pr_debug("%s:session id %d: Buffer Alloc failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 			rc = -ENOMEM;
 			break;
@@ -178,7 +178,7 @@ int audio_in_buf_alloc(struct q6audio_in *audio)
 				ALIGN_BUF_SIZE(audio->pcm_cfg.buffer_size),
 				audio->pcm_cfg.buffer_count);
 			if (rc < 0) {
-				pr_err("%s:session id %d: Buffer Alloc failed\n",
+				pr_debug("%s:session id %d: Buffer Alloc failed\n",
 					__func__,
 					audio->ac->session);
 				rc = -ENOMEM;
@@ -202,7 +202,7 @@ int audio_in_set_config(struct file *file,
 	struct q6audio_in  *audio = file->private_data;
 
 	if (audio->feedback != NON_TUNNEL_MODE) {
-		pr_err("%s:session id %d: Not sufficient permission to change the record mode\n",
+		pr_debug("%s:session id %d: Not sufficient permission to change the record mode\n",
 			__func__, audio->ac->session);
 		rc = -EACCES;
 		goto ret;
@@ -220,7 +220,7 @@ int audio_in_set_config(struct file *file,
 			ALIGN_BUF_SIZE(audio->pcm_cfg.buffer_size),
 			audio->pcm_cfg.buffer_count);
 		if (rc < 0) {
-			pr_err("%s:session id %d: Buffer Alloc failed\n",
+			pr_debug("%s:session id %d: Buffer Alloc failed\n",
 				__func__, audio->ac->session);
 			rc = -ENOMEM;
 			goto ret;
@@ -250,7 +250,7 @@ static long audio_in_ioctl_shared(struct file *file,
 		 */
 		rc = audio_in_flush(audio);
 		if (rc < 0)
-			pr_err("%s:session id %d: Flush Fail rc=%d\n",
+			pr_debug("%s:session id %d: Flush Fail rc=%d\n",
 				__func__, audio->ac->session, rc);
 		else { /* Register back the flushed read buffer with DSP */
 			int cnt = 0;
@@ -271,14 +271,14 @@ static long audio_in_ioctl_shared(struct file *file,
 	case AUDIO_GET_SESSION_ID: {
 		if (copy_to_user((void *) arg, &audio->ac->session,
 			sizeof(u16))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_SESSION_ID failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_SESSION_ID failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -325,7 +325,7 @@ long audio_in_ioctl(struct file *file,
 		struct msm_audio_stream_config cfg;
 
 		if (copy_from_user(&cfg, (void *)arg, sizeof(cfg))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_STREAM_CONFIG failed\n"
+			pr_debug("%s: copy_from_user for AUDIO_SET_STREAM_CONFIG failed\n"
 				, __func__);
 			rc = -EFAULT;
 			break;
@@ -350,7 +350,7 @@ long audio_in_ioctl(struct file *file,
 				ALIGN_BUF_SIZE(audio->str_cfg.buffer_size),
 				audio->str_cfg.buffer_count);
 			if (rc < 0) {
-				pr_err("%s: session id %d: Buffer Alloc failed rc=%d\n",
+				pr_debug("%s: session id %d: Buffer Alloc failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 				rc = -ENOMEM;
 				break;
@@ -414,7 +414,7 @@ long audio_in_ioctl(struct file *file,
 		struct msm_audio_config cfg;
 
 		if (copy_from_user(&cfg, (void *)arg, sizeof(cfg))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_CONFIG failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -488,7 +488,7 @@ long audio_in_compat_ioctl(struct file *file,
 		stats_32.byte_count = atomic_read(&audio->in_bytes);
 		stats_32.sample_count = atomic_read(&audio->in_samples);
 		if (copy_to_user((void *) arg, &stats_32, sizeof(stats_32))) {
-			pr_err("%s: copy_to_user failed for AUDIO_GET_STATS_32\n",
+			pr_debug("%s: copy_to_user failed for AUDIO_GET_STATS_32\n",
 				__func__);
 			return -EFAULT;
 		}
@@ -509,7 +509,7 @@ long audio_in_compat_ioctl(struct file *file,
 		cfg_32.buffer_size = audio->str_cfg.buffer_size;
 		cfg_32.buffer_count = audio->str_cfg.buffer_count;
 		if (copy_to_user((void *)arg, &cfg_32, sizeof(cfg_32))) {
-			pr_err("%s: Copy to user failed\n", __func__);
+			pr_debug("%s: Copy to user failed\n", __func__);
 			rc = -EFAULT;
 		}
 		pr_debug("%s:session id %d: AUDIO_GET_STREAM_CONFIG %d %d\n",
@@ -523,7 +523,7 @@ long audio_in_compat_ioctl(struct file *file,
 		struct msm_audio_stream_config cfg;
 
 		if (copy_from_user(&cfg_32, (void *)arg, sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_STREAM_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_STREAM_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -546,9 +546,9 @@ long audio_in_compat_ioctl(struct file *file,
 				ALIGN_BUF_SIZE(audio->str_cfg.buffer_size),
 				audio->str_cfg.buffer_count);
 			if (rc < 0) {
-				pr_err("%s: session id %d:\n",
+				pr_debug("%s: session id %d:\n",
 					__func__, audio->ac->session);
-				pr_err("Buffer Alloc failed rc=%d\n", rc);
+				pr_debug("Buffer Alloc failed rc=%d\n", rc);
 				rc = -ENOMEM;
 				break;
 			}
@@ -565,7 +565,7 @@ long audio_in_compat_ioctl(struct file *file,
 		struct msm_audio_buf_cfg cfg;
 
 		if (copy_from_user(&cfg_32, (void *)arg, sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_BUG_CFG_32 failed",
+			pr_debug("%s: copy_from_user for AUDIO_SET_BUG_CFG_32 failed",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -605,7 +605,7 @@ long audio_in_compat_ioctl(struct file *file,
 
 		if (copy_to_user((void *)arg, &cfg_32,
 			sizeof(struct msm_audio_buf_cfg32))) {
-			pr_err("%s: Copy to user failed\n", __func__);
+			pr_debug("%s: Copy to user failed\n", __func__);
 			rc = -EFAULT;
 		}
 		break;
@@ -624,7 +624,7 @@ long audio_in_compat_ioctl(struct file *file,
 
 		if (copy_to_user((void *)arg, &cfg_32,
 					sizeof(struct msm_audio_config32))) {
-			pr_err("%s: Copy to user failed\n", __func__);
+			pr_debug("%s: Copy to user failed\n", __func__);
 			rc = -EFAULT;
 		}
 		break;
@@ -634,7 +634,7 @@ long audio_in_compat_ioctl(struct file *file,
 		struct msm_audio_config cfg;
 
 		if (copy_from_user(&cfg_32, (void *)arg, sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -715,7 +715,7 @@ ssize_t audio_in_read(struct file *file,
 				sizeof(struct meta_out_dsp)))) {
 			unsigned char num_of_frames;
 
-			pr_info("%s:session id %d: eos %d at output\n",
+			pr_debug("%s:session id %d: eos %d at output\n",
 				__func__, audio->ac->session, audio->eos_rsp);
 			if (buf != start)
 				break;
@@ -775,7 +775,7 @@ ssize_t audio_in_read(struct file *file,
 			count -= bytes_to_copy;
 			buf += bytes_to_copy;
 		} else {
-			pr_err("%s:session id %d: short read data[%pK] bytesavail[%d]bytesrequest[%zd]\n",
+			pr_debug("%s:session id %d: short read data[%pK] bytesavail[%d]bytesrequest[%zd]\n",
 				__func__,
 				audio->ac->session,
 				data, size, count);
@@ -921,7 +921,7 @@ ssize_t audio_in_write(struct file *file,
 				nflags, buf, start);
 	if (nflags & AUD_EOS_SET) {
 		rc = q6asm_cmd(audio->ac, CMD_EOS);
-		pr_info("%s:session id %d: eos %d at input\n", __func__,
+		pr_debug("%s:session id %d: eos %d at input\n", __func__,
 				audio->ac->session, audio->eos_rsp);
 	}
 	pr_debug("%s:session id %d: Written %zd Avail Buf[%d]", __func__,
@@ -939,7 +939,7 @@ int audio_in_release(struct inode *inode, struct file *file)
 	unsigned long flags = 0;
 	struct q6audio_in  *audio = file->private_data;
 
-	pr_info("%s: session id %d\n", __func__, audio->ac->session);
+	pr_debug("%s: session id %d\n", __func__, audio->ac->session);
 	mutex_lock(&audio->lock);
 	audio_in_disable(audio);
 	q6asm_audio_client_free(audio->ac);
