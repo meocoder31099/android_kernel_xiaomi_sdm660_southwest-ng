@@ -14,11 +14,9 @@ on:
           - zyclang
       defconfig:
         description: 'Defconfig file to use'
-        description: 'Defconfig file to use'
         required: false
         default: 'vendor/xiaomi/lavender.config'
       lto_mode:
-        description: 'LTO Mode (thin/full/none)'
         description: 'LTO Mode (thin/full/none)'
         required: false
         default: 'thin'
@@ -29,9 +27,7 @@ on:
           - none
       artifact_scope:
         description: 'Files to upload as artifacts'
-        description: 'Files to upload as artifacts'
         required: false
-        default: 'compact'
         default: 'compact'
         type: choice
         options:
@@ -63,7 +59,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 350  # Limit for free runner is 6 hours; provided with safety margin
-    timeout-minutes: 350  # Limit for free runner is 6 hours; provided with safety margin
 
     steps:
       # ------------------------------------------------------------------
@@ -78,13 +73,11 @@ jobs:
       # 2. CHECK REMAINING DISK SPACE
       # ------------------------------------------------------------------
       - name: Check disk space
-      - name: Check disk space
         run: df -h /
 
       # ------------------------------------------------------------------
       # 3. SETUP EXTRA SWAP SPACE
       # ------------------------------------------------------------------
-      - name: Setup additional swap
       - name: Setup additional swap
         run: |
           LTO_MODE="${{ github.event.inputs.lto_mode || 'thin' }}"
@@ -96,7 +89,6 @@ jobs:
           fi
 
           echo "Adding ${SWAP_SIZE} swap (LTO mode: ${LTO_MODE})..."
-          echo "Adding ${SWAP_SIZE} swap (LTO mode: ${LTO_MODE})..."
           sudo fallocate -l "$SWAP_SIZE" /swapfile_ci
           sudo chmod 600 /swapfile_ci
           sudo mkswap /swapfile_ci
@@ -104,7 +96,6 @@ jobs:
           free -h
 
       # ------------------------------------------------------------------
-      # 4. INSTALL BUILD DEPENDENCIES
       # 4. INSTALL BUILD DEPENDENCIES
       # ------------------------------------------------------------------
       - name: Install dependencies
@@ -120,28 +111,21 @@ jobs:
       # 5. CACHE & DOWNLOAD TOOLCHAIN (ALWAYS CACHED - EXCEPTION CACHE RULE)
       # ------------------------------------------------------------------
       # AOSP Clang Configuration
-      # AOSP Clang Configuration
       - name: Cache AOSP Clang toolchain
-        if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' }}
-        id: cache-aosp
         if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' }}
         id: cache-aosp
         uses: actions/cache@v5
         with:
           path: ${{ env.TC_AOSP_DIR }}
-          path: ${{ env.TC_AOSP_DIR }}
           key: aosp-clang-${{ env.AOSP_CLANG_TAG }}
 
       - name: Download AOSP Clang toolchain
         if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' && steps.cache-aosp.outputs.cache-hit != 'true' }}
-        if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' && steps.cache-aosp.outputs.cache-hit != 'true' }}
         run: |
-          mkdir -p "$TC_AOSP_DIR"
           mkdir -p "$TC_AOSP_DIR"
           curl -L --fail \
             "${AOSP_CLANG_URL}/+archive/refs/heads/main/clang-${AOSP_CLANG_TAG}.tar.gz" \
             -o /tmp/clang.tar.gz
-          tar -xzf /tmp/clang.tar.gz -C "$TC_AOSP_DIR"
           tar -xzf /tmp/clang.tar.gz -C "$TC_AOSP_DIR"
           rm -f /tmp/clang.tar.gz
 
@@ -196,9 +180,7 @@ jobs:
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
-          key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
           restore-keys: |
-            ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-
             ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-
 
       - name: Setup ccache
@@ -233,7 +215,6 @@ jobs:
       # 7.5. PREPARE ARTIFACT NAME
       # ------------------------------------------------------------------
       - name: Prepare artifact name
-      - name: Prepare artifact name
         id: meta
         if: always()
         run: |
@@ -242,12 +223,8 @@ jobs:
           DATE_STR=$(date +'%d%m%Y')
           TOOLCHAIN_LABEL="${{ github.event.inputs.toolchain || 'aosp' }}"
           echo "artifact_name=kernel-4.19-${TOOLCHAIN_LABEL}-${BRANCH_SAFE}-${{ github.run_number }}-${DATE_STR}" >> "$GITHUB_OUTPUT"
-          DATE_STR=$(date +'%d%m%Y')
-          TOOLCHAIN_LABEL="${{ github.event.inputs.toolchain || 'aosp' }}"
-          echo "artifact_name=kernel-4.19-${TOOLCHAIN_LABEL}-${BRANCH_SAFE}-${{ github.run_number }}-${DATE_STR}" >> "$GITHUB_OUTPUT"
 
       # ------------------------------------------------------------------
-      # 8. BUILD KERNEL (with timer)
       # 8. BUILD KERNEL (with timer)
       # ------------------------------------------------------------------
       - name: Build kernel
@@ -291,7 +268,6 @@ jobs:
           fi
 
           # Apply custom timestamp only if KBUILD_BUILD_TIMESTAMP is set in env
-          # Apply custom timestamp only if KBUILD_BUILD_TIMESTAMP is set in env
           if [ -n "${KBUILD_BUILD_TIMESTAMP:-}" ]; then
             TOOLCHAIN_ARGS+=(KBUILD_BUILD_TIMESTAMP="$KBUILD_BUILD_TIMESTAMP")
           fi
@@ -312,7 +288,6 @@ jobs:
           SEC=$((DURATION % 60))
 
           echo "-----------------------------------------------------"
-          echo "Total compilation time: ${MIN} minutes ${SEC} seconds"
           echo "Total compilation time: ${MIN} minutes ${SEC} seconds"
           echo "-----------------------------------------------------"
 
@@ -340,9 +315,7 @@ jobs:
         run: |
           if [ -f "$OUT_DIR/arch/arm64/boot/Image.gz-dtb" ] || [ -f "$OUT_DIR/arch/arm64/boot/Image.gz" ]; then
             echo "BUILD SUCCESSFUL"
-            echo "BUILD SUCCESSFUL"
           else
-            echo "BUILD FAILED - Image.gz file not found"
             echo "BUILD FAILED - Image.gz file not found"
             exit 1
           fi
@@ -352,8 +325,6 @@ jobs:
       # ------------------------------------------------------------------
       - name: Upload kernel image (compact - boot folder)
         if: ${{ (github.event.inputs.artifact_scope || 'compact') == 'compact' }}
-      - name: Upload kernel image (compact - boot folder)
-        if: ${{ (github.event.inputs.artifact_scope || 'compact') == 'compact' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.meta.outputs.artifact_name }}
@@ -361,8 +332,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Upload kernel build (complete - entire out directory)
-        if: ${{ github.event.inputs.artifact_scope == 'complete' }}
       - name: Upload kernel build (complete - entire out directory)
         if: ${{ github.event.inputs.artifact_scope == 'complete' }}
         uses: actions/upload-artifact@v7
@@ -375,7 +344,6 @@ jobs:
       # ------------------------------------------------------------------
       # 10.5. UPLOAD BUILD LOG
       # ------------------------------------------------------------------
-      - name: Upload build log
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v7
@@ -393,15 +361,10 @@ jobs:
         run: |
           {
             echo "## Kernel Build Summary"
-            echo "## Kernel Build Summary"
             echo ""
-            echo "| Item | Value |"
             echo "| Item | Value |"
             echo "|---|---|"
             echo "| Defconfig | \`${{ steps.build.outputs.defconfig }}\` |"
-            echo "| Toolchain | \`${{ github.event.inputs.toolchain || 'aosp' }}\` |"
-            echo "| LTO Mode | \`${{ steps.build.outputs.lto_mode }}\` |"
-            echo "| Compilation Time | **${{ steps.build.outputs.duration_min }} minutes ${{ steps.build.outputs.duration_sec }} seconds** |"
             echo "| Toolchain | \`${{ github.event.inputs.toolchain || 'aosp' }}\` |"
             echo "| LTO Mode | \`${{ steps.build.outputs.lto_mode }}\` |"
             echo "| Compilation Time | **${{ steps.build.outputs.duration_min }} minutes ${{ steps.build.outputs.duration_sec }} seconds** |"
