@@ -47,8 +47,8 @@ env:
   TC_NEUTRON_DIR: ${{ github.workspace }}/toolchain/neutron-clang
   TC_ZYCLANG_DIR: ${{ github.workspace }}/toolchain/zyclang
   OUT_DIR: ${{ github.workspace }}/kernel/out
-  AOSP_CLANG_TAG: r547379
-  AOSP_CLANG_URL: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
+  AOSP_CLANG_TAG: r596125
+  AOSP_CLANG_URL: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/8b6826407e25a197d7cf7ceacab0bf67c11173de/clang-r596125.tar.gz
   ZYCLANG_TAG: 23.0.0git-20260130
   ZYCLANG_URL: https://github.com/ZyCromerZ/Clang/releases/download/23.0.0git-20260130-release/Clang-23.0.0git-20260130.tar.gz
   # Uncomment the line below to set a custom/manual build date.
@@ -123,9 +123,7 @@ jobs:
         if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' && steps.cache-aosp.outputs.cache-hit != 'true' }}
         run: |
           mkdir -p "$TC_AOSP_DIR"
-          curl -L --fail \
-            "${AOSP_CLANG_URL}/+archive/refs/heads/main/clang-${AOSP_CLANG_TAG}.tar.gz" \
-            -o /tmp/clang.tar.gz
+          curl -L --fail "${{ env.AOSP_CLANG_URL }}" -o /tmp/clang.tar.gz
           tar -xzf /tmp/clang.tar.gz -C "$TC_AOSP_DIR"
           rm -f /tmp/clang.tar.gz
 
@@ -176,7 +174,7 @@ jobs:
       # ------------------------------------------------------------------
       - name: Restore ccache
         if: ${{ github.event.inputs.use_cache != 'false' }}
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
@@ -303,7 +301,7 @@ jobs:
       # ------------------------------------------------------------------
       - name: Save ccache
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
