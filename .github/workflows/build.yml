@@ -1,0 +1,370 @@
+name: Build Kernel 4.19 SDM660
+
+on:
+  workflow_dispatch:
+    inputs:
+      toolchain:
+        description: 'Clang Toolchain / Compiler'
+        required: false
+        default: 'aosp'
+        type: choice
+        options:
+          - aosp
+          - neutron
+          - zyclang
+      defconfig:
+        description: 'Defconfig file to use'
+        required: false
+        default: 'vendor/xiaomi/lavender.config'
+      lto_mode:
+        description: 'LTO Mode (thin/full/none)'
+        required: false
+        default: 'thin'
+        type: choice
+        options:
+          - thin
+          - full
+          - none
+      artifact_scope:
+        description: 'Files to upload as artifacts'
+        required: false
+        default: 'compact'
+        type: choice
+        options:
+          - compact
+          - complete
+      use_cache:
+        description: 'Use Cache (ccache) to speed up compilation'
+        required: false
+        default: true
+        type: boolean
+  # push:
+  #   branches:
+  #     - main-dynamic
+env:
+  KERNEL_DIR: ${{ github.workspace }}/kernel
+  TC_AOSP_DIR: ${{ github.workspace }}/toolchain/aosp-clang
+  TC_NEUTRON_DIR: ${{ github.workspace }}/toolchain/neutron-clang
+  TC_ZYCLANG_DIR: ${{ github.workspace }}/toolchain/zyclang
+  OUT_DIR: ${{ github.workspace }}/kernel/out
+  AOSP_CLANG_TAG: r596125
+  AOSP_CLANG_URL: https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/8b6826407e25a197d7cf7ceacab0bf67c11173de/clang-r596125.tar.gz
+  ZYCLANG_TAG: 23.0.0git-20260130
+  ZYCLANG_URL: https://github.com/ZyCromerZ/Clang/releases/download/23.0.0git-20260130-release/Clang-23.0.0git-20260130.tar.gz
+  # Uncomment the line below to set a custom/manual build date.
+  # If left commented out (default), the kernel will use the runner's build timestamp.
+  # KBUILD_BUILD_TIMESTAMP="Sun June 21 16:02:52 WIB 2026"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350  # Limit for free runner is 6 hours; provided with safety margin
+
+    steps:
+      # ------------------------------------------------------------------
+      # 1. CHECKOUT SOURCE
+      # ------------------------------------------------------------------
+      - name: Checkout kernel source
+        uses: actions/checkout@v6
+        with:
+          path: kernel
+
+      # ------------------------------------------------------------------
+      # 2. CHECK REMAINING DISK SPACE
+      # ------------------------------------------------------------------
+      - name: Check disk space
+        run: df -h /
+
+      # ------------------------------------------------------------------
+      # 3. SETUP EXTRA SWAP SPACE
+      # ------------------------------------------------------------------
+      - name: Setup additional swap
+        run: |
+          LTO_MODE="${{ github.event.inputs.lto_mode || 'thin' }}"
+
+          if [ "$LTO_MODE" = "full" ]; then
+            SWAP_SIZE="8G"
+          else
+            SWAP_SIZE="4G"
+          fi
+
+          echo "Adding ${SWAP_SIZE} swap (LTO mode: ${LTO_MODE})..."
+          sudo fallocate -l "$SWAP_SIZE" /swapfile_ci
+          sudo chmod 600 /swapfile_ci
+          sudo mkswap /swapfile_ci
+          sudo swapon /swapfile_ci
+          free -h
+
+      # ------------------------------------------------------------------
+      # 4. INSTALL BUILD DEPENDENCIES
+      # ------------------------------------------------------------------
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc bison flex libssl-dev libelf-dev \
+            build-essential zip curl git python3 \
+            python-is-python3 ccache llvm lld \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
+
+      # ------------------------------------------------------------------
+      # 5. CACHE & DOWNLOAD TOOLCHAIN (ALWAYS CACHED - EXCEPTION CACHE RULE)
+      # ------------------------------------------------------------------
+      # AOSP Clang Configuration
+      - name: Cache AOSP Clang toolchain
+        if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' }}
+        id: cache-aosp
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.TC_AOSP_DIR }}
+          key: aosp-clang-${{ env.AOSP_CLANG_TAG }}
+
+      - name: Download AOSP Clang toolchain
+        if: ${{ (github.event.inputs.toolchain || 'aosp') == 'aosp' && steps.cache-aosp.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p "$TC_AOSP_DIR"
+          curl -L --fail "${{ env.AOSP_CLANG_URL }}" -o /tmp/clang.tar.gz
+          tar -xzf /tmp/clang.tar.gz -C "$TC_AOSP_DIR"
+          rm -f /tmp/clang.tar.gz
+
+      # Neutron Clang Configuration
+      - name: Get current week (for Neutron cache validation)
+        if: ${{ github.event.inputs.toolchain == 'neutron' }}
+        id: get-date
+        run: echo "date=$(date +'%Y-%U')" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Neutron Clang toolchain
+        if: ${{ github.event.inputs.toolchain == 'neutron' }}
+        id: cache-neutron
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.TC_NEUTRON_DIR }}
+          key: neutron-clang-${{ steps.get-date.outputs.date }}
+          restore-keys: |
+            neutron-clang-
+
+      - name: Download Neutron Clang toolchain
+        if: ${{ github.event.inputs.toolchain == 'neutron' && steps.cache-neutron.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p "$TC_NEUTRON_DIR"
+          cd "$TC_NEUTRON_DIR"
+          curl -LO "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman"
+          chmod +x antman
+          ./antman -S
+
+      # ZyC Clang Configuration
+      - name: Cache ZyC Clang toolchain
+        if: ${{ github.event.inputs.toolchain == 'zyclang' }}
+        id: cache-zyclang
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.TC_ZYCLANG_DIR }}
+          key: zyclang-${{ env.ZYCLANG_TAG }}
+
+      - name: Download ZyC Clang toolchain
+        if: ${{ github.event.inputs.toolchain == 'zyclang' && steps.cache-zyclang.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p "$TC_ZYCLANG_DIR"
+          curl -L --fail "${{ env.ZYCLANG_URL }}" -o /tmp/zyclang.tar.gz
+          tar -xzf /tmp/zyclang.tar.gz -C "$TC_ZYCLANG_DIR"
+          rm -f /tmp/zyclang.tar.gz
+
+      # ------------------------------------------------------------------
+      # 6. RESTORE CCACHE (Only if use_cache is enabled/true)
+      # ------------------------------------------------------------------
+      - name: Restore ccache
+        if: ${{ github.event.inputs.use_cache != 'false' }}
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.ccache
+          key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-
+
+      - name: Setup ccache
+        run: |
+          export CCACHE_DIR=~/.ccache
+          ccache -M 5G
+          ccache -z
+
+      # ------------------------------------------------------------------
+      # 7. SETUP TOOLCHAIN ENV
+      # ------------------------------------------------------------------
+      - name: Setup toolchain PATH
+        run: |
+          TOOLCHAIN_CHOICE="${{ github.event.inputs.toolchain || 'aosp' }}"
+          if [ "$TOOLCHAIN_CHOICE" = "neutron" ]; then
+            echo "Using Neutron Clang"
+            echo "$TC_NEUTRON_DIR/bin" >> "$GITHUB_PATH"
+          elif [ "$TOOLCHAIN_CHOICE" = "zyclang" ]; then
+            echo "Using ZyC Clang"
+            echo "$TC_ZYCLANG_DIR/bin" >> "$GITHUB_PATH"
+          else
+            echo "Using AOSP Clang"
+            echo "$TC_AOSP_DIR/bin" >> "$GITHUB_PATH"
+          fi
+
+      - name: Show toolchain info
+        run: |
+          which clang
+          clang --version
+
+      # ------------------------------------------------------------------
+      # 7.5. PREPARE ARTIFACT NAME
+      # ------------------------------------------------------------------
+      - name: Prepare artifact name
+        id: meta
+        if: always()
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_SAFE="${BRANCH_NAME//\//-}"
+          DATE_STR=$(date +'%d%m%Y')
+          TOOLCHAIN_LABEL="${{ github.event.inputs.toolchain || 'aosp' }}"
+          echo "artifact_name=kernel-4.19-${TOOLCHAIN_LABEL}-${BRANCH_SAFE}-${{ github.run_number }}-${DATE_STR}" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------------------
+      # 8. BUILD KERNEL (with timer)
+      # ------------------------------------------------------------------
+      - name: Build kernel
+        id: build
+        run: |
+          START_TIME=$(date +%s)
+
+          cd "$KERNEL_DIR"
+          mkdir -p "$OUT_DIR"
+
+          DEFCONFIG="${{ github.event.inputs.defconfig }}"
+          LTO_MODE="${{ github.event.inputs.lto_mode }}"
+
+          CUSTOM_CFLAGS="-march=armv8-a -mno-outline"
+
+          TOOLCHAIN_ARGS=(
+            ARCH=arm64
+            CC="ccache clang"
+            HOSTCC="ccache clang"
+            HOSTCXX="ccache clang++"
+            LD=ld.lld
+            AR=llvm-ar
+            NM=llvm-nm
+            OBJCOPY=llvm-objcopy
+            OBJDUMP=llvm-objdump
+            STRIP=llvm-strip
+            READELF=llvm-readelf
+            OBJSIZE=llvm-size
+            LLVM=1
+            LLVM_IAS=1
+            KBUILD_BUILD_USER=builder
+            KBUILD_BUILD_HOST=ardiantowb
+            CLANG_TRIPLE=aarch64-linux-gnu-
+            CROSS_COMPILE=aarch64-linux-gnu-
+            CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+            KCFLAGS="$CUSTOM_CFLAGS"
+          )
+
+          if [ "$LTO_MODE" != "none" ]; then
+            TOOLCHAIN_ARGS+=(LTO="$LTO_MODE")
+          fi
+
+          # Apply custom timestamp only if KBUILD_BUILD_TIMESTAMP is set in env
+          if [ -n "${KBUILD_BUILD_TIMESTAMP:-}" ]; then
+            TOOLCHAIN_ARGS+=(KBUILD_BUILD_TIMESTAMP="$KBUILD_BUILD_TIMESTAMP")
+          fi
+
+          echo "=== Defconfig: $DEFCONFIG | LTO: $LTO_MODE ==="
+
+          LOG_FILE="${{ github.workspace }}/build.log"
+
+          make O="$OUT_DIR" "${TOOLCHAIN_ARGS[@]}" vendor/xiaomi/sdm660_defconfig "$DEFCONFIG" 2>&1 | tee "$LOG_FILE"
+          make -j"$(nproc --all)" O="$OUT_DIR" "${TOOLCHAIN_ARGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+          BUILD_EXIT=${PIPESTATUS[0]}
+
+          ccache -s | tee -a "$LOG_FILE"
+
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          MIN=$((DURATION / 60))
+          SEC=$((DURATION % 60))
+
+          echo "-----------------------------------------------------"
+          echo "Total compilation time: ${MIN} minutes ${SEC} seconds"
+          echo "-----------------------------------------------------"
+
+          echo "duration_min=${MIN}" >> "$GITHUB_OUTPUT"
+          echo "duration_sec=${SEC}" >> "$GITHUB_OUTPUT"
+          echo "defconfig=${DEFCONFIG}" >> "$GITHUB_OUTPUT"
+          echo "lto_mode=${LTO_MODE}" >> "$GITHUB_OUTPUT"
+
+          exit "$BUILD_EXIT"
+
+      # ------------------------------------------------------------------
+      # 8.5. SAVE CCACHE
+      # ------------------------------------------------------------------
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.ccache
+          key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
+
+      # ------------------------------------------------------------------
+      # 9. VERIFY BUILD OUTPUT
+      # ------------------------------------------------------------------
+      - name: Verify build output
+        run: |
+          if [ -f "$OUT_DIR/arch/arm64/boot/Image.gz-dtb" ] || [ -f "$OUT_DIR/arch/arm64/boot/Image.gz" ]; then
+            echo "BUILD SUCCESSFUL"
+          else
+            echo "BUILD FAILED - Image.gz file not found"
+            exit 1
+          fi
+
+      # ------------------------------------------------------------------
+      # 10. UPLOAD ARTIFACTS
+      # ------------------------------------------------------------------
+      - name: Upload kernel image (compact - boot folder)
+        if: ${{ (github.event.inputs.artifact_scope || 'compact') == 'compact' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}
+          path: ${{ env.OUT_DIR }}/arch/arm64/boot
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload kernel build (complete - entire out directory)
+        if: ${{ github.event.inputs.artifact_scope == 'complete' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}-out
+          path: ${{ env.OUT_DIR }}
+          if-no-files-found: warn
+          retention-days: 7
+
+      # ------------------------------------------------------------------
+      # 10.5. UPLOAD BUILD LOG
+      # ------------------------------------------------------------------
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.meta.outputs.artifact_name }}-log
+          path: ${{ github.workspace }}/build.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      # ------------------------------------------------------------------
+      # 11. STEP SUMMARY
+      # ------------------------------------------------------------------
+      - name: Build summary
+        if: always()
+        run: |
+          {
+            echo "## Kernel Build Summary"
+            echo ""
+            echo "| Item | Value |"
+            echo "|---|---|"
+            echo "| Defconfig | \`${{ steps.build.outputs.defconfig }}\` |"
+            echo "| Toolchain | \`${{ github.event.inputs.toolchain || 'aosp' }}\` |"
+            echo "| LTO Mode | \`${{ steps.build.outputs.lto_mode }}\` |"
+            echo "| Compilation Time | **${{ steps.build.outputs.duration_min }} minutes ${{ steps.build.outputs.duration_sec }} seconds** |"
+            echo "| Status | ${{ job.status }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
