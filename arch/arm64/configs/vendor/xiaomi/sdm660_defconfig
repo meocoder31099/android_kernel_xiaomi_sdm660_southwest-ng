@@ -875,7 +875,7 @@ CONFIG_MQ_ZEN_DEFAULT=y
 #
 # BORE Scheduler
 #
-CONFIG_SCHED_BORE=y
+# CONFIG_SCHED_BORE is not set
 
 # Networking options
 #
