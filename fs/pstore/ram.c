@@ -584,21 +584,21 @@ static int ramoops_init_przs(const char *name,
 			return 0;
 		record_size = mem_sz / *cnt;
 		if (record_size == 0) {
-			dev_err(dev, "%s record size == 0 (%zu / %u)\n",
+			dev_dbg(dev, "%s record size == 0 (%zu / %u)\n",
 				name, mem_sz, *cnt);
 			goto fail;
 		}
 	} else {
 		*cnt = mem_sz / record_size;
 		if (*cnt == 0) {
-			dev_err(dev, "%s record count == 0 (%zu / %zu)\n",
+			dev_dbg(dev, "%s record count == 0 (%zu / %zu)\n",
 				name, mem_sz, record_size);
 			goto fail;
 		}
 	}
 
 	if (*paddr + mem_sz - cxt->phys_addr > cxt->size) {
-		dev_err(dev, "no room for %s mem region (0x%zx@0x%llx) in (0x%lx@0x%llx)\n",
+		dev_dbg(dev, "no room for %s mem region (0x%zx@0x%llx) in (0x%lx@0x%llx)\n",
 			name,
 			mem_sz, (unsigned long long)*paddr,
 			cxt->size, (unsigned long long)cxt->phys_addr);
@@ -608,7 +608,7 @@ static int ramoops_init_przs(const char *name,
 	zone_sz = mem_sz / *cnt;
 	zone_sz = ALIGN_DOWN(zone_sz, 2);
 	if (!zone_sz) {
-		dev_err(dev, "%s zone size == 0\n", name);
+		dev_dbg(dev, "%s zone size == 0\n", name);
 		goto fail;
 	}
 
@@ -622,7 +622,7 @@ static int ramoops_init_przs(const char *name,
 						  cxt->memtype, flags);
 		if (IS_ERR(prz_ar[i])) {
 			err = PTR_ERR(prz_ar[i]);
-			dev_err(dev, "failed to request %s mem region (0x%zx@0x%llx): %d\n",
+			dev_dbg(dev, "failed to request %s mem region (0x%zx@0x%llx): %d\n",
 				name, record_size,
 				(unsigned long long)*paddr, err);
 
@@ -653,7 +653,7 @@ static int ramoops_init_prz(const char *name,
 		return 0;
 
 	if (*paddr + sz - cxt->phys_addr > cxt->size) {
-		dev_err(dev, "no room for %s mem region (0x%zx@0x%llx) in (0x%lx@0x%llx)\n",
+		dev_dbg(dev, "no room for %s mem region (0x%zx@0x%llx) in (0x%lx@0x%llx)\n",
 			name, sz, (unsigned long long)*paddr,
 			cxt->size, (unsigned long long)cxt->phys_addr);
 		return -ENOMEM;
@@ -664,7 +664,7 @@ static int ramoops_init_prz(const char *name,
 	if (IS_ERR(*prz)) {
 		int err = PTR_ERR(*prz);
 
-		dev_err(dev, "failed to request %s mem region (0x%zx@0x%llx): %d\n",
+		dev_dbg(dev, "failed to request %s mem region (0x%zx@0x%llx): %d\n",
 			name, sz, (unsigned long long)*paddr, err);
 		return err;
 	}
@@ -684,13 +684,13 @@ static int ramoops_parse_dt_size(struct platform_device *pdev,
 
 	ret = of_property_read_u32(pdev->dev.of_node, propname, &val32);
 	if (ret < 0 && ret != -EINVAL) {
-		dev_err(&pdev->dev, "failed to parse property %s: %d\n",
+		dev_dbg(&pdev->dev, "failed to parse property %s: %d\n",
 			propname, ret);
 		return ret;
 	}
 
 	if (val32 > INT_MAX) {
-		dev_err(&pdev->dev, "%s %u > INT_MAX\n", propname, val32);
+		dev_dbg(&pdev->dev, "%s %u > INT_MAX\n", propname, val32);
 		return -EOVERFLOW;
 	}
 
@@ -710,7 +710,7 @@ static int ramoops_parse_dt(struct platform_device *pdev,
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"failed to locate DT /reserved-memory resource\n");
 		return -EINVAL;
 	}
@@ -763,20 +763,20 @@ static int ramoops_probe(struct platform_device *pdev)
 	 * probes.
 	 */
 	if (cxt->max_dump_cnt) {
-		pr_err("already initialized\n");
+		pr_debug("already initialized\n");
 		goto fail_out;
 	}
 
 	/* Make sure we didn't get bogus platform data pointer. */
 	if (!pdata) {
-		pr_err("NULL platform data\n");
+		pr_debug("NULL platform data\n");
 		err = -EINVAL;
 		goto fail_out;
 	}
 
 	if (!pdata->mem_size || (!pdata->record_size && !pdata->console_size &&
 			!pdata->ftrace_size && !pdata->pmsg_size)) {
-		pr_err("The memory size and the record/console size must be "
+		pr_debug("The memory size and the record/console size must be "
 			"non-zero\n");
 		err = -EINVAL;
 		goto fail_out;
@@ -859,7 +859,7 @@ static int ramoops_probe(struct platform_device *pdev)
 		cxt->pstore.bufsize = cxt->dprzs[0]->buffer_size;
 		cxt->pstore.buf = kzalloc(cxt->pstore.bufsize, GFP_KERNEL);
 		if (!cxt->pstore.buf) {
-			pr_err("cannot allocate pstore crash dump buffer\n");
+			pr_debug("cannot allocate pstore crash dump buffer\n");
 			err = -ENOMEM;
 			goto fail_clear;
 		}
@@ -867,7 +867,7 @@ static int ramoops_probe(struct platform_device *pdev)
 
 	err = pstore_register(&cxt->pstore);
 	if (err) {
-		pr_err("registering with pstore failed\n");
+		pr_debug("registering with pstore failed\n");
 		goto fail_buf;
 	}
 
@@ -883,7 +883,7 @@ static int ramoops_probe(struct platform_device *pdev)
 	ramoops_pmsg_size = pdata->pmsg_size;
 	ramoops_ftrace_size = pdata->ftrace_size;
 
-	pr_info("attached 0x%lx@0x%llx, ecc: %d/%d\n",
+	pr_debug("attached 0x%lx@0x%llx, ecc: %d/%d\n",
 		cxt->size, (unsigned long long)cxt->phys_addr,
 		cxt->ecc_info.ecc_size, cxt->ecc_info.block_size);
 
@@ -952,11 +952,11 @@ static void __init ramoops_register_dummy(void)
 	if (!mem_size)
 		return;
 
-	pr_info("using module parameters\n");
+	pr_debug("using module parameters\n");
 
 	dummy_data = kzalloc(sizeof(*dummy_data), GFP_KERNEL);
 	if (!dummy_data) {
-		pr_info("could not allocate pdata\n");
+		pr_debug("could not allocate pdata\n");
 		return;
 	}
 
@@ -979,7 +979,7 @@ static void __init ramoops_register_dummy(void)
 	dummy = platform_device_register_data(NULL, "ramoops", -1,
 			dummy_data, sizeof(struct ramoops_platform_data));
 	if (IS_ERR(dummy)) {
-		pr_info("could not create platform device: %ld\n",
+		pr_debug("could not create platform device: %ld\n",
 			PTR_ERR(dummy));
 		dummy = NULL;
 		ramoops_unregister_dummy();

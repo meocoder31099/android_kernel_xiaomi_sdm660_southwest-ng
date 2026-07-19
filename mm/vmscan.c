@@ -528,7 +528,7 @@ static unsigned long do_shrink_slab(struct shrink_control *shrinkctl,
 
 	total_scan += delta;
 	if (total_scan < 0) {
-		pr_err("shrink_slab: %pF negative objects to delete nr=%ld\n",
+		pr_debug("shrink_slab: %pF negative objects to delete nr=%ld\n",
 		       shrinker->scan_objects, total_scan);
 		total_scan = freeable;
 		next_deferred = nr;
@@ -872,7 +872,7 @@ static pageout_t pageout(struct page *page, struct address_space *mapping,
 		if (page_has_private(page)) {
 			if (try_to_free_buffers(page)) {
 				ClearPageDirty(page);
-				pr_info("%s: orphaned page\n", __func__);
+				pr_debug("%s: orphaned page\n", __func__);
 				return PAGE_CLEAN;
 			}
 		}
@@ -5226,7 +5226,7 @@ static int __init init_lru_gen(void)
 	BUILD_BUG_ON(sizeof(MM_STAT_CODES) != NR_MM_STATS + 1);
 
 	if (sysfs_create_group(mm_kobj, &lru_gen_attr_group))
-		pr_err("lru_gen: failed to create sysfs group\n");
+		pr_debug("lru_gen: failed to create sysfs group\n");
 
 	debugfs_create_file("lru_gen", 0644, NULL, NULL, &lru_gen_rw_fops);
 	debugfs_create_file("lru_gen_full", 0444, NULL, NULL, &lru_gen_ro_fops);
@@ -6874,7 +6874,7 @@ static void update_kswapd_threads_node(int nid)
 			pgdat->kswapd[hid] = kthread_run(kswapd, pgdat,
 						"kswapd%d:%d", nid, hid);
 			if (IS_ERR(pgdat->kswapd[hid])) {
-				pr_err("Failed to start kswapd%d on node %d\n",
+				pr_debug("Failed to start kswapd%d on node %d\n",
 					hid, nid);
 				pgdat->kswapd[hid] = NULL;
 				/*
@@ -6902,7 +6902,7 @@ void update_kswapd_threads(void)
 	for_each_node_state(nid, N_MEMORY)
 		update_kswapd_threads_node(nid);
 
-	pr_info("kswapd_thread count changed, old:%d new:%d\n",
+	pr_debug("kswapd_thread count changed, old:%d new:%d\n",
 		kswapd_threads_current, kswapd_threads);
 	kswapd_threads_current = kswapd_threads;
 	mem_hotplug_done();
@@ -6929,7 +6929,7 @@ int kswapd_run(int nid)
 		if (IS_ERR(pgdat->kswapd[hid])) {
 			/* failure at boot is fatal */
 			BUG_ON(system_state < SYSTEM_RUNNING);
-			pr_err("Failed to start kswapd%d on node %d\n",
+			pr_debug("Failed to start kswapd%d on node %d\n",
 				hid, nid);
 			ret = PTR_ERR(pgdat->kswapd[hid]);
 			pgdat->kswapd[hid] = NULL;

@@ -137,7 +137,7 @@ int scsi_partsize(unsigned char *buf, unsigned long capacity,
 			if (!p->sys_ind)
 				continue;
 #ifdef DEBUG
-			printk("scsicam_bios_param : partition %d has system \n",
+			no_printk("scsicam_bios_param : partition %d has system \n",
 			       i);
 #endif
 			cyl = p->cyl + ((p->sector & 0xc0) << 2);
@@ -156,7 +156,7 @@ int scsi_partsize(unsigned char *buf, unsigned long capacity,
 			return -1;
 
 #ifdef DEBUG
-		printk("scsicam_bios_param : end at h = %d, c = %d, s = %d\n",
+		no_printk("scsicam_bios_param : end at h = %d, c = %d, s = %d\n",
 		       end_head, end_cyl, end_sector);
 #endif
 
@@ -174,7 +174,7 @@ int scsi_partsize(unsigned char *buf, unsigned long capacity,
 		    end_head * end_sector + end_sector;
 
 #ifdef DEBUG
-		printk("scsicam_bios_param : logical_end=%d physical_end=%d ext_physical_end=%d ext_cyl=%d\n"
+		no_printk("scsicam_bios_param : logical_end=%d physical_end=%d ext_physical_end=%d ext_cyl=%d\n"
 		  ,logical_end, physical_end, ext_physical_end, ext_cyl);
 #endif
 
@@ -186,7 +186,7 @@ int scsi_partsize(unsigned char *buf, unsigned long capacity,
 			return 0;
 		}
 #ifdef DEBUG
-		printk("scsicam_bios_param : logical (%u) != physical (%u)\n",
+		no_printk("scsicam_bios_param : logical (%u) != physical (%u)\n",
 		       logical_end, physical_end);
 #endif
 	}

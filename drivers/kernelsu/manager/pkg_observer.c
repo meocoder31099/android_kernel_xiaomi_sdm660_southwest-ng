@@ -29,7 +29,7 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask, struct i
     if (mask & FS_ISDIR)
         return 0;
     if (file_name->len == 13 && !memcmp(file_name->name, "packages.list", 13)) {
-        pr_info("packages.list detected: %d\n", mask);
+        pr_debug("packages.list detected: %d\n", mask);
         track_throne(0);
     }
     return 0;
@@ -62,7 +62,7 @@ static int watch_one_dir(struct watch_dir *wd)
 {
     int ret = kern_path(wd->path, LOOKUP_FOLLOW, &wd->kpath);
     if (ret) {
-        pr_info("path not ready: %s (%d)\n", wd->path, ret);
+        pr_debug("path not ready: %s (%d)\n", wd->path, ret);
         return ret;
     }
     wd->inode = d_inode(wd->kpath.dentry);
@@ -70,13 +70,13 @@ static int watch_one_dir(struct watch_dir *wd)
 
     ret = add_mark_on_inode(wd->inode, wd->mask, &wd->mark);
     if (ret) {
-        pr_err("Add mark failed for %s (%d)\n", wd->path, ret);
+        pr_debug("Add mark failed for %s (%d)\n", wd->path, ret);
         path_put(&wd->kpath);
         iput(wd->inode);
         wd->inode = NULL;
         return ret;
     }
-    pr_info("watching %s\n", wd->path);
+    pr_debug("watching %s\n", wd->path);
     return 0;
 }
 
@@ -112,7 +112,7 @@ int ksu_observer_init(void)
         return PTR_ERR(g);
 
     ret = watch_one_dir(&g_watch);
-    pr_info("%s done.\n", __func__);
+    pr_debug("%s done.\n", __func__);
     return 0;
 }
 
@@ -120,5 +120,5 @@ void __exit ksu_observer_exit(void)
 {
     unwatch_one_dir(&g_watch);
     fsnotify_put_group(g);
-    pr_info("%s: done.\n", __func__);
+    pr_debug("%s: done.\n", __func__);
 }

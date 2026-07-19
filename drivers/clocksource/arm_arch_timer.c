@@ -623,7 +623,7 @@ static void arch_timer_check_ool_workaround(enum arch_timer_erratum_match_type t
 		const struct arch_timer_erratum_workaround *__wa;
 		__wa = __this_cpu_read(timer_unstable_counter_workaround);
 		if (__wa && wa != __wa)
-			pr_warn("Can't enable workaround for %s (clashes with %s\n)",
+			pr_debug("Can't enable workaround for %s (clashes with %s\n)",
 				wa->desc, __wa->desc);
 
 		if (__wa)
@@ -631,7 +631,7 @@ static void arch_timer_check_ool_workaround(enum arch_timer_erratum_match_type t
 	}
 
 	arch_timer_enable_workaround(wa, local);
-	pr_info("Enabling %s workaround for %s\n",
+	pr_debug("Enabling %s workaround for %s\n",
 		local ? "local" : "global", wa->desc);
 }
 
@@ -922,8 +922,8 @@ static u32 check_ppi_trigger(int irq)
 	u32 flags = irq_get_trigger_type(irq);
 
 	if (flags != IRQF_TRIGGER_HIGH && flags != IRQF_TRIGGER_LOW) {
-		pr_warn("WARNING: Invalid trigger for IRQ%d, assuming level low\n", irq);
-		pr_warn("WARNING: Please fix your firmware\n");
+		pr_debug("WARNING: Invalid trigger for IRQ%d, assuming level low\n", irq);
+		pr_debug("WARNING: Please fix your firmware\n");
 		flags = IRQF_TRIGGER_LOW;
 	}
 
@@ -969,12 +969,12 @@ static void arch_timer_of_configure_rate(u32 rate, struct device_node *np)
 
 	/* Check the timer frequency. */
 	if (arch_timer_rate == 0)
-		pr_warn("frequency not available\n");
+		pr_debug("frequency not available\n");
 }
 
 static void arch_timer_banner(unsigned type)
 {
-	pr_info("%s%s%s timer(s) running at %lu.%02luMHz (%s%s%s).\n",
+	pr_debug("%s%s%s timer(s) running at %lu.%02luMHz (%s%s%s).\n",
 		type & ARCH_TIMER_TYPE_CP15 ? "cp15" : "",
 		type == (ARCH_TIMER_TYPE_CP15 | ARCH_TIMER_TYPE_MEM) ?
 			" and " : "",
@@ -1177,7 +1177,7 @@ static int __init arch_timer_register(void)
 	}
 
 	if (err) {
-		pr_err("can't register interrupt %d (%d)\n", ppi, err);
+		pr_debug("can't register interrupt %d (%d)\n", ppi, err);
 		goto out_free;
 	}
 
@@ -1229,7 +1229,7 @@ static int __init arch_timer_mem_register(void __iomem *base, unsigned int irq)
 
 	ret = request_irq(irq, func, IRQF_TIMER, "arch_mem_timer", &t->evt);
 	if (ret) {
-		pr_err("Failed to request mem timer irq\n");
+		pr_debug("Failed to request mem timer irq\n");
 		kfree(t);
 	}
 
@@ -1325,7 +1325,7 @@ static int __init arch_timer_of_init(struct device_node *np)
 	u32 rate;
 
 	if (arch_timers_present & ARCH_TIMER_TYPE_CP15) {
-		pr_warn("multiple nodes in dt, skipping\n");
+		pr_debug("multiple nodes in dt, skipping\n");
 		return 0;
 	}
 
@@ -1354,7 +1354,7 @@ static int __init arch_timer_of_init(struct device_node *np)
 		arch_timer_uses_ppi = arch_timer_select_ppi();
 
 	if (!arch_timer_ppi[arch_timer_uses_ppi]) {
-		pr_err("No interrupt available, giving up\n");
+		pr_debug("No interrupt available, giving up\n");
 		return -EINVAL;
 	}
 
@@ -1382,7 +1382,7 @@ arch_timer_mem_frame_get_cntfrq(struct arch_timer_mem_frame *frame)
 
 	base = ioremap(frame->cntbase, frame->size);
 	if (!base) {
-		pr_err("Unable to map frame @ %pa\n", &frame->cntbase);
+		pr_debug("Unable to map frame @ %pa\n", &frame->cntbase);
 		return 0;
 	}
 
@@ -1403,7 +1403,7 @@ arch_timer_mem_find_best_frame(struct arch_timer_mem *timer_mem)
 
 	cntctlbase = ioremap(timer_mem->cntctlbase, timer_mem->size);
 	if (!cntctlbase) {
-		pr_err("Can't map CNTCTLBase @ %pa\n",
+		pr_debug("Can't map CNTCTLBase @ %pa\n",
 			&timer_mem->cntctlbase);
 		return NULL;
 	}
@@ -1456,7 +1456,7 @@ arch_timer_mem_frame_register(struct arch_timer_mem_frame *frame)
 		irq = frame->phys_irq;
 
 	if (!irq) {
-		pr_err("Frame missing %s irq.\n",
+		pr_debug("Frame missing %s irq.\n",
 		       arch_timer_mem_use_virtual ? "virt" : "phys");
 		return -EINVAL;
 	}
@@ -1467,7 +1467,7 @@ arch_timer_mem_frame_register(struct arch_timer_mem_frame *frame)
 
 	base = ioremap(frame->cntbase, frame->size);
 	if (!base) {
-		pr_err("Can't map frame's registers\n");
+		pr_debug("Can't map frame's registers\n");
 		return -ENXIO;
 	}
 
@@ -1506,12 +1506,12 @@ static int __init arch_timer_mem_of_init(struct device_node *np)
 		struct arch_timer_mem_frame *frame;
 
 		if (of_property_read_u32(frame_node, "frame-number", &n)) {
-			pr_err(FW_BUG "Missing frame-number.\n");
+			pr_debug(FW_BUG "Missing frame-number.\n");
 			of_node_put(frame_node);
 			goto out;
 		}
 		if (n >= ARCH_TIMER_MEM_MAX_FRAMES) {
-			pr_err(FW_BUG "Wrong frame-number, only 0-%u are permitted.\n",
+			pr_debug(FW_BUG "Wrong frame-number, only 0-%u are permitted.\n",
 			       ARCH_TIMER_MEM_MAX_FRAMES - 1);
 			of_node_put(frame_node);
 			goto out;
@@ -1519,7 +1519,7 @@ static int __init arch_timer_mem_of_init(struct device_node *np)
 		frame = &timer_mem->frame[n];
 
 		if (frame->valid) {
-			pr_err(FW_BUG "Duplicated frame-number.\n");
+			pr_debug(FW_BUG "Duplicated frame-number.\n");
 			of_node_put(frame_node);
 			goto out;
 		}
@@ -1541,7 +1541,7 @@ static int __init arch_timer_mem_of_init(struct device_node *np)
 
 	frame = arch_timer_mem_find_best_frame(timer_mem);
 	if (!frame) {
-		pr_err("Unable to find a suitable frame in timer @ %pa\n",
+		pr_debug("Unable to find a suitable frame in timer @ %pa\n",
 			&timer_mem->cntctlbase);
 		ret = -EINVAL;
 		goto out;
@@ -1580,7 +1580,7 @@ arch_timer_mem_verify_cntfrq(struct arch_timer_mem *timer_mem)
 		if (rate == arch_timer_rate)
 			continue;
 
-		pr_err(FW_BUG "CNTFRQ mismatch: frame @ %pa: (0x%08lx), CPU: (0x%08lx)\n",
+		pr_debug(FW_BUG "CNTFRQ mismatch: frame @ %pa: (0x%08lx), CPU: (0x%08lx)\n",
 			&frame->cntbase,
 			(unsigned long)rate, (unsigned long)arch_timer_rate);
 
@@ -1618,7 +1618,7 @@ static int __init arch_timer_mem_acpi_init(int platform_timer_count)
 
 		ret = arch_timer_mem_verify_cntfrq(timer);
 		if (ret) {
-			pr_err("Disabling MMIO timers due to CNTFRQ mismatch\n");
+			pr_debug("Disabling MMIO timers due to CNTFRQ mismatch\n");
 			goto out;
 		}
 
@@ -1627,7 +1627,7 @@ static int __init arch_timer_mem_acpi_init(int platform_timer_count)
 			 * Only complain about missing suitable frames if we
 			 * haven't already found one in a previous iteration.
 			 */
-			pr_err("Unable to find a suitable frame in timer @ %pa\n",
+			pr_debug("Unable to find a suitable frame in timer @ %pa\n",
 				&timer->cntctlbase);
 	}
 
@@ -1644,7 +1644,7 @@ static int __init arch_timer_acpi_init(struct acpi_table_header *table)
 	int ret, platform_timer_count;
 
 	if (arch_timers_present & ARCH_TIMER_TYPE_CP15) {
-		pr_warn("already initialized, skipping\n");
+		pr_debug("already initialized, skipping\n");
 		return -EINVAL;
 	}
 
@@ -1652,7 +1652,7 @@ static int __init arch_timer_acpi_init(struct acpi_table_header *table)
 
 	ret = acpi_gtdt_init(table, &platform_timer_count);
 	if (ret) {
-		pr_err("Failed to init GTDT table.\n");
+		pr_debug("Failed to init GTDT table.\n");
 		return ret;
 	}
 
@@ -1673,13 +1673,13 @@ static int __init arch_timer_acpi_init(struct acpi_table_header *table)
 	 */
 	arch_timer_rate = arch_timer_get_cntfrq();
 	if (!arch_timer_rate) {
-		pr_err(FW_BUG "frequency not available.\n");
+		pr_debug(FW_BUG "frequency not available.\n");
 		return -EINVAL;
 	}
 
 	arch_timer_uses_ppi = arch_timer_select_ppi();
 	if (!arch_timer_ppi[arch_timer_uses_ppi]) {
-		pr_err("No interrupt available, giving up\n");
+		pr_debug("No interrupt available, giving up\n");
 		return -EINVAL;
 	}
 
@@ -1695,7 +1695,7 @@ static int __init arch_timer_acpi_init(struct acpi_table_header *table)
 
 	if (platform_timer_count &&
 	    arch_timer_mem_acpi_init(platform_timer_count))
-		pr_err("Failed to initialize memory-mapped timer.\n");
+		pr_debug("Failed to initialize memory-mapped timer.\n");
 
 	return arch_timer_common_init();
 }

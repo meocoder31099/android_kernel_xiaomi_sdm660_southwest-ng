@@ -115,7 +115,7 @@ static int __vdso_init(enum arch_vdso_type arch_index)
 	unsigned long pfn;
 
 	if (memcmp(vdso_lookup[arch_index].vdso_code_start, "\177ELF", 4)) {
-		pr_err("vDSO is not a valid ELF object!\n");
+		pr_debug("vDSO is not a valid ELF object!\n");
 		return -EINVAL;
 	}
 

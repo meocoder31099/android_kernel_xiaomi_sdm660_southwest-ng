@@ -224,7 +224,7 @@ int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count)
 out:
 	if (r) {
 		devpath = kobject_get_path(kobj, GFP_KERNEL);
-		printk(KERN_WARNING "synth uevent: %s: %s",
+		no_printk(KERN_WARNING "synth uevent: %s: %s",
 		       devpath ?: "unknown device",
 		       msg ?: "failed to send uevent");
 		kfree(devpath);
@@ -255,7 +255,7 @@ static int init_uevent_argv(struct kobj_uevent_env *env, const char *subsystem)
 
 	len = strlcpy(&env->buf[env->buflen], subsystem, buffer_size);
 	if (len >= buffer_size) {
-		pr_warn("init_uevent_argv: buffer size of %d too small, needed %d\n",
+		pr_debug("init_uevent_argv: buffer size of %d too small, needed %d\n",
 			buffer_size, len);
 		return -ENOMEM;
 	}
@@ -782,7 +782,7 @@ static int uevent_net_init(struct net *net)
 
 	ue_sk->sk = netlink_kernel_create(net, NETLINK_KOBJECT_UEVENT, &cfg);
 	if (!ue_sk->sk) {
-		printk(KERN_ERR
+		no_printk(KERN_ERR
 		       "kobject_uevent: unable to create netlink socket!\n");
 		kfree(ue_sk);
 		return -ENODEV;

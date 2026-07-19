@@ -2961,7 +2961,7 @@ static int __net_init igmp6_net_init(struct net *net)
 	err = inet_ctl_sock_create(&net->ipv6.igmp_sk, PF_INET6,
 				   SOCK_RAW, IPPROTO_ICMPV6, net);
 	if (err < 0) {
-		pr_err("Failed to initialize the IGMP6 control socket (err %d)\n",
+		pr_debug("Failed to initialize the IGMP6 control socket (err %d)\n",
 		       err);
 		goto out;
 	}
@@ -2971,7 +2971,7 @@ static int __net_init igmp6_net_init(struct net *net)
 	err = inet_ctl_sock_create(&net->ipv6.mc_autojoin_sk, PF_INET6,
 				   SOCK_RAW, IPPROTO_ICMPV6, net);
 	if (err < 0) {
-		pr_err("Failed to initialize the IGMP6 autojoin socket (err %d)\n",
+		pr_debug("Failed to initialize the IGMP6 autojoin socket (err %d)\n",
 		       err);
 		goto out_sock_create;
 	}

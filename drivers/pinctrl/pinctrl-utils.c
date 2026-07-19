@@ -41,7 +41,7 @@ int pinctrl_utils_reserve_map(struct pinctrl_dev *pctldev,
 
 	new_map = krealloc(*map, sizeof(*new_map) * new_num, GFP_KERNEL);
 	if (!new_map) {
-		dev_err(pctldev->dev, "krealloc(map) failed\n");
+		dev_dbg(pctldev->dev, "krealloc(map) failed\n");
 		return -ENOMEM;
 	}
 
@@ -107,7 +107,7 @@ int pinctrl_utils_add_config(struct pinctrl_dev *pctldev,
 	new_configs = krealloc(*configs, sizeof(*new_configs) * new_num,
 			       GFP_KERNEL);
 	if (!new_configs) {
-		dev_err(pctldev->dev, "krealloc(configs) failed\n");
+		dev_dbg(pctldev->dev, "krealloc(configs) failed\n");
 		return -ENOMEM;
 	}
 

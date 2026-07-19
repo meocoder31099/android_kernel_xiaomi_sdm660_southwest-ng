@@ -87,7 +87,7 @@ static int kmem_cache_sanity_check(const char *name, unsigned int size)
 {
 	if (!name || in_interrupt() || size < sizeof(void *) ||
 		size > KMALLOC_MAX_SIZE) {
-		pr_err("kmem_cache_create(%s) integrity check failed\n", name);
+		pr_debug("kmem_cache_create(%s) integrity check failed\n", name);
 		return -EINVAL;
 	}
 
@@ -506,7 +506,7 @@ out_unlock:
 			panic("kmem_cache_create: Failed to create slab '%s'. Error %d\n",
 				name, err);
 		else {
-			pr_warn("kmem_cache_create(%s) failed with error %d\n",
+			pr_debug("kmem_cache_create(%s) failed with error %d\n",
 				name, err);
 			dump_stack();
 		}
@@ -930,7 +930,7 @@ void kmem_cache_destroy(struct kmem_cache *s)
 		err = shutdown_cache(s);
 
 	if (err) {
-		pr_err("kmem_cache_destroy %s: Slab cache still has objects\n",
+		pr_debug("kmem_cache_destroy %s: Slab cache still has objects\n",
 		       s->name);
 		dump_stack();
 	}
@@ -1411,12 +1411,12 @@ void dump_unreclaimable_slab(void)
 	 * without acquiring the mutex.
 	 */
 	if (!mutex_trylock(&slab_mutex)) {
-		pr_warn("excessive unreclaimable slab but cannot dump stats\n");
+		pr_debug("excessive unreclaimable slab but cannot dump stats\n");
 		return;
 	}
 
-	pr_info("Unreclaimable slab info:\n");
-	pr_info("Name                      Used          Total\n");
+	pr_debug("Unreclaimable slab info:\n");
+	pr_debug("Name                      Used          Total\n");
 
 	list_for_each_entry_safe(s, s2, &slab_caches, list) {
 		if (!is_root_cache(s) || (s->flags & SLAB_RECLAIM_ACCOUNT))
@@ -1425,7 +1425,7 @@ void dump_unreclaimable_slab(void)
 		get_slabinfo(s, &sinfo);
 
 		if (sinfo.num_objs > 0)
-			pr_info("%-17s %10luKB %10luKB\n", cache_name(s),
+			pr_debug("%-17s %10luKB %10luKB\n", cache_name(s),
 				(sinfo.active_objs * s->size) / 1024,
 				(sinfo.num_objs * s->size) / 1024);
 	}

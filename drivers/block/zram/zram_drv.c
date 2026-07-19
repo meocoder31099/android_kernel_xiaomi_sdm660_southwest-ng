@@ -395,7 +395,7 @@ static ssize_t backing_dev_store(struct device *dev,
 
 	down_write(&zram->init_lock);
 	if (init_done(zram)) {
-		pr_info("Can't setup backing device for initialized device\n");
+		pr_debug("Can't setup backing device for initialized device\n");
 		err = -EBUSY;
 		goto out;
 	}
@@ -445,10 +445,10 @@ static ssize_t backing_dev_store(struct device *dev,
 	}
 
 	// Trim the device
-	pr_info("discarding backing device\n");
+	pr_debug("discarding backing device\n");
 	err = blkdev_issue_discard(bdev, 0, nr_size >> 9, GFP_KERNEL, 0);
 	if (err)
-		pr_warn("failed to discard device: %d\n", err);
+		pr_debug("failed to discard device: %d\n", err);
 
 	reset_bdev(zram);
 
@@ -470,7 +470,7 @@ static ssize_t backing_dev_store(struct device *dev,
 			~BDI_CAP_SYNCHRONOUS_IO;
 	up_write(&zram->init_lock);
 
-	pr_info("setup backing device %s\n", file_name);
+	pr_debug("setup backing device %s\n", file_name);
 	kfree(file_name);
 
 	return len;
@@ -955,7 +955,7 @@ static ssize_t comp_algorithm_store(struct device *dev,
 	down_write(&zram->init_lock);
 	if (init_done(zram)) {
 		up_write(&zram->init_lock);
-		pr_info("Can't change algorithm for initialized device\n");
+		pr_debug("Can't change algorithm for initialized device\n");
 		return -EBUSY;
 	}
 
@@ -990,7 +990,7 @@ static ssize_t use_dedup_store(struct device *dev,
 	down_write(&zram->init_lock);
 	if (init_done(zram)) {
 		up_write(&zram->init_lock);
-		pr_info("Can't change dedup usage for initialized device\n");
+		pr_debug("Can't change dedup usage for initialized device\n");
 		return -EBUSY;
 	}
 	zram->use_dedup = val;
@@ -1322,7 +1322,7 @@ static int __zram_bvec_read(struct zram *zram, struct page *page, u32 index,
 
 	/* Should NEVER happen. Return bio error if it does. */
 	if (WARN_ON(ret))
-		pr_err("Decompression failed! err=%d, page=%u\n", ret, index);
+		pr_debug("Decompression failed! err=%d, page=%u\n", ret, index);
 
 	return ret;
 }
@@ -1399,7 +1399,7 @@ compress_again:
 
 	if (unlikely(ret)) {
 		zcomp_stream_put(zram->comp);
-		pr_err("Compression failed! err=%d\n", ret);
+		pr_debug("Compression failed! err=%d\n", ret);
 		if (entry)
 			zram_entry_free(zram, entry);
 		return ret;
@@ -1804,7 +1804,7 @@ static ssize_t disksize_store(struct device *dev,
 
 	down_write(&zram->init_lock);
 	if (init_done(zram)) {
-		pr_info("Cannot change disksize for initialized device\n");
+		pr_debug("Cannot change disksize for initialized device\n");
 		err = -EBUSY;
 		goto out_unlock;
 	}
@@ -1817,7 +1817,7 @@ static ssize_t disksize_store(struct device *dev,
 
 	comp = zcomp_create(zram->compressor);
 	if (IS_ERR(comp)) {
-		pr_err("Cannot initialise %s compressing backend\n",
+		pr_debug("Cannot initialise %s compressing backend\n",
 				zram->compressor);
 		err = PTR_ERR(comp);
 		goto out_free_meta;
@@ -1980,7 +1980,7 @@ static int zram_add(void)
 	init_rwsem(&zram->init_lock);
 	queue = blk_alloc_queue(GFP_KERNEL);
 	if (!queue) {
-		pr_err("Error allocating disk queue for device %d\n",
+		pr_debug("Error allocating disk queue for device %d\n",
 			device_id);
 		ret = -ENOMEM;
 		goto out_free_idr;
@@ -1991,7 +1991,7 @@ static int zram_add(void)
 	/* gendisk structure */
 	zram->disk = alloc_disk(1);
 	if (!zram->disk) {
-		pr_err("Error allocating disk structure for device %d\n",
+		pr_debug("Error allocating disk structure for device %d\n",
 			device_id);
 		ret = -ENOMEM;
 		goto out_free_queue;
@@ -2043,7 +2043,7 @@ static int zram_add(void)
 	strlcpy(zram->compressor, default_compressor, sizeof(zram->compressor));
 
 	zram_debugfs_register(zram);
-	pr_info("Added device: %s\n", zram->disk->disk_name);
+	pr_debug("Added device: %s\n", zram->disk->disk_name);
 	return device_id;
 
 out_free_queue:
@@ -2079,7 +2079,7 @@ static int zram_remove(struct zram *zram)
 	zram_reset_device(zram);
 	bdput(bdev);
 
-	pr_info("Removed device: %s\n", zram->disk->disk_name);
+	pr_debug("Removed device: %s\n", zram->disk->disk_name);
 
 	del_gendisk(zram->disk);
 	blk_cleanup_queue(zram->disk->queue);
@@ -2184,7 +2184,7 @@ static int __init zram_init(void)
 
 	ret = class_register(&zram_control_class);
 	if (ret) {
-		pr_err("Unable to register zram-control class\n");
+		pr_debug("Unable to register zram-control class\n");
 		cpuhp_remove_multi_state(CPUHP_ZCOMP_PREPARE);
 		return ret;
 	}
@@ -2192,7 +2192,7 @@ static int __init zram_init(void)
 	zram_debugfs_create();
 	zram_major = register_blkdev(0, "zram");
 	if (zram_major <= 0) {
-		pr_err("Unable to get major number\n");
+		pr_debug("Unable to get major number\n");
 		class_unregister(&zram_control_class);
 		cpuhp_remove_multi_state(CPUHP_ZCOMP_PREPARE);
 		return -EBUSY;

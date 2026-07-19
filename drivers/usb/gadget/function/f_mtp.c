@@ -595,7 +595,7 @@ retry_rx_alloc:
 	return 0;
 
 fail:
-	pr_err("mtp_bind() could not allocate requests\n");
+	pr_debug("mtp_bind() could not allocate requests\n");
 	return -1;
 }
 
@@ -1270,9 +1270,9 @@ fail:
 
 static int mtp_open(struct inode *ip, struct file *fp)
 {
-	printk(KERN_INFO "mtp_open\n");
+	no_printk(KERN_INFO "mtp_open\n");
 	if (mtp_lock(&_mtp_dev->open_excl)) {
-		pr_err("%s mtp_release not called returning EBUSY\n", __func__);
+		pr_debug("%s mtp_release not called returning EBUSY\n", __func__);
 		return -EBUSY;
 	}
 
@@ -1286,7 +1286,7 @@ static int mtp_open(struct inode *ip, struct file *fp)
 
 static int mtp_release(struct inode *ip, struct file *fp)
 {
-	printk(KERN_INFO "mtp_release\n");
+	no_printk(KERN_INFO "mtp_release\n");
 
 	mtp_unlock(&_mtp_dev->open_excl);
 	return 0;
@@ -1405,7 +1405,7 @@ static int mtp_ctrlrequest(struct usb_composite_dev *cdev,
 		cdev->req->length = value;
 		rc = usb_ep_queue(cdev->gadget->ep0, cdev->req, GFP_ATOMIC);
 		if (rc < 0)
-			pr_err("%s: response queue error\n", __func__);
+			pr_debug("%s: response queue error\n", __func__);
 	}
 	return value;
 }
@@ -1641,12 +1641,12 @@ static ssize_t debug_mtp_reset_stats(struct file *file, const char __user *buf,
 	struct mtp_dev *dev = _mtp_dev;
 
 	if (buf == NULL) {
-		pr_err("[%s] EINVAL\n", __func__);
+		pr_debug("[%s] EINVAL\n", __func__);
 		goto done;
 	}
 
 	if (kstrtoint(buf, 0, &clear_stats) || clear_stats != 0) {
-		pr_err("Wrong value. To clear stats, enter value as 0.\n");
+		pr_debug("Wrong value. To clear stats, enter value as 0.\n");
 		goto done;
 	}
 
@@ -1737,7 +1737,7 @@ err2:
 err1:
 	_mtp_dev = NULL;
 	kfree(dev);
-	printk(KERN_ERR "mtp gadget driver failed to initialize\n");
+	no_printk(KERN_ERR "mtp gadget driver failed to initialize\n");
 	return ret;
 }
 
@@ -1841,7 +1841,7 @@ struct usb_function_instance *alloc_inst_mtp_ptp(bool mtp_config)
 		ret = mtp_setup_configfs(fi_mtp);
 		if (ret) {
 			kfree(fi_mtp);
-			pr_err("Error setting MTP\n");
+			pr_debug("Error setting MTP\n");
 			return ERR_PTR(ret);
 		}
 	} else
@@ -1886,11 +1886,11 @@ struct usb_function *function_alloc_mtp_ptp(struct usb_function_instance *fi,
 	 * function with a gadget configuration.
 	 */
 	if (fi_mtp->dev == NULL) {
-		pr_err("Error: Create MTP function before linking"
+		pr_debug("Error: Create MTP function before linking"
 				" PTP function with a gadget configuration\n");
-		pr_err("\t1: Delete existing PTP function if any\n");
-		pr_err("\t2: Create MTP function\n");
-		pr_err("\t3: Create and symlink PTP function"
+		pr_debug("\t1: Delete existing PTP function if any\n");
+		pr_debug("\t2: Create MTP function\n");
+		pr_debug("\t3: Create and symlink PTP function"
 				" with a gadget configuration\n");
 		return ERR_PTR(-EINVAL); /* Invalid Configuration */
 	}

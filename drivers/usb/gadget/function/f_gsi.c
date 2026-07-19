@@ -1759,7 +1759,7 @@ static int gsi_function_ctrl_port_init(struct f_gsi *gsi)
 
 	minor = ida_simple_get(&gsi_ida, 0, MAX_CDEV_INSTANCES, GFP_KERNEL);
 	if (minor < 0) {
-		pr_err("%s: No more minor numbers left! rc:%d\n", __func__,
+		pr_debug("%s: No more minor numbers left! rc:%d\n", __func__,
 				minor);
 		return minor;
 	}
@@ -1834,7 +1834,7 @@ void gsi_rndis_flow_ctrl_enable(bool enable, struct rndis_params *param)
 	struct gsi_data_port *d_port;
 
 	if (!gsi) {
-		pr_err("%s: gsi prot ctx is %pK\n", __func__, gsi);
+		pr_debug("%s: gsi prot ctx is %pK\n", __func__, gsi);
 		return;
 	}
 
@@ -3237,7 +3237,7 @@ static struct f_gsi *gsi_function_init(enum ipa_usb_teth_prot prot_id)
 	int ret = 0;
 
 	if (prot_id >= IPA_USB_MAX_TETH_PROT_SIZE) {
-		pr_err("%s: invalid prot id %d", __func__, prot_id);
+		pr_debug("%s: invalid prot id %d", __func__, prot_id);
 		ret = -EINVAL;
 		goto error;
 	}
@@ -3517,7 +3517,7 @@ static int gsi_set_inst_name(struct usb_function_instance *fi,
 
 	prot_id = name_to_prot_id(name);
 	if (prot_id < 0) {
-		pr_err("%s: failed to find prot id for %s instance\n",
+		pr_debug("%s: failed to find prot id for %s instance\n",
 						__func__, name);
 		return -EINVAL;
 	}
@@ -3526,7 +3526,7 @@ static int gsi_set_inst_name(struct usb_function_instance *fi,
 	opts_prev = inst_status[prot_id].opts;
 	if (opts_prev) {
 		mutex_unlock(&inst_status[prot_id].gsi_lock);
-		pr_err("%s: prot_id = %d, prev inst do not freed yet\n",
+		pr_debug("%s: prot_id = %d, prev inst do not freed yet\n",
 						__func__, prot_id);
 		return -EBUSY;
 	}
@@ -3550,7 +3550,7 @@ static int gsi_set_inst_name(struct usb_function_instance *fi,
 	snprintf(gsi_inst_name, sizeof(gsi_inst_name), "gsi.%s", name);
 	ipc_log_ctxt = ipc_log_context_create(NUM_LOG_PAGES, gsi_inst_name, 0);
 	if (!ipc_log_ctxt)
-		pr_err("%s: Err allocating ipc_log_ctxt for prot:%s\n",
+		pr_debug("%s: Err allocating ipc_log_ctxt for prot:%s\n",
 						__func__, gsi_inst_name);
 	opts->gsi->ipc_log_ctxt = ipc_log_ctxt;
 #endif
@@ -3637,7 +3637,7 @@ static int fgsi_init(void)
 	ipa_usb_wq = alloc_workqueue("k_ipa_usb",
 				WQ_UNBOUND | WQ_MEM_RECLAIM | WQ_FREEZABLE, 1);
 	if (!ipa_usb_wq) {
-		pr_err("%s(): Failed to create workqueue\n", __func__);
+		pr_debug("%s(): Failed to create workqueue\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -3648,13 +3648,13 @@ static int fgsi_init(void)
 	if (IS_ERR(gsi_class)) {
 		ret = PTR_ERR(gsi_class);
 		gsi_class = NULL;
-		pr_err("%s: class_create() failed:%d\n", __func__, ret);
+		pr_debug("%s: class_create() failed:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = alloc_chrdev_region(&dev, 0, MAX_CDEV_INSTANCES, "gsi_usb");
 	if (ret) {
-		pr_err("%s: alloc_chrdev_region() failed:%d\n", __func__, ret);
+		pr_debug("%s: alloc_chrdev_region() failed:%d\n", __func__, ret);
 		class_destroy(gsi_class);
 		gsi_class = NULL;
 		return ret;

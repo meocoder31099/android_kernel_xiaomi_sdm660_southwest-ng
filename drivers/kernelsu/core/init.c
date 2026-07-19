@@ -155,7 +155,7 @@ module_param_named(norc, ksu_no_custom_rc, bool, 0);
 
 int __init kernelsu_init(void)
 {
-    pr_info("Initialized on: %s (%s) with driver version: %u\n", UTS_RELEASE, UTS_MACHINE, KSU_VERSION);
+    pr_debug("Initialized on: %s (%s) with driver version: %u\n", UTS_RELEASE, UTS_MACHINE, KSU_VERSION);
 
 #ifdef MODULE
     ksu_late_loaded = (current->pid != 1);
@@ -167,31 +167,31 @@ int __init kernelsu_init(void)
 #if defined(CONFIG_KSU_TRACEPOINT_HOOK) && defined(__x86_64__)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
-        pr_alert("*************************************************************");
-        pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-        pr_alert("**                                                         **");
-        pr_alert("**        X86_FEATURE_INDIRECT_SAFE is not enabled!        **");
-        pr_alert("**      KernelSU will abort initialization to prevent      **");
-        pr_alert("**                     kernel panic.                       **");
-        pr_alert("**                                                         **");
-        pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-        pr_alert("*************************************************************");
+        pr_debug("*************************************************************");
+        pr_debug("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+        pr_debug("**                                                         **");
+        pr_debug("**        X86_FEATURE_INDIRECT_SAFE is not enabled!        **");
+        pr_debug("**      KernelSU will abort initialization to prevent      **");
+        pr_debug("**                     kernel panic.                       **");
+        pr_debug("**                                                         **");
+        pr_debug("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+        pr_debug("*************************************************************");
         return -ENOSYS;
     }
 #endif
 
 #ifdef CONFIG_KSU_DEBUG
-    pr_alert("*************************************************************");
-    pr_alert("**	 NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE	**");
-    pr_alert("**														 **");
-    pr_alert("**		 You are running KernelSU in DEBUG mode		  **");
-    pr_alert("**														 **");
-    pr_alert("**	 NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE	**");
-    pr_alert("*************************************************************");
+    pr_debug("*************************************************************");
+    pr_debug("**	 NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE	**");
+    pr_debug("**														 **");
+    pr_debug("**		 You are running KernelSU in DEBUG mode		  **");
+    pr_debug("**														 **");
+    pr_debug("**	 NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE	**");
+    pr_debug("*************************************************************");
 #endif
 
     if (allow_shell) {
-        pr_alert("shell is allowed at init!");
+        pr_debug("shell is allowed at init!");
     }
 
 #ifdef CONFIG_ARM64
@@ -200,7 +200,7 @@ int __init kernelsu_init(void)
 
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
-        pr_err("prepare cred failed!\n");
+        pr_debug("prepare cred failed!\n");
     }
 
     ksu_init_symbol_resolver();
@@ -218,7 +218,7 @@ int __init kernelsu_init(void)
         // This way are only happen when tracepoint+lkm
         // so we use ifdef MODULE there to avoid manual hook compile failed
 #ifdef MODULE
-        pr_info("late load mode, skipping kprobe hooks\n");
+        pr_debug("late load mode, skipping kprobe hooks\n");
 
         apply_kernelsu_rules();
         cache_sid();
@@ -242,7 +242,7 @@ int __init kernelsu_init(void)
         track_throne(TRACK_THRONE_FORCE_SEARCH_MGR);
 
         if (!getenforce()) {
-            pr_info("Permissive SELinux, enforcing\n");
+            pr_debug("Permissive SELinux, enforcing\n");
             setenforce(true);
         }
 #endif

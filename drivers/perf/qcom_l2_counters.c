@@ -181,7 +181,7 @@ static inline u32 cluster_tenure_counter_read(struct cluster_pmu *cluster,
 		break;
 
 	default:
-		pr_crit(L2_COUNTERS_BUG
+		pr_debug(L2_COUNTERS_BUG
 			"Invalid index, during %s\n", __func__);
 	}
 
@@ -283,7 +283,7 @@ static inline void cluster_tenure_counter_enable(struct cluster_pmu *cluster,
 		break;
 
 	default:
-		pr_crit(L2_COUNTERS_BUG
+		pr_debug(L2_COUNTERS_BUG
 			"Invalid index, during %s\n", __func__);
 		return;
 	}
@@ -369,7 +369,7 @@ static inline void cluster_tenure_cntr_reset_ovsr(struct cluster_pmu *cluster,
 		break;
 
 	default:
-		pr_crit(L2_COUNTERS_BUG
+		pr_debug(L2_COUNTERS_BUG
 			"Invalid index, during %s\n", __func__);
 	}
 }
@@ -895,7 +895,7 @@ static struct cluster_pmu *l2_cache_associate_cpu_with_cluster(
 		if (cluster->cluster_id != cpu_cluster_id)
 			continue;
 
-		dev_info(&l2cache_pmu->pdev->dev,
+		dev_dbg(&l2cache_pmu->pdev->dev,
 			 "CPU%d associated with cluster %d\n", cpu,
 			 cluster->cluster_id);
 		cpumask_set_cpu(cpu, &cluster->cluster_cpus);
@@ -1053,14 +1053,14 @@ static int l2_cache_pmu_probe_cluster(struct device *parent,
 
 	ret = device_register(&cluster->dev);
 	if (ret) {
-		pr_err(L2_COUNTERS_BUG
+		pr_debug(L2_COUNTERS_BUG
 			"failed to register l2 cache pmu device\n");
 		goto err_put_dev;
 	}
 
 	ret = of_property_read_u32(cn, "cluster-id", &fw_cluster_id);
 	if (ret) {
-		pr_err(L2_COUNTERS_BUG "Missing cluster-id.\n");
+		pr_debug(L2_COUNTERS_BUG "Missing cluster-id.\n");
 		goto err_put_dev;
 	}
 
@@ -1074,14 +1074,14 @@ static int l2_cache_pmu_probe_cluster(struct device *parent,
 		goto err_put_dev;
 	ret = of_address_to_resource(cn, 0, &res);
 	if (ret) {
-		pr_err(L2_COUNTERS_BUG "not able to find the resource\n");
+		pr_debug(L2_COUNTERS_BUG "not able to find the resource\n");
 		goto err_put_dev;
 	}
 
 	cluster->reg_addr = devm_ioremap_resource(&cluster->dev, &res);
 	if (IS_ERR(cluster->reg_addr)) {
 		ret = PTR_ERR(cluster->reg_addr);
-		pr_err(L2_COUNTERS_BUG "not able to remap the resource\n");
+		pr_debug(L2_COUNTERS_BUG "not able to remap the resource\n");
 		goto err_put_dev;
 	}
 
@@ -1091,7 +1091,7 @@ static int l2_cache_pmu_probe_cluster(struct device *parent,
 
 	irq = of_irq_get(cn, 0);
 	if (irq < 0) {
-		pr_err(L2_COUNTERS_BUG
+		pr_debug(L2_COUNTERS_BUG
 			"Failed to get valid irq for cluster %ld\n",
 			fw_cluster_id);
 		goto err_put_dev;
@@ -1105,12 +1105,12 @@ static int l2_cache_pmu_probe_cluster(struct device *parent,
 			       IRQF_NOBALANCING | IRQF_NO_THREAD,
 			       "l2-cache-pmu", cluster);
 	if (ret) {
-		pr_err(L2_COUNTERS_BUG
+		pr_debug(L2_COUNTERS_BUG
 			"Unable to request IRQ%d for L2 PMU counters\n", irq);
 		goto err_put_dev;
 	}
 
-	pr_info(L2_COUNTERS_BUG
+	pr_debug(L2_COUNTERS_BUG
 		"Registered L2 cache PMU cluster %ld\n", fw_cluster_id);
 
 	spin_lock_init(&cluster->pmu_lock);
@@ -1164,31 +1164,31 @@ static int l2_cache_pmu_probe(struct platform_device *pdev)
 		err = l2_cache_pmu_probe_cluster(&pdev->dev, cn, l2cache_pmu);
 		if (err < 0) {
 			of_node_put(cn);
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"No hardware L2 cache PMUs found\n");
 			return err;
 		}
 	}
 
 	if (l2cache_pmu->num_pmus == 0) {
-		dev_err(&pdev->dev, "No hardware L2 cache PMUs found\n");
+		dev_dbg(&pdev->dev, "No hardware L2 cache PMUs found\n");
 		return -ENODEV;
 	}
 
 	err = cpuhp_state_add_instance(CPUHP_AP_PERF_ARM_QCOM_L2_ONLINE,
 				       &l2cache_pmu->node);
 	if (err) {
-		dev_err(&pdev->dev, "Error %d registering hotplug\n", err);
+		dev_dbg(&pdev->dev, "Error %d registering hotplug\n", err);
 		return err;
 	}
 
 	err = perf_pmu_register(&l2cache_pmu->pmu, l2cache_pmu->pmu.name, -1);
 	if (err) {
-		dev_err(&pdev->dev, "Error %d registering L2 cache PMU\n", err);
+		dev_dbg(&pdev->dev, "Error %d registering L2 cache PMU\n", err);
 		goto out_unregister;
 	}
 
-	dev_info(&pdev->dev, "Registered L2 cache PMU using %d HW PMUs\n",
+	dev_dbg(&pdev->dev, "Registered L2 cache PMU using %d HW PMUs\n",
 		 l2cache_pmu->num_pmus);
 
 	return 0;
@@ -1217,7 +1217,7 @@ static int l2_cache_pmu_remove(struct platform_device *pdev)
 	ret = device_for_each_child(&pdev->dev, NULL,
 			l2cache_pmu_unregister_device);
 	if (ret)
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"can't remove cluster pmu device: %d\n", ret);
 	return ret;
 }

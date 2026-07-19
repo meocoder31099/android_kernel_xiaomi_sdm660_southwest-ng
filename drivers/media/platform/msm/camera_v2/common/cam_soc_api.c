@@ -58,18 +58,18 @@ static int msm_camera_get_clk_info_internal(struct device *dev,
 
 	cnt = of_property_count_strings(of_node, "clock-names");
 	if (cnt <= 0) {
-		pr_err("err: No clocks found in DT=%zu\n", cnt);
+		pr_debug("err: No clocks found in DT=%zu\n", cnt);
 		return -EINVAL;
 	}
 
 	tmp = of_property_count_u32_elems(of_node, "qcom,clock-rates");
 	if (tmp <= 0) {
-		pr_err("err: No clk rates device tree, count=%zu\n", tmp);
+		pr_debug("err: No clk rates device tree, count=%zu\n", tmp);
 		return -EINVAL;
 	}
 
 	if (cnt != tmp) {
-		pr_err("err: clk name/rates mismatch, strings=%zu, rates=%zu\n",
+		pr_debug("err: clk name/rates mismatch, strings=%zu, rates=%zu\n",
 			cnt, tmp);
 		return -EINVAL;
 	}
@@ -78,12 +78,12 @@ static int msm_camera_get_clk_info_internal(struct device *dev,
 		tmp = of_property_count_strings(of_node,
 				"qcom,clock-control");
 		if (tmp <= 0) {
-			pr_err("err: control strings not found in DT count=%zu\n",
+			pr_debug("err: control strings not found in DT count=%zu\n",
 				tmp);
 			return -EINVAL;
 		}
 		if (cnt != tmp) {
-			pr_err("err: controls mismatch, strings=%zu, ctl=%zu\n",
+			pr_debug("err: controls mismatch, strings=%zu, ctl=%zu\n",
 				cnt, tmp);
 			return -EINVAL;
 		}
@@ -109,7 +109,7 @@ static int msm_camera_get_clk_info_internal(struct device *dev,
 	rc = of_property_read_u32_array(of_node, "qcom,clock-rates",
 		rates, cnt);
 	if (rc < 0) {
-		pr_err("err: failed reading clock rates\n");
+		pr_debug("err: failed reading clock rates\n");
 		return -EINVAL;
 	}
 
@@ -117,7 +117,7 @@ static int msm_camera_get_clk_info_internal(struct device *dev,
 		rc = of_property_read_string_index(of_node, "clock-names",
 				i, &((*clk_info)[i].clk_name));
 		if (rc < 0) {
-			pr_err("%s reading clock-name failed index %d\n",
+			pr_debug("%s reading clock-name failed index %d\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -127,7 +127,7 @@ static int msm_camera_get_clk_info_internal(struct device *dev,
 			rc = of_property_read_string_index(of_node,
 				"qcom,clock-control", i, &clk_ctl);
 			if (rc < 0) {
-				pr_err("%s reading clock-control failed index %d\n",
+				pr_debug("%s reading clock-control failed index %d\n",
 					__func__, i);
 				return -EINVAL;
 			}
@@ -139,7 +139,7 @@ static int msm_camera_get_clk_info_internal(struct device *dev,
 			else if (!strcmp(clk_ctl, "SET_RATE"))
 				(*clk_info)[i].clk_rate = rates[i];
 			else {
-				pr_err("%s: error: clock control has invalid value\n",
+				pr_debug("%s: error: clock control has invalid value\n",
 					 __func__);
 				return -EBUSY;
 			}
@@ -219,18 +219,18 @@ int msm_camera_get_clk_info_and_rates(
 
 	cnt = of_property_count_strings(of_node, "clock-names");
 	if (cnt <= 0) {
-		pr_err("err: No clocks found in DT=%d\n", cnt);
+		pr_debug("err: No clocks found in DT=%d\n", cnt);
 		return -EINVAL;
 	}
 
 	tmp = of_property_count_u32_elems(of_node, "qcom,clock-rates");
 	if (tmp <= 0) {
-		pr_err("err: No clk rates device tree, count=%d\n", tmp);
+		pr_debug("err: No clk rates device tree, count=%d\n", tmp);
 		return -EINVAL;
 	}
 
 	if ((tmp % cnt) != 0) {
-		pr_err("err: clk name/rates mismatch, strings=%d, rates=%d\n",
+		pr_debug("err: clk name/rates mismatch, strings=%d, rates=%d\n",
 			cnt, tmp);
 		return -EINVAL;
 	}
@@ -266,7 +266,7 @@ int msm_camera_get_clk_info_and_rates(
 			rc = of_property_read_u32_index(of_node,
 				"qcom,clock-rates", tmp_var++, &rates[i][j]);
 			if (rc < 0) {
-				pr_err("err: failed reading clock rates\n");
+				pr_debug("err: failed reading clock rates\n");
 				return -EINVAL;
 			}
 			CDBG("Clock rate idx %d idx %d value %d\n",
@@ -277,7 +277,7 @@ int msm_camera_get_clk_info_and_rates(
 		rc = of_property_read_string_index(of_node, "clock-names",
 				i, &clk_info[i].clk_name);
 		if (rc < 0) {
-			pr_err("%s reading clock-name failed index %d\n",
+			pr_debug("%s reading clock-name failed index %d\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -315,14 +315,14 @@ int msm_camera_clk_enable(struct device *dev,
 				clk_rate = clk_round_rate(clk_ptr[i],
 					clk_info[i].clk_rate);
 				if (clk_rate < 0) {
-					pr_err("%s round failed\n",
+					pr_debug("%s round failed\n",
 						   clk_info[i].clk_name);
 					goto cam_clk_set_err;
 				}
 				rc = clk_set_rate(clk_ptr[i],
 					clk_rate);
 				if (rc < 0) {
-					pr_err("%s set failed\n",
+					pr_debug("%s set failed\n",
 						clk_info[i].clk_name);
 					goto cam_clk_set_err;
 				}
@@ -333,21 +333,21 @@ int msm_camera_clk_enable(struct device *dev,
 					clk_rate =
 						  clk_round_rate(clk_ptr[i], 0);
 					if (clk_rate <= 0) {
-						pr_err("%s round rate failed\n",
+						pr_debug("%s round rate failed\n",
 							  clk_info[i].clk_name);
 						goto cam_clk_set_err;
 					}
 				}
 				rc = clk_set_rate(clk_ptr[i], clk_rate);
 				if (rc < 0) {
-					pr_err("%s set rate failed\n",
+					pr_debug("%s set rate failed\n",
 						clk_info[i].clk_name);
 					goto cam_clk_set_err;
 				}
 			}
 			rc = clk_prepare_enable(clk_ptr[i]);
 			if (rc < 0) {
-				pr_err("%s enable failed\n",
+				pr_debug("%s enable failed\n",
 					   clk_info[i].clk_name);
 				goto cam_clk_enable_err;
 			}
@@ -392,13 +392,13 @@ long msm_camera_clk_set_rate(struct device *dev,
 	if (clk_rate > 0) {
 		rate = clk_round_rate(clk, clk_rate);
 		if (rate < 0) {
-			pr_err("round rate failed\n");
+			pr_debug("round rate failed\n");
 			return -EINVAL;
 		}
 
 		rc = clk_set_rate(clk, rate);
 		if (rc < 0) {
-			pr_err("set rate failed\n");
+			pr_debug("set rate failed\n");
 			return -EINVAL;
 		}
 	}
@@ -488,7 +488,7 @@ int msm_camera_get_reset_info(struct platform_device *pdev,
 
 	if (of_property_match_string(pdev->dev.of_node, "reset-names",
 				"micro_iface_reset")) {
-		pr_err("err: Reset property not found\n");
+		pr_debug("err: Reset property not found\n");
 		return -EINVAL;
 	}
 
@@ -515,13 +515,13 @@ int msm_camera_get_regulator_info(struct platform_device *pdev,
 	of_node = pdev->dev.of_node;
 
 	if (!of_get_property(of_node, "qcom,vdd-names", NULL)) {
-		pr_err("err: Regulators property not found\n");
+		pr_debug("err: Regulators property not found\n");
 		return -EINVAL;
 	}
 
 	cnt = of_property_count_strings(of_node, "qcom,vdd-names");
 	if (cnt <= 0) {
-		pr_err("err: no regulators found in device tree, count=%d\n",
+		pr_debug("err: no regulators found in device tree, count=%d\n",
 			cnt);
 		return -EINVAL;
 	}
@@ -535,7 +535,7 @@ int msm_camera_get_regulator_info(struct platform_device *pdev,
 		rc = of_property_read_string_index(of_node,
 			"qcom,vdd-names", i, &tmp_reg[i].name);
 		if (rc < 0) {
-			pr_err("Fail to fetch regulators: %d\n", i);
+			pr_debug("Fail to fetch regulators: %d\n", i);
 			rc = -EINVAL;
 			goto err1;
 		}
@@ -549,11 +549,11 @@ int msm_camera_get_regulator_info(struct platform_device *pdev,
 				devm_regulator_get(&pdev->dev, tmp_reg[i].name);
 			if (IS_ERR(tmp_reg[i].vdd)) {
 				rc = -EINVAL;
-				pr_err("Fail to get regulator :%d\n", i);
+				pr_debug("Fail to get regulator :%d\n", i);
 				goto err1;
 			}
 		} else {
-			pr_err("Regulator phandle not found :%s\n",
+			pr_debug("Regulator phandle not found :%s\n",
 				tmp_reg[i].name);
 			rc = -EINVAL;
 			goto err1;
@@ -581,7 +581,7 @@ int msm_camera_regulator_enable(struct msm_cam_regulator *vdd_info,
 	struct msm_cam_regulator *tmp = vdd_info;
 
 	if (!tmp) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 	CDBG("cnt : %d\n", cnt);
@@ -591,14 +591,14 @@ int msm_camera_regulator_enable(struct msm_cam_regulator *vdd_info,
 			if (enable) {
 				rc = regulator_enable(tmp->vdd);
 				if (rc < 0) {
-					pr_err("regulator enable failed %d\n",
+					pr_debug("regulator enable failed %d\n",
 						i);
 					goto error;
 				}
 			} else {
 				rc = regulator_disable(tmp->vdd);
 				if (rc < 0)
-					pr_err("regulator disable failed %d\n",
+					pr_debug("regulator disable failed %d\n",
 						i);
 			}
 		}
@@ -625,7 +625,7 @@ int msm_camera_regulator_disable(struct msm_cam_regulator *vdd_info,
 	struct msm_cam_regulator *tmp = vdd_info;
 
 	if (!tmp) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -653,7 +653,7 @@ int msm_camera_regulator_set_mode(struct msm_cam_regulator *vdd_info,
 	struct msm_cam_regulator *tmp = vdd_info;
 
 	if (!tmp) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 	CDBG("cnt : %d\n", cnt);
@@ -665,7 +665,7 @@ int msm_camera_regulator_set_mode(struct msm_cam_regulator *vdd_info,
 				rc = regulator_set_mode(tmp->vdd,
 					REGULATOR_MODE_FAST);
 				if (rc < 0) {
-					pr_err("regulator enable failed %d\n",
+					pr_debug("regulator enable failed %d\n",
 						i);
 					goto error;
 				}
@@ -673,7 +673,7 @@ int msm_camera_regulator_set_mode(struct msm_cam_regulator *vdd_info,
 				rc = regulator_set_mode(tmp->vdd,
 					REGULATOR_MODE_NORMAL);
 				if (rc < 0)
-					pr_err("regulator disable failed %d\n",
+					pr_debug("regulator disable failed %d\n",
 							i);
 				goto error;
 			}
@@ -695,7 +695,7 @@ void msm_camera_put_regulators(struct platform_device *pdev,
 	int i;
 
 	if (!vdd_info || !*vdd_info) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return;
 	}
 
@@ -712,7 +712,7 @@ struct resource *msm_camera_get_irq(struct platform_device *pdev,
 							char *irq_name)
 {
 	if (!pdev || !irq_name) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return NULL;
 	}
 
@@ -728,7 +728,7 @@ int msm_camera_register_irq(struct platform_device *pdev,
 	int rc = 0;
 
 	if (!pdev || !irq || !handler || !irq_name || !dev_id) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -736,7 +736,7 @@ int msm_camera_register_irq(struct platform_device *pdev,
 		irqflags, irq_name, dev_id);
 
 	if (rc < 0) {
-		pr_err("irq request fail\n");
+		pr_debug("irq request fail\n");
 		rc = -EINVAL;
 	}
 
@@ -754,14 +754,14 @@ int msm_camera_register_threaded_irq(struct platform_device *pdev,
 	int rc = 0;
 
 	if (!pdev || !irq || !irq_name || !dev_id) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
 	rc = devm_request_threaded_irq(&pdev->dev, irq->start, handler_fn,
 			thread_fn, irqflags, irq_name, dev_id);
 	if (rc < 0) {
-		pr_err("irq request fail\n");
+		pr_debug("irq request fail\n");
 		rc = -EINVAL;
 	}
 
@@ -774,7 +774,7 @@ EXPORT_SYMBOL(msm_camera_register_threaded_irq);
 int msm_camera_enable_irq(struct resource *irq, int enable)
 {
 	if (!irq) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -793,7 +793,7 @@ int msm_camera_unregister_irq(struct platform_device *pdev,
 {
 
 	if (!pdev || !irq || !dev_id) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -811,7 +811,7 @@ void __iomem *msm_camera_get_reg_base(struct platform_device *pdev,
 	void __iomem *base;
 
 	if (!pdev || !device_name) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return NULL;
 	}
 
@@ -819,7 +819,7 @@ void __iomem *msm_camera_get_reg_base(struct platform_device *pdev,
 	mem = platform_get_resource_byname(pdev,
 			IORESOURCE_MEM, device_name);
 	if (!mem) {
-		pr_err("err: mem resource %s not found\n", device_name);
+		pr_debug("err: mem resource %s not found\n", device_name);
 		return NULL;
 	}
 
@@ -829,7 +829,7 @@ void __iomem *msm_camera_get_reg_base(struct platform_device *pdev,
 		if (!devm_request_mem_region(&pdev->dev, mem->start,
 			resource_size(mem),
 			device_name)) {
-			pr_err("err: no valid mem region for device:%s\n",
+			pr_debug("err: no valid mem region for device:%s\n",
 				device_name);
 			return NULL;
 		}
@@ -839,7 +839,7 @@ void __iomem *msm_camera_get_reg_base(struct platform_device *pdev,
 	if (!base) {
 		devm_release_mem_region(&pdev->dev, mem->start,
 				resource_size(mem));
-		pr_err("err: ioremap failed: %s\n", device_name);
+		pr_debug("err: ioremap failed: %s\n", device_name);
 		return NULL;
 	}
 
@@ -854,7 +854,7 @@ uint32_t msm_camera_get_res_size(struct platform_device *pdev,
 	struct resource *mem;
 
 	if (!pdev || !device_name) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return 0;
 	}
 
@@ -862,7 +862,7 @@ uint32_t msm_camera_get_res_size(struct platform_device *pdev,
 	mem = platform_get_resource_byname(pdev,
 		IORESOURCE_MEM, device_name);
 	if (!mem) {
-		pr_err("err: mem resource %s not found\n", device_name);
+		pr_debug("err: mem resource %s not found\n", device_name);
 		return 0;
 	}
 	return resource_size(mem);
@@ -876,7 +876,7 @@ int msm_camera_put_reg_base(struct platform_device *pdev,
 	struct resource *mem;
 
 	if (!pdev || !base || !device_name) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -884,7 +884,7 @@ int msm_camera_put_reg_base(struct platform_device *pdev,
 	mem = platform_get_resource_byname(pdev,
 			IORESOURCE_MEM, device_name);
 	if (!mem) {
-		pr_err("err: mem resource %s not found\n", device_name);
+		pr_debug("err: mem resource %s not found\n", device_name);
 		return -EINVAL;
 	}
 	CDBG("mem : %pK, size : %d\n", mem, (int)resource_size(mem));
@@ -909,7 +909,7 @@ uint32_t msm_camera_register_bus_client(struct platform_device *pdev,
 	CDBG("Register client ID: %d\n", id);
 
 	if (id >= CAM_BUS_CLIENT_MAX || !pdev) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -919,25 +919,25 @@ uint32_t msm_camera_register_bus_client(struct platform_device *pdev,
 		rc = of_property_read_u32(of_node, "qcom,msm-bus,num-cases",
 				&num_usecases);
 		if (rc) {
-			pr_err("num-usecases not found\n");
+			pr_debug("num-usecases not found\n");
 			return -EINVAL;
 		}
 		rc = of_property_read_u32(of_node, "qcom,msm-bus,num-paths",
 				&num_paths);
 		if (rc) {
-			pr_err("num-usecases not found\n");
+			pr_debug("num-usecases not found\n");
 			return -EINVAL;
 		}
 
 		if (num_paths != 1) {
-			pr_err("Exceeds number of paths\n");
+			pr_debug("Exceeds number of paths\n");
 			return -EINVAL;
 		}
 
 		if (of_property_read_bool(of_node,
 				"qcom,msm-bus-vector-dyn-vote")) {
 			if (num_usecases != 2) {
-				pr_err("Excess or less vectors\n");
+				pr_debug("Excess or less vectors\n");
 				return -EINVAL;
 			}
 			g_cv[id].dyn_vote = true;
@@ -945,16 +945,16 @@ uint32_t msm_camera_register_bus_client(struct platform_device *pdev,
 
 		pdata = msm_bus_cl_get_pdata(pdev);
 		if (!pdata) {
-			pr_err("failed get_pdata client_id :%d\n", id);
+			pr_debug("failed get_pdata client_id :%d\n", id);
 			return -EINVAL;
 		}
 		bus_client = msm_bus_scale_register_client(pdata);
 		if (!bus_client) {
-			pr_err("Unable to register bus client :%d\n", id);
+			pr_debug("Unable to register bus client :%d\n", id);
 			return -EINVAL;
 		}
 	} else {
-		pr_err("vector already setup client_id : %d\n", id);
+		pr_debug("vector already setup client_id : %d\n", id);
 		return -EINVAL;
 	}
 
@@ -977,13 +977,13 @@ uint32_t msm_camera_update_bus_bw(int id, uint64_t ab, uint64_t ib)
 	int idx = 0;
 
 	if (id >= CAM_BUS_CLIENT_MAX) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 	if (g_cv[id].num_usecases != 2 ||
 		g_cv[id].num_paths != 1 ||
 		!g_cv[id].dyn_vote) {
-		pr_err("dynamic update not allowed\n");
+		pr_debug("dynamic update not allowed\n");
 		return -EINVAL;
 	}
 
@@ -1011,12 +1011,12 @@ uint32_t msm_camera_update_bus_vector(enum cam_bus_client id,
 	int vector_index)
 {
 	if (id >= CAM_BUS_CLIENT_MAX || g_cv[id].dyn_vote) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
 	if (vector_index < 0 || vector_index > g_cv[id].num_usecases) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -1032,7 +1032,7 @@ EXPORT_SYMBOL(msm_camera_update_bus_vector);
 uint32_t msm_camera_unregister_bus_client(enum cam_bus_client id)
 {
 	if (id >= CAM_BUS_CLIENT_MAX) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 

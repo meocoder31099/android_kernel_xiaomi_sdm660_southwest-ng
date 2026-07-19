@@ -261,7 +261,7 @@ static int tavil_enable_ext_mb_source(struct wcd_mbhc *mbhc,
 	}
 
 	if (ret)
-		dev_err(component->dev, "%s: Failed to %s external micbias source\n",
+		dev_dbg(component->dev, "%s: Failed to %s external micbias source\n",
 			__func__, turn_on ? "enable" : "disabled");
 	else
 		dev_dbg(component->dev, "%s: %s external micbias source\n",
@@ -289,7 +289,7 @@ static void tavil_mbhc_program_btn_thr(struct snd_soc_component *component,
 	int vth;
 
 	if (num_btn > WCD_MBHC_DEF_BUTTONS) {
-		dev_err(component->dev, "%s: invalid number of buttons: %d\n",
+		dev_dbg(component->dev, "%s: invalid number of buttons: %d\n",
 			__func__, num_btn);
 		return;
 	}
@@ -427,12 +427,12 @@ static struct firmware_cal *tavil_get_hwdep_fw_cal(struct wcd_mbhc *mbhc,
 	wcd934x_mbhc = container_of(mbhc, struct wcd934x_mbhc, wcd_mbhc);
 
 	if (!component) {
-		pr_err("%s: NULL component pointer\n", __func__);
+		pr_debug("%s: NULL component pointer\n", __func__);
 		return NULL;
 	}
 	hwdep_cal = wcdcal_get_fw_cal(wcd934x_mbhc->fw_data, type);
 	if (!hwdep_cal)
-		dev_err(component->dev, "%s: cal not sent by %d\n",
+		dev_dbg(component->dev, "%s: cal not sent by %d\n",
 			__func__, type);
 
 	return hwdep_cal;
@@ -930,7 +930,7 @@ static int tavil_get_hph_type(struct snd_kcontrol *kcontrol,
 	struct wcd_mbhc *mbhc;
 
 	if (!wcd934x_mbhc) {
-		dev_err(component->dev, "%s: mbhc not initialized!\n",
+		dev_dbg(component->dev, "%s: mbhc not initialized!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -955,7 +955,7 @@ static int tavil_hph_impedance_get(struct snd_kcontrol *kcontrol,
 	struct wcd934x_mbhc *wcd934x_mbhc = tavil_soc_get_mbhc(component);
 
 	if (!wcd934x_mbhc) {
-		dev_err(component->dev, "%s: mbhc not initialized!\n",
+		dev_dbg(component->dev, "%s: mbhc not initialized!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -993,11 +993,11 @@ int tavil_mbhc_get_impedance(struct wcd934x_mbhc *wcd934x_mbhc,
 			     uint32_t *zl, uint32_t *zr)
 {
 	if (!wcd934x_mbhc) {
-		pr_err("%s: mbhc not initialized!\n", __func__);
+		pr_debug("%s: mbhc not initialized!\n", __func__);
 		return -EINVAL;
 	}
 	if (!zl || !zr) {
-		pr_err("%s: zl or zr null!\n", __func__);
+		pr_debug("%s: zl or zr null!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1017,7 +1017,7 @@ int tavil_mbhc_hs_detect(struct snd_soc_component *component,
 	struct wcd934x_mbhc *wcd934x_mbhc = tavil_soc_get_mbhc(component);
 
 	if (!wcd934x_mbhc) {
-		dev_err(component->dev, "%s: mbhc not initialized!\n",
+		dev_dbg(component->dev, "%s: mbhc not initialized!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -1035,7 +1035,7 @@ void tavil_mbhc_hs_detect_exit(struct snd_soc_component *component)
 	struct wcd934x_mbhc *wcd934x_mbhc = tavil_soc_get_mbhc(component);
 
 	if (!wcd934x_mbhc) {
-		dev_err(component->dev, "%s: mbhc not initialized!\n",
+		dev_dbg(component->dev, "%s: mbhc not initialized!\n",
 			__func__);
 		return;
 	}
@@ -1061,7 +1061,7 @@ int tavil_mbhc_post_ssr_init(struct wcd934x_mbhc *mbhc,
 
 	wcd_mbhc = &mbhc->wcd_mbhc;
 	if (wcd_mbhc == NULL) {
-		pr_err("%s: wcd_mbhc is NULL\n", __func__);
+		pr_debug("%s: wcd_mbhc is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1070,7 +1070,7 @@ int tavil_mbhc_post_ssr_init(struct wcd934x_mbhc *mbhc,
 	ret = wcd_mbhc_init(wcd_mbhc, component, &mbhc_cb, &intr_ids,
 			    wcd_mbhc_registers, TAVIL_ZDET_SUPPORTED);
 	if (ret) {
-		dev_err(component->dev, "%s: mbhc initialization failed\n",
+		dev_dbg(component->dev, "%s: mbhc initialization failed\n",
 			__func__);
 		goto done;
 	}
@@ -1114,7 +1114,7 @@ int tavil_mbhc_init(struct wcd934x_mbhc **mbhc,
 	BLOCKING_INIT_NOTIFIER_HEAD(&wcd934x_mbhc->notifier);
 	wcd_mbhc = &wcd934x_mbhc->wcd_mbhc;
 	if (wcd_mbhc == NULL) {
-		pr_err("%s: wcd_mbhc is NULL\n", __func__);
+		pr_debug("%s: wcd_mbhc is NULL\n", __func__);
 		ret = -EINVAL;
 		goto err;
 	}
@@ -1125,7 +1125,7 @@ int tavil_mbhc_init(struct wcd934x_mbhc **mbhc,
 
 	pdata = dev_get_platdata(component->dev->parent);
 	if (!pdata) {
-		dev_err(component->dev, "%s: pdata pointer is NULL\n", __func__);
+		dev_dbg(component->dev, "%s: pdata pointer is NULL\n", __func__);
 		ret = -EINVAL;
 		goto err;
 	}
@@ -1135,7 +1135,7 @@ int tavil_mbhc_init(struct wcd934x_mbhc **mbhc,
 				&intr_ids, wcd_mbhc_registers,
 				TAVIL_ZDET_SUPPORTED);
 	if (ret) {
-		dev_err(component->dev, "%s: mbhc initialization failed\n",
+		dev_dbg(component->dev, "%s: mbhc initialization failed\n",
 			__func__);
 		goto err;
 	}

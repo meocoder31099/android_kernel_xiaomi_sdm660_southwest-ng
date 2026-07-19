@@ -229,7 +229,7 @@ static int msm_vfe48_get_clks(struct vfe_device *vfe_dev)
 		}
 	}
 	if (i >= vfe_dev->num_clk)
-		pr_err("%s: cannot find camss_vfe_stream_clk\n", __func__);
+		pr_debug("%s: cannot find camss_vfe_stream_clk\n", __func__);
 	else {
 		/* Switch stream_clk to the last element*/
 		for (; i < vfe_dev->num_clk - 1; i++) {
@@ -375,7 +375,7 @@ int msm_vfe48_get_dual_sync_platform_data(struct vfe_device *vfe_dev)
 		vfe_dev->dual_vfe_irq =
 			msm_camera_get_irq(vfe_dev->pdev, "dual-vfe-irq");
 		if (!vfe_dev->dual_vfe_irq) {
-			pr_err("%s: dual-vfe-irq not supported !\n", __func__);
+			pr_debug("%s: dual-vfe-irq not supported !\n", __func__);
 			return rc;
 		}
 	}
@@ -410,7 +410,7 @@ void msm_vfe48_set_dual_vfe_mode(struct vfe_device *vfe_dev)
 		vfe_dev->dual_vfe_irq =
 			msm_camera_get_irq(vfe_dev->pdev, "dual-vfe-irq");
 		if (!vfe_dev->dual_vfe_irq) {
-			pr_err("%s: dual-vfe-irq not supported !\n", __func__);
+			pr_debug("%s: dual-vfe-irq not supported !\n", __func__);
 			return;
 		}
 	}
@@ -432,7 +432,7 @@ void msm_vfe48_clear_dual_vfe_mode(struct vfe_device *vfe_dev)
 		vfe_dev->dual_vfe_irq =
 			msm_camera_get_irq(vfe_dev->pdev, "dual-vfe-irq");
 		if (!vfe_dev->dual_vfe_irq) {
-			pr_err("%s: dual-vfe-irq not supported !\n", __func__);
+			pr_debug("%s: dual-vfe-irq not supported !\n", __func__);
 			return;
 		}
 	}
@@ -457,7 +457,7 @@ void msm_vfe48_clear_dual_irq_status(struct vfe_device *vfe_dev,
 		vfe_dev->dual_vfe_irq =
 			msm_camera_get_irq(vfe_dev->pdev, "dual-vfe-irq");
 		if (!vfe_dev->dual_vfe_irq) {
-			pr_err("%s: dual-vfe-irq not supported !\n", __func__);
+			pr_debug("%s: dual-vfe-irq not supported !\n", __func__);
 			return;
 		}
 		*dual_irq_status = msm_camera_io_r(vfe_dev->camss_base + 0x140);
@@ -487,7 +487,7 @@ void msm_vfe48_dual_config_irq(struct vfe_device *vfe_dev,
 		vfe_dev->dual_vfe_irq =
 			msm_camera_get_irq(vfe_dev->pdev, "dual-vfe-irq");
 		if (!vfe_dev->dual_vfe_irq) {
-			pr_err("%s: dual-vfe-irq not supported !\n", __func__);
+			pr_debug("%s: dual-vfe-irq not supported !\n", __func__);
 			return;
 		}
 		switch (oper) {

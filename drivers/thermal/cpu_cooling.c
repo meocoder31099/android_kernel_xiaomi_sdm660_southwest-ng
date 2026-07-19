@@ -164,7 +164,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
 		 */
 		if (clipped_freq > cpufreq_cdev->clipped_freq)
 		{
-			//pr_info("__test__, %s,cpu is %d, clipperd_freq is %d, %d.\n", __func__, policy->cpu, clipped_freq, cpufreq_cdev->clipped_freq);
+			//pr_debug("__test__, %s,cpu is %d, clipperd_freq is %d, %d.\n", __func__, policy->cpu, clipped_freq, cpufreq_cdev->clipped_freq);
 			clipped_freq = cpufreq_cdev->clipped_freq;
 
 		}
@@ -192,7 +192,7 @@ void cpu_limits_set_level(unsigned int cpu, unsigned int max_freq)
 					cdev = cpufreq_cdev->cdev;
 					if (cdev)
 					{
-						//pr_info("__test__, %s, cpu is %d, max_freq is %d, target_freq is %d.\n", __func__, cpu, max_freq, target_freq);
+						//pr_debug("__test__, %s, cpu is %d, max_freq is %d, target_freq is %d.\n", __func__, cpu, max_freq, target_freq);
 						cdev->ops->set_cur_state(cdev, cpufreq_cdev->max_level - level);
 
 					}
@@ -682,7 +682,7 @@ __cpufreq_cooling_register(struct device_node *np,
 	bool first;
 
 	if (IS_ERR_OR_NULL(policy)) {
-		pr_err("%s: cpufreq policy isn't valid: %p\n", __func__, policy);
+		pr_debug("%s: cpufreq policy isn't valid: %p\n", __func__, policy);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -805,7 +805,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
 	struct thermal_cooling_device *cdev = NULL;
 
 	if (!np) {
-		pr_err("cpu_cooling: OF node not available for cpu%d\n",
+		pr_debug("cpu_cooling: OF node not available for cpu%d\n",
 		       policy->cpu);
 		return NULL;
 	}
@@ -813,7 +813,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
 	if (of_find_property(np, "#cooling-cells", NULL)) {
 		cdev = __cpufreq_cooling_register(np, policy, true, NULL);
 		if (IS_ERR(cdev)) {
-			pr_err("cpu_cooling: cpu%d is not running as cooling device: %ld\n",
+			pr_debug("cpu_cooling: cpu%d is not running as cooling device: %ld\n",
 			       policy->cpu, PTR_ERR(cdev));
 			cdev = NULL;
 		}
@@ -845,7 +845,7 @@ cpufreq_platform_cooling_register(struct cpufreq_policy *policy,
 
 	cpu_node = of_cpu_device_node_get(policy->cpu);
 	if (!cpu_node) {
-		pr_err("No cpu node\n");
+		pr_debug("No cpu node\n");
 		return ERR_PTR(-EINVAL);
 	}
 	if (of_find_property(cpu_node, "#cooling-cells", NULL)) {
@@ -855,7 +855,7 @@ cpufreq_platform_cooling_register(struct cpufreq_policy *policy,
 		cdev = __cpufreq_cooling_register(cpu_node, policy, capacitance,
 							plat_ops);
 		if (IS_ERR(cdev))
-			pr_err("cpu_cooling: cpu%d cooling device err: %ld\n",
+			pr_debug("cpu_cooling: cpu%d cooling device err: %ld\n",
 			       policy->cpu, PTR_ERR(cdev));
 	}
 

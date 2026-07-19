@@ -1020,7 +1020,7 @@ static int usb_register_bus(struct usb_bus *bus)
 	mutex_lock(&usb_bus_idr_lock);
 	busnum = idr_alloc(&usb_bus_idr, bus, 1, USB_MAXBUS, GFP_KERNEL);
 	if (busnum < 0) {
-		pr_err("%s: failed to get bus number\n", usbcore_name);
+		pr_debug("%s: failed to get bus number\n", usbcore_name);
 		goto error_find_busnum;
 	}
 	bus->busnum = busnum;
@@ -1028,7 +1028,7 @@ static int usb_register_bus(struct usb_bus *bus)
 
 	usb_notify_add_bus(bus);
 
-	dev_info (bus->controller, "new USB bus registered, assigned bus "
+	dev_dbg (bus->controller, "new USB bus registered, assigned bus "
 		  "number %d\n", bus->busnum);
 	return 0;
 
@@ -1047,7 +1047,7 @@ error_find_busnum:
  */
 static void usb_deregister_bus (struct usb_bus *bus)
 {
-	dev_info (bus->controller, "USB bus %d deregistered\n", bus->busnum);
+	dev_dbg (bus->controller, "USB bus %d deregistered\n", bus->busnum);
 
 	/*
 	 * NOTE: make sure that all the devices are removed by the
@@ -1111,7 +1111,7 @@ static int register_root_hub(struct usb_hcd *hcd)
 
 	retval = usb_new_device (usb_dev);
 	if (retval) {
-		dev_err (parent_dev, "can't register root hub for %s, %d\n",
+		dev_dbg (parent_dev, "can't register root hub for %s, %d\n",
 				dev_name(&usb_dev->dev), retval);
 	} else {
 		spin_lock_irq (&hcd_root_hub_lock);
@@ -2560,7 +2560,7 @@ void usb_hc_died (struct usb_hcd *hcd)
 {
 	unsigned long flags;
 
-	dev_err (hcd->self.controller, "HC died; cleaning up\n");
+	dev_dbg (hcd->self.controller, "HC died; cleaning up\n");
 
 	spin_lock_irqsave (&hcd_root_hub_lock, flags);
 	clear_bit(HCD_FLAG_RH_RUNNING, &hcd->flags);
@@ -2777,20 +2777,20 @@ static int usb_hcd_request_irqs(struct usb_hcd *hcd,
 		retval = request_irq(irqnum, &usb_hcd_irq, irqflags,
 				hcd->irq_descr, hcd);
 		if (retval != 0) {
-			dev_err(hcd->self.controller,
+			dev_dbg(hcd->self.controller,
 					"request interrupt %d failed\n",
 					irqnum);
 			return retval;
 		}
 		hcd->irq = irqnum;
-		dev_info(hcd->self.controller, "irq %d, %s 0x%08llx\n", irqnum,
+		dev_dbg(hcd->self.controller, "irq %d, %s 0x%08llx\n", irqnum,
 				(hcd->driver->flags & HCD_MEMORY) ?
 					"io mem" : "io base",
 					(unsigned long long)hcd->rsrc_start);
 	} else {
 		hcd->irq = 0;
 		if (hcd->rsrc_start)
-			dev_info(hcd->self.controller, "%s 0x%08llx\n",
+			dev_dbg(hcd->self.controller, "%s 0x%08llx\n",
 					(hcd->driver->flags & HCD_MEMORY) ?
 					"io mem" : "io base",
 					(unsigned long long)hcd->rsrc_start);
@@ -2843,7 +2843,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 			goto err_usb_phy_roothub_power_on;
 	}
 
-	dev_info(hcd->self.controller, "%s\n", hcd->product_desc);
+	dev_dbg(hcd->self.controller, "%s\n", hcd->product_desc);
 
 	/* Keep old behaviour if authorized_default is not in [0, 1]. */
 	if (authorized_default < 0 || authorized_default > 1) {
@@ -2878,7 +2878,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 
 	rhdev = usb_alloc_dev(NULL, &hcd->self, 0);
 	if (rhdev == NULL) {
-		dev_err(hcd->self.sysdev, "unable to allocate root hub\n");
+		dev_dbg(hcd->self.sysdev, "unable to allocate root hub\n");
 		retval = -ENOMEM;
 		goto err_allocate_root_hub;
 	}
@@ -2932,7 +2932,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	if (hcd->driver->reset) {
 		retval = hcd->driver->reset(hcd);
 		if (retval < 0) {
-			dev_err(hcd->self.controller, "can't setup: %d\n",
+			dev_dbg(hcd->self.controller, "can't setup: %d\n",
 					retval);
 			goto err_hcd_driver_setup;
 		}
@@ -2960,7 +2960,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	hcd->state = HC_STATE_RUNNING;
 	retval = hcd->driver->start(hcd);
 	if (retval < 0) {
-		dev_err(hcd->self.controller, "startup error %d\n", retval);
+		dev_dbg(hcd->self.controller, "startup error %d\n", retval);
 		goto err_hcd_driver_start;
 	}
 
@@ -2971,7 +2971,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 
 	retval = sysfs_create_group(&rhdev->dev.kobj, &usb_bus_attr_group);
 	if (retval < 0) {
-		printk(KERN_ERR "Cannot register USB bus sysfs attributes: %d\n",
+		no_printk(KERN_ERR "Cannot register USB bus sysfs attributes: %d\n",
 		       retval);
 		goto error_create_attr_group;
 	}
@@ -3034,7 +3034,7 @@ void usb_remove_hcd(struct usb_hcd *hcd)
 {
 	struct usb_device *rhdev = hcd->self.root_hub;
 
-	dev_info(hcd->self.controller, "remove, state %x\n", hcd->state);
+	dev_dbg(hcd->self.controller, "remove, state %x\n", hcd->state);
 
 	usb_get_dev(rhdev);
 	sysfs_remove_group(&rhdev->dev.kobj, &usb_bus_attr_group);
@@ -3144,7 +3144,7 @@ void usb_mon_deregister (void)
 {
 
 	if (mon_ops == NULL) {
-		printk(KERN_ERR "USB: monitor was not registered\n");
+		no_printk(KERN_ERR "USB: monitor was not registered\n");
 		return;
 	}
 	mon_ops = NULL;

@@ -37,15 +37,15 @@ static void crown_manager(const char *apk, struct list_head *uid_data, u8 signat
     char pkg[KSU_MAX_PACKAGE_NAME];
     struct uid_data *np;
     if (get_pkg_from_apk_path(pkg, apk) < 0) {
-        pr_err("Failed to get package name from apk path: %s\n", apk);
+        pr_debug("Failed to get package name from apk path: %s\n", apk);
         return;
     }
 
-    pr_info("manager pkg: %s\n", pkg);
+    pr_debug("manager pkg: %s\n", pkg);
 
     list_for_each_entry (np, uid_data, list) {
         if (strncmp(np->package, pkg, KSU_MAX_PACKAGE_NAME) == 0) {
-            pr_info("Crowning manager: %s uid=%d, signature_index=%d\n", pkg, np->uid, signature_index);
+            pr_debug("Crowning manager: %s uid=%d, signature_index=%d\n", pkg, np->uid, signature_index);
 
             ksu_register_manager(np->uid, signature_index);
             break;
@@ -105,11 +105,11 @@ FILLDIR_RETURN_TYPE my_actor(MY_ACTOR_CTX_ARG, const char *name, int namelen, lo
     char *candidate_path = (char *)my_ctx->private_data;
 
 #ifdef CONFIG_KSU_DEBUG
-    pr_info("Testing path: %s/%.*s", my_ctx->parent_dir, namelen, name);
+    pr_debug("Testing path: %s/%.*s", my_ctx->parent_dir, namelen, name);
 #endif
 
     if (!my_ctx) {
-        pr_err("Invalid context\n");
+        pr_debug("Invalid context\n");
         return FILLDIR_ACTOR_STOP;
     }
 
@@ -117,12 +117,12 @@ FILLDIR_RETURN_TYPE my_actor(MY_ACTOR_CTX_ARG, const char *name, int namelen, lo
         return FILLDIR_ACTOR_CONTINUE; // Skip "." and ".."
 
     if (d_type == DT_DIR && namelen >= 8 && !strncmp(name, "vmdl", 4) && !strncmp(name + namelen - 4, ".tmp", 4)) {
-        pr_info("Skipping directory: %.*s\n", namelen, name);
+        pr_debug("Skipping directory: %.*s\n", namelen, name);
         return FILLDIR_ACTOR_CONTINUE; // Skip staging package
     }
 
     if (snprintf(dirpath, DATA_PATH_LEN, "%s/%.*s", my_ctx->parent_dir, namelen, name) >= DATA_PATH_LEN) {
-        pr_err("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen, name);
+        pr_debug("Path too long: %s/%.*s\n", my_ctx->parent_dir, namelen, name);
         return FILLDIR_ACTOR_CONTINUE;
     }
 
@@ -130,7 +130,7 @@ FILLDIR_RETURN_TYPE my_actor(MY_ACTOR_CTX_ARG, const char *name, int namelen, lo
         struct data_path *data = kzalloc(sizeof(struct data_path), GFP_KERNEL);
 
         if (!data) {
-            pr_err("Failed to allocate memory for %s\n", dirpath);
+            pr_debug("Failed to allocate memory for %s\n", dirpath);
             return FILLDIR_ACTOR_CONTINUE;
         }
 
@@ -192,7 +192,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 
             file = filp_open(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
             if (IS_ERR(file)) {
-                pr_err("Failed to open directory: %s, err: %ld\n", pos->dirpath, PTR_ERR(file));
+                pr_debug("Failed to open directory: %s, err: %ld\n", pos->dirpath, PTR_ERR(file));
                 goto skip_iterate;
             }
 
@@ -200,7 +200,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
             if (!data_app_magic) {
                 if (S_MAGIC_COMPAT(file)) {
                     data_app_magic = S_MAGIC_COMPAT(file);
-                    pr_info("%s: dir: %s got magic! 0x%lx\n", __func__, pos->dirpath, data_app_magic);
+                    pr_debug("%s: dir: %s got magic! 0x%lx\n", __func__, pos->dirpath, data_app_magic);
                 } else {
                     filp_close(file, NULL);
                     goto skip_iterate;
@@ -208,7 +208,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
             }
 
             if (S_MAGIC_COMPAT(file) != data_app_magic) {
-                pr_info("%s: skip: %s magic: 0x%lx expected: 0x%lx\n", __func__, pos->dirpath, S_MAGIC_COMPAT(file),
+                pr_debug("%s: skip: %s magic: 0x%lx expected: 0x%lx\n", __func__, pos->dirpath, S_MAGIC_COMPAT(file),
                         data_app_magic);
                 filp_close(file, NULL);
                 goto skip_iterate;
@@ -225,7 +225,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
                 goto skip_iterate;
 
             bool is_manager = is_manager_apk(candidate_path, &signature_index);
-            pr_info("Found new base.apk at path: %s, is_manager: %d\n", candidate_path, is_manager);
+            pr_debug("Found new base.apk at path: %s, is_manager: %d\n", candidate_path, is_manager);
 
             if (likely(!is_manager))
                 goto skip_iterate;
@@ -286,13 +286,13 @@ void do_track_throne(void *data)
 
     curr_app_id_map = bitmap_zalloc(MAX_APP_ID, GFP_KERNEL);
     if (!curr_app_id_map) {
-        pr_err("track_throne: failed to allocate curr_app_id_map\n");
+        pr_debug("track_throne: failed to allocate curr_app_id_map\n");
         return;
     }
 
     diff_map = bitmap_zalloc(MAX_APP_ID, GFP_KERNEL);
     if (!diff_map) {
-        pr_err("track_throne: failed to allocate diff_map\n");
+        pr_debug("track_throne: failed to allocate diff_map\n");
         bitmap_free(curr_app_id_map); // Free allocated memory when failed
         return;
     }
@@ -301,13 +301,13 @@ void do_track_throne(void *data)
     if (flags & TRACK_THRONE_FROM_RENAMEAT) {
         fp = filp_open(SYSTEM_PACKAGES_LIST_TMP_PATH, O_RDONLY, 0);
         if (IS_ERR(fp)) {
-            pr_err("%s: open " SYSTEM_PACKAGES_LIST_TMP_PATH " failed: %ld\n", __func__, PTR_ERR(fp));
+            pr_debug("%s: open " SYSTEM_PACKAGES_LIST_TMP_PATH " failed: %ld\n", __func__, PTR_ERR(fp));
             goto out;
         }
     } else {
         fp = filp_open(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
         if (IS_ERR(fp)) {
-            pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n", __func__, PTR_ERR(fp));
+            pr_debug("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n", __func__, PTR_ERR(fp));
             goto out;
         }
     }
@@ -343,12 +343,12 @@ void do_track_throne(void *data)
         package = strsep(&tmp, delim);
         uid = strsep(&tmp, delim);
         if (!uid || !package) {
-            pr_err("update_uid: package or uid is NULL!\n");
+            pr_debug("update_uid: package or uid is NULL!\n");
             break;
         }
 
         if (kstrtou32(uid, 10, &res)) {
-            pr_err("update_uid: uid parse err\n");
+            pr_debug("update_uid: uid parse err\n");
             break;
         }
         data->uid = res;
@@ -381,7 +381,7 @@ void do_track_throne(void *data)
             // if it is, unregister its appid because it is currently invalid.
             // if we keep it, we may grant manager privilege to an unknown app.
             if (ksu_is_manager_appid(appid)) {
-                pr_info("Manager APK removed, invalidate previous App ID: %d\n", appid);
+                pr_debug("Manager APK removed, invalidate previous App ID: %d\n", appid);
                 ksu_unregister_manager(appid);
             }
         }
@@ -399,9 +399,9 @@ void do_track_throne(void *data)
     mutex_unlock(&app_list_lock);
 
     if (need_search) {
-        pr_info("Searching for manager(s)...\n");
+        pr_debug("Searching for manager(s)...\n");
         search_manager("/data/app", 2, &uid_list);
-        pr_info("Manager search finished\n");
+        pr_debug("Manager search finished\n");
     }
 
 prune:
@@ -466,7 +466,7 @@ void ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
     char path[128];
     char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
     if (IS_ERR(buf)) {
-        pr_err("dentry_path_raw failed.\n");
+        pr_debug("dentry_path_raw failed.\n");
         return;
     }
 
@@ -474,7 +474,7 @@ void ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
         return;
     }
 
-    pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname, new_dentry->d_iname, buf);
+    pr_debug("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname, new_dentry->d_iname, buf);
 
     track_throne(TRACK_THRONE_FROM_RENAMEAT);
 }

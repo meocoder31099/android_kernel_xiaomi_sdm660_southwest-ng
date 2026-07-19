@@ -94,7 +94,7 @@ static int bus_get_reg(struct nodeclk *nclk, struct device *dev)
 		if (IS_ERR_OR_NULL(nclk->reg)) {
 			ret =
 			(IS_ERR(nclk->reg) ? PTR_ERR(nclk->reg) : -ENXIO);
-			dev_err(dev, "Error: Failed to get regulator %s:%d\n",
+			dev_dbg(dev, "Error: Failed to get regulator %s:%d\n",
 							nclk->reg_name, ret);
 		} else {
 			dev_dbg(dev, "Successfully got regulator for %d\n",
@@ -1173,7 +1173,7 @@ static int msm_bus_device_probe(struct platform_device *pdev)
 	devm_kfree(&pdev->dev, pdata->info);
 	devm_kfree(&pdev->dev, pdata);
 
-	dev_info(&pdev->dev, "Bus scaling driver probe successful\n");
+	dev_dbg(&pdev->dev, "Bus scaling driver probe successful\n");
 
 exit_device_probe:
 	return ret;

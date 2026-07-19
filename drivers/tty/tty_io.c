@@ -263,12 +263,12 @@ static int tty_paranoia_check(struct tty_struct *tty, struct inode *inode,
 {
 #ifdef TTY_PARANOIA_CHECK
 	if (!tty) {
-		pr_warn("(%d:%d): %s: NULL tty\n",
+		pr_debug("(%d:%d): %s: NULL tty\n",
 			imajor(inode), iminor(inode), routine);
 		return 1;
 	}
 	if (tty->magic != TTY_MAGIC) {
-		pr_warn("(%d:%d): %s: bad magic number\n",
+		pr_debug("(%d:%d): %s: bad magic number\n",
 			imajor(inode), iminor(inode), routine);
 		return 1;
 	}
@@ -2526,7 +2526,7 @@ static void tty_warn_deprecated_flags(struct serial_struct __user *ss)
 	flags &= ASYNC_DEPRECATED;
 
 	if (flags && __ratelimit(&depr_flags))
-		pr_warn("%s: '%s' is using deprecated serial flags (with no effect): %.8x\n",
+		pr_debug("%s: '%s' is using deprecated serial flags (with no effect): %.8x\n",
 			__func__, get_task_comm(comm, current), flags);
 }
 
@@ -2983,7 +2983,7 @@ struct device *tty_register_device_attr(struct tty_driver *driver,
 	int retval;
 
 	if (index >= driver->num) {
-		pr_err("%s: Attempt to register invalid tty line number (%d)\n",
+		pr_debug("%s: Attempt to register invalid tty line number (%d)\n",
 		       driver->name, index);
 		return ERR_PTR(-EINVAL);
 	}

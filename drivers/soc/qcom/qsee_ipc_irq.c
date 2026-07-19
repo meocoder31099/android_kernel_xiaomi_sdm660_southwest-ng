@@ -73,16 +73,16 @@ static irqreturn_t qsee_intr(int irq, void *data)
 		}
 	}
 	if (!bank) {
-		dev_err(qirq->dev, "Unable to find bank for irq:%d\n", irq);
+		dev_dbg(qirq->dev, "Unable to find bank for irq:%d\n", irq);
 		return IRQ_HANDLED;
 	}
 
 	if (regmap_read(qirq->regmap, bank->data->status, &status)) {
-		dev_err(qirq->dev, "Error reading irq %d status\n", irq);
+		dev_dbg(qirq->dev, "Error reading irq %d status\n", irq);
 		return IRQ_HANDLED;
 	}
 	if (regmap_read(qirq->regmap, bank->data->mask, &mask)) {
-		dev_err(qirq->dev, "Error reading irq %d mask\n", irq);
+		dev_dbg(qirq->dev, "Error reading irq %d mask\n", irq);
 		return IRQ_HANDLED;
 	}
 
@@ -246,7 +246,7 @@ static int qsee_irq_probe(struct platform_device *pdev)
 
 	syscon = of_parse_phandle(dev->of_node, "syscon", 0);
 	if (!syscon) {
-		dev_err(dev, "no syscon node\n");
+		dev_dbg(dev, "no syscon node\n");
 		return -ENODEV;
 	}
 
@@ -275,7 +275,7 @@ static int qsee_irq_probe(struct platform_device *pdev)
 		bank->data = &data[i];
 		bank->irq = platform_get_irq(pdev, idx);
 		if (bank->irq < 0) {
-			dev_err(dev, "unable to acquire %s interrupt\n",
+			dev_dbg(dev, "unable to acquire %s interrupt\n",
 				data[i].name);
 			return -EINVAL;
 		}
@@ -288,7 +288,7 @@ static int qsee_irq_probe(struct platform_device *pdev)
 				       IRQF_NO_SUSPEND | IRQF_ONESHOT,
 				       "qsee_irq", qirq);
 		if (ret) {
-			dev_err(dev, "failed to request interrupt\n");
+			dev_dbg(dev, "failed to request interrupt\n");
 			return ret;
 		}
 	}
@@ -296,7 +296,7 @@ static int qsee_irq_probe(struct platform_device *pdev)
 	qirq->domain = irq_domain_add_linear(dev->of_node, 32 * irq_count,
 						 &qsee_irq_ops, qirq);
 	if (!qirq->domain) {
-		dev_err(dev, "failed to add irq_domain\n");
+		dev_dbg(dev, "failed to add irq_domain\n");
 		return -ENOMEM;
 	}
 
@@ -352,7 +352,7 @@ static int __init qsee_irq_init(void)
 
 	rc = platform_driver_register(&qsee_irq_driver);
 	if (rc)
-		pr_err("%s: platform driver reg failed %d\n", __func__, rc);
+		pr_debug("%s: platform driver reg failed %d\n", __func__, rc);
 
 	return rc;
 }

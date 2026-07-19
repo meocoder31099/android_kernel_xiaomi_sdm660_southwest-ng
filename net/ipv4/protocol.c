@@ -35,7 +35,7 @@ EXPORT_SYMBOL(inet_offloads);
 int inet_add_protocol(const struct net_protocol *prot, unsigned char protocol)
 {
 	if (!prot->netns_ok) {
-		pr_err("Protocol %u is not namespace aware, cannot register.\n",
+		pr_debug("Protocol %u is not namespace aware, cannot register.\n",
 			protocol);
 		return -EINVAL;
 	}

@@ -269,7 +269,7 @@ static int clk_debug_measure_get(void *data, u64 *val)
 
 	ret = clk_find_and_set_parent(measure, hw);
 	if (ret) {
-		pr_err("Failed to set the debug mux's parent.\n");
+		pr_debug("Failed to set the debug mux's parent.\n");
 		goto exit;
 	}
 
@@ -311,7 +311,7 @@ static int clk_debug_read_period(void *data, u64 *val)
 		mux = to_clk_measure(parent);
 		regmap_read(mux->regmap, mux->period_offset, &regval);
 		if (!regval) {
-			pr_err("Error reading mccc period register, ret = %d\n",
+			pr_debug("Error reading mccc period register, ret = %d\n",
 			       ret);
 			mutex_unlock(&clk_debug_lock);
 			return 0;
@@ -319,7 +319,7 @@ static int clk_debug_read_period(void *data, u64 *val)
 		*val = 1000000000000UL;
 		do_div(*val, regval);
 	} else {
-		pr_err("Failed to set the debug mux's parent.\n");
+		pr_debug("Failed to set the debug mux's parent.\n");
 	}
 
 	mutex_unlock(&clk_debug_lock);
@@ -411,7 +411,7 @@ int map_debug_bases(struct platform_device *pdev, const char *base,
 	mux->regmap = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
 						     base);
 	if (IS_ERR(mux->regmap)) {
-		pr_err("Failed to map %s (ret=%ld)\n", base,
+		pr_debug("Failed to map %s (ret=%ld)\n", base,
 				PTR_ERR(mux->regmap));
 		return PTR_ERR(mux->regmap);
 	}
@@ -444,7 +444,7 @@ void qcom_clk_dump(struct clk *clk, struct regulator *regulator,
 	if (IS_ERR_OR_NULL(hw))
 		return;
 
-	pr_info("Dumping %s Registers:\n", clk_hw_get_name(hw));
+	pr_debug("Dumping %s Registers:\n", clk_hw_get_name(hw));
 	WARN_CLK(hw->core, clk_hw_get_name(hw), calltrace, "");
 }
 EXPORT_SYMBOL(qcom_clk_dump);

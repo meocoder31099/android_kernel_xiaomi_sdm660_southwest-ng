@@ -36,12 +36,12 @@ static int mdss_wb_check_params(struct mdss_panel_data *pdata,
 	struct mdss_panel_info *old;
 
 	if (!pdata || !new) {
-		pr_err("%s: Invalid input\n", __func__);
+		pr_debug("%s: Invalid input\n", __func__);
 		return -EINVAL;
 	}
 
 	if (new->xres >= 4096 || new->yres >= 4096) {
-		pr_err("%s: Invalid resolutions\n", __func__);
+		pr_debug("%s: Invalid resolutions\n", __func__);
 		return -EINVAL;
 	}
 
@@ -96,7 +96,7 @@ static int mdss_wb_dev_init(struct mdss_wb_ctrl *wb_ctrl)
 	int rc = 0;
 
 	if (!wb_ctrl) {
-		pr_err("%s: no driver data\n", __func__);
+		pr_debug("%s: no driver data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -106,7 +106,7 @@ static int mdss_wb_dev_init(struct mdss_wb_ctrl *wb_ctrl)
 	wb_ctrl->sdev.name = "wfd";
 	rc = extcon_dev_register(&wb_ctrl->sdev);
 	if (rc) {
-		pr_err("Failed to setup switch dev for writeback panel\n");
+		pr_debug("Failed to setup switch dev for writeback panel\n");
 		return rc;
 	}
 
@@ -116,7 +116,7 @@ static int mdss_wb_dev_init(struct mdss_wb_ctrl *wb_ctrl)
 static int mdss_wb_dev_uninit(struct mdss_wb_ctrl *wb_ctrl)
 {
 	if (!wb_ctrl) {
-		pr_err("%s: no driver data\n", __func__);
+		pr_debug("%s: no driver data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -136,12 +136,12 @@ static int mdss_wb_probe(struct platform_device *pdev)
 
 	util = mdss_get_util_intf();
 	if (util == NULL) {
-		pr_err("%s: Failed to get mdss utility functions\n", __func__);
+		pr_debug("%s: Failed to get mdss utility functions\n", __func__);
 		return -ENODEV;
 	}
 
 	if (!util->mdp_probe_done) {
-		pr_err("%s: MDP not probed yet!\n", __func__);
+		pr_debug("%s: MDP not probed yet!\n", __func__);
 		return -EPROBE_DEFER;
 	}
 
@@ -159,7 +159,7 @@ static int mdss_wb_probe(struct platform_device *pdev)
 
 	rc = mdss_wb_dev_init(wb_ctrl);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to set up device nodes for writeback panel\n");
+		dev_dbg(&pdev->dev, "unable to set up device nodes for writeback panel\n");
 		goto error_no_mem;
 	}
 
@@ -173,7 +173,7 @@ static int mdss_wb_probe(struct platform_device *pdev)
 
 	rc = mdss_register_panel(pdev, pdata);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to register writeback panel\n");
+		dev_dbg(&pdev->dev, "unable to register writeback panel\n");
 		goto error_init;
 	}
 
@@ -190,7 +190,7 @@ static int mdss_wb_remove(struct platform_device *pdev)
 	struct mdss_wb_ctrl *wb_ctrl = platform_get_drvdata(pdev);
 
 	if (!wb_ctrl) {
-		pr_err("%s: no driver data\n", __func__);
+		pr_debug("%s: no driver data\n", __func__);
 		return -ENODEV;
 	}
 

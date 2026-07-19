@@ -428,7 +428,7 @@ int platform_device_add(struct platform_device *pdev)
 		}
 
 		if (p && insert_resource(p, r)) {
-			dev_err(&pdev->dev, "failed to claim resource %d: %pR\n", i, r);
+			dev_dbg(&pdev->dev, "failed to claim resource %d: %pR\n", i, r);
 			ret = -EBUSY;
 			goto failed;
 		}
@@ -608,7 +608,7 @@ static int platform_drv_probe(struct device *_dev)
 
 out:
 	if (drv->prevent_deferred_probe && ret == -EPROBE_DEFER) {
-		dev_warn(_dev, "probe deferral not supported\n");
+		dev_dbg(_dev, "probe deferral not supported\n");
 		ret = -ENXIO;
 	}
 
@@ -696,7 +696,7 @@ int __init_or_module __platform_driver_probe(struct platform_driver *drv,
 	int retval, code;
 
 	if (drv->driver.probe_type == PROBE_PREFER_ASYNCHRONOUS) {
-		pr_err("%s: drivers registered with %s can not be probed asynchronously\n",
+		pr_debug("%s: drivers registered with %s can not be probed asynchronously\n",
 			 drv->driver.name, __func__);
 		return -EINVAL;
 	}
@@ -823,7 +823,7 @@ int __platform_register_drivers(struct platform_driver * const *drivers,
 
 		err = __platform_driver_register(drivers[i], owner);
 		if (err < 0) {
-			pr_err("failed to register platform driver %ps: %d\n",
+			pr_debug("failed to register platform driver %ps: %d\n",
 			       drivers[i], err);
 			goto error;
 		}
@@ -1398,7 +1398,7 @@ static int __init early_platform_driver_probe_id(char *class_str,
 
 		switch (match_id) {
 		case EARLY_PLATFORM_ID_ERROR:
-			pr_warn("%s: unable to parse %s parameter\n",
+			pr_debug("%s: unable to parse %s parameter\n",
 				class_str, epdrv->pdrv->driver.name);
 			/* fall-through */
 		case EARLY_PLATFORM_ID_UNSET:
@@ -1430,7 +1430,7 @@ static int __init early_platform_driver_probe_id(char *class_str,
 			}
 
 			if (epdrv->pdrv->probe(match))
-				pr_warn("%s: unable to probe %s early.\n",
+				pr_debug("%s: unable to probe %s early.\n",
 					class_str, match->name);
 			else
 				n++;

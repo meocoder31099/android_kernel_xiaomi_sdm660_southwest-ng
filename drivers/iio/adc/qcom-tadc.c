@@ -290,7 +290,7 @@ static int tadc_read(struct tadc_chip *chip, u16 reg, u8 *val, size_t count)
 
 	rc = regmap_bulk_read(chip->regmap, reg, val, count);
 	if (rc < 0)
-		pr_err("Couldn't read 0x%04x rc=%d\n", reg, rc);
+		pr_debug("Couldn't read 0x%04x rc=%d\n", reg, rc);
 
 	return rc;
 }
@@ -303,14 +303,14 @@ static int tadc_write(struct tadc_chip *chip, u16 reg, u8 data)
 	if (tadc_is_reg_locked(chip, reg)) {
 		rc = regmap_write(chip->regmap, (reg & 0xFF00) | 0xD0, 0xA5);
 		if (rc < 0) {
-			pr_err("Couldn't unlock secure register rc=%d\n", rc);
+			pr_debug("Couldn't unlock secure register rc=%d\n", rc);
 			goto unlock;
 		}
 	}
 
 	rc = regmap_write(chip->regmap, reg, data);
 	if (rc < 0) {
-		pr_err("Couldn't write 0x%02x to 0x%04x rc=%d\n",
+		pr_debug("Couldn't write 0x%02x to 0x%04x rc=%d\n",
 								data, reg, rc);
 		goto unlock;
 	}
@@ -330,7 +330,7 @@ static int tadc_bulk_write(struct tadc_chip *chip, u16 reg, u8 *data,
 			rc = regmap_write(chip->regmap,
 						(reg & 0xFF00) | 0xD0, 0xA5);
 			if (rc < 0) {
-				pr_err("Couldn't unlock secure register rc=%d\n",
+				pr_debug("Couldn't unlock secure register rc=%d\n",
 								rc);
 				goto unlock;
 			}
@@ -338,7 +338,7 @@ static int tadc_bulk_write(struct tadc_chip *chip, u16 reg, u8 *data,
 
 		rc = regmap_write(chip->regmap, reg, data[i]);
 		if (rc < 0) {
-			pr_err("Couldn't write 0x%02x to 0x%04x rc=%d\n",
+			pr_debug("Couldn't write 0x%02x to 0x%04x rc=%d\n",
 							data[i], reg, rc);
 			goto unlock;
 		}
@@ -357,7 +357,7 @@ static int tadc_masked_write(struct tadc_chip *chip, u16 reg, u8 mask, u8 data)
 	if (tadc_is_reg_locked(chip, reg)) {
 		rc = regmap_write(chip->regmap, (reg & 0xFF00) | 0xD0, 0xA5);
 		if (rc < 0) {
-			pr_err("Couldn't unlock secure register rc=%d\n", rc);
+			pr_debug("Couldn't unlock secure register rc=%d\n", rc);
 			goto unlock;
 		}
 	}
@@ -377,12 +377,12 @@ static int tadc_lerp(const struct tadc_pt *pts, size_t size, bool inv,
 	bool ascending;
 
 	if (pts == NULL) {
-		pr_err("Table is NULL\n");
+		pr_debug("Table is NULL\n");
 		return -EINVAL;
 	}
 
 	if (size < 1) {
-		pr_err("Table has no entries\n");
+		pr_debug("Table has no entries\n");
 		return -ENOENT;
 	}
 
@@ -456,7 +456,7 @@ static int tadc_get_raw_therm(const struct tadc_chan_data *chan_data,
 	rc = tadc_lerp(chan_data->table, chan_data->tablesize, true, mdegc,
 								&rtherm);
 	if (rc < 0) {
-		pr_err("Couldn't interpolate %d\n rc=%d\n", mdegc, rc);
+		pr_debug("Couldn't interpolate %d\n rc=%d\n", mdegc, rc);
 		return rc;
 	}
 
@@ -472,7 +472,7 @@ static int tadc_read_channel(struct tadc_chip *chip, u16 address, int *adc)
 
 	rc = tadc_read(chip, address, val, ARRAY_SIZE(val));
 	if (rc < 0) {
-		pr_err("Couldn't read channel rc=%d\n", rc);
+		pr_debug("Couldn't read channel rc=%d\n", rc);
 		return rc;
 	}
 
@@ -492,7 +492,7 @@ static int tadc_write_channel(struct tadc_chip *chip, u16 address, int adc)
 	val[1] = (u8)(adc >> BITS_PER_BYTE);
 	rc = tadc_bulk_write(chip, address, val, 2);
 	if (rc < 0) {
-		pr_err("Couldn't write to channel rc=%d\n", rc);
+		pr_debug("Couldn't write to channel rc=%d\n", rc);
 		return rc;
 	}
 
@@ -509,7 +509,7 @@ static int tadc_do_conversion(struct tadc_chip *chip, u8 channels, s16 *adc)
 	mutex_lock(&chip->conv_lock);
 	rc = tadc_read(chip, TADC_MBG_ERR_REG(chip), val, 1);
 	if (rc < 0) {
-		pr_err("Couldn't read mbg error status rc=%d\n", rc);
+		pr_debug("Couldn't read mbg error status rc=%d\n", rc);
 		goto unlock;
 	}
 
@@ -529,7 +529,7 @@ static int tadc_do_conversion(struct tadc_chip *chip, u8 channels, s16 *adc)
 
 	rc = tadc_write(chip, TADC_CONV_REQ_REG(chip), channels);
 	if (rc < 0) {
-		pr_err("Couldn't write conversion request rc=%d\n", rc);
+		pr_debug("Couldn't write conversion request rc=%d\n", rc);
 		goto unlock;
 	}
 
@@ -539,7 +539,7 @@ static int tadc_do_conversion(struct tadc_chip *chip, u8 channels, s16 *adc)
 	if (timeleft == 0) {
 		rc = tadc_read(chip, TADC_SW_CH_CONV_REG(chip), val, 1);
 		if (rc < 0) {
-			pr_err("Couldn't read conversion status rc=%d\n", rc);
+			pr_debug("Couldn't read conversion status rc=%d\n", rc);
 			goto unlock;
 		}
 
@@ -555,7 +555,7 @@ static int tadc_do_conversion(struct tadc_chip *chip, u8 channels, s16 *adc)
 
 	rc = tadc_read(chip, TADC_CH1_ADC_LO_REG(chip), val, ARRAY_SIZE(val));
 	if (rc < 0) {
-		pr_err("Couldn't read adc channels rc=%d\n", rc);
+		pr_debug("Couldn't read adc channels rc=%d\n", rc);
 		goto unlock;
 	}
 
@@ -598,7 +598,7 @@ static int tadc_read_raw(struct iio_dev *indio_dev,
 		break;
 	default:
 		if (chan->channel >= ARRAY_SIZE(chip->chans)) {
-			pr_err("Channel %d is out of bounds\n", chan->channel);
+			pr_debug("Channel %d is out of bounds\n", chan->channel);
 			return -EINVAL;
 		}
 
@@ -638,7 +638,7 @@ static int tadc_read_raw(struct iio_dev *indio_dev,
 			rc = tadc_do_conversion(chip, BIT(chan->channel), adc);
 			if (rc < 0) {
 				if (rc != -ENODATA)
-					pr_err("Couldn't read battery current and voltage channels rc=%d\n",
+					pr_debug("Couldn't read battery current and voltage channels rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -647,7 +647,7 @@ static int tadc_read_raw(struct iio_dev *indio_dev,
 		}
 
 		if (rc < 0 && rc != -ENODATA) {
-			pr_err("Couldn't read channel %d\n", chan->channel);
+			pr_debug("Couldn't read channel %d\n", chan->channel);
 			return rc;
 		}
 
@@ -670,7 +670,7 @@ static int tadc_read_raw(struct iio_dev *indio_dev,
 
 			rc = tadc_get_processed_therm(chan_data, *val, val);
 			if (rc < 0) {
-				pr_err("Couldn't process 0x%04x from channel %d rc=%d\n",
+				pr_debug("Couldn't process 0x%04x from channel %d rc=%d\n",
 						*val, chan->channel, rc);
 				return rc;
 			}
@@ -679,7 +679,7 @@ static int tadc_read_raw(struct iio_dev *indio_dev,
 			rc = tadc_do_conversion(chip,
 				BIT(TADC_BATT_I) | BIT(TADC_BATT_V), adc);
 			if (rc < 0 && rc != -ENODATA) {
-				pr_err("Couldn't read battery current and voltage channels rc=%d\n",
+				pr_debug("Couldn't read battery current and voltage channels rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -690,7 +690,7 @@ static int tadc_read_raw(struct iio_dev *indio_dev,
 			rc = tadc_do_conversion(chip,
 				BIT(TADC_INPUT_I) | BIT(TADC_INPUT_V), adc);
 			if (rc < 0 && rc != -ENODATA) {
-				pr_err("Couldn't read input current and voltage channels rc=%d\n",
+				pr_debug("Couldn't read input current and voltage channels rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -781,7 +781,7 @@ static int tadc_write_raw(struct iio_dev *indio_dev,
 		break;
 	default:
 		if (chan->channel >= ARRAY_SIZE(chip->chans)) {
-			pr_err("Channel %d is out of bounds\n", chan->channel);
+			pr_debug("Channel %d is out of bounds\n", chan->channel);
 			return -EINVAL;
 		}
 
@@ -804,7 +804,7 @@ static int tadc_write_raw(struct iio_dev *indio_dev,
 		case TADC_THERM2_THR3:
 			rc = tadc_get_raw_therm(chan_data, val, &raw);
 			if (rc < 0) {
-				pr_err("Couldn't get raw value rc=%d\n", rc);
+				pr_debug("Couldn't get raw value rc=%d\n", rc);
 				return rc;
 			}
 			break;
@@ -824,7 +824,7 @@ static int tadc_write_raw(struct iio_dev *indio_dev,
 		rc = tadc_write_raw(indio_dev, chan, raw, 0,
 							IIO_CHAN_INFO_RAW);
 		if (rc < 0) {
-			pr_err("Couldn't write raw rc=%d\n", rc);
+			pr_debug("Couldn't write raw rc=%d\n", rc);
 			return rc;
 		}
 
@@ -858,7 +858,7 @@ static int tadc_write_raw(struct iio_dev *indio_dev,
 		}
 
 		if (rc < 0) {
-			pr_err("Couldn't write channel %d\n", chan->channel);
+			pr_debug("Couldn't write channel %d\n", chan->channel);
 			return rc;
 		}
 
@@ -891,34 +891,34 @@ static int tadc_disable_vote_callback(struct votable *votable,
 		timeleft = wait_for_completion_timeout(&chip->eoc_complete,
 				timeout);
 		if (timeleft == 0)
-			pr_err("Timed out waiting for eoc, disabling hw conversions regardless\n");
+			pr_debug("Timed out waiting for eoc, disabling hw conversions regardless\n");
 
 		rc = tadc_read(chip, TADC_HWTRIG_CONV_CH_EN_REG(chip),
 							&chip->hwtrig_conv, 1);
 		if (rc < 0) {
-			pr_err("Couldn't save hw conversions rc=%d\n", rc);
+			pr_debug("Couldn't save hw conversions rc=%d\n", rc);
 			return rc;
 		}
 		rc = tadc_write(chip, TADC_HWTRIG_CONV_CH_EN_REG(chip), 0x00);
 		if (rc < 0) {
-			pr_err("Couldn't disable hw conversions rc=%d\n", rc);
+			pr_debug("Couldn't disable hw conversions rc=%d\n", rc);
 			return rc;
 		}
 		rc = tadc_write(chip, TADC_ADC_DIRECT_TST(chip), 0x80);
 		if (rc < 0) {
-			pr_err("Couldn't enable direct test mode rc=%d\n", rc);
+			pr_debug("Couldn't enable direct test mode rc=%d\n", rc);
 			return rc;
 		}
 	} else {
 		rc = tadc_write(chip, TADC_ADC_DIRECT_TST(chip), 0x00);
 		if (rc < 0) {
-			pr_err("Couldn't disable direct test mode rc=%d\n", rc);
+			pr_debug("Couldn't disable direct test mode rc=%d\n", rc);
 			return rc;
 		}
 		rc = tadc_write(chip, TADC_HWTRIG_CONV_CH_EN_REG(chip),
 							chip->hwtrig_conv);
 		if (rc < 0) {
-			pr_err("Couldn't restore hw conversions rc=%d\n", rc);
+			pr_debug("Couldn't restore hw conversions rc=%d\n", rc);
 			return rc;
 		}
 	}
@@ -946,7 +946,7 @@ static void status_change_work(struct work_struct *work)
 	rc = power_supply_get_property(chip->usb_psy,
 		       POWER_SUPPLY_PROP_PRESENT, &pval);
 	if (rc < 0) {
-		pr_err("Couldn't get present status rc=%d\n", rc);
+		pr_debug("Couldn't get present status rc=%d\n", rc);
 		/* treat usb is not present */
 		vote(chip->tadc_disable_votable, USB_PRESENT_VOTER, true, 0);
 		return;
@@ -978,7 +978,7 @@ static int tadc_register_notifier(struct tadc_chip *chip)
 	chip->nb.notifier_call = tadc_notifier_call;
 	rc = power_supply_reg_notifier(&chip->nb);
 	if (rc < 0) {
-		pr_err("Couldn't register psy notifier rc = %d\n", rc);
+		pr_debug("Couldn't register psy notifier rc = %d\n", rc);
 		return rc;
 	}
 
@@ -1024,13 +1024,13 @@ static int tadc_parse_dt(struct tadc_chip *chip)
 	for_each_available_child_of_node(node, child) {
 		rc = of_property_read_u32(child, "reg", &chan_id);
 		if (rc < 0) {
-			pr_err("Couldn't find channel for %s rc=%d\n",
+			pr_debug("Couldn't find channel for %s rc=%d\n",
 							child->name, rc);
 			return rc;
 		}
 
 		if (chan_id > TADC_NUM_CH - 1) {
-			pr_err("Channel %d is out of range [0, %d]\n",
+			pr_debug("Channel %d is out of range [0, %d]\n",
 						chan_id, TADC_NUM_CH - 1);
 			return -EINVAL;
 		}
@@ -1040,14 +1040,14 @@ static int tadc_parse_dt(struct tadc_chip *chip)
 			rc = of_property_read_u32(child,
 					"qcom,rbias", &chan_data->rbias);
 			if (rc < 0) {
-				pr_err("Couldn't read qcom,rbias rc=%d\n", rc);
+				pr_debug("Couldn't read qcom,rbias rc=%d\n", rc);
 				return rc;
 			}
 
 			rc = of_property_read_u32(child,
 					"qcom,beta-coefficient", &beta);
 			if (rc < 0) {
-				pr_err("Couldn't read qcom,beta-coefficient rc=%d\n",
+				pr_debug("Couldn't read qcom,beta-coefficient rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -1055,21 +1055,21 @@ static int tadc_parse_dt(struct tadc_chip *chip)
 			rc = of_property_read_u32(child,
 					"qcom,rtherm-at-25degc", &rtherm);
 			if (rc < 0) {
-				pr_err("Couldn't read qcom,rtherm-at-25degc rc=%d\n",
+				pr_debug("Couldn't read qcom,rtherm-at-25degc rc=%d\n",
 					rc);
 				return rc;
 			}
 
 			rc = tadc_set_therm_table(chan_data, beta, rtherm);
 			if (rc < 0) {
-				pr_err("Couldn't set therm table rc=%d\n", rc);
+				pr_debug("Couldn't set therm table rc=%d\n", rc);
 				return rc;
 			}
 		} else {
 			rc = of_property_read_s32(child, "qcom,scale",
 							&chan_data->scale);
 			if (rc < 0) {
-				pr_err("Couldn't read scale rc=%d\n", rc);
+				pr_debug("Couldn't read scale rc=%d\n", rc);
 				return rc;
 			}
 
@@ -1130,19 +1130,19 @@ static int tadc_init_hw(struct tadc_chip *chip)
 
 	rc = tadc_write(chip, TADC_CMP_THR1_CMP_REG(chip), 0);
 	if (rc < 0) {
-		pr_err("Couldn't enable hardware triggers rc=%d\n", rc);
+		pr_debug("Couldn't enable hardware triggers rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = tadc_write(chip, TADC_CMP_THR2_CMP_REG(chip), 0);
 	if (rc < 0) {
-		pr_err("Couldn't enable hardware triggers rc=%d\n", rc);
+		pr_debug("Couldn't enable hardware triggers rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = tadc_write(chip, TADC_CMP_THR3_CMP_REG(chip), 0);
 	if (rc < 0) {
-		pr_err("Couldn't enable hardware triggers rc=%d\n", rc);
+		pr_debug("Couldn't enable hardware triggers rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1151,7 +1151,7 @@ static int tadc_init_hw(struct tadc_chip *chip)
 					BIT(TADC_THERM2) | BIT(TADC_DIE_TEMP),
 					BIT(TADC_THERM2) | BIT(TADC_DIE_TEMP));
 	if (rc < 0) {
-		pr_err("Couldn't enable hardware triggers rc=%d\n", rc);
+		pr_debug("Couldn't enable hardware triggers rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1159,7 +1159,7 @@ static int tadc_init_hw(struct tadc_chip *chip)
 	rc = tadc_read(chip, TADC_HWTRIG_CONV_CH_EN_REG(chip),
 							&chip->hwtrig_conv, 1);
 	if (rc < 0) {
-		pr_err("Couldn't save hw conversions rc=%d\n", rc);
+		pr_debug("Couldn't save hw conversions rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1194,7 +1194,7 @@ static int tadc_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(node, "reg", &chip->tadc_base);
 	if (rc < 0) {
-		pr_err("Couldn't read base address rc=%d\n", rc);
+		pr_debug("Couldn't read base address rc=%d\n", rc);
 		return rc;
 	}
 	chip->tadc_cmp_base = chip->tadc_base + 0x100;
@@ -1204,19 +1204,19 @@ static int tadc_probe(struct platform_device *pdev)
 	INIT_WORK(&chip->status_change_work, status_change_work);
 	chip->regmap = dev_get_regmap(chip->dev->parent, NULL);
 	if (!chip->regmap) {
-		pr_err("Couldn't get regmap\n");
+		pr_debug("Couldn't get regmap\n");
 		return -ENODEV;
 	}
 
 	rc = tadc_parse_dt(chip);
 	if (rc < 0) {
-		pr_err("Couldn't parse device tree rc=%d\n", rc);
+		pr_debug("Couldn't parse device tree rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = tadc_init_hw(chip);
 	if (rc < 0) {
-		pr_err("Couldn't initialize hardware rc=%d\n", rc);
+		pr_debug("Couldn't initialize hardware rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1235,20 +1235,20 @@ static int tadc_probe(struct platform_device *pdev)
 
 	rc = tadc_register_notifier(chip);
 	if (rc < 0) {
-		pr_err("Couldn't register notifier=%d\n", rc);
+		pr_debug("Couldn't register notifier=%d\n", rc);
 		goto destroy_votable;
 	}
 
 	irq = of_irq_get_byname(node, "eoc");
 	if (irq < 0) {
-		pr_err("Couldn't get eoc irq rc=%d\n", irq);
+		pr_debug("Couldn't get eoc irq rc=%d\n", irq);
 		goto destroy_votable;
 	}
 
 	rc = devm_request_threaded_irq(chip->dev, irq, NULL, handle_eoc,
 						IRQF_ONESHOT, "eoc", chip);
 	if (rc < 0) {
-		pr_err("Couldn't request irq %d rc=%d\n", irq, rc);
+		pr_debug("Couldn't request irq %d rc=%d\n", irq, rc);
 		goto destroy_votable;
 	}
 
@@ -1261,7 +1261,7 @@ static int tadc_probe(struct platform_device *pdev)
 
 	rc = devm_iio_device_register(chip->dev, indio_dev);
 	if (rc < 0) {
-		pr_err("Couldn't register IIO device rc=%d\n", rc);
+		pr_debug("Couldn't register IIO device rc=%d\n", rc);
 		goto destroy_votable;
 	}
 

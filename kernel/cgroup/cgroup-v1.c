@@ -1073,7 +1073,7 @@ static int cgroup1_remount(struct kernfs_root *kf_root, int *flags, char *data)
 		goto out_unlock;
 
 	if (opts.subsys_mask != root->subsys_mask || opts.release_agent)
-		pr_warn("option changes via remount are deprecated (pid=%d comm=%s)\n",
+		pr_debug("option changes via remount are deprecated (pid=%d comm=%s)\n",
 			task_tgid_nr(current), current->comm);
 	/* See cgroup1_mount release_agent handling */
 	if (opts.release_agent &&
@@ -1088,7 +1088,7 @@ static int cgroup1_remount(struct kernfs_root *kf_root, int *flags, char *data)
 	/* Don't allow flags or name to change at remount */
 	if ((opts.flags ^ root->flags) ||
 	    (opts.name && strcmp(opts.name, root->name))) {
-		pr_err("option or name mismatch, new: 0x%x \"%s\", old: 0x%x \"%s\"\n",
+		pr_debug("option or name mismatch, new: 0x%x \"%s\", old: 0x%x \"%s\"\n",
 		       opts.flags, opts.name ?: "", root->flags, root->name);
 		ret = -EINVAL;
 		goto out_unlock;
@@ -1198,7 +1198,7 @@ struct dentry *cgroup1_mount(struct file_system_type *fs_type, int flags,
 		}
 
 		if (root->flags ^ opts.flags)
-			pr_warn("new mount options do not match the existing superblock, will be ignored\n");
+			pr_debug("new mount options do not match the existing superblock, will be ignored\n");
 
 		ret = 0;
 		goto out_unlock;

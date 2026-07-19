@@ -358,7 +358,7 @@ static int qpnp_lcdb_read(struct qpnp_lcdb *lcdb,
 	mutex_lock(&lcdb->read_write_mutex);
 	rc = regmap_bulk_read(lcdb->regmap, addr, value, count);
 	if (rc < 0)
-		pr_err("Failed to read from addr=0x%02x rc=%d\n", addr, rc);
+		pr_debug("Failed to read from addr=0x%02x rc=%d\n", addr, rc);
 	mutex_unlock(&lcdb->read_write_mutex);
 
 	return rc;
@@ -372,7 +372,7 @@ static int qpnp_lcdb_write(struct qpnp_lcdb *lcdb,
 	mutex_lock(&lcdb->read_write_mutex);
 	rc = regmap_bulk_write(lcdb->regmap, addr, value, count);
 	if (rc < 0)
-		pr_err("Failed to write to addr=0x%02x rc=%d\n", addr, rc);
+		pr_debug("Failed to write to addr=0x%02x rc=%d\n", addr, rc);
 	mutex_unlock(&lcdb->read_write_mutex);
 
 	return rc;
@@ -392,13 +392,13 @@ static int qpnp_lcdb_secure_write(struct qpnp_lcdb *lcdb,
 		rc = regmap_write(lcdb->regmap, lcdb->base + SEC_ADDRESS_REG,
 				  val);
 		if (rc < 0) {
-			pr_err("Failed to unlock register rc=%d\n", rc);
+			pr_debug("Failed to unlock register rc=%d\n", rc);
 			goto fail_write;
 		}
 	}
 	rc = regmap_write(lcdb->regmap, addr, value);
 	if (rc < 0)
-		pr_err("Failed to write to addr=0x%02x rc=%d\n", addr, rc);
+		pr_debug("Failed to write to addr=0x%02x rc=%d\n", addr, rc);
 
 fail_write:
 	mutex_unlock(&lcdb->read_write_mutex);
@@ -413,7 +413,7 @@ static int qpnp_lcdb_masked_write(struct qpnp_lcdb *lcdb,
 	mutex_lock(&lcdb->read_write_mutex);
 	rc = regmap_update_bits(lcdb->regmap, addr, mask, value);
 	if (rc < 0)
-		pr_err("Failed to write addr=0x%02x value=0x%02x rc=%d\n",
+		pr_debug("Failed to write addr=0x%02x value=0x%02x rc=%d\n",
 			addr, value, rc);
 	mutex_unlock(&lcdb->read_write_mutex);
 
@@ -427,7 +427,7 @@ static bool is_lcdb_enabled(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_read(lcdb, lcdb->base + LCDB_ENABLE_CTL1_REG, &val, 1);
 	if (rc < 0)
-		pr_err("Failed to read ENABLE_CTL1 rc=%d\n", rc);
+		pr_debug("Failed to read ENABLE_CTL1 rc=%d\n", rc);
 
 	return rc ? false : !!(val & MODULE_EN_BIT);
 }
@@ -439,13 +439,13 @@ static int dump_status_registers(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_STS1_REG, &sts[0], 6);
 	if (rc < 0) {
-		pr_err("Failed to write to STS registers rc=%d\n", rc);
+		pr_debug("Failed to write to STS registers rc=%d\n", rc);
 	} else {
 		rc = qpnp_lcdb_read(lcdb, lcdb->base + LCDB_STS1_REG, sts, 6);
 		if (rc < 0)
-			pr_err("Failed to read lcdb status rc=%d\n", rc);
+			pr_debug("Failed to read lcdb status rc=%d\n", rc);
 		else
-			pr_err("STS1=0x%02x STS2=0x%02x STS3=0x%02x STS4=0x%02x STS5=0x%02x, STS6=0x%02x\n",
+			pr_debug("STS1=0x%02x STS2=0x%02x STS3=0x%02x STS4=0x%02x STS5=0x%02x, STS6=0x%02x\n",
 				sts[0], sts[1], sts[2], sts[3], sts[4], sts[5]);
 	}
 
@@ -503,7 +503,7 @@ static int qpnp_lcdb_save_settings(struct qpnp_lcdb *lcdb)
 					    setting[i].address,
 					    &setting[i].value, 1);
 			if (rc < 0) {
-				pr_err("Failed to read lcdb register address=%x\n",
+				pr_debug("Failed to read lcdb register address=%x\n",
 					setting[i].address);
 				return rc;
 			}
@@ -538,7 +538,7 @@ static int qpnp_lcdb_restore_settings(struct qpnp_lcdb *lcdb)
 						     setting[i].address,
 						     &setting[i].value, 1);
 			if (rc < 0) {
-				pr_err("Failed to write register address=%x\n",
+				pr_debug("Failed to write register address=%x\n",
 					     setting[i].address);
 				return rc;
 			}
@@ -556,7 +556,7 @@ static int qpnp_lcdb_ttw_enter(struct qpnp_lcdb *lcdb)
 	if (!lcdb->settings_saved) {
 		rc = qpnp_lcdb_save_settings(lcdb);
 		if (rc < 0) {
-			pr_err("Failed to save LCDB settings rc=%d\n", rc);
+			pr_debug("Failed to save LCDB settings rc=%d\n", rc);
 			return rc;
 		}
 		lcdb->settings_saved = true;
@@ -625,7 +625,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	if (!lcdb->settings_saved) {
 		rc = qpnp_lcdb_save_settings(lcdb);
 		if (rc < 0) {
-			pr_err("Failed to save LCDB settings rc=%d\n", rc);
+			pr_debug("Failed to save LCDB settings rc=%d\n", rc);
 			return rc;
 		}
 		lcdb->settings_saved = true;
@@ -635,7 +635,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_BST_PD_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set BST PD rc=%d\n", rc);
+		pr_debug("Failed to set BST PD rc=%d\n", rc);
 		return rc;
 	}
 
@@ -643,7 +643,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_RDSON_MGMNT_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set RDSON MGMT rc=%d\n", rc);
+		pr_debug("Failed to set RDSON MGMT rc=%d\n", rc);
 		return rc;
 	}
 
@@ -651,7 +651,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_MISC_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set MISC CTL rc=%d\n", rc);
+		pr_debug("Failed to set MISC CTL rc=%d\n", rc);
 		return rc;
 	}
 
@@ -659,7 +659,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_SOFT_START_CTL_REG,
 						&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set LCDB_SOFT_START rc=%d\n", rc);
+		pr_debug("Failed to set LCDB_SOFT_START rc=%d\n", rc);
 		return rc;
 	}
 
@@ -669,7 +669,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_PFM_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set PFM_CTL rc=%d\n", rc);
+		pr_debug("Failed to set PFM_CTL rc=%d\n", rc);
 		return rc;
 	}
 
@@ -677,7 +677,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_secure_write(lcdb, lcdb->base + LCDB_PWRUP_PWRDN_CTL_REG,
 							val);
 	if (rc < 0) {
-		pr_err("Failed to set PWRUP_PWRDN_CTL rc=%d\n", rc);
+		pr_debug("Failed to set PWRUP_PWRDN_CTL rc=%d\n", rc);
 		return rc;
 	}
 
@@ -685,7 +685,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_LDO_PD_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set LDO_PD_CTL rc=%d\n", rc);
+		pr_debug("Failed to set LDO_PD_CTL rc=%d\n", rc);
 		return rc;
 	}
 
@@ -693,7 +693,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_LDO_SOFT_START_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set LDO_SOFT_START rc=%d\n", rc);
+		pr_debug("Failed to set LDO_SOFT_START rc=%d\n", rc);
 		return rc;
 	}
 
@@ -701,7 +701,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_NCP_PD_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set NCP_PD_CTL rc=%d\n", rc);
+		pr_debug("Failed to set NCP_PD_CTL rc=%d\n", rc);
 		return rc;
 	}
 
@@ -709,7 +709,7 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_NCP_SOFT_START_CTL_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to set NCP_SOFT_START rc=%d\n", rc);
+		pr_debug("Failed to set NCP_SOFT_START rc=%d\n", rc);
 		return rc;
 	}
 
@@ -719,13 +719,13 @@ static int qpnp_lcdb_ttw_enter_pm660l(struct qpnp_lcdb *lcdb)
 				EN_AUTO_TOUCH_WAKE_BIT,
 				EN_AUTO_TOUCH_WAKE_BIT);
 		if (rc < 0)
-			pr_err("Failed to enable auto(sw) TTW\n rc = %d\n", rc);
+			pr_debug("Failed to enable auto(sw) TTW\n rc = %d\n", rc);
 	} else {
 		val = HWEN_RDY_BIT;
 		rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_ENABLE_CTL1_REG,
 							&val, 1);
 		if (rc < 0)
-			pr_err("Failed to hw_enable lcdb rc= %d\n", rc);
+			pr_debug("Failed to hw_enable lcdb rc= %d\n", rc);
 	}
 
 	return rc;
@@ -738,7 +738,7 @@ static int qpnp_lcdb_ttw_exit(struct qpnp_lcdb *lcdb)
 	if (lcdb->settings_saved) {
 		rc = qpnp_lcdb_restore_settings(lcdb);
 		if (rc < 0) {
-			pr_err("Failed to restore lcdb settings rc=%d\n", rc);
+			pr_debug("Failed to restore lcdb settings rc=%d\n", rc);
 			return rc;
 		}
 		lcdb->settings_saved = false;
@@ -760,7 +760,7 @@ static int qpnp_lcdb_enable_wa(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_ENABLE_CTL1_REG,
 						&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to enable lcdb rc= %d\n", rc);
+		pr_debug("Failed to enable lcdb rc= %d\n", rc);
 		return rc;
 	}
 
@@ -768,7 +768,7 @@ static int qpnp_lcdb_enable_wa(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_ENABLE_CTL1_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to disable lcdb rc= %d\n", rc);
+		pr_debug("Failed to disable lcdb rc= %d\n", rc);
 		return rc;
 	}
 
@@ -784,7 +784,7 @@ static int qpnp_lcdb_enable_wa(struct qpnp_lcdb *lcdb)
 				lcdb->base + LCDB_MISC_CTL_REG,
 				DIS_SCP_BIT, DIS_SCP_BIT);
 		if (rc < 0) {
-			pr_err("Failed to disable SC rc=%d\n", rc);
+			pr_debug("Failed to disable SC rc=%d\n", rc);
 			return rc;
 		}
 		/* delay for SC-disable to take effect */
@@ -794,7 +794,7 @@ static int qpnp_lcdb_enable_wa(struct qpnp_lcdb *lcdb)
 				lcdb->base + LCDB_MISC_CTL_REG,
 				DIS_SCP_BIT, 0);
 		if (rc < 0) {
-			pr_err("Failed to enable SC rc=%d\n", rc);
+			pr_debug("Failed to enable SC rc=%d\n", rc);
 			return rc;
 		}
 		/* delay for SC-enable to take effect */
@@ -822,14 +822,14 @@ static int qpnp_lcdb_enable(struct qpnp_lcdb *lcdb)
 	if (lcdb->ttw_enable) {
 		rc = qpnp_lcdb_ttw_exit(lcdb);
 		if (rc < 0) {
-			pr_err("Failed to exit TTW mode rc=%d\n", rc);
+			pr_debug("Failed to exit TTW mode rc=%d\n", rc);
 			return rc;
 		}
 	}
 
 	rc = qpnp_lcdb_enable_wa(lcdb);
 	if (rc < 0) {
-		pr_err("Failed to execute enable_wa rc=%d\n", rc);
+		pr_debug("Failed to execute enable_wa rc=%d\n", rc);
 		return rc;
 	}
 
@@ -853,7 +853,7 @@ static int qpnp_lcdb_enable(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_ENABLE_CTL1_REG,
 							&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to disable lcdb rc= %d\n", rc);
+		pr_debug("Failed to disable lcdb rc= %d\n", rc);
 		goto fail_enable;
 	}
 
@@ -867,7 +867,7 @@ static int qpnp_lcdb_enable(struct qpnp_lcdb *lcdb)
 		rc = qpnp_lcdb_read(lcdb, lcdb->base + INT_RT_STATUS_REG,
 								&val, 1);
 		if (rc < 0) {
-			pr_err("Failed to poll for vreg-ok status rc=%d\n", rc);
+			pr_debug("Failed to poll for vreg-ok status rc=%d\n", rc);
 			break;
 		}
 		if (val & VREG_OK_RT_STS_BIT)
@@ -878,7 +878,7 @@ static int qpnp_lcdb_enable(struct qpnp_lcdb *lcdb)
 
 	if (rc || !timeout) {
 		if (!timeout) {
-			pr_err("lcdb-vreg-ok status failed to change\n");
+			pr_debug("lcdb-vreg-ok status failed to change\n");
 			rc = -ETIMEDOUT;
 		}
 		goto fail_enable;
@@ -891,7 +891,7 @@ static int qpnp_lcdb_enable(struct qpnp_lcdb *lcdb)
 						voltage_mv + VOLTAGE_STEP_MV,
 						LDO_NCP);
 		if (rc < 0) {
-			pr_err("Failed to set LCDB voltage rc=%d\n", rc);
+			pr_debug("Failed to set LCDB voltage rc=%d\n", rc);
 			return rc;
 		}
 	}
@@ -902,7 +902,7 @@ static int qpnp_lcdb_enable(struct qpnp_lcdb *lcdb)
 
 fail_enable:
 	dump_status_registers(lcdb);
-	pr_err("Failed to enable lcdb rc=%d\n", rc);
+	pr_debug("Failed to enable lcdb rc=%d\n", rc);
 	return rc;
 }
 
@@ -922,7 +922,7 @@ static int qpnp_lcdb_disable(struct qpnp_lcdb *lcdb)
 			rc = qpnp_lcdb_ttw_enter(lcdb);
 
 		if (rc < 0) {
-			pr_err("Failed to enable TTW mode rc=%d\n", rc);
+			pr_debug("Failed to enable TTW mode rc=%d\n", rc);
 			return rc;
 		}
 		lcdb->lcdb_enabled = false;
@@ -946,7 +946,7 @@ static int qpnp_lcdb_disable(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_write(lcdb, lcdb->base + LCDB_ENABLE_CTL1_REG,
 							&val, 1);
 	if (rc < 0)
-		pr_err("Failed to disable lcdb rc= %d\n", rc);
+		pr_debug("Failed to disable lcdb rc= %d\n", rc);
 	else
 		lcdb->lcdb_enabled = false;
 
@@ -974,7 +974,7 @@ static int qpnp_lcdb_handle_sc_event(struct qpnp_lcdb *lcdb)
 	mutex_lock(&lcdb->lcdb_mutex);
 	rc = qpnp_lcdb_disable(lcdb);
 	if (rc < 0) {
-		pr_err("Failed to disable lcdb rc=%d\n", rc);
+		pr_debug("Failed to disable lcdb rc=%d\n", rc);
 		goto unlock_mutex;
 	}
 
@@ -984,7 +984,7 @@ static int qpnp_lcdb_handle_sc_event(struct qpnp_lcdb *lcdb)
 	if (elapsed_time_us > LCDB_SC_RESET_CNT_DLY_US) {
 		lcdb->sc_count = 0;
 	} else if (lcdb->sc_count > LCDB_SC_CNT_MAX) {
-		pr_err("SC trigged %d times, disabling LCDB forever!\n",
+		pr_debug("SC trigged %d times, disabling LCDB forever!\n",
 						lcdb->sc_count);
 		lcdb->lcdb_sc_disable = true;
 		goto unlock_mutex;
@@ -997,7 +997,7 @@ static int qpnp_lcdb_handle_sc_event(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_enable(lcdb);
 	if (rc < 0)
-		pr_err("Failed to enable lcdb rc=%d\n", rc);
+		pr_debug("Failed to enable lcdb rc=%d\n", rc);
 
 unlock_mutex:
 	mutex_unlock(&lcdb->lcdb_mutex);
@@ -1043,7 +1043,7 @@ static irqreturn_t qpnp_lcdb_sc_irq_handler(int irq, void *data)
 					!(val2[1] & NCP_VREG_OK_BIT)) {
 				rc = qpnp_lcdb_handle_sc_event(lcdb);
 				if (rc < 0) {
-					pr_err("Failed to handle SC rc=%d\n",
+					pr_debug("Failed to handle SC rc=%d\n",
 								rc);
 					goto irq_handled;
 				}
@@ -1067,7 +1067,7 @@ static irqreturn_t qpnp_lcdb_sc_irq_handler(int irq, void *data)
 			if (val & SC_ERROR_RT_STS_BIT) {
 				rc = qpnp_lcdb_handle_sc_event(lcdb);
 				if (rc < 0) {
-					pr_err("Failed to handle SC rc=%d\n",
+					pr_debug("Failed to handle SC rc=%d\n",
 								rc);
 					goto irq_handled;
 				}
@@ -1130,7 +1130,7 @@ static int qpnp_lcdb_set_bst_voltage(struct qpnp_lcdb *lcdb,
 					LCDB_BST_OUTPUT_VOLTAGE_REG,
 					mask, val);
 		if (rc < 0) {
-			pr_err("Failed to set boost voltage %d mv rc=%d\n",
+			pr_debug("Failed to set boost voltage %d mv rc=%d\n",
 				bst_voltage_mv, rc);
 		} else {
 			pr_debug("Boost voltage set = %d mv (0x%02x = 0x%02x)\n",
@@ -1152,7 +1152,7 @@ static int qpnp_lcdb_get_bst_voltage(struct qpnp_lcdb *lcdb,
 	rc = qpnp_lcdb_read(lcdb, lcdb->base + LCDB_BST_OUTPUT_VOLTAGE_REG,
 						&val, 1);
 	if (rc < 0) {
-		pr_err("Failed to reat BST voltage rc=%d\n", rc);
+		pr_debug("Failed to reat BST voltage rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1178,14 +1178,14 @@ static int qpnp_lcdb_set_voltage(struct qpnp_lcdb *lcdb,
 	u8 val = 0;
 
 	if (!is_between(voltage_mv, MIN_VOLTAGE_MV, MAX_VOLTAGE_MV)) {
-		pr_err("Invalid voltage %dmv (min=%d max=%d)\n",
+		pr_debug("Invalid voltage %dmv (min=%d max=%d)\n",
 			voltage_mv, MIN_VOLTAGE_MV, MAX_VOLTAGE_MV);
 		return -EINVAL;
 	}
 
 	rc = qpnp_lcdb_set_bst_voltage(lcdb, voltage_mv, type);
 	if (rc < 0) {
-		pr_err("Failed to set boost voltage rc=%d\n", rc);
+		pr_debug("Failed to set boost voltage rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1205,7 +1205,7 @@ static int qpnp_lcdb_set_voltage(struct qpnp_lcdb *lcdb,
 	rc = qpnp_lcdb_masked_write(lcdb, lcdb->base + offset,
 				SET_OUTPUT_VOLTAGE_MASK, val);
 	if (rc < 0)
-		pr_err("Failed to set output voltage %d mv for %s rc=%d\n",
+		pr_debug("Failed to set output voltage %d mv for %s rc=%d\n",
 			voltage_mv, (type == LDO) ? "LDO" : "NCP", rc);
 	else
 		pr_debug("%s voltage set = %d mv (0x%02x = 0x%02x)\n",
@@ -1279,7 +1279,7 @@ static int qpnp_lcdb_get_voltage(struct qpnp_lcdb *lcdb,
 
 	rc = qpnp_lcdb_read(lcdb, lcdb->base + offset, &val, 1);
 	if (rc < 0) {
-		pr_err("Failed to read %s volatge rc=%d\n",
+		pr_debug("Failed to read %s volatge rc=%d\n",
 			(type == LDO) ? "LDO" : "NCP", rc);
 		return rc;
 	}
@@ -1312,7 +1312,7 @@ static int qpnp_lcdb_set_soft_start(struct qpnp_lcdb *lcdb,
 		offset = LCDB_NCP_SOFT_START_CTL_REG;
 
 	if (!is_between(ss_us, MIN_SOFT_START_US, MAX_SOFT_START_US)) {
-		pr_err("Invalid soft_start_us %d (min=%d max=%d)\n",
+		pr_debug("Invalid soft_start_us %d (min=%d max=%d)\n",
 			ss_us, MIN_SOFT_START_US, MAX_SOFT_START_US);
 		return -EINVAL;
 	}
@@ -1325,7 +1325,7 @@ static int qpnp_lcdb_set_soft_start(struct qpnp_lcdb *lcdb,
 	rc = qpnp_lcdb_masked_write(lcdb,
 			lcdb->base + offset, SOFT_START_MASK, val);
 	if (rc < 0)
-		pr_err("Failed to write %s soft-start time %d rc=%d\n",
+		pr_debug("Failed to write %s soft-start time %d rc=%d\n",
 			(type == LDO) ? "LDO" : "NCP", soft_start_us[i], rc);
 
 	return rc;
@@ -1342,7 +1342,7 @@ static int qpnp_lcdb_ldo_regulator_enable(struct regulator_dev *rdev)
 	mutex_lock(&lcdb->lcdb_mutex);
 	rc = qpnp_lcdb_enable(lcdb);
 	if (rc < 0)
-		pr_err("Failed to enable lcdb rc=%d\n", rc);
+		pr_debug("Failed to enable lcdb rc=%d\n", rc);
 	mutex_unlock(&lcdb->lcdb_mutex);
 
 	return rc;
@@ -1359,7 +1359,7 @@ static int qpnp_lcdb_ldo_regulator_disable(struct regulator_dev *rdev)
 	mutex_lock(&lcdb->lcdb_mutex);
 	rc = qpnp_lcdb_disable(lcdb);
 	if (rc < 0)
-		pr_err("Failed to disable lcdb rc=%d\n", rc);
+		pr_debug("Failed to disable lcdb rc=%d\n", rc);
 	mutex_unlock(&lcdb->lcdb_mutex);
 
 	return rc;
@@ -1389,7 +1389,7 @@ static int qpnp_lcdb_ldo_regulator_set_voltage(struct regulator_dev *rdev,
 		rc = qpnp_lcdb_set_voltage(lcdb, lcdb->ldo.voltage_mv, LDO);
 
 	if (rc < 0)
-		pr_err("Failed to set LDO voltage rc=%c\n", rc);
+		pr_debug("Failed to set LDO voltage rc=%c\n", rc);
 	else
 		lcdb->ldo.prev_voltage_mv = lcdb->ldo.voltage_mv;
 
@@ -1404,7 +1404,7 @@ static int qpnp_lcdb_ldo_regulator_get_voltage(struct regulator_dev *rdev)
 
 	rc = qpnp_lcdb_get_voltage(lcdb, &voltage_mv, LDO);
 	if (rc < 0) {
-		pr_err("Failed to get ldo voltage rc=%d\n", rc);
+		pr_debug("Failed to get ldo voltage rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1430,7 +1430,7 @@ static int qpnp_lcdb_ncp_regulator_enable(struct regulator_dev *rdev)
 	mutex_lock(&lcdb->lcdb_mutex);
 	rc = qpnp_lcdb_enable(lcdb);
 	if (rc < 0)
-		pr_err("Failed to enable lcdb rc=%d\n", rc);
+		pr_debug("Failed to enable lcdb rc=%d\n", rc);
 	mutex_unlock(&lcdb->lcdb_mutex);
 
 	return rc;
@@ -1447,7 +1447,7 @@ static int qpnp_lcdb_ncp_regulator_disable(struct regulator_dev *rdev)
 	mutex_lock(&lcdb->lcdb_mutex);
 	rc = qpnp_lcdb_disable(lcdb);
 	if (rc < 0)
-		pr_err("Failed to disable lcdb rc=%d\n", rc);
+		pr_debug("Failed to disable lcdb rc=%d\n", rc);
 	mutex_unlock(&lcdb->lcdb_mutex);
 
 	return rc;
@@ -1477,7 +1477,7 @@ static int qpnp_lcdb_ncp_regulator_set_voltage(struct regulator_dev *rdev,
 		rc = qpnp_lcdb_set_voltage(lcdb, lcdb->ncp.voltage_mv, NCP);
 
 	if (rc < 0)
-		pr_err("Failed to set NCP voltage rc=%c\n", rc);
+		pr_debug("Failed to set NCP voltage rc=%c\n", rc);
 	else
 		lcdb->ncp.prev_voltage_mv = lcdb->ncp.voltage_mv;
 
@@ -1492,7 +1492,7 @@ static int qpnp_lcdb_ncp_regulator_get_voltage(struct regulator_dev *rdev)
 
 	rc = qpnp_lcdb_get_voltage(lcdb, &voltage_mv, NCP);
 	if (rc < 0) {
-		pr_err("Failed to get ncp voltage rc=%d\n", rc);
+		pr_debug("Failed to get ncp voltage rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1532,13 +1532,13 @@ static int qpnp_lcdb_regulator_register(struct qpnp_lcdb *lcdb, u8 type)
 		rdesc->off_on_delay	= off_on_delay;
 		rdev			= lcdb->ncp.rdev;
 	} else {
-		pr_err("Invalid regulator type %d\n", type);
+		pr_debug("Invalid regulator type %d\n", type);
 		return -EINVAL;
 	}
 
 	init_data = of_get_regulator_init_data(lcdb->dev, node, rdesc);
 	if (!init_data) {
-		pr_err("Failed to get regulator_init_data for %s\n",
+		pr_debug("Failed to get regulator_init_data for %s\n",
 					(type == LDO) ? "LDO" : "NCP");
 		return -ENOMEM;
 	}
@@ -1564,12 +1564,12 @@ static int qpnp_lcdb_regulator_register(struct qpnp_lcdb *lcdb, u8 type)
 		if (IS_ERR(rdev)) {
 			rc = PTR_ERR(rdev);
 			rdev = NULL;
-			pr_err("Failed to register lcdb_%s regulator rc = %d\n",
+			pr_debug("Failed to register lcdb_%s regulator rc = %d\n",
 				(type == LDO) ? "LDO" : "NCP", rc);
 			return rc;
 		}
 	} else {
-		pr_err("%s_regulator name missing\n",
+		pr_debug("%s_regulator name missing\n",
 				(type == LDO) ? "LDO" : "NCP");
 		return -EINVAL;
 	}
@@ -1589,33 +1589,33 @@ static int qpnp_lcdb_parse_ttw(struct qpnp_lcdb *lcdb)
 		rc = of_property_read_u32(node, "qcom,attw-toff-ms", &temp);
 		if (!rc) {
 			if (!is_between(temp, ATTW_MIN_MS, ATTW_MAX_MS)) {
-				pr_err("Invalid TOFF val %d (min=%d max=%d)\n",
+				pr_debug("Invalid TOFF val %d (min=%d max=%d)\n",
 					temp, ATTW_MIN_MS, ATTW_MAX_MS);
 					return -EINVAL;
 			}
 			val = ilog2(temp / 4) << ATTW_TOFF_TIME_SHIFT;
 		} else {
-			pr_err("qcom,attw-toff-ms not specified for TTW SW mode\n");
+			pr_debug("qcom,attw-toff-ms not specified for TTW SW mode\n");
 			return rc;
 		}
 
 		rc = of_property_read_u32(node, "qcom,attw-ton-ms", &temp);
 		if (!rc) {
 			if (!is_between(temp, ATTW_MIN_MS, ATTW_MAX_MS)) {
-				pr_err("Invalid TON value %d (min=%d max=%d)\n",
+				pr_debug("Invalid TON value %d (min=%d max=%d)\n",
 					temp, ATTW_MIN_MS, ATTW_MAX_MS);
 				return -EINVAL;
 			}
 			val |= ilog2(temp / 4);
 		} else {
-			pr_err("qcom,attw-ton-ms not specified for TTW SW mode\n");
+			pr_debug("qcom,attw-ton-ms not specified for TTW SW mode\n");
 			return rc;
 		}
 		rc = qpnp_lcdb_masked_write(lcdb, lcdb->base +
 				LCDB_AUTO_TOUCH_WAKE_CTL_REG,
 				ATTW_TON_TIME_MASK | ATTW_TOFF_TIME_MASK, val);
 		if (rc < 0) {
-			pr_err("Failed to write ATTW ON/OFF rc=%d\n", rc);
+			pr_debug("Failed to write ATTW ON/OFF rc=%d\n", rc);
 			return rc;
 		}
 	}
@@ -1634,7 +1634,7 @@ static int qpnp_lcdb_ldo_dt_init(struct qpnp_lcdb *lcdb)
 					&lcdb->ldo.voltage_mv);
 	if (!rc && !is_between(lcdb->ldo.voltage_mv, MIN_VOLTAGE_MV,
 						MAX_VOLTAGE_MV)) {
-		pr_err("Invalid LDO voltage %dmv (min=%d max=%d)\n",
+		pr_debug("Invalid LDO voltage %dmv (min=%d max=%d)\n",
 			lcdb->ldo.voltage_mv, MIN_VOLTAGE_MV, MAX_VOLTAGE_MV);
 		return -EINVAL;
 	}
@@ -1652,7 +1652,7 @@ static int qpnp_lcdb_ldo_dt_init(struct qpnp_lcdb *lcdb)
 	rc = of_property_read_u32(node, "qcom,ldo-ilim-ma", &lcdb->ldo.ilim_ma);
 	if (!rc && !is_between(lcdb->ldo.ilim_ma, MIN_LDO_ILIM_MA,
 						MAX_LDO_ILIM_MA)) {
-		pr_err("Invalid ilim_ma %d (min=%d, max=%d)\n",
+		pr_debug("Invalid ilim_ma %d (min=%d, max=%d)\n",
 			lcdb->ldo.ilim_ma, MIN_LDO_ILIM_MA,
 					MAX_LDO_ILIM_MA);
 		return -EINVAL;
@@ -1677,7 +1677,7 @@ static int qpnp_lcdb_ncp_dt_init(struct qpnp_lcdb *lcdb)
 					&lcdb->ncp.voltage_mv);
 	if (!rc && !is_between(lcdb->ncp.voltage_mv, MIN_VOLTAGE_MV,
 						MAX_VOLTAGE_MV)) {
-		pr_err("Invalid NCP voltage %dmv (min=%d max=%d)\n",
+		pr_debug("Invalid NCP voltage %dmv (min=%d max=%d)\n",
 			lcdb->ldo.voltage_mv, MIN_VOLTAGE_MV, MAX_VOLTAGE_MV);
 		return -EINVAL;
 	}
@@ -1695,7 +1695,7 @@ static int qpnp_lcdb_ncp_dt_init(struct qpnp_lcdb *lcdb)
 	rc = of_property_read_u32(node, "qcom,ncp-ilim-ma", &lcdb->ncp.ilim_ma);
 	if (!rc && !is_between(lcdb->ncp.ilim_ma, MIN_NCP_ILIM_MA,
 						MAX_NCP_ILIM_MA)) {
-		pr_err("Invalid ilim_ma %d (min=%d, max=%d)\n",
+		pr_debug("Invalid ilim_ma %d (min=%d, max=%d)\n",
 			lcdb->ncp.ilim_ma, MIN_NCP_ILIM_MA, MAX_NCP_ILIM_MA);
 		return -EINVAL;
 	}
@@ -1728,7 +1728,7 @@ static int qpnp_lcdb_bst_dt_init(struct qpnp_lcdb *lcdb)
 	rc = of_property_read_u32(node, "qcom,bst-ilim-ma", &lcdb->bst.ilim_ma);
 	if (!rc && !is_between(lcdb->bst.ilim_ma, MIN_BST_ILIM_MA,
 						MAX_BST_ILIM_MA)) {
-		pr_err("Invalid ilim_ma %d (min=%d, max=%d)\n",
+		pr_debug("Invalid ilim_ma %d (min=%d, max=%d)\n",
 			lcdb->bst.ilim_ma, MIN_BST_ILIM_MA, MAX_BST_ILIM_MA);
 			return -EINVAL;
 	}
@@ -1742,7 +1742,7 @@ static int qpnp_lcdb_bst_dt_init(struct qpnp_lcdb *lcdb)
 					&lcdb->bst.ps_threshold);
 	if (!rc && !is_between(lcdb->bst.ps_threshold,
 				MIN_BST_PS_MA, MAX_BST_PS_MA)) {
-		pr_err("Invalid bst ps_threshold %d (min=%d, max=%d)\n",
+		pr_debug("Invalid bst ps_threshold %d (min=%d, max=%d)\n",
 			lcdb->bst.ps_threshold, MIN_BST_PS_MA, MAX_BST_PS_MA);
 		return -EINVAL;
 	}
@@ -1770,7 +1770,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 			rc = qpnp_lcdb_set_voltage(lcdb,
 					lcdb->ldo.voltage_mv, LDO);
 			if (rc < 0) {
-				pr_err("Failed to set voltage rc=%d\n", rc);
+				pr_debug("Failed to set voltage rc=%d\n", rc);
 				return rc;
 			}
 		}
@@ -1780,7 +1780,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 				LCDB_LDO_PD_CTL_REG, LDO_DIS_PULLDOWN_BIT,
 				lcdb->ldo.pd ? 0 : LDO_DIS_PULLDOWN_BIT);
 			if (rc < 0) {
-				pr_err("Failed to configure LDO PD rc=%d\n",
+				pr_debug("Failed to configure LDO PD rc=%d\n",
 								rc);
 				return rc;
 			}
@@ -1792,7 +1792,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 				lcdb->ldo.pd_strength ?
 				LDO_PD_STRENGTH_BIT : 0);
 			if (rc < 0) {
-				pr_err("Failed to configure LDO PD strength %s rc=%d\n",
+				pr_debug("Failed to configure LDO PD strength %s rc=%d\n",
 						lcdb->ldo.pd_strength ?
 						"(strong)" : "(weak)", rc);
 				return rc;
@@ -1808,7 +1808,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 					SET_LDO_ILIM_MASK | EN_LDO_ILIM_BIT,
 					val);
 			if (rc < 0) {
-				pr_err("Failed to configure LDO ilim_ma (CTL1=%d) rc=%d\n",
+				pr_debug("Failed to configure LDO ilim_ma (CTL1=%d) rc=%d\n",
 							val, rc);
 				return rc;
 			}
@@ -1818,7 +1818,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 					lcdb->base + LCDB_LDO_ILIM_CTL2_REG,
 					SET_LDO_ILIM_MASK, val);
 			if (rc < 0) {
-				pr_err("Failed to configure LDO ilim_ma (CTL2=%d) rc=%d\n",
+				pr_debug("Failed to configure LDO ilim_ma (CTL2=%d) rc=%d\n",
 							val, rc);
 				return rc;
 			}
@@ -1828,7 +1828,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 			rc = qpnp_lcdb_set_soft_start(lcdb,
 					lcdb->ldo.soft_start_us, LDO);
 			if (rc < 0) {
-				pr_err("Failed to set LDO soft_start rc=%d\n",
+				pr_debug("Failed to set LDO soft_start rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -1837,7 +1837,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_get_voltage(lcdb, &lcdb->ldo.voltage_mv, LDO);
 	if (rc < 0) {
-		pr_err("Failed to get LDO volatge rc=%d\n", rc);
+		pr_debug("Failed to get LDO volatge rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1846,7 +1846,7 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_read(lcdb, lcdb->base +
 			LCDB_LDO_VREG_OK_CTL_REG, &val, 1);
 	if (rc < 0) {
-		pr_err("Failed to read ldo_vreg_ok rc=%d\n", rc);
+		pr_debug("Failed to read ldo_vreg_ok rc=%d\n", rc);
 		return rc;
 	}
 	lcdb->ldo.vreg_ok_dbc_us = dbc_us[val & VREG_OK_DEB_MASK];
@@ -1854,14 +1854,14 @@ static int qpnp_lcdb_init_ldo(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_read(lcdb, lcdb->base +
 			LCDB_LDO_SOFT_START_CTL_REG, &val, 1);
 	if (rc < 0) {
-		pr_err("Failed to read ldo_soft_start_ctl rc=%d\n", rc);
+		pr_debug("Failed to read ldo_soft_start_ctl rc=%d\n", rc);
 		return rc;
 	}
 	lcdb->ldo.soft_start_us = soft_start_us[val & SOFT_START_MASK];
 
 	rc = qpnp_lcdb_regulator_register(lcdb, LDO);
 	if (rc < 0)
-		pr_err("Failed to register ldo rc=%d\n", rc);
+		pr_debug("Failed to register ldo rc=%d\n", rc);
 
 	return rc;
 }
@@ -1877,7 +1877,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 			rc = qpnp_lcdb_set_voltage(lcdb,
 					lcdb->ncp.voltage_mv, NCP);
 			if (rc < 0) {
-				pr_err("Failed to set voltage rc=%d\n", rc);
+				pr_debug("Failed to set voltage rc=%d\n", rc);
 				return rc;
 			}
 		}
@@ -1887,7 +1887,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 				LCDB_NCP_PD_CTL_REG, NCP_DIS_PULLDOWN_BIT,
 				lcdb->ncp.pd ? 0 : NCP_DIS_PULLDOWN_BIT);
 			if (rc < 0) {
-				pr_err("Failed to configure NCP PD rc=%d\n",
+				pr_debug("Failed to configure NCP PD rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -1899,7 +1899,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 				lcdb->ncp.pd_strength ?
 				NCP_PD_STRENGTH_BIT : 0);
 			if (rc < 0) {
-				pr_err("Failed to configure NCP PD strength %s rc=%d\n",
+				pr_debug("Failed to configure NCP PD strength %s rc=%d\n",
 					lcdb->ncp.pd_strength ?
 					"(strong)" : "(weak)", rc);
 				return rc;
@@ -1916,7 +1916,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 						LCDB_NCP_ILIM_CTL1_REG,
 				SET_NCP_ILIM_MASK | EN_NCP_ILIM_BIT, val);
 			if (rc < 0) {
-				pr_err("Failed to configure NCP ilim_ma (CTL1=%d) rc=%d\n",
+				pr_debug("Failed to configure NCP ilim_ma (CTL1=%d) rc=%d\n",
 								val, rc);
 				return rc;
 			}
@@ -1925,7 +1925,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 					lcdb->base + LCDB_NCP_ILIM_CTL2_REG,
 					SET_NCP_ILIM_MASK, val);
 			if (rc < 0) {
-				pr_err("Failed to configure NCP ilim_ma (CTL2=%d) rc=%d\n",
+				pr_debug("Failed to configure NCP ilim_ma (CTL2=%d) rc=%d\n",
 							val, rc);
 				return rc;
 			}
@@ -1935,7 +1935,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 			rc = qpnp_lcdb_set_soft_start(lcdb,
 				lcdb->ncp.soft_start_us, NCP);
 			if (rc < 0) {
-				pr_err("Failed to set NCP soft_start rc=%d\n",
+				pr_debug("Failed to set NCP soft_start rc=%d\n",
 								rc);
 				return rc;
 			}
@@ -1944,7 +1944,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_get_voltage(lcdb, &lcdb->ncp.voltage_mv, NCP);
 	if (rc < 0) {
-		pr_err("Failed to get NCP volatge rc=%d\n", rc);
+		pr_debug("Failed to get NCP volatge rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1953,7 +1953,7 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_read(lcdb, lcdb->base +
 			LCDB_NCP_VREG_OK_CTL_REG, &val, 1);
 	if (rc < 0) {
-		pr_err("Failed to read ncp_vreg_ok rc=%d\n", rc);
+		pr_debug("Failed to read ncp_vreg_ok rc=%d\n", rc);
 		return rc;
 	}
 	lcdb->ncp.vreg_ok_dbc_us = dbc_us[val & VREG_OK_DEB_MASK];
@@ -1961,14 +1961,14 @@ static int qpnp_lcdb_init_ncp(struct qpnp_lcdb *lcdb)
 	rc = qpnp_lcdb_read(lcdb, lcdb->base +
 			LCDB_NCP_SOFT_START_CTL_REG, &val, 1);
 	if (rc < 0) {
-		pr_err("Failed to read ncp_soft_start_ctl rc=%d\n", rc);
+		pr_debug("Failed to read ncp_soft_start_ctl rc=%d\n", rc);
 		return rc;
 	}
 	lcdb->ncp.soft_start_us = soft_start_us[val & SOFT_START_MASK];
 
 	rc = qpnp_lcdb_regulator_register(lcdb, NCP);
 	if (rc < 0)
-		pr_err("Failed to register NCP rc=%d\n", rc);
+		pr_debug("Failed to register NCP rc=%d\n", rc);
 
 	return rc;
 }
@@ -1986,7 +1986,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 				LCDB_BST_PD_CTL_REG, BOOST_DIS_PULLDOWN_BIT,
 				lcdb->bst.pd ? 0 : BOOST_DIS_PULLDOWN_BIT);
 			if (rc < 0) {
-				pr_err("Failed to configure BST PD rc=%d\n",
+				pr_debug("Failed to configure BST PD rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -1998,7 +1998,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 				lcdb->bst.pd_strength ?
 				BOOST_PD_STRENGTH_BIT : 0);
 			if (rc < 0) {
-				pr_err("Failed to configure NCP PD strength %s rc=%d\n",
+				pr_debug("Failed to configure NCP PD strength %s rc=%d\n",
 					lcdb->bst.pd_strength ?
 					"(strong)" : "(weak)", rc);
 				return rc;
@@ -2013,7 +2013,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 				LCDB_BST_ILIM_CTL_REG,
 				SET_BST_ILIM_MASK | EN_BST_ILIM_BIT, val);
 			if (rc < 0) {
-				pr_err("Failed to configure BST ilim_ma rc=%d\n",
+				pr_debug("Failed to configure BST ilim_ma rc=%d\n",
 									rc);
 				return rc;
 			}
@@ -2024,7 +2024,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 					LCDB_PS_CTL_REG, EN_PS_BIT,
 					lcdb->bst.ps ? EN_PS_BIT : 0);
 			if (rc < 0) {
-				pr_err("Failed to disable BST PS rc=%d\n", rc);
+				pr_debug("Failed to disable BST PS rc=%d\n", rc);
 				return rc;
 			}
 		}
@@ -2038,7 +2038,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 						LCDB_PS_CTL_REG,
 						mask | EN_PS_BIT, val);
 			if (rc < 0) {
-				pr_err("Failed to configure BST PS threshold rc=%d\n",
+				pr_debug("Failed to configure BST PS threshold rc=%d\n",
 								rc);
 				return rc;
 			}
@@ -2047,14 +2047,14 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_get_voltage(lcdb, &lcdb->bst.voltage_mv, BST);
 	if (rc < 0) {
-		pr_err("Failed to get BST volatge rc=%d\n", rc);
+		pr_debug("Failed to get BST volatge rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = qpnp_lcdb_read(lcdb, lcdb->base +
 			LCDB_BST_VREG_OK_CTL_REG, &val, 1);
 	if (rc < 0) {
-		pr_err("Failed to read bst_vreg_ok rc=%d\n", rc);
+		pr_debug("Failed to read bst_vreg_ok rc=%d\n", rc);
 		return rc;
 	}
 	lcdb->bst.vreg_ok_dbc_us = dbc_us[val & VREG_OK_DEB_MASK];
@@ -2063,7 +2063,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 		rc = qpnp_lcdb_read(lcdb, lcdb->base +
 				    LCDB_SOFT_START_CTL_REG, &val, 1);
 		if (rc < 0) {
-			pr_err("Failed to read lcdb_soft_start_ctl rc=%d\n",
+			pr_debug("Failed to read lcdb_soft_start_ctl rc=%d\n",
 									rc);
 			return rc;
 		}
@@ -2074,7 +2074,7 @@ static int qpnp_lcdb_init_bst(struct qpnp_lcdb *lcdb)
 		rc = qpnp_lcdb_read(lcdb, lcdb->base +
 				    LCDB_BST_SS_CTL_REG, &val, 1);
 		if (rc < 0) {
-			pr_err("Failed to read bst_soft_start_ctl rc=%d\n", rc);
+			pr_debug("Failed to read bst_soft_start_ctl rc=%d\n", rc);
 			return rc;
 		}
 		lcdb->bst.soft_start_us = soft_start_us[val & SOFT_START_MASK];
@@ -2126,19 +2126,19 @@ static int qpnp_lcdb_hw_init(struct qpnp_lcdb *lcdb)
 
 	rc = qpnp_lcdb_init_bst(lcdb);
 	if (rc < 0) {
-		pr_err("Failed to initialize BOOST rc=%d\n", rc);
+		pr_debug("Failed to initialize BOOST rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = qpnp_lcdb_init_ldo(lcdb);
 	if (rc < 0) {
-		pr_err("Failed to initialize LDO rc=%d\n", rc);
+		pr_debug("Failed to initialize LDO rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = qpnp_lcdb_init_ncp(lcdb);
 	if (rc < 0) {
-		pr_err("Failed to initialize NCP rc=%d\n", rc);
+		pr_debug("Failed to initialize NCP rc=%d\n", rc);
 		return rc;
 	}
 
@@ -2150,7 +2150,7 @@ static int qpnp_lcdb_hw_init(struct qpnp_lcdb *lcdb)
 				NULL, qpnp_lcdb_sc_irq_handler, IRQF_ONESHOT,
 				"qpnp_lcdb_sc_irq", lcdb);
 		if (rc < 0) {
-			pr_err("Unable to request sc(%d) irq rc=%d\n",
+			pr_debug("Unable to request sc(%d) irq rc=%d\n",
 						lcdb->sc_irq, rc);
 			return rc;
 		}
@@ -2160,7 +2160,7 @@ static int qpnp_lcdb_hw_init(struct qpnp_lcdb *lcdb)
 		rc = qpnp_lcdb_read(lcdb, lcdb->base +
 				LCDB_MODULE_RDY_REG, &val, 1);
 		if (rc < 0) {
-			pr_err("Failed to read MODULE_RDY rc=%d\n", rc);
+			pr_debug("Failed to read MODULE_RDY rc=%d\n", rc);
 			return rc;
 		}
 		if (!(val & MODULE_RDY_BIT)) {
@@ -2168,7 +2168,7 @@ static int qpnp_lcdb_hw_init(struct qpnp_lcdb *lcdb)
 				LCDB_MODULE_RDY_REG, MODULE_RDY_BIT,
 						MODULE_RDY_BIT);
 			if (rc < 0) {
-				pr_err("Failed to set MODULE RDY rc=%d\n", rc);
+				pr_debug("Failed to set MODULE RDY rc=%d\n", rc);
 				return rc;
 			}
 		}
@@ -2189,7 +2189,7 @@ static int qpnp_lcdb_parse_dt(struct qpnp_lcdb *lcdb)
 
 	revid_dev_node = of_parse_phandle(node, "qcom,pmic-revid", 0);
 	if (!revid_dev_node) {
-		pr_err("Missing qcom,pmic-revid property - fail driver\n");
+		pr_debug("Missing qcom,pmic-revid property - fail driver\n");
 		return -EINVAL;
 	}
 
@@ -2208,7 +2208,7 @@ static int qpnp_lcdb_parse_dt(struct qpnp_lcdb *lcdb)
 	for_each_available_child_of_node(node, temp) {
 		rc = of_property_read_string(temp, "label", &label);
 		if (rc < 0) {
-			pr_err("Failed to read label rc=%d\n", rc);
+			pr_debug("Failed to read label rc=%d\n", rc);
 			return rc;
 		}
 
@@ -2222,11 +2222,11 @@ static int qpnp_lcdb_parse_dt(struct qpnp_lcdb *lcdb)
 			lcdb->bst.node = temp;
 			rc = qpnp_lcdb_bst_dt_init(lcdb);
 		} else {
-			pr_err("Failed to identify label %s\n", label);
+			pr_debug("Failed to identify label %s\n", label);
 			return -EINVAL;
 		}
 		if (rc < 0) {
-			pr_err("Failed to register %s module\n", label);
+			pr_debug("Failed to register %s module\n", label);
 			return rc;
 		}
 	}
@@ -2234,7 +2234,7 @@ static int qpnp_lcdb_parse_dt(struct qpnp_lcdb *lcdb)
 	if (of_property_read_bool(node, "qcom,ttw-enable")) {
 		rc = qpnp_lcdb_parse_ttw(lcdb);
 		if (rc < 0) {
-			pr_err("Failed to parse ttw-params rc=%d\n", rc);
+			pr_debug("Failed to parse ttw-params rc=%d\n", rc);
 			return rc;
 		}
 		lcdb->ttw_enable = true;
@@ -2251,7 +2251,7 @@ static int qpnp_lcdb_parse_dt(struct qpnp_lcdb *lcdb)
 	rc = of_property_read_u32(node, "qcom,pwrdn-delay-ms", &tmp);
 	if (!rc) {
 		if (!is_between(tmp, PWRDN_DELAY_MIN_MS, PWRDN_DELAY_MAX_MS)) {
-			pr_err("Invalid PWRDN_DLY val %d (min=%d max=%d)\n",
+			pr_debug("Invalid PWRDN_DLY val %d (min=%d max=%d)\n",
 				tmp, PWRDN_DELAY_MIN_MS, PWRDN_DELAY_MAX_MS);
 			return -EINVAL;
 		}
@@ -2314,7 +2314,7 @@ static int qpnp_lcdb_regulator_probe(struct platform_device *pdev)
 
 	node = pdev->dev.of_node;
 	if (!node) {
-		pr_err("No nodes defined\n");
+		pr_debug("No nodes defined\n");
 		return -ENODEV;
 	}
 
@@ -2324,13 +2324,13 @@ static int qpnp_lcdb_regulator_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(node, "reg", &lcdb->base);
 	if (rc < 0) {
-		pr_err("Failed to find reg node rc=%d\n", rc);
+		pr_debug("Failed to find reg node rc=%d\n", rc);
 		return rc;
 	}
 
 	lcdb->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!lcdb->regmap) {
-		pr_err("Failed to get the regmap handle rc=%d\n", rc);
+		pr_debug("Failed to get the regmap handle rc=%d\n", rc);
 		return -EINVAL;
 	}
 
@@ -2349,15 +2349,15 @@ static int qpnp_lcdb_regulator_probe(struct platform_device *pdev)
 
 	rc = class_register(&lcdb->lcdb_class);
 	if (rc < 0) {
-		pr_err("Failed to register lcdb  class rc = %d\n", rc);
+		pr_debug("Failed to register lcdb  class rc = %d\n", rc);
 		return rc;
 	}
 
 	rc = qpnp_lcdb_hw_init(lcdb);
 	if (rc < 0)
-		pr_err("Failed to initialize LCDB module rc=%d\n", rc);
+		pr_debug("Failed to initialize LCDB module rc=%d\n", rc);
 	else
-		pr_info("LCDB module successfully registered! lcdb_en=%d ldo_voltage=%dmV ncp_voltage=%dmV bst_voltage=%dmV\n",
+		pr_debug("LCDB module successfully registered! lcdb_en=%d ldo_voltage=%dmV ncp_voltage=%dmV bst_voltage=%dmV\n",
 			lcdb->lcdb_enabled, lcdb->ldo.voltage_mv,
 			lcdb->ncp.voltage_mv, lcdb->bst.voltage_mv);
 

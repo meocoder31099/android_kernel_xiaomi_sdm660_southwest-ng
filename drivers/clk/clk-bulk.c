@@ -43,7 +43,7 @@ int __must_check clk_bulk_get(struct device *dev, int num_clks,
 		if (IS_ERR(clks[i].clk)) {
 			ret = PTR_ERR(clks[i].clk);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev, "Failed to get clk '%s': %d\n",
+				dev_dbg(dev, "Failed to get clk '%s': %d\n",
 					clks[i].id, ret);
 			clks[i].clk = NULL;
 			goto err;
@@ -93,7 +93,7 @@ int __must_check clk_bulk_prepare(int num_clks,
 	for (i = 0; i < num_clks; i++) {
 		ret = clk_prepare(clks[i].clk);
 		if (ret) {
-			pr_err("Failed to prepare clk '%s': %d\n",
+			pr_debug("Failed to prepare clk '%s': %d\n",
 				clks[i].id, ret);
 			goto err;
 		}
@@ -143,7 +143,7 @@ int __must_check clk_bulk_enable(int num_clks, const struct clk_bulk_data *clks)
 	for (i = 0; i < num_clks; i++) {
 		ret = clk_enable(clks[i].clk);
 		if (ret) {
-			pr_err("Failed to enable clk '%s': %d\n",
+			pr_debug("Failed to enable clk '%s': %d\n",
 				clks[i].id, ret);
 			goto err;
 		}

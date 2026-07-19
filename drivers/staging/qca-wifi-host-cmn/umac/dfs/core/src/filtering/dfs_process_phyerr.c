@@ -394,7 +394,7 @@ static void dfs_dump_phyerr_contents(const char *d, int len)
 
 	/*
 	 * This is statically sized for a 4-digit address + 16 * 2 digit data
-	 * string. It's done so the printk() passed to the kernel is an entire
+	 * string. It's done so the no_printk() passed to the kernel is an entire
 	 * line, so the kernel logging code will atomically print it. Otherwise
 	 * we'll end up with interleaved lines with output from other kernel
 	 * threads.

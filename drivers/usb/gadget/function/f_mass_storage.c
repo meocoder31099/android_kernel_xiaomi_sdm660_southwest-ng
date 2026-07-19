@@ -2766,7 +2766,7 @@ int fsg_common_create_lun(struct fsg_common *common, struct fsg_lun_config *cfg,
 		return -EBUSY;
 
 	if (!cfg->filename && !cfg->removable) {
-		pr_err("no file given for LUN%d\n", id);
+		pr_debug("no file given for LUN%d\n", id);
 		return -EINVAL;
 	}
 
@@ -2794,7 +2794,7 @@ int fsg_common_create_lun(struct fsg_common *common, struct fsg_lun_config *cfg,
 
 		rc = device_register(&lun->dev);
 		if (rc) {
-			pr_info("failed to register LUN%d: %d\n", id, rc);
+			pr_debug("failed to register LUN%d: %d\n", id, rc);
 			put_device(&lun->dev);
 			goto error_sysfs;
 		}
@@ -2818,7 +2818,7 @@ int fsg_common_create_lun(struct fsg_common *common, struct fsg_lun_config *cfg,
 				p = "(error)";
 		}
 	}
-	pr_info("LUN: %s%s%sfile: %s\n",
+	pr_debug("LUN: %s%s%sfile: %s\n",
 	      lun->removable ? "removable " : "",
 	      lun->ro ? "read only " : "",
 	      lun->cdrom ? "CD-ROM " : "",
@@ -2852,7 +2852,7 @@ int fsg_common_create_luns(struct fsg_common *common, struct fsg_config *cfg)
 			goto fail;
 	}
 
-	pr_info("Number of LUNs=%d\n", cfg->nluns);
+	pr_debug("Number of LUNs=%d\n", cfg->nluns);
 
 	return 0;
 
@@ -2921,7 +2921,7 @@ static int fsg_bind(struct usb_configuration *c, struct usb_function *f)
 	/* Don't allow to bind if we don't have at least one LUN */
 	ret = _fsg_common_get_max_lun(common);
 	if (ret < 0) {
-		pr_err("There should be at least one LUN.\n");
+		pr_debug("There should be at least one LUN.\n");
 		return -EINVAL;
 	}
 
@@ -3166,7 +3166,7 @@ static struct config_group *fsg_lun_make(struct config_group *group,
 
 	num_str = strchr(name, '.');
 	if (!num_str) {
-		pr_err("Unable to locate . in LUN.NUMBER\n");
+		pr_debug("Unable to locate . in LUN.NUMBER\n");
 		return ERR_PTR(-EINVAL);
 	}
 	num_str++;
@@ -3380,7 +3380,7 @@ static struct usb_function_instance *fsg_alloc_inst(void)
 	if (rc)
 		goto release_common;
 
-	pr_info(FSG_DRIVER_DESC ", version: " FSG_DRIVER_VERSION "\n");
+	pr_debug(FSG_DRIVER_DESC ", version: " FSG_DRIVER_VERSION "\n");
 
 	memset(&config, 0, sizeof(config));
 	config.removable = true;

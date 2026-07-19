@@ -75,7 +75,7 @@ static int calc_hash(struct crypto_shash *alg, const unsigned char *data, unsign
 
     sdesc = init_sdesc(alg);
     if (IS_ERR(sdesc)) {
-        pr_info("can't alloc sdesc\n");
+        pr_debug("can't alloc sdesc\n");
         return PTR_ERR(sdesc);
     }
 
@@ -92,7 +92,7 @@ static int ksu_sha256(const unsigned char *data, unsigned int datalen, unsigned 
 
     alg = crypto_alloc_shash(hash_alg_name, 0, 0);
     if (IS_ERR(alg)) {
-        pr_info("can't alloc alg %s\n", hash_alg_name);
+        pr_debug("can't alloc alg %s\n", hash_alg_name);
         return PTR_ERR(alg);
     }
     ret = calc_hash(alg, data, datalen, digest);
@@ -124,7 +124,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset, u
     *offset += 0x4 * 2;
 
     if (*size4 > CERT_MAX_LENGTH) {
-        pr_info("cert length overlimit: %u\n", *size4);
+        pr_debug("cert length overlimit: %u\n", *size4);
         return false;
     }
 
@@ -132,7 +132,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset, u
         return false;
 
     if (ksu_sha256(cert, *size4, digest) < 0) {
-        pr_err("sha256 error\n");
+        pr_debug("sha256 error\n");
         return false;
     }
     bin2hex(hash_str, digest, SHA256_DIGEST_SIZE);
@@ -233,7 +233,7 @@ static __always_inline bool check_v2_signature(char *path, u8 *signature_index)
     int i;
     struct file *fp = filp_open(path, O_RDONLY, 0);
     if (IS_ERR(fp)) {
-        pr_err("open %s error.\n", path);
+        pr_debug("open %s error.\n", path);
         return false;
     }
 
@@ -253,7 +253,7 @@ static __always_inline bool check_v2_signature(char *path, u8 *signature_index)
             }
         }
         if (i == 0xffff) {
-            pr_info("error: cannot find eocd\n");
+            pr_debug("error: cannot find eocd\n");
             goto clean;
         }
     }
@@ -300,7 +300,7 @@ static __always_inline bool check_v2_signature(char *path, u8 *signature_index)
             v3_1_signing_exist = true;
         } else {
 #ifdef CONFIG_KSU_DEBUG
-            pr_info("Unknown id: 0x%08x\n", id);
+            pr_debug("Unknown id: 0x%08x\n", id);
 #endif
         }
         pos += (size8 - offset);
@@ -308,7 +308,7 @@ static __always_inline bool check_v2_signature(char *path, u8 *signature_index)
 
     if (v2_signing_blocks != 1) {
 #ifdef CONFIG_KSU_DEBUG
-        pr_err("Unexpected v2 signature count: %d\n", v2_signing_blocks);
+        pr_debug("Unexpected v2 signature count: %d\n", v2_signing_blocks);
 #endif
         v2_signing_valid = false;
     }
@@ -316,7 +316,7 @@ static __always_inline bool check_v2_signature(char *path, u8 *signature_index)
     if (v2_signing_valid) {
         int has_v1_signing = has_v1_signature_file(fp);
         if (has_v1_signing) {
-            pr_err("Unexpected v1 signature scheme found!\n");
+            pr_debug("Unexpected v1 signature scheme found!\n");
             filp_close(fp, 0);
             return false;
         }
@@ -326,7 +326,7 @@ clean:
 
     if (v3_signing_exist || v3_1_signing_exist) {
 #ifdef CONFIG_KSU_DEBUG
-        pr_err("Unexpected v3 signature scheme found!\n");
+        pr_debug("Unexpected v3 signature scheme found!\n");
 #endif
         return false;
     }
@@ -349,7 +349,7 @@ static int set_expected_size(const char *val, const struct kernel_param *kp)
     int rv = param_set_uint(val, kp);
     ksu_unregister_manager_by_signature_index(KSU_SIGNATURE_INDEX_KSU_DEBUG);
     ksu_register_manager(ksu_debug_manager_appid, KSU_SIGNATURE_INDEX_KSU_DEBUG);
-    pr_info("ksu_manager_appid set to %d\n", ksu_debug_manager_appid);
+    pr_debug("ksu_manager_appid set to %d\n", ksu_debug_manager_appid);
     return rv;
 }
 
@@ -406,7 +406,7 @@ bool is_manager_apk(char *path, u8 *signature_index)
 #ifdef KSU_MANAGER_PACKAGE
     char pkg[KSU_MAX_PACKAGE_NAME];
     if (get_pkg_from_apk_path(pkg, path) < 0) {
-        pr_err("Failed to get package name from apk path: %s\n", path);
+        pr_debug("Failed to get package name from apk path: %s\n", path);
         return false;
     }
 

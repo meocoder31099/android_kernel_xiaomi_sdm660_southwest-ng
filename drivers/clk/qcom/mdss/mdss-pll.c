@@ -20,7 +20,7 @@ int mdss_pll_resource_enable(struct mdss_pll_resources *pll_res, bool enable)
 	int changed = 0;
 
 	if (!pll_res) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
@@ -44,14 +44,14 @@ int mdss_pll_resource_enable(struct mdss_pll_resources *pll_res, bool enable)
 			if (pll_res->resource_ref_cnt == 0)
 				changed++;
 		} else {
-			pr_err("PLL Resources already OFF\n");
+			pr_debug("PLL Resources already OFF\n");
 		}
 	}
 
 	if (changed) {
 		rc = mdss_pll_util_resource_enable(pll_res, enable);
 		if (rc)
-			pr_err("Resource update failed rc=%d\n", rc);
+			pr_debug("Resource update failed rc=%d\n", rc);
 		else
 			pll_res->resource_enable = enable;
 	}
@@ -63,7 +63,7 @@ static int mdss_pll_resource_init(struct platform_device *pdev,
 				struct mdss_pll_resources *pll_res)
 {
 	if (!pdev || !pll_res) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
@@ -74,7 +74,7 @@ static void mdss_pll_resource_deinit(struct platform_device *pdev,
 				struct mdss_pll_resources *pll_res)
 {
 	if (!pdev || !pll_res) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return;
 	}
 
@@ -85,7 +85,7 @@ static void mdss_pll_resource_release(struct platform_device *pdev,
 					struct mdss_pll_resources *pll_res)
 {
 	if (!pdev || !pll_res) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return;
 	}
 
@@ -99,20 +99,20 @@ static int mdss_pll_resource_parse(struct platform_device *pdev,
 	const char *compatible_stream;
 
 	if (!pdev || !pll_res) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
 	rc = mdss_pll_util_resource_parse(pdev, pll_res);
 	if (rc) {
-		pr_err("Failed to parse the resources rc=%d\n", rc);
+		pr_debug("Failed to parse the resources rc=%d\n", rc);
 		goto end;
 	}
 
 	compatible_stream = of_get_property(pdev->dev.of_node,
 				"compatible", NULL);
 	if (!compatible_stream) {
-		pr_err("Failed to parse the compatible stream\n");
+		pr_debug("Failed to parse the compatible stream\n");
 		goto err;
 	}
 
@@ -157,7 +157,7 @@ static int mdss_pll_clock_register(struct platform_device *pdev,
 	int rc;
 
 	if (!pdev || !pll_res) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
@@ -187,7 +187,7 @@ static int mdss_pll_clock_register(struct platform_device *pdev,
 	}
 
 	if (rc) {
-		pr_err("Pll ndx=%d clock register failed rc=%d\n",
+		pr_debug("Pll ndx=%d clock register failed rc=%d\n",
 				pll_res->index, rc);
 	}
 
@@ -206,16 +206,16 @@ static int mdss_pll_probe(struct platform_device *pdev)
 	struct mdss_pll_resources *pll_res;
 
 	if (!pdev->dev.of_node) {
-		pr_err("MDSS pll driver only supports device tree probe\n");
+		pr_debug("MDSS pll driver only supports device tree probe\n");
 		rc = -ENOTSUPP;
 		goto error;
 	}
 
 	label = of_get_property(pdev->dev.of_node, "label", NULL);
 	if (!label)
-		pr_info("%d: MDSS pll label not specified\n", __LINE__);
+		pr_debug("%d: MDSS pll label not specified\n", __LINE__);
 	else
-		pr_info("MDSS pll label = %s\n", label);
+		pr_debug("MDSS pll label = %s\n", label);
 
 	pll_res = devm_kzalloc(&pdev->dev, sizeof(struct mdss_pll_resources),
 								GFP_KERNEL);
@@ -228,7 +228,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 	rc = of_property_read_u32(pdev->dev.of_node, "cell-index",
 			&pll_res->index);
 	if (rc) {
-		pr_err("Unable to get the cell-index rc=%d\n", rc);
+		pr_debug("Unable to get the cell-index rc=%d\n", rc);
 		pll_res->index = 0;
 	}
 
@@ -236,7 +236,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 						"qcom,dsi-pll-ssc-en");
 
 	if (pll_res->ssc_en) {
-		pr_info("%s: label=%s PLL SSC enabled\n", __func__, label);
+		pr_debug("%s: label=%s PLL SSC enabled\n", __func__, label);
 
 		rc = of_property_read_u32(pdev->dev.of_node,
 			"qcom,ssc-frequency-hz", &pll_res->ssc_freq);
@@ -256,7 +256,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 	pll_base_reg = platform_get_resource_byname(pdev,
 						IORESOURCE_MEM, "pll_base");
 	if (!pll_base_reg) {
-		pr_err("Unable to get the pll base resources\n");
+		pr_debug("Unable to get the pll base resources\n");
 		rc = -ENOMEM;
 		goto io_error;
 	}
@@ -264,7 +264,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 	pll_res->pll_base = ioremap(pll_base_reg->start,
 						resource_size(pll_base_reg));
 	if (!pll_res->pll_base) {
-		pr_err("Unable to remap pll base resources\n");
+		pr_debug("Unable to remap pll base resources\n");
 		rc = -ENOMEM;
 		goto io_error;
 	}
@@ -274,7 +274,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 
 	rc = mdss_pll_resource_parse(pdev, pll_res);
 	if (rc) {
-		pr_err("Pll resource parsing from dt failed rc=%d\n", rc);
+		pr_debug("Pll resource parsing from dt failed rc=%d\n", rc);
 		goto res_parse_error;
 	}
 
@@ -284,7 +284,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 		pll_res->phy_base = ioremap(phy_base_reg->start,
 						resource_size(phy_base_reg));
 		if (!pll_res->phy_base) {
-			pr_err("Unable to remap pll phy base resources\n");
+			pr_debug("Unable to remap pll phy base resources\n");
 			rc = -ENOMEM;
 			goto phy_io_error;
 		}
@@ -296,7 +296,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 		pll_res->dyn_pll_base = ioremap(dynamic_pll_base_reg->start,
 				resource_size(dynamic_pll_base_reg));
 		if (!pll_res->dyn_pll_base) {
-			pr_err("Unable to remap dynamic pll base resources\n");
+			pr_debug("Unable to remap dynamic pll base resources\n");
 			rc = -ENOMEM;
 			goto dyn_pll_io_error;
 		}
@@ -308,7 +308,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 		pll_res->ln_tx0_base = ioremap(tx0_base_reg->start,
 				resource_size(tx0_base_reg));
 		if (!pll_res->ln_tx0_base) {
-			pr_err("Unable to remap Lane TX0 base resources\n");
+			pr_debug("Unable to remap Lane TX0 base resources\n");
 			rc = -ENOMEM;
 			goto tx0_io_error;
 		}
@@ -320,7 +320,7 @@ static int mdss_pll_probe(struct platform_device *pdev)
 		pll_res->ln_tx1_base = ioremap(tx1_base_reg->start,
 				resource_size(tx1_base_reg));
 		if (!pll_res->ln_tx1_base) {
-			pr_err("Unable to remap Lane TX1 base resources\n");
+			pr_debug("Unable to remap Lane TX1 base resources\n");
 			rc = -ENOMEM;
 			goto tx1_io_error;
 		}
@@ -329,28 +329,28 @@ static int mdss_pll_probe(struct platform_device *pdev)
 	gdsc_base_reg = platform_get_resource_byname(pdev,
 					IORESOURCE_MEM, "gdsc_base");
 	if (!gdsc_base_reg) {
-		pr_err("Unable to get the gdsc base resource\n");
+		pr_debug("Unable to get the gdsc base resource\n");
 		rc = -ENOMEM;
 		goto gdsc_io_error;
 	}
 	pll_res->gdsc_base = ioremap(gdsc_base_reg->start,
 			resource_size(gdsc_base_reg));
 	if (!pll_res->gdsc_base) {
-		pr_err("Unable to remap gdsc base resources\n");
+		pr_debug("Unable to remap gdsc base resources\n");
 		rc = -ENOMEM;
 		goto gdsc_io_error;
 	}
 
 	rc = mdss_pll_resource_init(pdev, pll_res);
 	if (rc) {
-		pr_err("Pll ndx=%d resource init failed rc=%d\n",
+		pr_debug("Pll ndx=%d resource init failed rc=%d\n",
 				pll_res->index, rc);
 		goto res_init_error;
 	}
 
 	rc = mdss_pll_clock_register(pdev, pll_res);
 	if (rc) {
-		pr_err("Pll ndx=%d clock register failed rc=%d\n",
+		pr_debug("Pll ndx=%d clock register failed rc=%d\n",
 			pll_res->index, rc);
 		goto clock_register_error;
 	}
@@ -392,7 +392,7 @@ static int mdss_pll_remove(struct platform_device *pdev)
 
 	pll_res = platform_get_drvdata(pdev);
 	if (!pll_res) {
-		pr_err("Invalid PLL resource data\n");
+		pr_debug("Invalid PLL resource data\n");
 		return 0;
 	}
 
@@ -436,7 +436,7 @@ static int __init mdss_pll_driver_init(void)
 
 	rc = platform_driver_register(&mdss_pll_driver);
 	if (rc)
-		pr_err("mdss_register_pll_driver() failed!\n");
+		pr_debug("mdss_register_pll_driver() failed!\n");
 
 	return rc;
 }

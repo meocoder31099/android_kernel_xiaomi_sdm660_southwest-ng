@@ -290,11 +290,11 @@ void dma_pool_destroy(struct dma_pool *pool)
 				  struct dma_page, page_list);
 		if (is_page_busy(page)) {
 			if (pool->dev)
-				dev_err(pool->dev,
+				dev_dbg(pool->dev,
 					"dma_pool_destroy %s, %p busy\n",
 					pool->name, page->vaddr);
 			else
-				pr_err("dma_pool_destroy %s, %p busy\n",
+				pr_debug("dma_pool_destroy %s, %p busy\n",
 				       pool->name, page->vaddr);
 			/* leak the still-in-use consistent memory */
 			list_del(&page->page_list);
@@ -358,11 +358,11 @@ void *dma_pool_alloc(struct dma_pool *pool, gfp_t mem_flags,
 			if (data[i] == POOL_POISON_FREED)
 				continue;
 			if (pool->dev)
-				dev_err(pool->dev,
+				dev_dbg(pool->dev,
 					"dma_pool_alloc %s, %p (corrupted)\n",
 					pool->name, retval);
 			else
-				pr_err("dma_pool_alloc %s, %p (corrupted)\n",
+				pr_debug("dma_pool_alloc %s, %p (corrupted)\n",
 					pool->name, retval);
 
 			/*
@@ -419,11 +419,11 @@ void dma_pool_free(struct dma_pool *pool, void *vaddr, dma_addr_t dma)
 	if (!page) {
 		spin_unlock_irqrestore(&pool->lock, flags);
 		if (pool->dev)
-			dev_err(pool->dev,
+			dev_dbg(pool->dev,
 				"dma_pool_free %s, %p/%lx (bad dma)\n",
 				pool->name, vaddr, (unsigned long)dma);
 		else
-			pr_err("dma_pool_free %s, %p/%lx (bad dma)\n",
+			pr_debug("dma_pool_free %s, %p/%lx (bad dma)\n",
 			       pool->name, vaddr, (unsigned long)dma);
 		return;
 	}
@@ -435,11 +435,11 @@ void dma_pool_free(struct dma_pool *pool, void *vaddr, dma_addr_t dma)
 	if ((dma - page->dma) != offset) {
 		spin_unlock_irqrestore(&pool->lock, flags);
 		if (pool->dev)
-			dev_err(pool->dev,
+			dev_dbg(pool->dev,
 				"dma_pool_free %s, %p (bad vaddr)/%pad\n",
 				pool->name, vaddr, &dma);
 		else
-			pr_err("dma_pool_free %s, %p (bad vaddr)/%pad\n",
+			pr_debug("dma_pool_free %s, %p (bad vaddr)/%pad\n",
 			       pool->name, vaddr, &dma);
 		return;
 	}
@@ -452,10 +452,10 @@ void dma_pool_free(struct dma_pool *pool, void *vaddr, dma_addr_t dma)
 			}
 			spin_unlock_irqrestore(&pool->lock, flags);
 			if (pool->dev)
-				dev_err(pool->dev, "dma_pool_free %s, dma %pad already free\n",
+				dev_dbg(pool->dev, "dma_pool_free %s, dma %pad already free\n",
 					pool->name, &dma);
 			else
-				pr_err("dma_pool_free %s, dma %pad already free\n",
+				pr_debug("dma_pool_free %s, dma %pad already free\n",
 				       pool->name, &dma);
 			return;
 		}

@@ -325,7 +325,7 @@ static irqreturn_t qcom_smp2p_intr(int irq, void *data)
 	if (!in) {
 		in = qcom_smem_get(pid, smem_id, &size);
 		if (IS_ERR(in)) {
-			dev_err(smp2p->dev,
+			dev_dbg(smp2p->dev,
 				"Unable to acquire remote smp2p item\n");
 			goto out;
 		}
@@ -434,7 +434,7 @@ static int qcom_smp2p_inbound_entry(struct qcom_smp2p *smp2p,
 {
 	entry->domain = irq_domain_add_linear(node, 32, &smp2p_irq_ops, entry);
 	if (!entry->domain) {
-		dev_err(smp2p->dev, "failed to add irq_domain\n");
+		dev_dbg(smp2p->dev, "failed to add irq_domain\n");
 		return -ENOMEM;
 	}
 
@@ -485,7 +485,7 @@ static int qcom_smp2p_outbound_entry(struct qcom_smp2p *smp2p,
 
 	entry->state = qcom_smem_state_register(node, &smp2p_state_ops, entry);
 	if (IS_ERR(entry->state)) {
-		dev_err(smp2p->dev, "failed to register qcom_smem_state\n");
+		dev_dbg(smp2p->dev, "failed to register qcom_smem_state\n");
 		return PTR_ERR(entry->state);
 	}
 
@@ -502,14 +502,14 @@ static int qcom_smp2p_alloc_outbound_item(struct qcom_smp2p *smp2p)
 	ret = qcom_smem_alloc(pid, smem_id, sizeof(*out));
 	if (ret < 0 && ret != -EEXIST) {
 		if (ret != -EPROBE_DEFER)
-			dev_err(smp2p->dev,
+			dev_dbg(smp2p->dev,
 				"unable to allocate local smp2p item\n");
 		return ret;
 	}
 
 	out = qcom_smem_get(pid, smem_id, NULL);
 	if (IS_ERR(out)) {
-		dev_err(smp2p->dev, "Unable to acquire local smp2p item\n");
+		dev_dbg(smp2p->dev, "Unable to acquire local smp2p item\n");
 		return PTR_ERR(out);
 	}
 
@@ -544,7 +544,7 @@ static int smp2p_parse_ipc(struct qcom_smp2p *smp2p)
 
 	syscon = of_parse_phandle(dev->of_node, "qcom,ipc", 0);
 	if (!syscon) {
-		dev_err(dev, "no qcom,ipc node\n");
+		dev_dbg(dev, "no qcom,ipc node\n");
 		return -ENODEV;
 	}
 
@@ -556,13 +556,13 @@ static int smp2p_parse_ipc(struct qcom_smp2p *smp2p)
 	key = "qcom,ipc";
 	ret = of_property_read_u32_index(dev->of_node, key, 1, &smp2p->ipc_offset);
 	if (ret < 0) {
-		dev_err(dev, "no offset in %s\n", key);
+		dev_dbg(dev, "no offset in %s\n", key);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32_index(dev->of_node, key, 2, &smp2p->ipc_bit);
 	if (ret < 0) {
-		dev_err(dev, "no bit in %s\n", key);
+		dev_dbg(dev, "no bit in %s\n", key);
 		return -EINVAL;
 	}
 
@@ -608,7 +608,7 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
 
 	smp2p->irq = platform_get_irq(pdev, 0);
 	if (smp2p->irq < 0) {
-		dev_err(&pdev->dev, "unable to acquire smp2p interrupt\n");
+		dev_dbg(&pdev->dev, "unable to acquire smp2p interrupt\n");
 		return smp2p->irq;
 	}
 
@@ -673,7 +673,7 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
 					IRQF_NO_SUSPEND | IRQF_ONESHOT,
 					"smp2p", (void *)smp2p);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to request interrupt\n");
+		dev_dbg(&pdev->dev, "failed to request interrupt\n");
 		goto unreg_ws;
 	}
 	enable_irq_wake(smp2p->irq);
@@ -698,7 +698,7 @@ release_mbox:
 	return ret;
 
 report_read_failure:
-	dev_err(&pdev->dev, "failed to read %s\n", key);
+	dev_dbg(&pdev->dev, "failed to read %s\n", key);
 	return -EINVAL;
 }
 

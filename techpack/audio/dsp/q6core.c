@@ -121,7 +121,7 @@ static int q6core_init_uevent_kset(void)
 	/* Create a kset under /sys/kernel/ */
 	audio_uevent_kset = kset_create_and_add("q6audio", NULL, kernel_kobj);
 	if (!audio_uevent_kset) {
-		pr_err("%s: error creating uevent kernel set", __func__);
+		pr_debug("%s: error creating uevent kernel set", __func__);
 		ret = -EINVAL;
 	}
 done:
@@ -163,7 +163,7 @@ int q6core_init_uevent_data(struct audio_uevent_data *uevent_data, char *name)
 	ret = kobject_init_and_add(&uevent_data->kobj, &uevent_data->ktype,
 					NULL, "%s", name);
 	if (ret) {
-		pr_err("%s: error initializing uevent kernel object: %d",
+		pr_debug("%s: error initializing uevent kernel object: %d",
 			__func__, ret);
 		kobject_put(&uevent_data->kobj);
 		return ret;
@@ -221,13 +221,13 @@ static int parse_fwk_version_info(uint32_t *payload, uint16_t payload_size)
 	 * avcs version info structure.
 	 */
 	if (payload_size < 5 * sizeof(uint32_t)) {
-		pr_err("%s: payload has invalid size %d\n",
+		pr_debug("%s: payload has invalid size %d\n",
 			__func__, payload_size);
 		return -EINVAL;
 	}
 	num_services = payload[4];
 	if (num_services > VSS_MAX_AVCS_NUM_SERVICES) {
-		pr_err("%s: num_services: %d greater than max services: %d\n",
+		pr_debug("%s: num_services: %d greater than max services: %d\n",
 		       __func__, num_services, VSS_MAX_AVCS_NUM_SERVICES);
 		return -EINVAL;
 	}
@@ -240,7 +240,7 @@ static int parse_fwk_version_info(uint32_t *payload, uint16_t payload_size)
 		   num_services * sizeof(struct avs_svc_api_info);
 
 	if (payload_size < ver_size) {
-		pr_err("%s: payload has invalid size %d, expected size %zu\n",
+		pr_debug("%s: payload has invalid size %d, expected size %zu\n",
 			__func__, payload_size, ver_size);
 		return -EINVAL;
 	}
@@ -261,7 +261,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 	int ret = 0;
 
 	if (data == NULL) {
-		pr_err("%s: data argument is null\n", __func__);
+		pr_debug("%s: data argument is null\n", __func__);
 		return -EINVAL;
 	}
 
@@ -274,7 +274,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 	case APR_BASIC_RSP_RESULT:{
 
 		if (data->payload_size == 0) {
-			pr_err("%s: APR_BASIC_RSP_RESULT No Payload ",
+			pr_debug("%s: APR_BASIC_RSP_RESULT No Payload ",
 					__func__);
 			return 0;
 		}
@@ -282,7 +282,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		payload1 = data->payload;
 
 		if (data->payload_size < 2 * sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -357,7 +357,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 			wake_up(&q6core_lcl.lpass_npa_rsc_wait);
 			break;
 		case AVCS_CMD_LOAD_MODULES:
-			pr_err("%s: Cmd = %s failed status[%s]\n",
+			pr_debug("%s: Cmd = %s failed status[%s]\n",
 				__func__, "AVCS_CMD_LOAD__MODULES",
 				adsp_err_get_err_str(payload1[1]));
 			q6core_lcl.avcs_module_resp_received = 1;
@@ -370,7 +370,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 					__func__, "AVCS_CMD_UNLOAD_MODULES",
 					"ADSP_EOK");
 			} else {
-				pr_err("%s: Cmd = %s failed status[%s]\n",
+				pr_debug("%s: Cmd = %s failed status[%s]\n",
 					__func__, "AVCS_CMD_UNLOAD_MODULES",
 				adsp_err_get_err_str(payload1[1]));
 				q6core_lcl.adsp_status = -payload1[1];
@@ -380,7 +380,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 			break;
 
 		default:
-			pr_err("%s: Invalid cmd rsp[0x%x][0x%x] opcode %d\n",
+			pr_debug("%s: Invalid cmd rsp[0x%x][0x%x] opcode %d\n",
 					__func__,
 					payload1[0], payload1[1], data->opcode);
 			break;
@@ -401,7 +401,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 	}
 	case AVCS_CMDRSP_SHARED_MEM_MAP_REGIONS:
 		if (data->payload_size < sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -420,7 +420,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		break;
 	case AVCS_CMDRSP_CREATE_LPASS_NPA_CLIENT:
 		if (data->payload_size < 2 * sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -434,7 +434,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		break;
 	case AVCS_CMDRSP_ADSP_EVENT_GET_STATE:
 		if (data->payload_size < sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -449,7 +449,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		break;
 	case AVCS_CMDRSP_GET_LICENSE_VALIDATION_RESULT:
 		if (data->payload_size < sizeof(uint32_t)) {
-			pr_err("%s: payload has invalid size %d\n",
+			pr_debug("%s: payload has invalid size %d\n",
 				__func__, data->payload_size);
 			return -EINVAL;
 		}
@@ -468,7 +468,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		ret = parse_fwk_version_info(payload1, data->payload_size);
 		if (ret < 0) {
 			q6core_lcl.adsp_status = ret;
-			pr_err("%s: Failed to parse payload:%d\n",
+			pr_debug("%s: Failed to parse payload:%d\n",
 			       __func__, ret);
 		} else {
 			q6core_lcl.q6core_avcs_ver_info.status =
@@ -484,7 +484,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 			return -EINVAL;
 		if (data->payload_size != ((sizeof(struct avcs_load_unload_modules_sec_payload)
 			* rsp_payload->num_modules) + sizeof(uint32_t))) {
-			pr_err("%s: payload size greater than expected size %d\n",
+			pr_debug("%s: payload size greater than expected size %d\n",
 				__func__,data->payload_size);
 			return -EINVAL;
 		}
@@ -493,7 +493,7 @@ static int32_t aprv2_core_fn_q(struct apr_client_data *data, void *priv)
 		wake_up(&q6core_lcl.avcs_module_load_unload_wait);
 		break;
 	default:
-		pr_err("%s: Message id from adsp core svc: 0x%x\n",
+		pr_debug("%s: Message id from adsp core svc: 0x%x\n",
 			__func__, data->opcode);
 		if (generic_get_data) {
 			generic_get_data->valid = 1;
@@ -569,7 +569,7 @@ static int q6core_send_get_avcs_fwk_ver_cmd(void)
 	ret = apr_send_pkt(q6core_lcl.core_handle_q,
 			   (uint32_t *) &avcs_ver_cmd);
 	if (ret < 0) {
-		pr_err("%s: failed to send apr packet, ret=%d\n", __func__,
+		pr_debug("%s: failed to send apr packet, ret=%d\n", __func__,
 		       ret);
 		goto done;
 	}
@@ -578,7 +578,7 @@ static int q6core_send_get_avcs_fwk_ver_cmd(void)
 				 (q6core_lcl.avcs_fwk_ver_resp_received == 1),
 				 msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: wait_event timeout for AVCS fwk version info\n",
+		pr_debug("%s: wait_event timeout for AVCS fwk version info\n",
 		       __func__);
 		ret = -ETIMEDOUT;
 		goto done;
@@ -591,7 +591,7 @@ static int q6core_send_get_avcs_fwk_ver_cmd(void)
 		 * Pass in the negated value so adsp_err_get_err_str returns
 		 * the correct string.
 		 */
-		pr_err("%s: DSP returned error[%s]\n", __func__,
+		pr_debug("%s: DSP returned error[%s]\n", __func__,
 		       adsp_err_get_err_str(-q6core_lcl.adsp_status));
 		ret = adsp_err_get_lnx_err_code(q6core_lcl.adsp_status);
 		goto done;
@@ -615,20 +615,20 @@ int q6core_get_service_version(uint32_t service_id,
 	int ret;
 
 	if (ver_info == NULL) {
-		pr_err("%s: ver_info is NULL\n", __func__);
+		pr_debug("%s: ver_info is NULL\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = q6core_get_fwk_version_size(service_id);
 	if (ret < 0) {
-		pr_err("%s: Failed to get service size for service id %d with error %d\n",
+		pr_debug("%s: Failed to get service size for service id %d with error %d\n",
 		       __func__, service_id, ret);
 		return ret;
 	}
 
 	ver_size = ret;
 	if (ver_size != size) {
-		pr_err("%s: Expected size %zu and provided size %zu do not match\n",
+		pr_debug("%s: Expected size %zu and provided size %zu do not match\n",
 		       __func__, ver_size, size);
 		return -EINVAL;
 	}
@@ -648,7 +648,7 @@ int q6core_get_service_version(uint32_t service_id,
 			return 0;
 		}
 	}
-	pr_err("%s: No service matching service ID %d\n", __func__, service_id);
+	pr_debug("%s: No service matching service ID %d\n", __func__, service_id);
 	return -EINVAL;
 }
 EXPORT_SYMBOL(q6core_get_service_version);
@@ -679,13 +679,13 @@ static int q6core_get_avcs_fwk_version(void)
 		if (q6core_is_adsp_ready()) {
 			ret = q6core_send_get_avcs_fwk_ver_cmd();
 		} else {
-			pr_err("%s: ADSP is not ready to query version\n",
+			pr_debug("%s: ADSP is not ready to query version\n",
 			       __func__);
 			ret = -ENODEV;
 		}
 		break;
 	default:
-		pr_err("%s: Invalid version query status %d\n", __func__,
+		pr_debug("%s: Invalid version query status %d\n", __func__,
 		       q6core_lcl.q6core_avcs_ver_info.status);
 		ret = -EINVAL;
 		break;
@@ -707,7 +707,7 @@ size_t q6core_get_fwk_version_size(uint32_t service_id)
 		num_services = q6core_lcl.q6core_avcs_ver_info.ver_info
 					->avcs_fwk_version.num_services;
 	} else {
-		pr_err("%s: ver_info is NULL\n", __func__);
+		pr_debug("%s: ver_info is NULL\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -764,7 +764,7 @@ int q6core_get_avcs_api_version_per_service(uint32_t service_id)
 			/* Look in legacy support... */
 			ret = q6core_get_legacy_avcs_fwk_version(service_id);
 		} else {
-			pr_err("%s: failure in getting AVCS version\n",
+			pr_debug("%s: failure in getting AVCS version\n",
 			       __func__);
 		}
 		return ret;
@@ -777,7 +777,7 @@ int q6core_get_avcs_api_version_per_service(uint32_t service_id)
 		if (cached_ver_info->services[i].service_id == service_id)
 			return cached_ver_info->services[i].api_version;
 	}
-	pr_err("%s: No service matching service ID %d\n", __func__, service_id);
+	pr_debug("%s: No service matching service ID %d\n", __func__, service_id);
 	return -EINVAL;
 }
 EXPORT_SYMBOL(q6core_get_avcs_api_version_per_service);
@@ -839,7 +839,7 @@ int32_t core_set_license(uint32_t key, uint32_t module_id)
 
 	mutex_lock(&(q6core_lcl.cmd_lock));
 	if (q6core_lcl.cal_data[META_CAL] == NULL) {
-		pr_err("%s: cal_data not initialized yet!!\n", __func__);
+		pr_debug("%s: cal_data not initialized yet!!\n", __func__);
 		rc = -EINVAL;
 		goto cmd_unlock;
 	}
@@ -850,7 +850,7 @@ int32_t core_set_license(uint32_t key, uint32_t module_id)
 	if (cal_block == NULL ||
 		cal_block->cal_data.kvaddr == NULL ||
 		cal_block->cal_data.size <= 0) {
-		pr_err("%s: Invalid cal block to send", __func__);
+		pr_debug("%s: Invalid cal block to send", __func__);
 		rc = -EINVAL;
 		goto cal_data_unlock;
 	}
@@ -868,7 +868,7 @@ int32_t core_set_license(uint32_t key, uint32_t module_id)
 
 	ocm_core_open();
 	if (q6core_lcl.core_handle_q == NULL) {
-		pr_err("%s: apr registration for CORE failed\n", __func__);
+		pr_debug("%s: apr registration for CORE failed\n", __func__);
 		rc  = -ENODEV;
 		goto fail_cmd;
 	}
@@ -886,12 +886,12 @@ int32_t core_set_license(uint32_t key, uint32_t module_id)
 	memcpy((uint8_t *)cmd_setl + sizeof(struct avcs_cmd_set_license),
 		cal_block->cal_data.kvaddr,
 		cal_block->cal_data.size);
-	pr_info("%s: Set license opcode=0x%x, id =0x%x, size = %d\n",
+	pr_debug("%s: Set license opcode=0x%x, id =0x%x, size = %d\n",
 			__func__, cmd_setl->hdr.opcode,
 			cmd_setl->id, cmd_setl->size);
 	rc = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *)cmd_setl);
 	if (rc < 0)
-		pr_err("%s: SET_LICENSE failed op[0x%x]rc[%d]\n",
+		pr_debug("%s: SET_LICENSE failed op[0x%x]rc[%d]\n",
 					__func__, cmd_setl->hdr.opcode, rc);
 
 fail_cmd:
@@ -923,7 +923,7 @@ int32_t core_get_license_status(uint32_t module_id)
 	mutex_lock(&(q6core_lcl.cmd_lock));
 	ocm_core_open();
 	if (q6core_lcl.core_handle_q == NULL) {
-		pr_err("%s: apr registration for CORE failed\n", __func__);
+		pr_debug("%s: apr registration for CORE failed\n", __func__);
 		ret  = -ENODEV;
 		goto fail_cmd;
 	}
@@ -941,7 +941,7 @@ int32_t core_get_license_status(uint32_t module_id)
 
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *) &get_lvr_cmd);
 	if (ret < 0) {
-		pr_err("%s: license_validation request failed, err %d\n",
+		pr_debug("%s: license_validation request failed, err %d\n",
 							__func__, ret);
 		ret = -EREMOTE;
 		goto fail_cmd;
@@ -955,7 +955,7 @@ int32_t core_get_license_status(uint32_t module_id)
 				msecs_to_jiffies(TIMEOUT_MS));
 	mutex_lock(&(q6core_lcl.cmd_lock));
 	if (!ret) {
-		pr_err("%s: wait_event timeout for CMDRSP_LICENSE_RESULT\n",
+		pr_debug("%s: wait_event timeout for CMDRSP_LICENSE_RESULT\n",
 				__func__);
 		ret = -ETIME;
 		goto fail_cmd;
@@ -965,7 +965,7 @@ int32_t core_get_license_status(uint32_t module_id)
 
 fail_cmd:
 	mutex_unlock(&(q6core_lcl.cmd_lock));
-	pr_info("%s: cmdrsp_license_result.result = 0x%x for module 0x%x\n",
+	pr_debug("%s: cmdrsp_license_result.result = 0x%x for module 0x%x\n",
 				__func__, ret, module_id);
 	return ret;
 }
@@ -1003,7 +1003,7 @@ uint32_t core_set_dolby_manufacturer_id(int manufacturer_id)
 		rc = apr_send_pkt(q6core_lcl.core_handle_q,
 						(uint32_t *)&payload);
 		if (rc < 0)
-			pr_err("%s: SET_DOLBY_MANUFACTURER_ID failed op[0x%x]rc[%d]\n",
+			pr_debug("%s: SET_DOLBY_MANUFACTURER_ID failed op[0x%x]rc[%d]\n",
 				__func__, payload.hdr.opcode, rc);
 	}
 	mutex_unlock(&(q6core_lcl.cmd_lock));
@@ -1021,7 +1021,7 @@ int32_t q6core_avcs_load_unload_modules(struct avcs_load_unload_modules_payload
 	unsigned long timeout;
 
 	if (payload == NULL) {
-		pr_err("%s: payload is null\n", __func__);
+		pr_debug("%s: payload is null\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1048,7 +1048,7 @@ int32_t q6core_avcs_load_unload_modules(struct avcs_load_unload_modules_payload
 		} while (time_after(timeout, jiffies));
 
 		if (q6core_lcl.param != ADSP_MODULES_READY_AVS_STATE)
-			pr_err("%s: all modules might be not loaded yet on ADSP\n",
+			pr_debug("%s: all modules might be not loaded yet on ADSP\n",
 				__func__);
 	}
 	mutex_lock(&(q6core_lcl.cmd_lock));
@@ -1056,7 +1056,7 @@ int32_t q6core_avcs_load_unload_modules(struct avcs_load_unload_modules_payload
 	ocm_core_open();
 
 	if (q6core_lcl.core_handle_q == NULL) {
-		pr_err("%s: apr registration for CORE failed\n", __func__);
+		pr_debug("%s: apr registration for CORE failed\n", __func__);
 		mutex_unlock(&(q6core_lcl.cmd_lock));
 		return -ENODEV;
 	}
@@ -1108,7 +1108,7 @@ int32_t q6core_avcs_load_unload_modules(struct avcs_load_unload_modules_payload
 		(uint32_t *)mod);
 
 	if (ret < 0) {
-		pr_err("%s: modules load/unload failed ret = %d\n",
+		pr_debug("%s: modules load/unload failed ret = %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -1117,14 +1117,14 @@ int32_t q6core_avcs_load_unload_modules(struct avcs_load_unload_modules_payload
 				(q6core_lcl.avcs_module_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s wait event timeout for avcs load/unload module\n",
+		pr_debug("%s wait event timeout for avcs load/unload module\n",
 			__func__);
 		ret = -ETIMEDOUT;
 		goto done;
 	}
 
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: modules load/unload failed %d\n", __func__,
+		pr_debug("%s: modules load/unload failed %d\n", __func__,
 				q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 		goto done;
@@ -1150,7 +1150,7 @@ int32_t q6core_load_unload_topo_modules(uint32_t topo_id,
 	mutex_lock(&(q6core_lcl.cmd_lock));
 	ocm_core_open();
 	if (q6core_lcl.core_handle_q == NULL) {
-		pr_err("%s: apr registration for CORE failed\n", __func__);
+		pr_debug("%s: apr registration for CORE failed\n", __func__);
 		ret  = -ENODEV;
 		goto done;
 	}
@@ -1176,7 +1176,7 @@ int32_t q6core_load_unload_topo_modules(uint32_t topo_id,
 	ret = apr_send_pkt(q6core_lcl.core_handle_q,
 		(uint32_t *) &load_unload_topo_modules);
 	if (ret < 0) {
-		pr_err("%s: Load/unload topo modules failed for topology = %d ret = %d\n",
+		pr_debug("%s: Load/unload topo modules failed for topology = %d ret = %d\n",
 			__func__, topo_id, ret);
 		ret = -EINVAL;
 	}
@@ -1242,7 +1242,7 @@ int q6core_create_lpass_npa_client(uint32_t node_id, char *client_name,
 	int ret = 0;
 
 	if (!client_name) {
-		pr_err("%s: Invalid params\n", __func__);
+		pr_debug("%s: Invalid params\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1270,7 +1270,7 @@ int q6core_create_lpass_npa_client(uint32_t node_id, char *client_name,
 	q6core_lcl.lpass_npa_rsc_rsp_rcvd = 0;
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *) cmd_ptr);
 	if (ret < 0) {
-		pr_err("%s: create lpass npa client failed %d\n",
+		pr_debug("%s: create lpass npa client failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1280,7 +1280,7 @@ int q6core_create_lpass_npa_client(uint32_t node_id, char *client_name,
 				(q6core_lcl.lpass_npa_rsc_rsp_rcvd == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for create lpass npa rsc client\n",
+		pr_debug("%s: timeout. waited for create lpass npa rsc client\n",
 			__func__);
 		ret = -ETIMEDOUT;
 		goto done;
@@ -1290,7 +1290,7 @@ int q6core_create_lpass_npa_client(uint32_t node_id, char *client_name,
 	}
 
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 		goto done;
@@ -1333,7 +1333,7 @@ int q6core_destroy_lpass_npa_client(uint32_t client_handle)
 	q6core_lcl.lpass_npa_rsc_rsp_rcvd = 0;
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *) cmd_ptr);
 	if (ret < 0) {
-		pr_err("%s: destroy lpass npa client failed %d\n",
+		pr_debug("%s: destroy lpass npa client failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1343,7 +1343,7 @@ int q6core_destroy_lpass_npa_client(uint32_t client_handle)
 				(q6core_lcl.lpass_npa_rsc_rsp_rcvd == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for destroy lpass npa rsc client\n",
+		pr_debug("%s: timeout. waited for destroy lpass npa rsc client\n",
 			__func__);
 		ret = -ETIMEDOUT;
 		goto done;
@@ -1353,7 +1353,7 @@ int q6core_destroy_lpass_npa_client(uint32_t client_handle)
 	}
 
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 	}
@@ -1398,7 +1398,7 @@ int q6core_request_island_transition(uint32_t client_handle,
 	q6core_lcl.lpass_npa_rsc_rsp_rcvd = 0;
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *) cmd_ptr);
 	if (ret < 0) {
-		pr_err("%s: island tnsn cmd send failed %d\n",
+		pr_debug("%s: island tnsn cmd send failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1408,7 +1408,7 @@ int q6core_request_island_transition(uint32_t client_handle,
 				(q6core_lcl.lpass_npa_rsc_rsp_rcvd == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for island lpass npa rsc req\n",
+		pr_debug("%s: timeout. waited for island lpass npa rsc req\n",
 			__func__);
 		ret = -ETIMEDOUT;
 		goto done;
@@ -1418,7 +1418,7 @@ int q6core_request_island_transition(uint32_t client_handle,
 	}
 
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 	}
@@ -1481,7 +1481,7 @@ int q6core_map_memory_regions(phys_addr_t *buf_add, uint32_t mempool_id,
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *)
 		mmap_regions);
 	if (ret < 0) {
-		pr_err("%s: mmap regions failed %d\n",
+		pr_debug("%s: mmap regions failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1491,7 +1491,7 @@ int q6core_map_memory_regions(phys_addr_t *buf_add, uint32_t mempool_id,
 				(q6core_lcl.bus_bw_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for memory map\n", __func__);
+		pr_debug("%s: timeout. waited for memory map\n", __func__);
 		ret = -ETIME;
 		goto done;
 	} else {
@@ -1500,7 +1500,7 @@ int q6core_map_memory_regions(phys_addr_t *buf_add, uint32_t mempool_id,
 	}
 
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 		goto done;
@@ -1576,7 +1576,7 @@ int q6core_map_mdf_memory_regions(uint64_t *buf_add, uint32_t mempool_id,
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *)
 		mmap_regions);
 	if (ret < 0) {
-		pr_err("%s: mmap regions failed %d\n",
+		pr_debug("%s: mmap regions failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1586,7 +1586,7 @@ int q6core_map_mdf_memory_regions(uint64_t *buf_add, uint32_t mempool_id,
 				(q6core_lcl.mdf_map_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for memory map\n", __func__);
+		pr_debug("%s: timeout. waited for memory map\n", __func__);
 		ret = -ETIMEDOUT;
 		goto done;
 	} else {
@@ -1595,7 +1595,7 @@ int q6core_map_mdf_memory_regions(uint64_t *buf_add, uint32_t mempool_id,
 	}
 
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 		goto done;
@@ -1637,7 +1637,7 @@ int q6core_memory_unmap_regions(uint32_t mem_map_handle)
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *)
 		&unmap_regions);
 	if (ret < 0) {
-		pr_err("%s: unmap regions failed %d\n",
+		pr_debug("%s: unmap regions failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1647,7 +1647,7 @@ int q6core_memory_unmap_regions(uint32_t mem_map_handle)
 				(q6core_lcl.bus_bw_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for memory_unmap\n",
+		pr_debug("%s: timeout. waited for memory_unmap\n",
 		       __func__);
 		ret = -ETIME;
 		goto done;
@@ -1656,7 +1656,7 @@ int q6core_memory_unmap_regions(uint32_t mem_map_handle)
 		ret = 0;
 	}
 	if (q6core_lcl.adsp_status < 0) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 		goto done;
@@ -1719,7 +1719,7 @@ int q6core_map_mdf_shared_memory(uint32_t map_handle, uint64_t *buf_add,
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *)
 		mmap_regions);
 	if (ret < 0) {
-		pr_err("%s: mdf memory map failed %d\n",
+		pr_debug("%s: mdf memory map failed %d\n",
 			__func__, ret);
 		ret = -EINVAL;
 		goto done;
@@ -1729,7 +1729,7 @@ int q6core_map_mdf_shared_memory(uint32_t map_handle, uint64_t *buf_add,
 				(q6core_lcl.bus_bw_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: timeout. waited for mdf memory map\n",
+		pr_debug("%s: timeout. waited for mdf memory map\n",
 			__func__);
 		ret = -ETIME;
 		goto done;
@@ -1745,7 +1745,7 @@ int q6core_map_mdf_shared_memory(uint32_t map_handle, uint64_t *buf_add,
 	 * not treat APR_ENOTREADY as an error.
 	 */
 	if (q6core_lcl.adsp_status != -APR_ENOTREADY) {
-		pr_err("%s: DSP returned error %d\n",
+		pr_debug("%s: DSP returned error %d\n",
 			__func__, q6core_lcl.adsp_status);
 		ret = q6core_lcl.adsp_status;
 		goto done;
@@ -1787,7 +1787,7 @@ static int q6core_dereg_all_custom_topologies(void)
 
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *) &dereg_top);
 	if (ret < 0) {
-		pr_err("%s: Deregister topologies failed %d\n",
+		pr_debug("%s: Deregister topologies failed %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -1796,7 +1796,7 @@ static int q6core_dereg_all_custom_topologies(void)
 				(q6core_lcl.bus_bw_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: wait_event timeout for Deregister topologies\n",
+		pr_debug("%s: wait_event timeout for Deregister topologies\n",
 			__func__);
 		goto done;
 	}
@@ -1812,7 +1812,7 @@ static int q6core_send_custom_topologies(void)
 	struct avcs_cmd_register_topologies reg_top;
 
 	if (!q6core_is_adsp_ready()) {
-		pr_err("%s: ADSP is not ready!\n", __func__);
+		pr_debug("%s: ADSP is not ready!\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1839,7 +1839,7 @@ static int q6core_send_custom_topologies(void)
 		(uint32_t *)&cal_block->map_data.map_size, 1,
 		&cal_block->map_data.q6map_handle);
 	if (ret)  {
-		pr_err("%s: q6core_map_memory_regions failed\n", __func__);
+		pr_debug("%s: q6core_map_memory_regions failed\n", __func__);
 		goto unlock;
 	}
 
@@ -1870,7 +1870,7 @@ static int q6core_send_custom_topologies(void)
 
 	ret = apr_send_pkt(q6core_lcl.core_handle_q, (uint32_t *) &reg_top);
 	if (ret < 0) {
-		pr_err("%s: Register topologies failed %d\n",
+		pr_debug("%s: Register topologies failed %d\n",
 			__func__, ret);
 		goto unmap;
 	}
@@ -1879,7 +1879,7 @@ static int q6core_send_custom_topologies(void)
 				(q6core_lcl.bus_bw_resp_received == 1),
 				msecs_to_jiffies(TIMEOUT_MS));
 	if (!ret) {
-		pr_err("%s: wait_event timeout for Register topologies\n",
+		pr_debug("%s: wait_event timeout for Register topologies\n",
 			__func__);
 		goto unmap;
 	}
@@ -1889,7 +1889,7 @@ static int q6core_send_custom_topologies(void)
 unmap:
 	ret2 = q6core_memory_unmap_regions(cal_block->map_data.q6map_handle);
 	if (ret2)  {
-		pr_err("%s: q6core_memory_unmap_regions failed for map handle %d\n",
+		pr_debug("%s: q6core_memory_unmap_regions failed for map handle %d\n",
 			__func__, cal_block->map_data.q6map_handle);
 		ret = ret2;
 		goto unlock;
@@ -1914,7 +1914,7 @@ static int get_cal_type_index(int32_t cal_type)
 		ret = CUST_TOP_CAL;
 		break;
 	default:
-		pr_err("%s: invalid cal type %d!\n", __func__, cal_type);
+		pr_debug("%s: invalid cal type %d!\n", __func__, cal_type);
 	}
 	return ret;
 }
@@ -1927,7 +1927,7 @@ static int q6core_alloc_cal(int32_t cal_type,
 
 	cal_index = get_cal_type_index(cal_type);
 	if (cal_index < 0) {
-		pr_err("%s: could not get cal index %d!\n",
+		pr_debug("%s: could not get cal index %d!\n",
 			__func__, cal_index);
 		ret = -EINVAL;
 		goto done;
@@ -1937,7 +1937,7 @@ static int q6core_alloc_cal(int32_t cal_type,
 	ret = cal_utils_alloc_cal(data_size, data,
 		q6core_lcl.cal_data[cal_index], 0, NULL);
 	if (ret < 0) {
-		pr_err("%s: cal_utils_alloc_block failed, ret = %d, cal type = %d!\n",
+		pr_debug("%s: cal_utils_alloc_block failed, ret = %d, cal type = %d!\n",
 			__func__, ret, cal_type);
 		goto done;
 	}
@@ -1953,7 +1953,7 @@ static int q6core_dealloc_cal(int32_t cal_type,
 
 	cal_index = get_cal_type_index(cal_type);
 	if (cal_index < 0) {
-		pr_err("%s: could not get cal index %d!\n",
+		pr_debug("%s: could not get cal index %d!\n",
 			__func__, cal_index);
 		ret = -EINVAL;
 		goto done;
@@ -1963,7 +1963,7 @@ static int q6core_dealloc_cal(int32_t cal_type,
 	ret = cal_utils_dealloc_cal(data_size, data,
 					q6core_lcl.cal_data[cal_index]);
 	if (ret < 0) {
-		pr_err("%s: cal_utils_dealloc_block failed, ret = %d, cal type = %d!\n",
+		pr_debug("%s: cal_utils_dealloc_block failed, ret = %d, cal type = %d!\n",
 			__func__, ret, cal_type);
 		goto done;
 	}
@@ -1979,7 +1979,7 @@ static int q6core_set_cal(int32_t cal_type,
 
 	cal_index = get_cal_type_index(cal_type);
 	if (cal_index < 0) {
-		pr_err("%s: could not get cal index %d!\n",
+		pr_debug("%s: could not get cal index %d!\n",
 			__func__, cal_index);
 		ret = -EINVAL;
 		goto done;
@@ -1989,7 +1989,7 @@ static int q6core_set_cal(int32_t cal_type,
 	ret = cal_utils_set_cal(data_size, data,
 				    q6core_lcl.cal_data[cal_index], 0, NULL);
 	if (ret < 0) {
-		pr_err("%s: cal_utils_set_cal failed, ret = %d, cal type = %d!\n",
+		pr_debug("%s: cal_utils_set_cal failed, ret = %d, cal type = %d!\n",
 		__func__, ret, cal_type);
 		goto done;
 	}
@@ -2027,7 +2027,7 @@ static int q6core_init_cal_data(void)
 	ret = cal_utils_create_cal_types(CORE_MAX_CAL,
 		q6core_lcl.cal_data, cal_type_info);
 	if (ret < 0) {
-		pr_err("%s: could not create cal type!\n",
+		pr_debug("%s: could not create cal type!\n",
 			__func__);
 		goto err;
 	}
@@ -2083,7 +2083,7 @@ static int q6core_ssr_enable(struct device *dev, void *data)
 	int ret = 0;
 
 	if (!dev) {
-		pr_err("%s: dev is NULL\n", __func__);
+		pr_debug("%s: dev is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2120,7 +2120,7 @@ static int q6core_probe(struct platform_device *pdev)
 	q6core_lcl.avs_state = avs_state;
 	rc = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
 	if (rc) {
-		dev_err(&pdev->dev, "%s: failed to add child nodes, rc=%d\n",
+		dev_dbg(&pdev->dev, "%s: failed to add child nodes, rc=%d\n",
 			__func__, rc);
 		rc = -EINVAL;
 		goto err;
@@ -2131,7 +2131,7 @@ static int q6core_probe(struct platform_device *pdev)
 	if (!rc) {
 		snd_event_notify(&pdev->dev, SND_EVENT_UP);
 	} else {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Registration with SND event fwk failed rc = %d\n",
 			__func__, rc);
 		rc = 0;

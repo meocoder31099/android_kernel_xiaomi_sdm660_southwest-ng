@@ -459,7 +459,7 @@ void generic_shutdown_super(struct super_block *sb)
 			sop->put_super(sb);
 
 		if (!list_empty(&sb->s_inodes)) {
-			printk("VFS: Busy inodes after unmount of %s. "
+			no_printk("VFS: Busy inodes after unmount of %s. "
 			   "Self-destruct in 5 seconds.  Have a nice day...\n",
 			   sb->s_id);
 		}
@@ -1039,7 +1039,7 @@ static void do_emergency_remount(struct work_struct *work)
 {
 	__iterate_supers(do_emergency_remount_callback);
 	kfree(work);
-	printk("Emergency Remount complete\n");
+	no_printk("Emergency Remount complete\n");
 }
 
 void emergency_remount(void)
@@ -1068,7 +1068,7 @@ static void do_thaw_all(struct work_struct *work)
 {
 	__iterate_supers(do_thaw_all_callback);
 	kfree(work);
-	printk(KERN_WARNING "Emergency Thaw complete\n");
+	no_printk(KERN_WARNING "Emergency Thaw complete\n");
 }
 
 /**
@@ -1548,7 +1548,7 @@ int vfs_get_tree(struct fs_context *fc)
 		return error;
 
 	if (!fc->root) {
-		pr_err("Filesystem %s get_tree() didn't set fc->root\n",
+		pr_debug("Filesystem %s get_tree() didn't set fc->root\n",
 		       fc->fs_type->name);
 		/* We don't know what the locking state of the superblock is -
 		 * if there is a superblock.
@@ -1779,7 +1779,7 @@ int freeze_super(struct super_block *sb)
 	if (sb->s_op->freeze_fs) {
 		ret = sb->s_op->freeze_fs(sb);
 		if (ret) {
-			printk(KERN_ERR
+			no_printk(KERN_ERR
 				"VFS:Filesystem freeze failed\n");
 			sb->s_writers.frozen = SB_UNFROZEN;
 			sb_freeze_unlock(sb, SB_FREEZE_FS);
@@ -1824,7 +1824,7 @@ static int thaw_super_locked(struct super_block *sb)
 	if (sb->s_op->unfreeze_fs) {
 		error = sb->s_op->unfreeze_fs(sb);
 		if (error) {
-			printk(KERN_ERR
+			no_printk(KERN_ERR
 				"VFS:Filesystem thaw failed\n");
 			lockdep_sb_freeze_release(sb);
 			up_write(&sb->s_umount);

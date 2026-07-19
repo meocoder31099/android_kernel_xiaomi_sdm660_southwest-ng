@@ -38,13 +38,13 @@ static long amrnb_in_ioctl_shared(struct file *file,
 		pr_debug("%s:session id %d: default buf alloc[%d]\n", __func__,
 				audio->ac->session, audio->buf_alloc);
 		if (audio->enabled == 1) {
-			pr_info("%s:AUDIO_START already over\n", __func__);
+			pr_debug("%s:AUDIO_START already over\n", __func__);
 			rc = 0;
 			break;
 		}
 		rc = audio_in_buf_alloc(audio);
 		if (rc < 0) {
-			pr_err("%s:session id %d: buffer allocation failed\n",
+			pr_debug("%s:session id %d: buffer allocation failed\n",
 				__func__, audio->ac->session);
 			break;
 		}
@@ -55,7 +55,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 			enc_cfg->dtx_enable);
 
 		if (rc < 0) {
-			pr_err("%s:session id %d: cmd amrnb media format block failed\n",
+			pr_debug("%s:session id %d: cmd amrnb media format block failed\n",
 				__func__, audio->ac->session);
 			break;
 		}
@@ -65,7 +65,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 				audio->pcm_cfg.channel_count);
 
 			if (rc < 0) {
-				pr_err("%s:session id %d: media format block failed\n",
+				pr_debug("%s:session id %d: media format block failed\n",
 				__func__, audio->ac->session);
 				break;
 			}
@@ -78,7 +78,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("%s:session id %d: Audio Start procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Start procedure failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			break;
 		}
@@ -93,7 +93,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 		pr_debug("%s:AUDIO_STOP\n", __func__);
 		rc = audio_in_disable(audio);
 		if (rc  < 0) {
-			pr_err("%s:session id %d: Audio Stop procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Stop procedure failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			break;
 		}
@@ -105,7 +105,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 
 		cfg = (struct msm_audio_amrnb_enc_config_v2 *)arg;
 		if (cfg == NULL) {
-			pr_err("%s: NULL config pointer for %s\n",
+			pr_debug("%s: NULL config pointer for %s\n",
 					__func__,
 					"AUDIO_SET_AMRNB_ENC_CONFIG_V2");
 			rc = -EINVAL;
@@ -115,7 +115,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 		enc_cfg = audio->enc_cfg;
 		if (cfg->band_mode > 8 ||
 			 cfg->band_mode < 1) {
-			pr_err("%s:session id %d: invalid band mode\n",
+			pr_debug("%s:session id %d: invalid band mode\n",
 				__func__, audio->ac->session);
 			rc = -EINVAL;
 			break;
@@ -133,7 +133,7 @@ static long amrnb_in_ioctl_shared(struct file *file,
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -154,7 +154,7 @@ static long amrnb_in_ioctl(struct file *file,
 	case AUDIO_GET_AMRNB_ENC_CONFIG_V2: {
 		if (copy_to_user((void *)arg, audio->enc_cfg,
 			sizeof(struct msm_audio_amrnb_enc_config_v2))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AMRNB_ENC_CONFIG_V2 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AMRNB_ENC_CONFIG_V2 failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -165,19 +165,19 @@ static long amrnb_in_ioctl(struct file *file,
 
 		if (copy_from_user(&cfg, (void *) arg,
 				sizeof(cfg))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_AMRNB_ENC_CONFIG_V2 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_AMRNB_ENC_CONFIG_V2 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
 		}
 		rc = amrnb_in_ioctl_shared(file, cmd, &cfg);
 		if (rc)
-			pr_err("%s: AUDIO_SET_AMRNB_ENC_CONFIG_V2 failed. rc=%d\n",
+			pr_debug("%s: AUDIO_SET_AMRNB_ENC_CONFIG_V2 failed. rc=%d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd=%d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd=%d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -225,7 +225,7 @@ static long amrnb_in_compat_ioctl(struct file *file,
 
 		if (copy_to_user((void *)arg, &amrnb_config_32,
 			sizeof(amrnb_config_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AMRNB_ENC_CONFIG_V2_32 failed",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AMRNB_ENC_CONFIG_V2_32 failed",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -236,7 +236,7 @@ static long amrnb_in_compat_ioctl(struct file *file,
 
 		if (copy_from_user(&cfg_32, (void *) arg,
 				sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_AMRNB_ENC_CONFIG_V2_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_AMRNB_ENC_CONFIG_V2_32 failed\n",
 					__func__);
 			rc = -EFAULT;
 			break;
@@ -244,12 +244,12 @@ static long amrnb_in_compat_ioctl(struct file *file,
 		cmd = AUDIO_SET_AMRNB_ENC_CONFIG_V2;
 		rc = amrnb_in_ioctl_shared(file, cmd, &cfg_32);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AMRNB_ENC_CONFIG_V2 failed rc= %d\n",
+			pr_debug("%s:AUDIO_SET_AMRNB_ENC_CONFIG_V2 failed rc= %d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -305,7 +305,7 @@ static int amrnb_in_open(struct inode *inode, struct file *file)
 				(void *)audio);
 
 	if (!audio->ac) {
-		pr_err("%s: Could not allocate memory for audio client\n",
+		pr_debug("%s: Could not allocate memory for audio client\n",
 			__func__);
 		kfree(audio->enc_cfg);
 		kfree(audio);
@@ -319,19 +319,19 @@ static int amrnb_in_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_AMRNB,
 					FORMAT_LINEAR_PCM);
 		if (rc < 0) {
-			pr_err("%s:session id %d: NT mode Open failed rc=%d\n",
+			pr_debug("%s:session id %d: NT mode Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
 		}
-		pr_info("%s:session id %d: NT mode encoder success\n",
+		pr_debug("%s:session id %d: NT mode encoder success\n",
 				__func__, audio->ac->session);
 	} else if (!(file->f_mode & FMODE_WRITE) &&
 				(file->f_mode & FMODE_READ)) {
 		audio->feedback = TUNNEL_MODE;
 		rc = q6asm_open_read(audio->ac, FORMAT_AMRNB);
 		if (rc < 0) {
-			pr_err("%s:session id %d: T mode Open failed rc=%d\n",
+			pr_debug("%s:session id %d: T mode Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
@@ -339,16 +339,16 @@ static int amrnb_in_open(struct inode *inode, struct file *file)
 		/* register for tx overflow (valid for tunnel mode only) */
 		rc = q6asm_reg_tx_overflow(audio->ac, 0x01);
 		if (rc < 0) {
-			pr_err("%s:session id %d: TX Overflow registration failed rc=%d\n",
+			pr_debug("%s:session id %d: TX Overflow registration failed rc=%d\n",
 				__func__, audio->ac->session,
 				rc);
 			rc = -ENODEV;
 			goto fail;
 		}
-		pr_info("%s:session id %d: T mode encoder success\n",
+		pr_debug("%s:session id %d: T mode encoder success\n",
 				__func__, audio->ac->session);
 	} else {
-		pr_err("%s:session id %d: Unexpected mode\n", __func__,
+		pr_debug("%s:session id %d: Unexpected mode\n", __func__,
 				audio->ac->session);
 		rc = -EACCES;
 		goto fail;
@@ -361,7 +361,7 @@ static int amrnb_in_open(struct inode *inode, struct file *file)
 	audio->enc_ioctl = amrnb_in_ioctl;
 	file->private_data = audio;
 
-	pr_info("%s:session id %d: success\n", __func__, audio->ac->session);
+	pr_debug("%s:session id %d: success\n", __func__, audio->ac->session);
 	return 0;
 fail:
 	q6asm_audio_client_free(audio->ac);

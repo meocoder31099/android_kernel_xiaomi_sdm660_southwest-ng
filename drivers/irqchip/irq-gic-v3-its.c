@@ -1582,7 +1582,7 @@ static int __init its_lpi_init(u32 id_bits)
 
 	if (numlpis > 2 && !WARN_ON(numlpis > lpis)) {
 		lpis = numlpis;
-		pr_info("ITS: Using hypervisor restricted LPI range [%u]\n",
+		pr_debug("ITS: Using hypervisor restricted LPI range [%u]\n",
 			lpis);
 	}
 
@@ -1666,12 +1666,12 @@ static int __init its_alloc_lpi_tables(void)
 				ITS_MAX_LPI_NRBITS);
 	gic_rdists->prop_page = its_allocate_prop_table(GFP_NOWAIT);
 	if (!gic_rdists->prop_page) {
-		pr_err("Failed to allocate PROPBASE\n");
+		pr_debug("Failed to allocate PROPBASE\n");
 		return -ENOMEM;
 	}
 
 	paddr = page_to_phys(gic_rdists->prop_page);
-	pr_info("GIC: using LPI property table @%pa\n", &paddr);
+	pr_debug("GIC: using LPI property table @%pa\n", &paddr);
 
 	return its_lpi_init(lpi_id_bits);
 }
@@ -1716,7 +1716,7 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
 retry_alloc_baser:
 	alloc_pages = (PAGE_ORDER_TO_SIZE(order) / psz);
 	if (alloc_pages > GITS_BASER_PAGES_MAX) {
-		pr_warn("ITS@%pa: %s too large, reduce ITS pages %u->%u\n",
+		pr_debug("ITS@%pa: %s too large, reduce ITS pages %u->%u\n",
 			&its->phys_base, its_base_type_string[type],
 			alloc_pages, GITS_BASER_PAGES_MAX);
 		alloc_pages = GITS_BASER_PAGES_MAX;
@@ -1734,7 +1734,7 @@ retry_alloc_baser:
 
 		/* 52bit PA is supported only when PageSize=64K */
 		if (psz != SZ_64K) {
-			pr_err("ITS: no 52bit PA support when psz=%d\n", psz);
+			pr_debug("ITS: no 52bit PA support when psz=%d\n", psz);
 			free_pages((unsigned long)base, order);
 			return -ENXIO;
 		}
@@ -1805,7 +1805,7 @@ retry_baser:
 	}
 
 	if (val != tmp) {
-		pr_err("ITS@%pa: %s doesn't stick: %llx %llx\n",
+		pr_debug("ITS@%pa: %s doesn't stick: %llx %llx\n",
 		       &its->phys_base, its_base_type_string[type],
 		       val, tmp);
 		free_pages((unsigned long)base, order);
@@ -1817,7 +1817,7 @@ retry_baser:
 	baser->psz = psz;
 	tmp = indirect ? GITS_LVL1_ENTRY_SIZE : esz;
 
-	pr_info("ITS@%pa: allocated %d %s @%lx (%s, esz %d, psz %dK, shr %d)\n",
+	pr_debug("ITS@%pa: allocated %d %s @%lx (%s, esz %d, psz %dK, shr %d)\n",
 		&its->phys_base, (int)(PAGE_ORDER_TO_SIZE(order) / (int)tmp),
 		its_base_type_string[type],
 		(unsigned long)virt_to_phys(base),
@@ -1871,7 +1871,7 @@ static bool its_parse_indirect_baser(struct its_node *its,
 	if (new_order >= MAX_ORDER) {
 		new_order = MAX_ORDER - 1;
 		ids = ilog2(PAGE_ORDER_TO_SIZE(new_order) / (int)esz);
-		pr_warn("ITS@%pa: %s Table too large, reduce ids %u->%u\n",
+		pr_debug("ITS@%pa: %s Table too large, reduce ids %u->%u\n",
 			&its->phys_base, its_base_type_string[type],
 			its->device_ids, ids);
 	}
@@ -2019,13 +2019,13 @@ static void its_cpu_init_lpis(void)
 
 		pend_page = its_allocate_pending_table(GFP_NOWAIT);
 		if (!pend_page) {
-			pr_err("Failed to allocate PENDBASE for CPU%d\n",
+			pr_debug("Failed to allocate PENDBASE for CPU%d\n",
 			       smp_processor_id());
 			return;
 		}
 
 		paddr = page_to_phys(pend_page);
-		pr_info("CPU%d: using LPI pending table @%pa\n",
+		pr_debug("CPU%d: using LPI pending table @%pa\n",
 			smp_processor_id(), &paddr);
 		gic_data_rdist()->pend_page = pend_page;
 	}
@@ -3236,7 +3236,7 @@ static int its_save_disable(void)
 		its->ctlr_save = readl_relaxed(base + GITS_CTLR);
 		err = its_force_quiescent(base);
 		if (err) {
-			pr_err("ITS@%pa: failed to quiesce: %d\n",
+			pr_debug("ITS@%pa: failed to quiesce: %d\n",
 			       &its->phys_base, err);
 			writel_relaxed(its->ctlr_save, base + GITS_CTLR);
 			goto err;
@@ -3282,7 +3282,7 @@ static void its_restore_enable(void)
 		WARN_ON(readl_relaxed(base + GITS_CTLR) & GITS_CTLR_ENABLE);
 		ret = its_force_quiescent(base);
 		if (ret) {
-			pr_err("ITS@%pa: failed to quiesce on resume: %d\n",
+			pr_debug("ITS@%pa: failed to quiesce on resume: %d\n",
 			       &its->phys_base, ret);
 			continue;
 		}
@@ -3356,7 +3356,7 @@ static int its_init_vpe_domain(void)
 	int entries;
 
 	if (gic_rdists->has_direct_lpi) {
-		pr_info("ITS: Using DirectLPI for VPE invalidation\n");
+		pr_debug("ITS: Using DirectLPI for VPE invalidation\n");
 		return 0;
 	}
 
@@ -3367,7 +3367,7 @@ static int its_init_vpe_domain(void)
 	vpe_proxy.vpes = kcalloc(entries, sizeof(*vpe_proxy.vpes),
 				 GFP_KERNEL);
 	if (!vpe_proxy.vpes) {
-		pr_err("ITS: Can't allocate GICv4 proxy device array\n");
+		pr_debug("ITS: Can't allocate GICv4 proxy device array\n");
 		return -ENOMEM;
 	}
 
@@ -3376,7 +3376,7 @@ static int its_init_vpe_domain(void)
 	vpe_proxy.dev = its_create_device(its, devid, entries, false);
 	if (!vpe_proxy.dev) {
 		kfree(vpe_proxy.vpes);
-		pr_err("ITS: Can't allocate GICv4 proxy device\n");
+		pr_debug("ITS: Can't allocate GICv4 proxy device\n");
 		return -ENOMEM;
 	}
 
@@ -3384,7 +3384,7 @@ static int its_init_vpe_domain(void)
 
 	raw_spin_lock_init(&vpe_proxy.lock);
 	vpe_proxy.next_victim = 0;
-	pr_info("ITS: Allocated DevID %x as GICv4 proxy device (%d slots)\n",
+	pr_debug("ITS: Allocated DevID %x as GICv4 proxy device (%d slots)\n",
 		devid, vpe_proxy.dev->nr_ites);
 
 	return 0;
@@ -3404,7 +3404,7 @@ static int __init its_compute_its_list_map(struct resource *res,
 	 */
 	its_number = find_first_zero_bit(&its_list_map, GICv4_ITS_LIST_MAX);
 	if (its_number >= GICv4_ITS_LIST_MAX) {
-		pr_err("ITS@%pa: No ITSList entry available!\n",
+		pr_debug("ITS@%pa: No ITSList entry available!\n",
 		       &res->start);
 		return -EINVAL;
 	}
@@ -3420,7 +3420,7 @@ static int __init its_compute_its_list_map(struct resource *res,
 	}
 
 	if (test_and_set_bit(its_number, &its_list_map)) {
-		pr_err("ITS@%pa: Duplicate ITSList entry %d\n",
+		pr_debug("ITS@%pa: Duplicate ITSList entry %d\n",
 		       &res->start, its_number);
 		return -EINVAL;
 	}
@@ -3439,24 +3439,24 @@ static int __init its_probe_one(struct resource *res,
 
 	its_base = ioremap(res->start, resource_size(res));
 	if (!its_base) {
-		pr_warn("ITS@%pa: Unable to map ITS registers\n", &res->start);
+		pr_debug("ITS@%pa: Unable to map ITS registers\n", &res->start);
 		return -ENOMEM;
 	}
 
 	val = readl_relaxed(its_base + GITS_PIDR2) & GIC_PIDR2_ARCH_MASK;
 	if (val != 0x30 && val != 0x40) {
-		pr_warn("ITS@%pa: No ITS detected, giving up\n", &res->start);
+		pr_debug("ITS@%pa: No ITS detected, giving up\n", &res->start);
 		err = -ENODEV;
 		goto out_unmap;
 	}
 
 	err = its_force_quiescent(its_base);
 	if (err) {
-		pr_warn("ITS@%pa: Failed to quiesce, giving up\n", &res->start);
+		pr_debug("ITS@%pa: Failed to quiesce, giving up\n", &res->start);
 		goto out_unmap;
 	}
 
-	pr_info("ITS %pR\n", res);
+	pr_debug("ITS %pR\n", res);
 
 	its = kzalloc(sizeof(*its), GFP_KERNEL);
 	if (!its) {
@@ -3482,10 +3482,10 @@ static int __init its_probe_one(struct resource *res,
 
 			its->list_nr = err;
 
-			pr_info("ITS@%pa: Using ITS number %d\n",
+			pr_debug("ITS@%pa: Using ITS number %d\n",
 				&res->start, err);
 		} else {
-			pr_info("ITS@%pa: Single VMOVP capable\n", &res->start);
+			pr_debug("ITS@%pa: Single VMOVP capable\n", &res->start);
 		}
 	}
 
@@ -3533,7 +3533,7 @@ static int __init its_probe_one(struct resource *res,
 			baser |= GITS_CBASER_nC;
 			gits_write_cbaser(baser, its->base + GITS_CBASER);
 		}
-		pr_info("ITS: using cache flushing for cmd queue\n");
+		pr_debug("ITS: using cache flushing for cmd queue\n");
 		its->flags |= ITS_FLAGS_CMDQ_NEEDS_FLUSHING;
 	}
 
@@ -3562,7 +3562,7 @@ out_free_its:
 	kfree(its);
 out_unmap:
 	iounmap(its_base);
-	pr_err("ITS@%pa: failed probing (%d)\n", &res->start, err);
+	pr_debug("ITS@%pa: failed probing (%d)\n", &res->start, err);
 	return err;
 }
 
@@ -3588,7 +3588,7 @@ static int redist_disable_lpis(void)
 		return 0;
 
 	if (!gic_rdists_supports_plpis()) {
-		pr_info("CPU%d: LPIs not supported\n", smp_processor_id());
+		pr_debug("CPU%d: LPIs not supported\n", smp_processor_id());
 		return -ENXIO;
 	}
 
@@ -3596,7 +3596,7 @@ static int redist_disable_lpis(void)
 	if (!(val & GICR_CTLR_ENABLE_LPIS))
 		return 0;
 
-	pr_warn("CPU%d: Booted with LPIs enabled, memory probably corrupted\n",
+	pr_debug("CPU%d: Booted with LPIs enabled, memory probably corrupted\n",
 		smp_processor_id());
 	add_taint(TAINT_CRAP, LOCKDEP_STILL_OK);
 
@@ -3614,7 +3614,7 @@ static int redist_disable_lpis(void)
 	 */
 	while (readl_relaxed(rbase + GICR_CTLR) & GICR_CTLR_RWP) {
 		if (!timeout) {
-			pr_err("CPU%d: Timeout while disabling LPIs\n",
+			pr_debug("CPU%d: Timeout while disabling LPIs\n",
 			       smp_processor_id());
 			return -ETIMEDOUT;
 		}
@@ -3628,7 +3628,7 @@ static int redist_disable_lpis(void)
 	 * cleared to 0. Error out if clearing the bit failed.
 	 */
 	if (readl_relaxed(rbase + GICR_CTLR) & GICR_CTLR_ENABLE_LPIS) {
-		pr_err("CPU%d: Failed to disable LPIs\n", smp_processor_id());
+		pr_debug("CPU%d: Failed to disable LPIs\n", smp_processor_id());
 		return -EBUSY;
 	}
 
@@ -3666,13 +3666,13 @@ static int __init its_of_probe(struct device_node *node)
 		if (!of_device_is_available(np))
 			continue;
 		if (!of_property_read_bool(np, "msi-controller")) {
-			pr_warn("%pOF: no msi-controller property, ITS ignored\n",
+			pr_debug("%pOF: no msi-controller property, ITS ignored\n",
 				np);
 			continue;
 		}
 
 		if (of_address_to_resource(np, 0, &res)) {
-			pr_warn("%pOF: no regs?\n", np);
+			pr_debug("%pOF: no regs?\n", np);
 			continue;
 		}
 
@@ -3724,7 +3724,7 @@ static int __init gic_acpi_parse_srat_its(struct acpi_subtable_header *header,
 		return -EINVAL;
 
 	if (its_affinity->header.length < sizeof(*its_affinity)) {
-		pr_err("SRAT: Invalid header length %d in ITS affinity\n",
+		pr_debug("SRAT: Invalid header length %d in ITS affinity\n",
 			its_affinity->header.length);
 		return -EINVAL;
 	}
@@ -3732,14 +3732,14 @@ static int __init gic_acpi_parse_srat_its(struct acpi_subtable_header *header,
 	node = acpi_map_pxm_to_node(its_affinity->proximity_domain);
 
 	if (node == NUMA_NO_NODE || node >= MAX_NUMNODES) {
-		pr_err("SRAT: Invalid NUMA node %d in ITS affinity\n", node);
+		pr_debug("SRAT: Invalid NUMA node %d in ITS affinity\n", node);
 		return 0;
 	}
 
 	its_srat_maps[its_in_srat].numa_node = node;
 	its_srat_maps[its_in_srat].its_id = its_affinity->its_id;
 	its_in_srat++;
-	pr_info("SRAT: PXM %d -> ITS %d -> Node %d\n",
+	pr_debug("SRAT: PXM %d -> ITS %d -> Node %d\n",
 		its_affinity->proximity_domain, its_affinity->its_id, node);
 
 	return 0;
@@ -3759,7 +3759,7 @@ static void __init acpi_table_parse_srat_its(void)
 	its_srat_maps = kmalloc_array(count, sizeof(struct its_srat_map),
 				      GFP_KERNEL);
 	if (!its_srat_maps) {
-		pr_warn("SRAT: Failed to allocate memory for its_srat_maps!\n");
+		pr_debug("SRAT: Failed to allocate memory for its_srat_maps!\n");
 		return;
 	}
 
@@ -3796,7 +3796,7 @@ static int __init gic_acpi_parse_madt_its(struct acpi_subtable_header *header,
 
 	dom_handle = irq_domain_alloc_fwnode((void *)its_entry->base_address);
 	if (!dom_handle) {
-		pr_err("ITS@%pa: Unable to allocate GICv3 ITS domain token\n",
+		pr_debug("ITS@%pa: Unable to allocate GICv3 ITS domain token\n",
 		       &res.start);
 		return -ENOMEM;
 	}
@@ -3804,7 +3804,7 @@ static int __init gic_acpi_parse_madt_its(struct acpi_subtable_header *header,
 	err = iort_register_domain_token(its_entry->translation_id, res.start,
 					 dom_handle);
 	if (err) {
-		pr_err("ITS@%pa: Unable to register GICv3 ITS domain token (ITS ID %d) to IORT\n",
+		pr_debug("ITS@%pa: Unable to register GICv3 ITS domain token (ITS ID %d) to IORT\n",
 		       &res.start, its_entry->translation_id);
 		goto dom_err;
 	}
@@ -3847,7 +3847,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
 		its_acpi_probe();
 
 	if (list_empty(&its_nodes)) {
-		pr_warn("ITS: No ITS available, not enabling LPIs\n");
+		pr_debug("ITS: No ITS available, not enabling LPIs\n");
 		return -ENXIO;
 	}
 
@@ -3863,7 +3863,7 @@ int __init its_init(struct fwnode_handle *handle, struct rdists *rdists,
 		if (its_init_vpe_domain() ||
 		    its_init_v4(parent_domain, &its_vpe_domain_ops)) {
 			rdists->has_vlpis = false;
-			pr_err("ITS: Disabling GICv4 support\n");
+			pr_debug("ITS: Disabling GICv4 support\n");
 		}
 	}
 

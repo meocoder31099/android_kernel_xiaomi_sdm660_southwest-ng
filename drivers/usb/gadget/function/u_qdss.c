@@ -19,7 +19,7 @@ int alloc_sps_req(struct usb_ep *data_ep)
 
 	req = usb_ep_alloc_request(data_ep, GFP_ATOMIC);
 	if (!req) {
-		pr_err("usb_ep_alloc_request failed\n");
+		pr_debug("usb_ep_alloc_request failed\n");
 		return -ENOMEM;
 	}
 
@@ -45,7 +45,7 @@ int set_qdss_data_connection(struct f_qdss *qdss, int enable)
 	pr_debug("%s\n", __func__);
 
 	if (!qdss) {
-		pr_err("%s: qdss ptr is NULL\n", __func__);
+		pr_debug("%s: qdss ptr is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -58,7 +58,7 @@ int set_qdss_data_connection(struct f_qdss *qdss, int enable)
 	idx = usb_bam_get_connection_idx(usb_bam_type, QDSS_P_BAM,
 		PEER_PERIPHERAL_TO_USB, 0);
 	if (idx < 0) {
-		pr_err("%s: usb_bam_get_connection_idx failed\n", __func__);
+		pr_debug("%s: usb_bam_get_connection_idx failed\n", __func__);
 		return idx;
 	}
 
@@ -67,7 +67,7 @@ int set_qdss_data_connection(struct f_qdss *qdss, int enable)
 				&bam_info.qdss_bam_phys,
 				&bam_info.qdss_bam_size);
 		if (ret) {
-			pr_err("%s(): failed to get qdss bam info err(%d)\n",
+			pr_debug("%s(): failed to get qdss bam info err(%d)\n",
 								__func__, ret);
 			return ret;
 		}
@@ -76,7 +76,7 @@ int set_qdss_data_connection(struct f_qdss *qdss, int enable)
 				bam_info.qdss_bam_phys, bam_info.qdss_bam_size,
 				DMA_BIDIRECTIONAL, 0);
 		if (!bam_info.qdss_bam_iova) {
-			pr_err("dma_map_resource failed\n");
+			pr_debug("dma_map_resource failed\n");
 			return -ENOMEM;
 		}
 
@@ -110,7 +110,7 @@ int set_qdss_data_connection(struct f_qdss *qdss, int enable)
 	} else {
 		res = usb_bam_disconnect_pipe(usb_bam_type, idx);
 		if (res)
-			pr_err("usb_bam_disconnection error\n");
+			pr_debug("usb_bam_disconnection error\n");
 		dma_unmap_resource(dev->parent, bam_info.qdss_bam_iova,
 				bam_info.qdss_bam_size, DMA_BIDIRECTIONAL, 0);
 		usb_bam_free_fifos(usb_bam_type, idx);
@@ -129,7 +129,7 @@ static int init_data(struct usb_ep *ep)
 
 	res = msm_ep_config(ep, qdss->endless_req);
 	if (res)
-		pr_err("msm_ep_config failed\n");
+		pr_debug("msm_ep_config failed\n");
 
 	return res;
 }
@@ -142,7 +142,7 @@ int uninit_data(struct usb_ep *ep)
 
 	res = msm_ep_unconfig(ep);
 	if (res)
-		pr_err("msm_ep_unconfig failed\n");
+		pr_debug("msm_ep_unconfig failed\n");
 
 	return res;
 }

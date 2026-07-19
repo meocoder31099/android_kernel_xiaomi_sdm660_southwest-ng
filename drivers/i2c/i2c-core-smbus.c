@@ -393,7 +393,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
 		} else {
 			msg[0].len = data->block[0] + 2;
 			if (msg[0].len > I2C_SMBUS_BLOCK_MAX + 2) {
-				dev_err(&adapter->dev,
+				dev_dbg(&adapter->dev,
 					"Invalid block write size %d\n",
 					data->block[0]);
 				return -EINVAL;
@@ -408,7 +408,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
 		num = 2; /* Another special case */
 		read_write = I2C_SMBUS_READ;
 		if (data->block[0] > I2C_SMBUS_BLOCK_MAX) {
-			dev_err(&adapter->dev,
+			dev_dbg(&adapter->dev,
 				"Invalid block write size %d\n",
 				data->block[0]);
 			return -EINVAL;
@@ -426,7 +426,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
 		break;
 	case I2C_SMBUS_I2C_BLOCK_DATA:
 		if (data->block[0] > I2C_SMBUS_BLOCK_MAX) {
-			dev_err(&adapter->dev, "Invalid block %s size %d\n",
+			dev_dbg(&adapter->dev, "Invalid block %s size %d\n",
 				read_write == I2C_SMBUS_READ ? "read" : "write",
 				data->block[0]);
 			return -EINVAL;
@@ -444,7 +444,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
 		}
 		break;
 	default:
-		dev_err(&adapter->dev, "Unsupported transaction %d\n", size);
+		dev_dbg(&adapter->dev, "Unsupported transaction %d\n", size);
 		return -EOPNOTSUPP;
 	}
 
@@ -498,7 +498,7 @@ static s32 i2c_smbus_xfer_emulated(struct i2c_adapter *adapter, u16 addr,
 		case I2C_SMBUS_BLOCK_DATA:
 		case I2C_SMBUS_BLOCK_PROC_CALL:
 			if (msg[1].buf[0] > I2C_SMBUS_BLOCK_MAX) {
-				dev_err(&adapter->dev,
+				dev_dbg(&adapter->dev,
 					"Invalid block size returned: %d\n",
 					msg[1].buf[0]);
 				status = -EPROTO;

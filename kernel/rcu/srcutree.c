@@ -392,7 +392,7 @@ void _cleanup_srcu_struct(struct srcu_struct *sp, bool quiesced)
 		}
 	if (WARN_ON(rcu_seq_state(READ_ONCE(sp->srcu_gp_seq)) != SRCU_STATE_IDLE) ||
 	    WARN_ON(srcu_readers_active(sp))) {
-		pr_info("%s: Active srcu_struct %p state: %d\n",
+		pr_debug("%s: Active srcu_struct %p state: %d\n",
 			__func__, sp, rcu_seq_state(READ_ONCE(sp->srcu_gp_seq)));
 		return; /* Caller forgot to stop doing call_srcu()? */
 	}
@@ -1270,7 +1270,7 @@ void srcu_torture_stats_print(struct srcu_struct *sp, char *tt, char *tf)
 	unsigned long s0 = 0, s1 = 0;
 
 	idx = sp->srcu_idx & 0x1;
-	pr_alert("%s%s Tree SRCU g%ld per-CPU(idx=%d):",
+	pr_debug("%s%s Tree SRCU g%ld per-CPU(idx=%d):",
 		 tt, tf, rcu_seq_current(&sp->srcu_gp_seq), idx);
 	for_each_possible_cpu(cpu) {
 		unsigned long l0, l1;
@@ -1293,20 +1293,20 @@ void srcu_torture_stats_print(struct srcu_struct *sp, char *tt, char *tf)
 
 		c0 = l0 - u0;
 		c1 = l1 - u1;
-		pr_cont(" %d(%ld,%ld %1p)",
+		pr_debug(" %d(%ld,%ld %1p)",
 			cpu, c0, c1, rcu_segcblist_head(&sdp->srcu_cblist));
 		s0 += c0;
 		s1 += c1;
 	}
-	pr_cont(" T(%ld,%ld)\n", s0, s1);
+	pr_debug(" T(%ld,%ld)\n", s0, s1);
 }
 EXPORT_SYMBOL_GPL(srcu_torture_stats_print);
 
 static int __init srcu_bootup_announce(void)
 {
-	pr_info("Hierarchical SRCU implementation.\n");
+	pr_debug("Hierarchical SRCU implementation.\n");
 	if (exp_holdoff != DEFAULT_SRCU_EXP_HOLDOFF)
-		pr_info("\tNon-default auto-expedite holdoff of %lu ns.\n", exp_holdoff);
+		pr_debug("\tNon-default auto-expedite holdoff of %lu ns.\n", exp_holdoff);
 	return 0;
 }
 early_initcall(srcu_bootup_announce);

@@ -315,7 +315,7 @@ static int start_endpoints(struct snd_usb_substream *subs)
 						subs->sync_endpoint->altsetting);
 			if (err < 0) {
 				clear_bit(SUBSTREAM_FLAG_SYNC_EP_STARTED, &subs->flags);
-				dev_err(&subs->dev->dev,
+				dev_dbg(&subs->dev->dev,
 					   "%d:%d: cannot set interface (%d)\n",
 					   subs->sync_endpoint->iface,
 					   subs->sync_endpoint->altsetting, err);
@@ -526,7 +526,7 @@ static int set_sync_endpoint(struct snd_usb_substream *subs,
 	if ((get_endpoint(alts, 1)->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) != USB_ENDPOINT_XFER_ISOC ||
 	    (get_endpoint(alts, 1)->bLength >= USB_DT_ENDPOINT_AUDIO_SIZE &&
 	     get_endpoint(alts, 1)->bSynchAddress != 0)) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%d:%d : invalid sync pipe. bmAttributes %02x, bLength %d, bSynchAddress %02x\n",
 			   fmt->iface, fmt->altsetting,
 			   get_endpoint(alts, 1)->bmAttributes,
@@ -541,7 +541,7 @@ static int set_sync_endpoint(struct snd_usb_substream *subs,
 	    get_endpoint(alts, 0)->bSynchAddress != 0 &&
 	    ((is_playback && ep != (unsigned int)(get_endpoint(alts, 0)->bSynchAddress | USB_DIR_IN)) ||
 	     (!is_playback && ep != (unsigned int)(get_endpoint(alts, 0)->bSynchAddress & ~USB_DIR_IN)))) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%d:%d : invalid sync pipe. is_playback %d, ep %02x, bSynchAddress %02x\n",
 			   fmt->iface, fmt->altsetting,
 			   is_playback, ep, get_endpoint(alts, 0)->bSynchAddress);
@@ -599,7 +599,7 @@ static int set_format(struct snd_usb_substream *subs, struct audioformat *fmt)
 			err = usb_set_interface_timeout(subs->dev,
 				subs->interface, 0, MAX_SETALT_TIMEOUT_MS);
 			if (err < 0) {
-				dev_err(&dev->dev,
+				dev_dbg(&dev->dev,
 					"%d:%d: return to setting 0 failed (%d)\n",
 					fmt->iface, fmt->altsetting, err);
 				return -EIO;
@@ -621,7 +621,7 @@ static int set_format(struct snd_usb_substream *subs, struct audioformat *fmt)
 		err = usb_set_interface_timeout(dev, fmt->iface,
 				fmt->altsetting, MAX_SETALT_TIMEOUT_MS);
 		if (err < 0) {
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 				"%d:%d: usb_set_interface failed (%d)\n",
 				fmt->iface, fmt->altsetting, err);
 #ifdef CONFIG_MACH_XIAOMI_SDM660
@@ -702,7 +702,7 @@ int snd_usb_enable_audio_stream(struct snd_usb_substream *subs,
 	else
 		fmt = find_format(subs);
 	if (!fmt) {
-		dev_err(&subs->dev->dev,
+		dev_dbg(&subs->dev->dev,
 		"cannot set format: format = %#x, rate = %d, channels = %d\n",
 			   subs->pcm_format, subs->cur_rate, subs->channels);
 		return -EINVAL;
@@ -726,7 +726,7 @@ int snd_usb_enable_audio_stream(struct snd_usb_substream *subs,
 
 		iface = usb_ifnum_to_if(subs->dev, subs->cur_audiofmt->iface);
 		if (!iface) {
-			dev_err(&subs->dev->dev, "Could not get iface %d\n",
+			dev_dbg(&subs->dev->dev, "Could not get iface %d\n",
 				subs->cur_audiofmt->iface);
 			return -ENODEV;
 		}
@@ -738,7 +738,7 @@ int snd_usb_enable_audio_stream(struct snd_usb_substream *subs,
 					       subs->cur_audiofmt,
 					       subs->cur_rate);
 		if (ret < 0) {
-			dev_err(&subs->dev->dev, "failed to set rate %d\n",
+			dev_dbg(&subs->dev->dev, "failed to set rate %d\n",
 				subs->cur_rate);
 			return ret;
 		}
@@ -838,7 +838,7 @@ static int configure_sync_endpoint(struct snd_usb_substream *subs)
 	}
 
 	if (unlikely(sync_fp == NULL)) {
-		dev_err(&subs->dev->dev,
+		dev_dbg(&subs->dev->dev,
 			"%s: no valid audioformat for sync ep %x found\n",
 			__func__, sync_subs->ep_num);
 		return -EINVAL;
@@ -906,7 +906,7 @@ static int snd_usb_pcm_change_state(struct snd_usb_substream *subs, int state)
 
 	ret = snd_usb_power_domain_set(subs->stream->chip, subs->str_pd, state);
 	if (ret < 0) {
-		dev_err(&subs->dev->dev,
+		dev_dbg(&subs->dev->dev,
 			"Cannot change Power Domain ID: %d to state: %d. Err: %d\n",
 			subs->str_pd->pd_id, state, ret);
 		return ret;
@@ -1046,7 +1046,7 @@ static int snd_usb_pcm_prepare(struct snd_pcm_substream *substream)
 	int ret;
 
 	if (! subs->cur_audiofmt) {
-		dev_err(&subs->dev->dev, "no format is specified!\n");
+		dev_dbg(&subs->dev->dev, "no format is specified!\n");
 		return -ENXIO;
 	}
 

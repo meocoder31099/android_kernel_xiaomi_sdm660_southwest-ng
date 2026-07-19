@@ -109,7 +109,7 @@ static int cma_showmem_notifier(struct notifier_block *nb,
 		used = bitmap_weight(cma->bitmap,
 				     (int)cma_bitmap_maxno(cma));
 		used <<= cma->order_per_bit;
-		pr_info("cma-%d pages: => %lu used of %lu total pages\n",
+		pr_debug("cma-%d pages: => %lu used of %lu total pages\n",
 			i, used, cma->count);
 	}
 
@@ -169,7 +169,7 @@ static int __init cma_activate_area(struct cma *cma)
 	return 0;
 
 not_in_zone:
-	pr_err("CMA area %s could not be activated\n", cma->name);
+	pr_debug("CMA area %s could not be activated\n", cma->name);
 	kfree(cma->bitmap);
 	cma->count = 0;
 	return -EINVAL;
@@ -214,7 +214,7 @@ int __init cma_init_reserved_mem(phys_addr_t base, phys_addr_t size,
 
 	/* Sanity checks */
 	if (cma_area_count == ARRAY_SIZE(cma_areas)) {
-		pr_err("Not enough slots for CMA reserved regions!\n");
+		pr_debug("Not enough slots for CMA reserved regions!\n");
 		return -ENOSPC;
 	}
 
@@ -293,7 +293,7 @@ int __init cma_declare_contiguous(phys_addr_t base,
 		__func__, &size, &base, &limit, &alignment);
 
 	if (cma_area_count == ARRAY_SIZE(cma_areas)) {
-		pr_err("Not enough slots for CMA reserved regions!\n");
+		pr_debug("Not enough slots for CMA reserved regions!\n");
 		return -ENOSPC;
 	}
 
@@ -313,7 +313,7 @@ int __init cma_declare_contiguous(phys_addr_t base,
 			  max_t(unsigned long, MAX_ORDER - 1, pageblock_order));
 	if (fixed && base & (alignment - 1)) {
 		ret = -EINVAL;
-		pr_err("Region at %pa must be aligned to %pa bytes\n",
+		pr_debug("Region at %pa must be aligned to %pa bytes\n",
 			&base, &alignment);
 		goto err;
 	}
@@ -334,7 +334,7 @@ int __init cma_declare_contiguous(phys_addr_t base,
 	 */
 	if (fixed && base < highmem_start && base + size > highmem_start) {
 		ret = -EINVAL;
-		pr_err("Region at %pa defined on low/high memory boundary (%pa)\n",
+		pr_debug("Region at %pa defined on low/high memory boundary (%pa)\n",
 			&base, &highmem_start);
 		goto err;
 	}
@@ -349,7 +349,7 @@ int __init cma_declare_contiguous(phys_addr_t base,
 
 	if (base + size > limit) {
 		ret = -EINVAL;
-		pr_err("Size (%pa) of region at %pa exceeds limit (%pa)\n",
+		pr_debug("Size (%pa) of region at %pa exceeds limit (%pa)\n",
 			&size, &base, &limit);
 		goto err;
 	}
@@ -399,14 +399,14 @@ int __init cma_declare_contiguous(phys_addr_t base,
 	if (ret)
 		goto free_mem;
 
-	pr_info("Reserved %ld MiB at %pa\n", (unsigned long)size / SZ_1M,
+	pr_debug("Reserved %ld MiB at %pa\n", (unsigned long)size / SZ_1M,
 		&base);
 	return 0;
 
 free_mem:
 	memblock_free(base, size);
 err:
-	pr_err("Failed to reserve %ld MiB\n", (unsigned long)size / SZ_1M);
+	pr_debug("Failed to reserve %ld MiB\n", (unsigned long)size / SZ_1M);
 	return ret;
 }
 
@@ -419,7 +419,7 @@ static void cma_debug_show_areas(struct cma *cma)
 	unsigned long nbits = cma_bitmap_maxno(cma);
 
 	mutex_lock(&cma->lock);
-	pr_info("number of available pages: ");
+	pr_debug("number of available pages: ");
 	for (;;) {
 		next_zero_bit = find_next_zero_bit(cma->bitmap, nbits, start);
 		if (next_zero_bit >= nbits)
@@ -427,12 +427,12 @@ static void cma_debug_show_areas(struct cma *cma)
 		next_set_bit = find_next_bit(cma->bitmap, nbits, next_zero_bit);
 		nr_zero = next_set_bit - next_zero_bit;
 		nr_part = nr_zero << cma->order_per_bit;
-		pr_cont("%s%lu@%lu", nr_total ? "+" : "", nr_part,
+		pr_debug("%s%lu@%lu", nr_total ? "+" : "", nr_part,
 			next_zero_bit);
 		nr_total += nr_part;
 		start = next_zero_bit + nr_zero;
 	}
-	pr_cont("=> %lu free of %lu total pages\n", nr_total, cma->count);
+	pr_debug("=> %lu free of %lu total pages\n", nr_total, cma->count);
 	mutex_unlock(&cma->lock);
 }
 #else
@@ -560,7 +560,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
 	}
 
 	if (ret && !no_warn) {
-		pr_err("%s: %s: alloc failed, req-size: %zu pages, ret: %d\n",
+		pr_debug("%s: %s: alloc failed, req-size: %zu pages, ret: %d\n",
 			__func__, cma->name, count, ret);
 		cma_debug_show_areas(cma);
 	}

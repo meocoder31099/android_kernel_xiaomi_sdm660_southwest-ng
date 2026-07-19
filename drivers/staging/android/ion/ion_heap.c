@@ -250,7 +250,7 @@ int ion_heap_init_deferred_free(struct ion_heap *heap)
 	heap->task = kthread_run(ion_heap_deferred_free, heap,
 				 "%s", heap->name);
 	if (IS_ERR(heap->task)) {
-		pr_err("%s: creating thread for deferred free failed\n",
+		pr_debug("%s: creating thread for deferred free failed\n",
 		       __func__);
 		return PTR_ERR_OR_ZERO(heap->task);
 	}
@@ -318,7 +318,7 @@ struct ion_heap *ion_heap_create(struct ion_platform_heap *heap_data)
 
 	switch (heap_type) {
 	case ION_HEAP_TYPE_SYSTEM_CONTIG:
-		pr_err("%s: Heap type is disabled: %d\n", __func__,
+		pr_debug("%s: Heap type is disabled: %d\n", __func__,
 		       heap_data->type);
 		break;
 	case ION_HEAP_TYPE_SYSTEM:
@@ -348,13 +348,13 @@ struct ion_heap *ion_heap_create(struct ion_platform_heap *heap_data)
 		heap = ion_secure_carveout_heap_create(heap_data);
 		break;
 	default:
-		pr_err("%s: Invalid heap type %d\n", __func__,
+		pr_debug("%s: Invalid heap type %d\n", __func__,
 		       heap_data->type);
 		return ERR_PTR(-EINVAL);
 	}
 
 	if (IS_ERR_OR_NULL(heap)) {
-		pr_err("%s: error creating heap %s type %d base %pa size %zu\n",
+		pr_debug("%s: error creating heap %s type %d base %pa size %zu\n",
 		       __func__, heap_data->name, heap_data->type,
 		       &heap_data->base, heap_data->size);
 		return ERR_PTR(-EINVAL);

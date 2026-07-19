@@ -593,7 +593,7 @@ static void dwc3_msm_req_complete_func(struct usb_ep *ep,
 			break;
 	}
 	if (!req_complete || req_complete->req != request) {
-		dev_err(dep->dwc->dev, "%s: could not find the request\n",
+		dev_dbg(dep->dwc->dev, "%s: could not find the request\n",
 					__func__);
 		return;
 	}
@@ -650,7 +650,7 @@ static int __dwc3_msm_dbm_ep_reset(struct dwc3_msm *mdwc, struct dwc3_ep *dep)
 	/* Reset the dbm endpoint */
 	ret = dbm_ep_soft_reset(mdwc->dbm, dep->number, true);
 	if (ret) {
-		dev_err(mdwc->dev, "%s: failed to assert dbm ep reset\n",
+		dev_dbg(mdwc->dev, "%s: failed to assert dbm ep reset\n",
 				__func__);
 		return ret;
 	}
@@ -667,7 +667,7 @@ static int __dwc3_msm_dbm_ep_reset(struct dwc3_msm *mdwc, struct dwc3_ep *dep)
 		udelay(10);
 	ret = dbm_ep_soft_reset(mdwc->dbm, dep->number, false);
 	if (ret) {
-		dev_err(mdwc->dev, "%s: failed to deassert dbm ep reset\n",
+		dev_dbg(mdwc->dev, "%s: failed to deassert dbm ep reset\n",
 				__func__);
 		return ret;
 	}
@@ -810,13 +810,13 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 	 */
 	spin_lock_irqsave(&dwc->lock, flags);
 	if (!dwc->pullups_connected) {
-		dev_err(mdwc->dev, "%s: No Pullup\n", __func__);
+		dev_dbg(mdwc->dev, "%s: No Pullup\n", __func__);
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		return -ESHUTDOWN;
 	}
 
 	if (!dep->endpoint.desc) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"%s: trying to queue request %pK to disabled ep %s\n",
 			__func__, request, ep->name);
 		spin_unlock_irqrestore(&dwc->lock, flags);
@@ -824,7 +824,7 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 	}
 
 	if (!mdwc->original_ep_ops[dep->number]) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"ep [%s,%d] was unconfigured as msm endpoint\n",
 			ep->name, dep->number);
 		spin_unlock_irqrestore(&dwc->lock, flags);
@@ -832,13 +832,13 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 	}
 
 	if (!request) {
-		dev_err(mdwc->dev, "%s: request is NULL\n", __func__);
+		dev_dbg(mdwc->dev, "%s: request is NULL\n", __func__);
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		return -EINVAL;
 	}
 
 	if (!(request->udc_priv & MSM_SPS_MODE)) {
-		dev_err(mdwc->dev, "%s: sps mode is not set\n",
+		dev_dbg(mdwc->dev, "%s: sps mode is not set\n",
 					__func__);
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		return -EINVAL;
@@ -846,13 +846,13 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 
 	/* HW restriction regarding TRB size (8KB) */
 	if (req->request.length < 0x2000) {
-		dev_err(mdwc->dev, "%s: Min TRB size is 8KB\n", __func__);
+		dev_dbg(mdwc->dev, "%s: Min TRB size is 8KB\n", __func__);
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		return -EINVAL;
 	}
 
 	if (dep->number == 0 || dep->number == 1) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"%s: trying to queue dbm request %pK to ep %s\n",
 			__func__, request, ep->name);
 		spin_unlock_irqrestore(&dwc->lock, flags);
@@ -862,7 +862,7 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 	if (dep->trb_dequeue != dep->trb_enqueue
 					|| !list_empty(&dep->pending_list)
 					|| !list_empty(&dep->started_list)) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"%s: trying to queue dbm request %pK tp ep %s\n",
 			__func__, request, ep->name);
 		spin_unlock_irqrestore(&dwc->lock, flags);
@@ -897,7 +897,7 @@ static int dwc3_msm_ep_queue(struct usb_ep *ep,
 
 	ret = __dwc3_msm_ep_queue(dep, req);
 	if (ret < 0) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"error %d after calling __dwc3_msm_ep_queue\n", ret);
 		goto err;
 	}
@@ -1059,7 +1059,7 @@ static void gsi_store_ringbase_dbl_info(struct usb_ep *ep,
 		request->dev = dwc->sysdev;
 		if (dma_mapping_error(dwc->sysdev,
 				request->mapped_db_reg_phs_addr_lsb))
-			dev_err(mdwc->dev, "mapping error for db_reg_phs_addr_lsb\n");
+			dev_dbg(mdwc->dev, "mapping error for db_reg_phs_addr_lsb\n");
 	}
 
 	dev_dbg(mdwc->dev, "ep:%s dbl_addr_lsb:%x mapped_dbl_addr_lsb:%llx\n",
@@ -1105,7 +1105,7 @@ static void gsi_ring_db(struct usb_ep *ep, struct usb_gsi_request *request)
 	gsi_dbl_address_lsb = ioremap_nocache(request->db_reg_phs_addr_lsb,
 				sizeof(u32));
 	if (!gsi_dbl_address_lsb) {
-		dev_err(mdwc->dev, "Failed to map GSI DBL address LSB 0x%x\n",
+		dev_dbg(mdwc->dev, "Failed to map GSI DBL address LSB 0x%x\n",
 				request->db_reg_phs_addr_lsb);
 		return;
 	}
@@ -1113,7 +1113,7 @@ static void gsi_ring_db(struct usb_ep *ep, struct usb_gsi_request *request)
 	gsi_dbl_address_msb = ioremap_nocache(request->db_reg_phs_addr_msb,
 				sizeof(u32));
 	if (!gsi_dbl_address_msb) {
-		dev_err(mdwc->dev, "Failed to map GSI DBL address MSB 0x%x\n",
+		dev_dbg(mdwc->dev, "Failed to map GSI DBL address MSB 0x%x\n",
 				request->db_reg_phs_addr_msb);
 		iounmap(gsi_dbl_address_lsb);
 		return;
@@ -1215,7 +1215,7 @@ static int gsi_prepare_trbs(struct usb_ep *ep, struct usb_gsi_request *req)
 	req->buf_base_addr = dma_alloc_attrs(dwc->sysdev, len, &req->dma,
 					GFP_KERNEL, dma_attr);
 	if (!req->buf_base_addr) {
-		dev_err(dwc->dev, "buf_base_addr allocate failed %s\n",
+		dev_dbg(dwc->dev, "buf_base_addr allocate failed %s\n",
 				dep->name);
 		return -ENOMEM;
 	}
@@ -1232,7 +1232,7 @@ static int gsi_prepare_trbs(struct usb_ep *ep, struct usb_gsi_request *req)
 				&dep->trb_pool_dma, GFP_KERNEL, dma_attr);
 
 	if (!dep->trb_pool) {
-		dev_err(dep->dwc->dev, "failed to alloc trb dma pool for %s\n",
+		dev_dbg(dep->dwc->dev, "failed to alloc trb dma pool for %s\n",
 				dep->name);
 		goto free_trb_buffer;
 	}
@@ -1528,7 +1528,7 @@ static bool gsi_check_ready_to_suspend(struct dwc3_msm *mdwc)
 	while (dwc3_msm_read_reg_field(mdwc->base,
 		GSI_IF_STS(mdwc->gsi_reg), GSI_WR_CTRL_STATE_MASK)) {
 		if (!timeout--) {
-			dev_err(mdwc->dev,
+			dev_dbg(mdwc->dev,
 			"Unable to suspend GSI ch. WR_CTRL_STATE != 0\n");
 			return false;
 		}
@@ -1665,7 +1665,7 @@ static int dwc3_msm_gsi_ep_op(struct usb_ep *ep,
 		ret = ep->ops->disable(ep);
 		break;
 	default:
-		dev_err(mdwc->dev, "%s: Invalid opcode GSI EP\n", __func__);
+		dev_dbg(mdwc->dev, "%s: Invalid opcode GSI EP\n", __func__);
 	}
 
 	return ret;
@@ -1703,7 +1703,7 @@ int msm_ep_config(struct usb_ep *ep, struct usb_request *request)
 	spin_lock_irqsave(&dwc->lock, flags);
 	/* Save original ep ops for future restore*/
 	if (mdwc->original_ep_ops[dep->number]) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"ep [%s,%d] already configured as msm endpoint\n",
 			ep->name, dep->number);
 		spin_unlock_irqrestore(&dwc->lock, flags);
@@ -1740,7 +1740,7 @@ int msm_ep_config(struct usb_ep *ep, struct usb_request *request)
 	ret = dbm_ep_config(mdwc->dbm, dep->number, bam_pipe, producer,
 					disable_wb, internal_mem, ioc);
 	if (ret < 0) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"error %d after calling dbm_ep_config\n", ret);
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		return ret;
@@ -1772,7 +1772,7 @@ int msm_ep_unconfig(struct usb_ep *ep)
 	spin_lock_irqsave(&dwc->lock, flags);
 	/* Restore original ep ops */
 	if (!mdwc->original_ep_ops[dep->number]) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"ep [%s,%d] was not configured as msm endpoint\n",
 			ep->name, dep->number);
 		spin_unlock_irqrestore(&dwc->lock, flags);
@@ -1925,13 +1925,13 @@ static int dwc3_msm_config_gdsc(struct dwc3_msm *mdwc, int on)
 	if (on) {
 		ret = regulator_enable(mdwc->dwc3_gdsc);
 		if (ret) {
-			dev_err(mdwc->dev, "unable to enable usb3 gdsc\n");
+			dev_dbg(mdwc->dev, "unable to enable usb3 gdsc\n");
 			return ret;
 		}
 	} else {
 		ret = regulator_disable(mdwc->dwc3_gdsc);
 		if (ret) {
-			dev_err(mdwc->dev, "unable to disable usb3 gdsc\n");
+			dev_dbg(mdwc->dev, "unable to disable usb3 gdsc\n");
 			return ret;
 		}
 	}
@@ -1953,12 +1953,12 @@ static int dwc3_msm_link_clk_reset(struct dwc3_msm *mdwc, bool assert)
 		clk_disable_unprepare(mdwc->iface_clk);
 		ret = reset_control_assert(mdwc->core_reset);
 		if (ret)
-			dev_err(mdwc->dev, "dwc3 core_reset assert failed\n");
+			dev_dbg(mdwc->dev, "dwc3 core_reset assert failed\n");
 	} else {
 		dev_dbg(mdwc->dev, "block_reset DEASSERT\n");
 		ret = reset_control_deassert(mdwc->core_reset);
 		if (ret)
-			dev_err(mdwc->dev, "dwc3 core_reset deassert failed\n");
+			dev_dbg(mdwc->dev, "dwc3 core_reset deassert failed\n");
 		ndelay(200);
 		clk_prepare_enable(mdwc->iface_clk);
 		clk_prepare_enable(mdwc->core_clk);
@@ -1992,7 +1992,7 @@ static void dwc3_gsi_event_buf_alloc(struct dwc3 *dwc)
 		sizeof(*dwc->ev_buf) * mdwc->num_gsi_event_buffers,
 		GFP_KERNEL);
 	if (!mdwc->gsi_ev_buff) {
-		dev_err(dwc->dev, "can't allocate gsi_ev_buff\n");
+		dev_dbg(dwc->dev, "can't allocate gsi_ev_buff\n");
 		return;
 	}
 
@@ -2007,7 +2007,7 @@ static void dwc3_gsi_event_buf_alloc(struct dwc3 *dwc)
 					DWC3_EVENT_BUFFERS_SIZE,
 					&evt->dma, GFP_KERNEL);
 		if (!evt->buf) {
-			dev_err(dwc->dev,
+			dev_dbg(dwc->dev,
 				"can't allocate gsi_evt_buf(%d)\n", i);
 			return;
 		}
@@ -2023,7 +2023,7 @@ static void dwc3_gsi_event_buf_alloc(struct dwc3 *dwc)
 					DMA_FROM_DEVICE);
 
 	if (dma_mapping_error(dwc->sysdev, mdwc->dummy_gsi_db_dma)) {
-		dev_err(dwc->dev, "failed to map dummy doorbell buffer\n");
+		dev_dbg(dwc->dev, "failed to map dummy doorbell buffer\n");
 		mdwc->dummy_gsi_db_dma = (dma_addr_t)NULL;
 	}
 }
@@ -2057,7 +2057,7 @@ static void dwc3_msm_notify_event(struct dwc3 *dwc, unsigned int event,
 
 	switch (event) {
 	case DWC3_CONTROLLER_ERROR_EVENT:
-		dev_info(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"DWC3_CONTROLLER_ERROR_EVENT received\n");
 
 		dwc3_gadget_disable_irq(dwc);
@@ -2314,7 +2314,7 @@ static void dwc3_msm_power_collapse_por(struct dwc3_msm *mdwc)
 
 	ret = dwc3_core_init(dwc);
 	if (ret)
-		dev_err(mdwc->dev, "%s: dwc3_core init failed (%d)\n",
+		dev_dbg(mdwc->dev, "%s: dwc3_core init failed (%d)\n",
 							__func__, ret);
 
 	dwc3_msm_write_reg_field(mdwc->base, PWR_EVNT_IRQ_MASK_REG,
@@ -2336,7 +2336,7 @@ static int dwc3_msm_prepare_suspend(struct dwc3_msm *mdwc)
 	if ((mdwc->in_host_mode || mdwc->in_device_mode)
 			&& dwc3_msm_is_superspeed(mdwc) && !mdwc->in_restart) {
 		if (!atomic_read(&mdwc->in_p3)) {
-			dev_err(mdwc->dev, "Not in P3,aborting LPM sequence\n");
+			dev_dbg(mdwc->dev, "Not in P3,aborting LPM sequence\n");
 			return -EBUSY;
 		}
 	}
@@ -2358,7 +2358,7 @@ static int dwc3_msm_prepare_suspend(struct dwc3_msm *mdwc)
 			break;
 	}
 	if (!(reg & PWR_EVNT_LPM_IN_L2_MASK))
-		dev_err(mdwc->dev, "could not transition HS PHY to L2\n");
+		dev_dbg(mdwc->dev, "could not transition HS PHY to L2\n");
 
 	/* Clear L2 event bit */
 	dwc3_msm_write_reg(mdwc->base, PWR_EVNT_IRQ_STAT_REG,
@@ -2541,7 +2541,7 @@ static int dwc3_msm_update_bus_bw(struct dwc3_msm *mdwc, enum bus_vote bv)
 	ret = msm_bus_scale_client_update_request(
 			mdwc->bus_perf_client, bv_index);
 	if (ret)
-		dev_err(mdwc->dev, "bus bw voting %d failed %d\n",
+		dev_dbg(mdwc->dev, "bus bw voting %d failed %d\n",
 				bv_index, ret);
 
 	dbg_event(0xFF, "bus_vote_end", bv_index);
@@ -2604,9 +2604,9 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 	if ((dwc3_is_otg_or_drd(dwc) &&
 			mdwc->drd_state == DRD_STATE_PERIPHERAL_SUSPEND) &&
 			(dwc->gadget.state != USB_STATE_CONFIGURED)) {
-		pr_err("%s(): Trying to go in LPM with state:%d\n",
+		pr_debug("%s(): Trying to go in LPM with state:%d\n",
 					__func__, dwc->gadget.state);
-		pr_err("%s(): LPM is not performed.\n", __func__);
+		pr_debug("%s(): LPM is not performed.\n", __func__);
 		mutex_unlock(&mdwc->suspend_resume_mutex);
 		return -EBUSY;
 	}
@@ -2753,7 +2753,7 @@ static int dwc3_msm_suspend(struct dwc3_msm *mdwc, bool enable_wakeup)
 	if (mdwc->lpm_flags & MDWC3_USE_PWR_EVENT_IRQ_FOR_WAKEUP)
 		enable_irq(mdwc->wakeup_irq[PWR_EVNT_IRQ].irq);
 
-	dev_info(mdwc->dev, "DWC3 in low power mode\n");
+	dev_dbg(mdwc->dev, "DWC3 in low power mode\n");
 	dbg_event(0xFF, "Ctl Sus", atomic_read(&dwc->in_lpm));
 
 	/* kick_sm if it is waiting for lpm sequence to finish */
@@ -2798,7 +2798,7 @@ static int dwc3_msm_resume(struct dwc3_msm *mdwc)
 	/* Vote for TCXO while waking up USB HSPHY */
 	ret = clk_prepare_enable(mdwc->xo_clk);
 	if (ret)
-		dev_err(mdwc->dev, "%s failed to vote TCXO buffer%d\n",
+		dev_dbg(mdwc->dev, "%s failed to vote TCXO buffer%d\n",
 						__func__, ret);
 
 	/* Restore controller power collapse */
@@ -2807,13 +2807,13 @@ static int dwc3_msm_resume(struct dwc3_msm *mdwc)
 		dwc3_msm_config_gdsc(mdwc, 1);
 		ret = reset_control_assert(mdwc->core_reset);
 		if (ret)
-			dev_err(mdwc->dev, "%s:core_reset assert failed\n",
+			dev_dbg(mdwc->dev, "%s:core_reset assert failed\n",
 					__func__);
 		/* HW requires a short delay for reset to take place properly */
 		usleep_range(1000, 1200);
 		ret = reset_control_deassert(mdwc->core_reset);
 		if (ret)
-			dev_err(mdwc->dev, "%s:core_reset deassert failed\n",
+			dev_dbg(mdwc->dev, "%s:core_reset deassert failed\n",
 					__func__);
 		clk_prepare_enable(mdwc->sleep_clk);
 	} else if (dwc->gdsc_collapse_in_host_suspend && mdwc->in_host_mode) {
@@ -2917,7 +2917,7 @@ static int dwc3_msm_resume(struct dwc3_msm *mdwc)
 		mdwc->lpm_flags &= ~MDWC3_ASYNC_IRQ_WAKE_CAPABILITY;
 	}
 
-	dev_info(mdwc->dev, "DWC3 exited from low power mode\n");
+	dev_dbg(mdwc->dev, "DWC3 exited from low power mode\n");
 
 	/* Enable core irq */
 	if (dwc->irq)
@@ -3156,7 +3156,7 @@ static void dwc3_pwr_event_handler(struct dwc3_msm *mdwc)
 		dev_dbg(mdwc->dev, "%s: handling PWR_EVNT_LPM_OUT_L1_MASK\n",
 				__func__);
 		if (usb_gadget_wakeup(&dwc->gadget))
-			dev_err(mdwc->dev, "%s failed to take dwc out of L1\n",
+			dev_dbg(mdwc->dev, "%s failed to take dwc out of L1\n",
 					__func__);
 		irq_stat &= ~PWR_EVNT_LPM_OUT_L1_MASK;
 		irq_clear |= PWR_EVNT_LPM_OUT_L1_MASK;
@@ -3233,7 +3233,7 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 
 	mdwc->xo_clk = devm_clk_get(mdwc->dev, "xo");
 	if (IS_ERR(mdwc->xo_clk)) {
-		dev_err(mdwc->dev, "%s unable to get TCXO buffer handle\n",
+		dev_dbg(mdwc->dev, "%s unable to get TCXO buffer handle\n",
 								__func__);
 		ret = PTR_ERR(mdwc->xo_clk);
 		return ret;
@@ -3242,7 +3242,7 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 
 	mdwc->iface_clk = devm_clk_get(mdwc->dev, "iface_clk");
 	if (IS_ERR(mdwc->iface_clk)) {
-		dev_err(mdwc->dev, "failed to get iface_clk\n");
+		dev_dbg(mdwc->dev, "failed to get iface_clk\n");
 		ret = PTR_ERR(mdwc->iface_clk);
 		return ret;
 	}
@@ -3254,20 +3254,20 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 	 */
 	mdwc->core_clk = devm_clk_get(mdwc->dev, "core_clk");
 	if (IS_ERR(mdwc->core_clk)) {
-		dev_err(mdwc->dev, "failed to get core_clk\n");
+		dev_dbg(mdwc->dev, "failed to get core_clk\n");
 		ret = PTR_ERR(mdwc->core_clk);
 		return ret;
 	}
 
 	mdwc->core_reset = devm_reset_control_get(mdwc->dev, "core_reset");
 	if (IS_ERR(mdwc->core_reset)) {
-		dev_err(mdwc->dev, "failed to get core_reset\n");
+		dev_dbg(mdwc->dev, "failed to get core_reset\n");
 		return PTR_ERR(mdwc->core_reset);
 	}
 
 	if (of_property_read_u32(mdwc->dev->of_node, "qcom,core-clk-rate",
 				(u32 *)&mdwc->core_clk_rate)) {
-		dev_err(mdwc->dev, "USB core-clk-rate is not present\n");
+		dev_dbg(mdwc->dev, "USB core-clk-rate is not present\n");
 		return -EINVAL;
 	}
 
@@ -3277,7 +3277,7 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 						mdwc->core_clk_rate);
 	ret = clk_set_rate(mdwc->core_clk, mdwc->core_clk_rate);
 	if (ret)
-		dev_err(mdwc->dev, "fail to set core_clk freq:%d\n", ret);
+		dev_dbg(mdwc->dev, "fail to set core_clk freq:%d\n", ret);
 
 	if (of_property_read_u32(mdwc->dev->of_node, "qcom,core-clk-rate-hs",
 				(u32 *)&mdwc->core_clk_rate_hs)) {
@@ -3287,7 +3287,7 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 
 	mdwc->sleep_clk = devm_clk_get(mdwc->dev, "sleep_clk");
 	if (IS_ERR(mdwc->sleep_clk)) {
-		dev_err(mdwc->dev, "failed to get sleep_clk\n");
+		dev_dbg(mdwc->dev, "failed to get sleep_clk\n");
 		ret = PTR_ERR(mdwc->sleep_clk);
 		return ret;
 	}
@@ -3296,7 +3296,7 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 	mdwc->utmi_clk_rate = 19200000;
 	mdwc->utmi_clk = devm_clk_get(mdwc->dev, "utmi_clk");
 	if (IS_ERR(mdwc->utmi_clk)) {
-		dev_err(mdwc->dev, "failed to get utmi_clk\n");
+		dev_dbg(mdwc->dev, "failed to get utmi_clk\n");
 		ret = PTR_ERR(mdwc->utmi_clk);
 		return ret;
 	}
@@ -3317,7 +3317,7 @@ static int dwc3_msm_get_clk_gdsc(struct dwc3_msm *mdwc)
 			ret = PTR_ERR(mdwc->cfg_ahb_clk);
 			mdwc->cfg_ahb_clk = NULL;
 			if (ret != -EPROBE_DEFER)
-				dev_err(mdwc->dev,
+				dev_dbg(mdwc->dev,
 					"failed to get cfg_ahb_clk ret %d\n",
 					ret);
 			return ret;
@@ -3472,7 +3472,7 @@ static int dwc3_msm_extcon_register(struct dwc3_msm *mdwc)
 
 	extcon_cnt = of_count_phandle_with_args(node, "extcon", NULL);
 	if (extcon_cnt < 0) {
-		dev_err(mdwc->dev, "of_count_phandle_with_args failed\n");
+		dev_dbg(mdwc->dev, "of_count_phandle_with_args failed\n");
 		return -ENODEV;
 	}
 
@@ -3525,7 +3525,7 @@ static int dwc3_msm_extcon_register(struct dwc3_msm *mdwc)
 	}
 
 	if (!phandle_found) {
-		dev_err(mdwc->dev, "no extcon device found\n");
+		dev_dbg(mdwc->dev, "no extcon device found\n");
 		return -ENODEV;
 	}
 
@@ -3714,7 +3714,7 @@ static ssize_t bus_vote_store(struct device *dev,
 		bv_fixed = false;
 		mdwc->override_bus_vote = BUS_VOTE_NONE;
 	} else {
-		dev_err(dev, "min/max/cancel only.\n");
+		dev_dbg(dev, "min/max/cancel only.\n");
 		return -EINVAL;
 	}
 
@@ -3814,7 +3814,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 
 	mdwc->dwc3_wq = alloc_ordered_workqueue("dwc3_wq", 0);
 	if (!mdwc->dwc3_wq) {
-		pr_err("%s: Unable to create workqueue dwc3_wq\n", __func__);
+		pr_debug("%s: Unable to create workqueue dwc3_wq\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -3833,7 +3833,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	/* Get all clks and gdsc reference */
 	ret = dwc3_msm_get_clk_gdsc(mdwc);
 	if (ret) {
-		dev_err(&pdev->dev, "error getting clock or gdsc.\n");
+		dev_dbg(&pdev->dev, "error getting clock or gdsc.\n");
 		goto err;
 	}
 
@@ -3856,7 +3856,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 		if (mdwc->wakeup_irq[i].irq < 0) {
 			/* pwr_evnt_irq is only mandatory irq */
 			if (usb_irq_info[i].required) {
-				dev_err(&pdev->dev, "get_irq for %s failed\n\n",
+				dev_dbg(&pdev->dev, "get_irq for %s failed\n\n",
 						usb_irq_info[i].name);
 				ret = -EINVAL;
 				goto err;
@@ -3873,7 +3873,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 					usb_irq_info[i].irq_type,
 					usb_irq_info[i].name, mdwc);
 			if (ret) {
-				dev_err(&pdev->dev, "irq req %s failed: %d\n\n",
+				dev_dbg(&pdev->dev, "irq req %s failed: %d\n\n",
 						usb_irq_info[i].name, ret);
 				goto err;
 			}
@@ -3882,7 +3882,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "core_base");
 	if (!res) {
-		dev_err(&pdev->dev, "missing memory base resource\n");
+		dev_dbg(&pdev->dev, "missing memory base resource\n");
 		ret = -ENODEV;
 		goto err;
 	}
@@ -3890,7 +3890,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	mdwc->base = devm_ioremap_nocache(&pdev->dev, res->start,
 			resource_size(res));
 	if (!mdwc->base) {
-		dev_err(&pdev->dev, "ioremap failed\n");
+		dev_dbg(&pdev->dev, "ioremap failed\n");
 		ret = -ENODEV;
 		goto err;
 	}
@@ -3901,7 +3901,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 		mdwc->ahb2phy_base = devm_ioremap_nocache(&pdev->dev,
 					res->start, resource_size(res));
 		if (IS_ERR_OR_NULL(mdwc->ahb2phy_base)) {
-			dev_err(dev, "couldn't find ahb2phy_base addr.\n");
+			dev_dbg(dev, "couldn't find ahb2phy_base addr.\n");
 			mdwc->ahb2phy_base = NULL;
 		} else {
 			/*
@@ -3928,14 +3928,14 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 
 	mdwc->dbm = dwc3_init_dbm(&pdev->dev, mdwc->base);
 	if (IS_ERR(mdwc->dbm)) {
-		dev_warn(&pdev->dev, "unable to init dbm device, skipping...\n");
+		dev_dbg(&pdev->dev, "unable to init dbm device, skipping...\n");
 		mdwc->dbm = NULL;
 	}
 
 	/* Add power event if the dbm indicates coming out of L1 by interrupt */
 	if (mdwc->dbm && dbm_l1_lpm_interrupt(mdwc->dbm)) {
 		if (!mdwc->wakeup_irq[PWR_EVNT_IRQ].irq) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"need pwr_event_irq exiting L1\n");
 			ret = -EINVAL;
 			goto err;
@@ -3944,7 +3944,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 
 	if (of_property_read_u32(node, "qcom,dwc-usb3-msm-tx-fifo-size",
 				 &mdwc->tx_fifo_size))
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"unable to read platform data tx fifo size\n");
 
 	ret = of_property_read_u32(node, "qcom,num-gsi-evt-buffs",
@@ -3960,7 +3960,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 			mdwc->gsi_reg_offset_cnt =
 					(size / sizeof(*mdwc->gsi_reg));
 			if (mdwc->gsi_reg_offset_cnt != GSI_REG_MAX) {
-				dev_err(dev, "invalid reg offset count\n");
+				dev_dbg(dev, "invalid reg offset count\n");
 				return -EINVAL;
 			}
 
@@ -3968,7 +3968,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 				"qcom,gsi-reg-offset", mdwc->gsi_reg,
 				mdwc->gsi_reg_offset_cnt);
 		} else {
-			dev_err(dev, "err provide qcom,gsi-reg-offset\n");
+			dev_dbg(dev, "err provide qcom,gsi-reg-offset\n");
 			return -EINVAL;
 		}
 	}
@@ -3982,9 +3982,9 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	dwc3_set_notifier(&dwc3_msm_notify_event);
 
 	if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(64))) {
-		dev_err(&pdev->dev, "setting DMA mask to 64 failed.\n");
+		dev_dbg(&pdev->dev, "setting DMA mask to 64 failed.\n");
 		if (dma_set_mask_and_coherent(dev, DMA_BIT_MASK(32))) {
-			dev_err(&pdev->dev, "setting DMA mask to 32 failed.\n");
+			dev_dbg(&pdev->dev, "setting DMA mask to 32 failed.\n");
 			ret = -EOPNOTSUPP;
 			goto err;
 		}
@@ -3993,14 +3993,14 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	/* Assumes dwc3 is the first DT child of dwc3-msm */
 	dwc3_node = of_get_next_available_child(node, NULL);
 	if (!dwc3_node) {
-		dev_err(&pdev->dev, "failed to find dwc3 child\n");
+		dev_dbg(&pdev->dev, "failed to find dwc3 child\n");
 		ret = -ENODEV;
 		goto err;
 	}
 
 	ret = of_platform_populate(node, NULL, NULL, &pdev->dev);
 	if (ret) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 				"failed to add create dwc3 core\n");
 		of_node_put(dwc3_node);
 		goto err;
@@ -4009,21 +4009,21 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 	mdwc->dwc3 = of_find_device_by_node(dwc3_node);
 	of_node_put(dwc3_node);
 	if (!mdwc->dwc3) {
-		dev_err(&pdev->dev, "failed to get dwc3 platform device\n");
+		dev_dbg(&pdev->dev, "failed to get dwc3 platform device\n");
 		goto put_dwc3;
 	}
 
 	mdwc->hs_phy = devm_usb_get_phy_by_phandle(&mdwc->dwc3->dev,
 							"usb-phy", 0);
 	if (IS_ERR(mdwc->hs_phy)) {
-		dev_err(&pdev->dev, "unable to get hsphy device\n");
+		dev_dbg(&pdev->dev, "unable to get hsphy device\n");
 		ret = PTR_ERR(mdwc->hs_phy);
 		goto put_dwc3;
 	}
 	mdwc->ss_phy = devm_usb_get_phy_by_phandle(&mdwc->dwc3->dev,
 							"usb-phy", 1);
 	if (IS_ERR(mdwc->ss_phy)) {
-		dev_err(&pdev->dev, "unable to get ssphy device\n");
+		dev_dbg(&pdev->dev, "unable to get ssphy device\n");
 		ret = PTR_ERR(mdwc->ss_phy);
 		goto put_dwc3;
 	}
@@ -4046,7 +4046,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 
 	dwc = platform_get_drvdata(mdwc->dwc3);
 	if (!dwc) {
-		dev_err(&pdev->dev, "Failed to get dwc3 device\n");
+		dev_dbg(&pdev->dev, "Failed to get dwc3 device\n");
 		goto put_dwc3;
 	}
 
@@ -4207,7 +4207,7 @@ static int dwc3_msm_remove(struct platform_device *pdev)
 	ret_pm = pm_runtime_get_sync(mdwc->dev);
 	dbg_event(0xFF, "Remov gsyn", ret_pm);
 	if (ret_pm < 0) {
-		dev_err(mdwc->dev,
+		dev_dbg(mdwc->dev,
 			"pm_runtime_get_sync failed with %d\n", ret_pm);
 		if (mdwc->noc_aggr_clk)
 			clk_prepare_enable(mdwc->noc_aggr_clk);
@@ -4402,7 +4402,7 @@ static int dwc3_otg_start_host(struct dwc3_msm *mdwc, int on)
 		if (!IS_ERR_OR_NULL(mdwc->vbus_reg))
 			ret = regulator_enable(mdwc->vbus_reg);
 		if (ret) {
-			dev_err(mdwc->dev, "unable to enable vbus_reg\n");
+			dev_dbg(mdwc->dev, "unable to enable vbus_reg\n");
 			mdwc->hs_phy->flags &= ~PHY_HOST_MODE;
 			mdwc->ss_phy->flags &= ~PHY_HOST_MODE;
 			pm_runtime_put_sync(mdwc->dev);
@@ -4421,7 +4421,7 @@ static int dwc3_otg_start_host(struct dwc3_msm *mdwc, int on)
 		usb_register_atomic_notify(&mdwc->usbdev_nb);
 		ret = dwc3_host_init(dwc);
 		if (ret) {
-			dev_err(mdwc->dev,
+			dev_dbg(mdwc->dev,
 				"%s: failed to add XHCI pdev ret=%d\n",
 				__func__, ret);
 			if (!IS_ERR_OR_NULL(mdwc->vbus_reg))
@@ -4476,7 +4476,7 @@ static int dwc3_otg_start_host(struct dwc3_msm *mdwc, int on)
 		if (!IS_ERR_OR_NULL(mdwc->vbus_reg))
 			ret = regulator_disable(mdwc->vbus_reg);
 		if (ret) {
-			dev_err(mdwc->dev, "unable to disable vbus_reg\n");
+			dev_dbg(mdwc->dev, "unable to disable vbus_reg\n");
 			return ret;
 		}
 
@@ -4644,7 +4644,7 @@ static int dwc3_usb_blocking_sync(struct notifier_block *nb,
 	} while (time_before(jiffies, timeout_ms));
 
 	if (!time_before(jiffies, timeout_ms))
-		dev_err(mdwc->dev, "TIMEOUT when changing the state\n");
+		dev_dbg(mdwc->dev, "TIMEOUT when changing the state\n");
 
 	return 0;
 }
@@ -4659,7 +4659,7 @@ static int get_psy_type(struct dwc3_msm *mdwc)
 	if (!mdwc->usb_psy) {
 		mdwc->usb_psy = power_supply_get_by_name("usb");
 		if (!mdwc->usb_psy) {
-			dev_err(mdwc->dev, "Could not get usb psy\n");
+			dev_dbg(mdwc->dev, "Could not get usb psy\n");
 			return -ENODEV;
 		}
 	}
@@ -4717,7 +4717,7 @@ static int dwc3_msm_gadget_vbus_draw(struct dwc3_msm *mdwc, unsigned int mA)
 	pval.intval = 1000 * mA;
 
 set_prop:
-	dev_info(mdwc->dev, "Avail curr from USB = %u\n", mA);
+	dev_dbg(mdwc->dev, "Avail curr from USB = %u\n", mA);
 	ret = power_supply_set_property(mdwc->usb_psy,
 				POWER_SUPPLY_PROP_SDP_CURRENT_MAX, &pval);
 	if (ret) {
@@ -4750,7 +4750,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 		dwc = platform_get_drvdata(mdwc->dwc3);
 
 	if (!dwc) {
-		dev_err(mdwc->dev, "dwc is NULL.\n");
+		dev_dbg(mdwc->dev, "dwc is NULL.\n");
 		return;
 	}
 
@@ -4897,7 +4897,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 				work = 1;
 				mdwc->vbus_retry_count++;
 			} else if (ret) {
-				dev_err(mdwc->dev, "unable to start host\n");
+				dev_dbg(mdwc->dev, "unable to start host\n");
 				goto ret;
 			} else {
 				mdwc->drd_state = DRD_STATE_HOST;
@@ -4922,7 +4922,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 		break;
 
 	default:
-		dev_err(mdwc->dev, "%s: invalid otg-state\n", __func__);
+		dev_dbg(mdwc->dev, "%s: invalid otg-state\n", __func__);
 
 	}
 
@@ -4949,7 +4949,7 @@ static int dwc3_msm_pm_suspend(struct device *dev)
 	 */
 	if (!dwc->ignore_wakeup_src_in_hostmode || !mdwc->in_host_mode) {
 		if (!atomic_read(&dwc->in_lpm)) {
-			dev_err(mdwc->dev, "Abort PM suspend!! (USB is outside LPM)\n");
+			dev_dbg(mdwc->dev, "Abort PM suspend!! (USB is outside LPM)\n");
 			return -EBUSY;
 		}
 

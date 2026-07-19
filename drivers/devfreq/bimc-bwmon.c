@@ -205,7 +205,7 @@ void mon_set_hw_sampling_window(struct bwmon *m, unsigned int sample_ms,
 		m->sample_size_ms = sample_ms;
 		if (unlikely(rate > SAMPLE_WIN_LIM)) {
 			rate = SAMPLE_WIN_LIM;
-			pr_warn("Sample window %u larger than hw limit: %u\n",
+			pr_debug("Sample window %u larger than hw limit: %u\n",
 					rate, SAMPLE_WIN_LIM);
 		}
 		switch (type) {
@@ -473,7 +473,7 @@ void set_zone_thres(struct bwmon *m, unsigned int sample_ms,
 	lo = 0;
 
 	if (unlikely((hi > m->thres_lim) || (med > hi) || (lo > med))) {
-		pr_warn("Zone thres larger than hw limit: hi:%u med:%u lo:%u\n",
+		pr_debug("Zone thres larger than hw limit: hi:%u med:%u lo:%u\n",
 				hi, med, lo);
 		hi = min(hi, m->thres_lim);
 		med = min(med, hi - 1);
@@ -790,7 +790,7 @@ static __always_inline int mon_setup_enable(struct bwmon *m)
 	if (m->bus_client) {
 		ret = msm_bus_scale_update_bw(m->bus_client, 0, 1);
 		if (ret) {
-			dev_err(m->dev, "Failed voting bus %s with error %d\n",
+			dev_dbg(m->dev, "Failed voting bus %s with error %d\n",
 						m->bus_name, ret);
 			return ret;
 		}
@@ -799,7 +799,7 @@ static __always_inline int mon_setup_enable(struct bwmon *m)
 	for (i = 0; i < m->nr_clks; i++) {
 		ret = clk_prepare_enable(m->clks[i]);
 		if (ret) {
-			dev_err(m->dev, "BWMON clk not enabled %d\n", ret);
+			dev_dbg(m->dev, "BWMON clk not enabled %d\n", ret);
 			goto err;
 		}
 	}
@@ -812,7 +812,7 @@ err:
 	if (m->bus_client) {
 		ret = msm_bus_scale_update_bw(m->bus_client, 0, 0);
 		if (ret)
-			dev_err(m->dev, "Failed unvoting bus %s with error %d\n",
+			dev_dbg(m->dev, "Failed unvoting bus %s with error %d\n",
 						m->bus_name, ret);
 	}
 	return ret;
@@ -828,7 +828,7 @@ static __always_inline int __start_bw_hwmon(struct bw_hwmon *hw,
 
 	ret = mon_setup_enable(m);
 	if (ret) {
-		dev_err(m->dev, "Unable to turn on bwmon clks! (%d)\n", ret);
+		dev_dbg(m->dev, "Unable to turn on bwmon clks! (%d)\n", ret);
 		return ret;
 	}
 
@@ -851,7 +851,7 @@ static __always_inline int __start_bw_hwmon(struct bw_hwmon *hw,
 				  IRQF_ONESHOT | IRQF_SHARED,
 				  dev_name(m->dev), m);
 	if (ret) {
-		dev_err(m->dev, "Unable to register interrupt handler! (%d)\n",
+		dev_dbg(m->dev, "Unable to register interrupt handler! (%d)\n",
 			ret);
 		return ret;
 	}
@@ -908,7 +908,7 @@ static __always_inline int mon_setup_disable(struct bwmon *m)
 	if (m->bus_client) {
 		ret = msm_bus_scale_update_bw(m->bus_client, 0, 0);
 		if (ret)
-			dev_err(m->dev, "Failed unvoting bus %s with error %d\n",
+			dev_dbg(m->dev, "Failed unvoting bus %s with error %d\n",
 						m->bus_name, ret);
 	}
 	return ret;
@@ -927,7 +927,7 @@ void __stop_bw_hwmon(struct bw_hwmon *hw, enum mon_reg_type type)
 	mon_irq_clear(m, type);
 	ret = mon_setup_disable(m);
 	if (ret)
-		dev_err(m->dev, "Unable to stop the BWMON Clocks %d\n", ret);
+		dev_dbg(m->dev, "Unable to stop the BWMON Clocks %d\n", ret);
 }
 
 static void stop_bw_hwmon(struct bw_hwmon *hw)
@@ -957,7 +957,7 @@ int __suspend_bw_hwmon(struct bw_hwmon *hw, enum mon_reg_type type)
 	mon_irq_clear(m, type);
 	ret = mon_setup_disable(m);
 	if (ret)
-		dev_err(m->dev, "Unable to turn off bwmon clks! (%d)\n", ret);
+		dev_dbg(m->dev, "Unable to turn off bwmon clks! (%d)\n", ret);
 
 	return ret;
 }
@@ -986,7 +986,7 @@ int __resume_bw_hwmon(struct bw_hwmon *hw, enum mon_reg_type type)
 
 	ret = mon_setup_enable(m);
 	if (ret) {
-		dev_err(m->dev, "Unable to turn on bwmon clks! (%d)\n", ret);
+		dev_dbg(m->dev, "Unable to turn on bwmon clks! (%d)\n", ret);
 		return ret;
 	}
 
@@ -1007,7 +1007,7 @@ int __resume_bw_hwmon(struct bw_hwmon *hw, enum mon_reg_type type)
 				  IRQF_ONESHOT | IRQF_SHARED,
 				  dev_name(m->dev), m);
 	if (ret) {
-		dev_err(m->dev, "Unable to register interrupt handler! (%d)\n",
+		dev_dbg(m->dev, "Unable to register interrupt handler! (%d)\n",
 			ret);
 		return ret;
 	}
@@ -1102,18 +1102,18 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 
 	m->spec = of_device_get_match_data(dev);
 	if (!m->spec) {
-		dev_err(dev, "Unknown device type!\n");
+		dev_dbg(dev, "Unknown device type!\n");
 		return -ENODEV;
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "base");
 	if (!res) {
-		dev_err(dev, "base not found!\n");
+		dev_dbg(dev, "base not found!\n");
 		return -EINVAL;
 	}
 	m->base = devm_ioremap(dev, res->start, resource_size(res));
 	if (!m->base) {
-		dev_err(dev, "Unable map base!\n");
+		dev_dbg(dev, "Unable map base!\n");
 		return -ENOMEM;
 	}
 
@@ -1121,19 +1121,19 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						   "global_base");
 		if (!res) {
-			dev_err(dev, "global_base not found!\n");
+			dev_dbg(dev, "global_base not found!\n");
 			return -EINVAL;
 		}
 		m->global_base = devm_ioremap(dev, res->start,
 					      resource_size(res));
 		if (!m->global_base) {
-			dev_err(dev, "Unable map global_base!\n");
+			dev_dbg(dev, "Unable map global_base!\n");
 			return -ENOMEM;
 		}
 
 		ret = of_property_read_u32(dev->of_node, "qcom,mport", &data);
 		if (ret) {
-			dev_err(dev, "mport not found!\n");
+			dev_dbg(dev, "mport not found!\n");
 			return ret;
 		}
 		m->mport = data;
@@ -1143,7 +1143,7 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 		m->nr_clks = of_property_count_strings(dev->of_node,
 						"qcom,bwmon_clks");
 		if (!m->nr_clks) {
-			dev_err(dev, "Failed to get clock names\n");
+			dev_dbg(dev, "Failed to get clock names\n");
 			return -EINVAL;
 		}
 
@@ -1159,7 +1159,7 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 						"qcom,bwmon_clks", i,
 							&clock_name);
 			if (ret) {
-				pr_err("failed to read clk index %d ret %d\n",
+				pr_debug("failed to read clk index %d ret %d\n",
 									i, ret);
 				return ret;
 			}
@@ -1167,7 +1167,7 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 			if (IS_ERR(m->clks[i])) {
 				ret = PTR_ERR(m->clks[i]);
 				if (ret != -EPROBE_DEFER)
-					dev_err(dev, "Error to get %s clk %d\n",
+					dev_dbg(dev, "Error to get %s clk %d\n",
 							clock_name, ret);
 				return ret;
 			}
@@ -1177,20 +1177,20 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 
 	m->irq = platform_get_irq(pdev, 0);
 	if (m->irq < 0) {
-		dev_err(dev, "Unable to get IRQ number\n");
+		dev_dbg(dev, "Unable to get IRQ number\n");
 		return m->irq;
 	}
 
 	m->hw.of_node = of_parse_phandle(dev->of_node, "qcom,target-dev", 0);
 	if (!m->hw.of_node) {
-		dev_err(dev, "target dev not available\n");
+		dev_dbg(dev, "target dev not available\n");
 		return -EINVAL;
 	}
 	if (m->spec->hw_sampling) {
 		ret = of_property_read_u32(dev->of_node, "qcom,hw-timer-hz",
 					   &m->hw_timer_hz);
 		if (ret) {
-			dev_err(dev, "HW sampling rate not specified!\n");
+			dev_dbg(dev, "HW sampling rate not specified!\n");
 			return ret;
 		}
 	}
@@ -1203,13 +1203,13 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 	if (of_find_property(dev->of_node, "qcom,msm_bus", &len)) {
 		len /= sizeof(ports[0]);
 		if (len % 2 || len > ARRAY_SIZE(ports)) {
-			dev_err(dev, "Unexpected number of ports\n");
+			dev_dbg(dev, "Unexpected number of ports\n");
 			return -EINVAL;
 		}
 		ret = of_property_read_u32_array(dev->of_node, "qcom,msm_bus",
 						 ports, len);
 		if (ret) {
-			dev_err(dev, "error reading the src and dst for the bus\n");
+			dev_dbg(dev, "error reading the src and dst for the bus\n");
 			return ret;
 		}
 		ret = of_property_read_string(dev->of_node,
@@ -1218,7 +1218,7 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 						(char *)m->bus_name, false);
 		if (IS_ERR_OR_NULL(m->bus_client)) {
 			ret = PTR_ERR(m->bus_client) ?: -EBADHANDLE;
-			dev_err(dev, "Failed to register bus %s: %d\n",
+			dev_dbg(dev, "Failed to register bus %s: %d\n",
 							m->bus_name, ret);
 			m->bus_client = NULL;
 			return ret;
@@ -1264,7 +1264,7 @@ static int bimc_bwmon_driver_probe(struct platform_device *pdev)
 
 	ret = register_bw_hwmon(dev, &m->hw);
 	if (ret) {
-		dev_err(dev, "Dev BW hwmon registration failed\n");
+		dev_dbg(dev, "Dev BW hwmon registration failed\n");
 		goto err_out;
 	}
 

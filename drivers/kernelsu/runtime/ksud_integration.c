@@ -86,14 +86,14 @@ static void stop_execve_hook(void);
     {
         ksu_syscall_table_unhook(__NR_read);
         ksu_syscall_table_unhook(__NR_fstat);
-        pr_info("unregister init_rc syscall hook\n");
-        pr_info("stop init_rc_hook!\n");
+        pr_debug("unregister init_rc syscall hook\n");
+        pr_debug("stop init_rc_hook!\n");
     }
 
     static inline void stop_input_hook(void)
     {
         bool ret = schedule_work(&stop_input_hook_work);
-        pr_info("unregister input kprobe: %d!\n", ret);
+        pr_debug("unregister input kprobe: %d!\n", ret);
     }
 #elif defined(CONFIG_KSU_SUSFS)
     DEFINE_STATIC_KEY_TRUE(ksu_is_init_rc_hook_enabled);
@@ -107,7 +107,7 @@ static void stop_execve_hook(void);
     {
         if (static_key_enabled(&ksu_is_init_rc_hook_enabled))
             static_branch_disable(&ksu_is_init_rc_hook_enabled);
-        pr_info("stop init_rc_hook!\n");
+        pr_debug("stop init_rc_hook!\n");
     }
 
     static inline void stop_input_hook(void)
@@ -124,7 +124,7 @@ static void stop_execve_hook(void);
         {
             if (static_key_enabled(&ksu_init_rc_hook))
                 static_branch_disable(&ksu_init_rc_hook);
-            pr_info("stop init_rc_hook!\n");
+            pr_debug("stop init_rc_hook!\n");
         }
     #else
         bool ksu_init_rc_hook __read_mostly = true;
@@ -132,7 +132,7 @@ static void stop_execve_hook(void);
         static void stop_init_rc_hook(void)
         {
             ksu_init_rc_hook = false;
-            pr_info("stop init_rc_hook!\n");
+            pr_debug("stop init_rc_hook!\n");
         }
     #endif
 
@@ -246,7 +246,7 @@ static bool check_argv(struct user_arg_ptr argv, int index, const char *expected
     return !strcmp(buf, expected);
 
 fail:
-    pr_err("check_argv failed\n");
+    pr_debug("check_argv failed\n");
     return false;
 }
 
@@ -267,7 +267,7 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv, s
         // /system/bin/init executed
         char buf[16];
         if (!init_second_stage_executed && check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
-            pr_info("/system/bin/init second_stage executed via argv1 check\n");
+            pr_debug("/system/bin/init second_stage executed via argv1 check\n");
             ksu_selinux_hide_handle_second_stage();
             apply_kernelsu_rules();
             cache_sid();
@@ -277,12 +277,12 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv, s
     } else if (unlikely(!memcmp(filename, old_system_init, sizeof(old_system_init) - 1) && argv)) {
         // /init executed
         int argc = count(*argv, MAX_ARG_STRINGS);
-        pr_info("/init argc: %d\n", argc);
+        pr_debug("/init argc: %d\n", argc);
         if (argc > 1 && !init_second_stage_executed) {
             /* This applies to versions between Android 6 ~ 7 */
             char buf[16];
             if (!init_second_stage_executed && check_argv(*argv, 1, "--second-stage", buf, sizeof(buf))) {
-                pr_info("/init second_stage executed via argv1 check\n");
+                pr_debug("/init second_stage executed via argv1 check\n");
 
                 // This detect only happen in Android 10 +
                 // But still init it to avoid we should handle more case
@@ -317,7 +317,7 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv, s
                     // Check if the environment variable name and value are matching
                     if (!strcmp(env_name, "INIT_SECOND_STAGE") &&
                         (!strcmp(env_value, "1") || !strcmp(env_value, "true"))) {
-                        pr_info("/init second_stage executed via envp check\n");
+                        pr_debug("/init second_stage executed via envp check\n");
 
                         // This detect only happen in Android 10 +
                         // But still init it to avoid we should handle more case
@@ -337,7 +337,7 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv, s
     if (unlikely(first_zygote && !memcmp(filename, app_process, sizeof(app_process) - 1) && argv)) {
         char buf[16];
         if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
-            pr_info("exec zygote, /data prepared, second_stage: %d\n", init_second_stage_executed);
+            pr_debug("exec zygote, /data prepared, second_stage: %d\n", init_second_stage_executed);
             on_post_fs_data();
             first_zygote = false;
             ksu_stop_ksud_execve_hook();
@@ -390,7 +390,7 @@ static void load_module_rc_once(void)
         return;
     loaded = true;
     if (ksu_no_custom_rc) {
-        pr_info("custom rc is disabled\n");
+        pr_debug("custom rc is disabled\n");
         return;
     }
 
@@ -398,38 +398,38 @@ static void load_module_rc_once(void)
 
     f = open_module_rc(&path);
     if (IS_ERR(f)) {
-        pr_info("module rc: open %s failed: %ld\n", path, PTR_ERR(f));
+        pr_debug("module rc: open %s failed: %ld\n", path, PTR_ERR(f));
         goto out_revert_creds;
     }
 
     if (!S_ISREG(file_inode(f)->i_mode)) {
-        pr_warn("module rc: %s is not a regular file\n", path);
+        pr_debug("module rc: %s is not a regular file\n", path);
         goto out_close_file;
     }
 
     fsize = i_size_read(file_inode(f));
     if (fsize == 0) {
-        pr_warn("module rc: skip empty module rc\n");
+        pr_debug("module rc: skip empty module rc\n");
         goto out_close_file;
     }
 
     module_rc_buf = vmalloc(fsize);
     if (!module_rc_buf) {
-        pr_err("module rc: alloc %zu failed\n", fsize);
+        pr_debug("module rc: alloc %zu failed\n", fsize);
         goto out_close_file;
     }
 
     r = ksu_kernel_read_compat(f, module_rc_buf, fsize, &pos);
 
     if (r <= 0) {
-        pr_err("module rc: read failed: %zd\n", r);
+        pr_debug("module rc: read failed: %zd\n", r);
         vfree(module_rc_buf);
         module_rc_buf = NULL;
         goto out_close_file;
     }
 
     module_rc_len = r;
-    pr_info("module rc: loaded %zu bytes from %s\n", module_rc_len, path);
+    pr_debug("module rc: loaded %zu bytes from %s\n", module_rc_len, path);
 
 out_close_file:
     filp_close(f, NULL);
@@ -467,7 +467,7 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count, lof
     if (ksu_rc_pos >= ksu_rc_len && module_rc_pos >= module_rc_len) {
         return ret;
     }
-    pr_info("read_proxy: orig read finished, start append rc\n");
+    pr_debug("read_proxy: orig read finished, start append rc\n");
 
 append_ksu_rc:
     if (ksu_rc_pos < ksu_rc_len) {
@@ -476,14 +476,14 @@ append_ksu_rc:
             append_count = count - ret;
         // copy_to_user returns the number of bytes that could not be copied
         if (copy_to_user(buf + ret, KERNEL_SU_RC + ksu_rc_pos, append_count)) {
-            pr_info("read_proxy: append error, totally appended %zd\n", ksu_rc_pos);
+            pr_debug("read_proxy: append error, totally appended %zd\n", ksu_rc_pos);
             return ret;
         }
-        pr_info("read_proxy: append static %zu\n", append_count);
+        pr_debug("read_proxy: append static %zu\n", append_count);
         ksu_rc_pos += append_count;
         ret += append_count;
         if (ksu_rc_pos == ksu_rc_len)
-            pr_info("read_proxy: static append done\n");
+            pr_debug("read_proxy: static append done\n");
     }
 
 append_module_rc:
@@ -492,14 +492,14 @@ append_module_rc:
         if (append_count > count - ret)
             append_count = count - ret;
         if (copy_to_user(buf + ret, module_rc_buf + module_rc_pos, append_count)) {
-            pr_info("read_proxy: module append error, totally appended %zd\n", module_rc_pos);
+            pr_debug("read_proxy: module append error, totally appended %zd\n", module_rc_pos);
             return ret;
         }
-        pr_info("read_proxy: append module %zu\n", append_count);
+        pr_debug("read_proxy: append module %zu\n", append_count);
         module_rc_pos += append_count;
         ret += append_count;
         if (module_rc_pos == (ssize_t)module_rc_len) {
-            pr_info("read_proxy: module append done\n");
+            pr_debug("read_proxy: module append done\n");
             free_module_rc();
         }
     }
@@ -524,21 +524,21 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
     if (ksu_rc_pos >= ksu_rc_len && module_rc_pos >= module_rc_len) {
         return ret;
     }
-    pr_info("read_iter_proxy: orig read finished, start append rc\n");
+    pr_debug("read_iter_proxy: orig read finished, start append rc\n");
 
 append_ksu_rc:
     if (ksu_rc_pos < ksu_rc_len) {
         // copy_to_iter returns the number of bytes successfully copied
         append_count = copy_to_iter((void *)KERNEL_SU_RC + ksu_rc_pos, ksu_rc_len - ksu_rc_pos, to);
         if (!append_count) {
-            pr_info("read_iter_proxy: append error, totally appended %zd\n", ksu_rc_pos);
+            pr_debug("read_iter_proxy: append error, totally appended %zd\n", ksu_rc_pos);
             return ret;
         }
-        pr_info("read_iter_proxy: append static %zu\n", append_count);
+        pr_debug("read_iter_proxy: append static %zu\n", append_count);
         ksu_rc_pos += append_count;
         ret += append_count;
         if (ksu_rc_pos == ksu_rc_len) {
-            pr_info("read_iter_proxy: static append done\n");
+            pr_debug("read_iter_proxy: static append done\n");
         }
     }
 
@@ -546,14 +546,14 @@ append_module_rc:
     if (module_rc_pos < module_rc_len) {
         append_count = copy_to_iter((void *)module_rc_buf + module_rc_pos, module_rc_len - module_rc_pos, to);
         if (!append_count) {
-            pr_info("read_iter_proxy: module append error, appended %zd\n", module_rc_pos);
+            pr_debug("read_iter_proxy: module append error, appended %zd\n", module_rc_pos);
             return ret;
         }
-        pr_info("read_iter_proxy: append module %zu\n", append_count);
+        pr_debug("read_iter_proxy: append module %zu\n", append_count);
         module_rc_pos += append_count;
         ret += append_count;
         if (module_rc_pos == (ssize_t)module_rc_len) {
-            pr_info("read_iter_proxy: module append done\n");
+            pr_debug("read_iter_proxy: module append done\n");
             free_module_rc();
         }
     }
@@ -620,7 +620,7 @@ static __always_inline void ksu_common_newfstat_ret(unsigned long fd_long, void 
     }
     fput(file);
 
-    pr_info("%s: stat init.rc \n", __func__);
+    pr_debug("%s: stat init.rc \n", __func__);
     load_module_rc_once();
 
     uintptr_t statbuf_ptr_local = (uintptr_t) * (void **)statbuf_ptr;
@@ -644,18 +644,18 @@ static __always_inline void ksu_common_newfstat_ret(unsigned long fd_long, void 
 #endif
 
     if (copy_from_user(&size, st_size_ptr, len)) {
-        pr_info("%s: read statbuf 0x%lx failed \n", __func__, (unsigned long)st_size_ptr);
+        pr_debug("%s: read statbuf 0x%lx failed \n", __func__, (unsigned long)st_size_ptr);
         return;
     }
 
     new_size = size + extra;
-    pr_info("%s: adding rc len: %ld -> %ld (static=%zu module=%zu)\n", __func__, size, new_size, ksu_rc_len,
+    pr_debug("%s: adding rc len: %ld -> %ld (static=%zu module=%zu)\n", __func__, size, new_size, ksu_rc_len,
             module_rc_len);
 
     if (!copy_to_user(st_size_ptr, &new_size, len))
-        pr_info("%s: added rc len \n", __func__);
+        pr_debug("%s: added rc len \n", __func__);
     else
-        pr_info("%s: add rc len failed: statbuf 0x%lx \n", __func__, (unsigned long)st_size_ptr);
+        pr_debug("%s: add rc len failed: statbuf 0x%lx \n", __func__, (unsigned long)st_size_ptr);
 
     return;
 }
@@ -691,13 +691,13 @@ void ksu_handle_vfs_fstat(int fd, loff_t *kstat_size_ptr)
     if (is_init_rc(file)) {
         size_t extra;
         loff_t new_size;
-        pr_info("stat init.rc");
+        pr_debug("stat init.rc");
         load_module_rc_once();
 
         extra = ksu_rc_len + module_rc_len;
         new_size = *kstat_size_ptr + extra;
 
-        pr_info("adding rc len: %lld -> %lld", *kstat_size_ptr, new_size);
+        pr_debug("adding rc len: %lld -> %lld", *kstat_size_ptr, new_size);
         *kstat_size_ptr = new_size;
     }
     fput(file);
@@ -734,7 +734,7 @@ void ksu_handle_initrc(struct file *file)
 
     load_module_rc_once();
 
-    pr_info("read init.rc, comm: %s, rc_count: %zu, module_rc: %zu\n", current->comm, ksu_rc_len, module_rc_len);
+    pr_debug("read init.rc, comm: %s, rc_count: %zu, module_rc: %zu\n", current->comm, ksu_rc_len, module_rc_len);
 
     // Now we need to proxy the read and modify the result!
     // But, we can not modify the file_operations directly, because it's in read-only memory.
@@ -797,7 +797,7 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code, int *v
 
     if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
         int val = *value;
-        pr_info("KEY_VOLUMEDOWN val: %d\n", val);
+        pr_debug("KEY_VOLUMEDOWN val: %d\n", val);
         if (val) {
             // key pressed, count it
             volumedown_pressed_count += 1;
@@ -823,15 +823,15 @@ static void vol_detector_event(struct input_handle *handle, unsigned int type, u
     if (code != KEY_VOLUMEDOWN)
         return;
 
-    pr_info("KEY_VOLUMEDOWN press detected!\n");
+    pr_debug("KEY_VOLUMEDOWN press detected!\n");
 
     volumedown_pressed_count += 1;
-    pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
+    pr_debug("volumedown_pressed_count: %d\n", volumedown_pressed_count);
 
     // yeah this fucks up, seems unreg in the same context is an issue
     // but then again, tehres no need to unreg here, just let on_post_fs_data do it
     //if (volume_pressed_count >= 3) {
-    //	pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
+    //	pr_debug("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
     //	ksu_stop_input_hook_runtime();
     //}
 }
@@ -894,13 +894,13 @@ static struct input_handler vol_detector_handler = {
 
 static int vol_detector_init()
 {
-    pr_info("vol_detector: init\n");
+    pr_debug("vol_detector: init\n");
     return input_register_handler(&vol_detector_handler);
 }
 
 static void vol_detector_exit()
 {
-    pr_info("vol_detector: exit\n");
+    pr_debug("vol_detector: exit\n");
     input_unregister_handler(&vol_detector_handler);
 }
 #endif
@@ -937,10 +937,10 @@ bool ksu_is_safe_mode()
     // stop hook first!
     ksu_stop_input_hook_runtime();
 
-    pr_info("volumedown_pressed_count: %d\n", volumedown_pressed_count);
+    pr_debug("volumedown_pressed_count: %d\n", volumedown_pressed_count);
     if (is_volumedown_enough(volumedown_pressed_count)) {
         // pressed over 3 times
-        pr_info("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
+        pr_debug("KEY_VOLUMEDOWN pressed max times, safe mode detected!\n");
         safe_mode = true;
         return true;
     }
@@ -968,7 +968,7 @@ void ksu_execve_hook_ksud(const struct pt_regs *regs)
     memset(path, 0, sizeof(path));
     ret = strncpy_from_user(path, fn, 32);
     if (ret < 0) {
-        pr_err("Access filename failed for execve_handler_pre\n");
+        pr_debug("Access filename failed for execve_handler_pre\n");
         return;
     }
 
@@ -997,7 +997,7 @@ static long ksu_sys_fstat(const struct pt_regs *regs)
     struct file *file = fget(fd);
     if (file) {
         if (is_init_rc(file)) {
-            pr_info("stat init.rc");
+            pr_debug("stat init.rc");
             is_rc = true;
             load_module_rc_once();
         }
@@ -1012,14 +1012,14 @@ static long ksu_sys_fstat(const struct pt_regs *regs)
         size_t extra = ksu_rc_len + module_rc_len;
         if (!copy_from_user_nofault(&size, st_size_ptr, sizeof(long))) {
             new_size = size + extra;
-            pr_info("adding rc len: %ld -> %ld", size, new_size);
+            pr_debug("adding rc len: %ld -> %ld", size, new_size);
             if (!copy_to_user_nofault(st_size_ptr, &new_size, sizeof(long))) {
-                pr_info("added rc len");
+                pr_debug("added rc len");
             } else {
-                pr_err("add rc len failed: statbuf 0x%lx", (unsigned long)st_size_ptr);
+                pr_debug("add rc len failed: statbuf 0x%lx", (unsigned long)st_size_ptr);
             }
         } else {
-            pr_err("read statbuf 0x%lx failed", (unsigned long)st_size_ptr);
+            pr_debug("read statbuf 0x%lx failed", (unsigned long)st_size_ptr);
         }
     }
 
@@ -1065,7 +1065,7 @@ void __init ksu_ksud_init(void)
     ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
 
     ret = register_kprobe(&input_event_kp);
-    pr_info("ksud: input_event_kp: %d\n", ret);
+    pr_debug("ksud: input_event_kp: %d\n", ret);
 
     INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 #endif

@@ -201,7 +201,7 @@ static int rtc_device_get_id(struct device *dev)
 	if (of_id >= 0) {
 		id = ida_simple_get(&rtc_ida, of_id, of_id + 1, GFP_KERNEL);
 		if (id < 0)
-			dev_warn(dev, "/aliases ID %d not available\n", of_id);
+			dev_dbg(dev, "/aliases ID %d not available\n", of_id);
 	}
 
 	if (id < 0)
@@ -325,7 +325,7 @@ struct rtc_device *rtc_device_register(const char *name, struct device *dev,
 
 	err = cdev_device_add(&rtc->char_dev, &rtc->dev);
 	if (err) {
-		dev_warn(&rtc->dev, "%s: failed to add char device %d:%d\n",
+		dev_dbg(&rtc->dev, "%s: failed to add char device %d:%d\n",
 			 name, MAJOR(rtc->dev.devt), rtc->id);
 
 		/* This will free both memory and the ID */
@@ -338,7 +338,7 @@ struct rtc_device *rtc_device_register(const char *name, struct device *dev,
 
 	rtc_proc_add_device(rtc);
 
-	dev_info(dev, "rtc core: registered %s as %s\n",
+	dev_dbg(dev, "rtc core: registered %s as %s\n",
 			name, dev_name(&rtc->dev));
 
 #ifdef CONFIG_RTC_HCTOSYS_DEVICE
@@ -352,7 +352,7 @@ exit_ida:
 	ida_simple_remove(&rtc_ida, id);
 
 exit:
-	dev_err(dev, "rtc core: unable to register %s, err = %d\n",
+	dev_dbg(dev, "rtc core: unable to register %s, err = %d\n",
 			name, err);
 	return ERR_PTR(err);
 }
@@ -520,7 +520,7 @@ int __rtc_register_device(struct module *owner, struct rtc_device *rtc)
 
 	err = cdev_device_add(&rtc->char_dev, &rtc->dev);
 	if (err)
-		dev_warn(rtc->dev.parent, "failed to add char device %d:%d\n",
+		dev_dbg(rtc->dev.parent, "failed to add char device %d:%d\n",
 			 MAJOR(rtc->dev.devt), rtc->id);
 	else
 		dev_dbg(rtc->dev.parent, "char device (%d:%d)\n",
@@ -529,7 +529,7 @@ int __rtc_register_device(struct module *owner, struct rtc_device *rtc)
 	rtc_proc_add_device(rtc);
 
 	rtc->registered = true;
-	dev_info(rtc->dev.parent, "registered as %s\n",
+	dev_dbg(rtc->dev.parent, "registered as %s\n",
 		 dev_name(&rtc->dev));
 
 #ifdef CONFIG_RTC_HCTOSYS_DEVICE
@@ -545,7 +545,7 @@ static int __init rtc_init(void)
 {
 	rtc_class = class_create(THIS_MODULE, "rtc");
 	if (IS_ERR(rtc_class)) {
-		pr_err("couldn't create class\n");
+		pr_debug("couldn't create class\n");
 		return PTR_ERR(rtc_class);
 	}
 	rtc_class->pm = RTC_CLASS_DEV_PM_OPS;

@@ -44,11 +44,11 @@ static int32_t msm_ir_led_get_subdev_id(
 
 	CDBG("Enter\n");
 	if (!subdev_id) {
-		pr_err("subdevice ID is not valid\n");
+		pr_debug("subdevice ID is not valid\n");
 		return -EINVAL;
 	}
 	if (ir_led_ctrl->ir_led_device_type != MSM_CAMERA_PLATFORM_DEVICE) {
-		pr_err("device type is not matching\n");
+		pr_debug("device type is not matching\n");
 		return -EINVAL;
 	}
 
@@ -79,14 +79,14 @@ static int32_t msm_ir_led_release(
 	int32_t rc = 0;
 
 	if (ir_led_ctrl->ir_led_state == MSM_CAMERA_IR_LED_RELEASE) {
-		pr_err("Invalid ir_led state = %d\n",
+		pr_debug("Invalid ir_led state = %d\n",
 			ir_led_ctrl->ir_led_state);
 		return 0;
 	}
 
 	rc = ir_led_ctrl->func_tbl->camera_ir_led_off(ir_led_ctrl, NULL);
 	if (rc < 0) {
-		pr_err("camera_ir_led_off failed (%d)\n", rc);
+		pr_debug("camera_ir_led_off failed (%d)\n", rc);
 		return rc;
 	}
 	ir_led_ctrl->ir_led_state = MSM_CAMERA_IR_LED_RELEASE;
@@ -101,7 +101,7 @@ static int32_t msm_ir_led_off(struct msm_ir_led_ctrl_t *ir_led_ctrl,
 	if (ir_led_ctrl->pwm_dev)
 		pwm_disable(ir_led_ctrl->pwm_dev);
 	else
-		pr_err("pwm device is null\n");
+		pr_debug("pwm device is null\n");
 
 	CDBG("Exit\n");
 	return 0;
@@ -121,17 +121,17 @@ static int32_t msm_ir_led_on(
 			ir_led_data->pwm_duty_on_ns,
 			ir_led_data->pwm_period_ns);
 		if (rc) {
-			pr_err("PWM config failed (%d)\n", rc);
+			pr_debug("PWM config failed (%d)\n", rc);
 			return rc;
 		}
 
 		rc = pwm_enable(ir_led_ctrl->pwm_dev);
 		if (rc) {
-			pr_err("PWM enable failed(%d)\n", rc);
+			pr_debug("PWM enable failed(%d)\n", rc);
 			return rc;
 		}
 	} else
-		pr_err("pwm device is null\n");
+		pr_debug("pwm device is null\n");
 
 	return 0;
 }
@@ -148,7 +148,7 @@ static int32_t msm_ir_led_handle_init(
 	CDBG("Enter\n");
 
 	if (ir_led_ctrl->ir_led_state == MSM_CAMERA_IR_LED_INIT) {
-		pr_err("Invalid ir_led state = %d\n",
+		pr_debug("Invalid ir_led state = %d\n",
 				ir_led_ctrl->ir_led_state);
 		return 0;
 	}
@@ -162,7 +162,7 @@ static int32_t msm_ir_led_handle_init(
 	}
 
 	if (rc < 0) {
-		pr_err("failed invalid ir_led_driver_type %d\n",
+		pr_debug("failed invalid ir_led_driver_type %d\n",
 				ir_led_driver_type);
 		return -EINVAL;
 	}
@@ -170,7 +170,7 @@ static int32_t msm_ir_led_handle_init(
 	rc = ir_led_ctrl->func_tbl->camera_ir_led_init(
 			ir_led_ctrl, ir_led_data);
 	if (rc < 0) {
-		pr_err("camera_ir_led_init failed (%d)\n", rc);
+		pr_debug("camera_ir_led_init failed (%d)\n", rc);
 		return rc;
 	}
 
@@ -231,12 +231,12 @@ static long msm_ir_led_subdev_ioctl(struct v4l2_subdev *sd,
 	CDBG("Enter\n");
 
 	if (!sd) {
-		pr_err(" v4l2 ir led subdevice is NULL\n");
+		pr_debug(" v4l2 ir led subdevice is NULL\n");
 		return -EINVAL;
 	}
 	fctrl = v4l2_get_subdevdata(sd);
 	if (!fctrl) {
-		pr_err("fctrl NULL\n");
+		pr_debug("fctrl NULL\n");
 		return -EINVAL;
 	}
 	switch (cmd) {
@@ -248,7 +248,7 @@ static long msm_ir_led_subdev_ioctl(struct v4l2_subdev *sd,
 		return 0;
 	case MSM_SD_SHUTDOWN:
 		if (!fctrl->func_tbl) {
-			pr_err("No call back funcions\n");
+			pr_debug("No call back funcions\n");
 			return -EINVAL;
 		} else {
 			return fctrl->func_tbl->camera_ir_led_release(fctrl);
@@ -275,7 +275,7 @@ static int msm_ir_led_close(struct v4l2_subdev *sd,
 	struct msm_ir_led_ctrl_t *ir_led_ctrl = v4l2_get_subdevdata(sd);
 
 	if (!ir_led_ctrl) {
-		pr_err("v4l2 subdevice data read failed\n");
+		pr_debug("v4l2 subdevice data read failed\n");
 		return -EINVAL;
 	}
 
@@ -304,7 +304,7 @@ static int32_t msm_ir_led_get_dt_data(struct device_node *of_node,
 	/* Read the sub device */
 	rc = of_property_read_u32(of_node, "cell-index", &fctrl->pdev->id);
 	if (rc < 0) {
-		pr_err("reading cell-index for ir-led node is failed(rc) %d\n",
+		pr_debug("reading cell-index for ir-led node is failed(rc) %d\n",
 				rc);
 		return rc;
 	}
@@ -357,7 +357,7 @@ static int32_t msm_ir_led_platform_probe(struct platform_device *pdev)
 
 	CDBG("Enter\n");
 	if (!pdev->dev.of_node) {
-		pr_err("IR LED device node is not present in device tree\n");
+		pr_debug("IR LED device node is not present in device tree\n");
 		return -EINVAL;
 	}
 
@@ -373,13 +373,13 @@ static int32_t msm_ir_led_platform_probe(struct platform_device *pdev)
 
 	if (IS_ERR(ir_led_ctrl->pwm_dev)) {
 		rc = PTR_ERR(ir_led_ctrl->pwm_dev);
-		pr_err("Cannot get PWM device (%d)\n", rc);
+		pr_debug("Cannot get PWM device (%d)\n", rc);
 		ir_led_ctrl->pwm_dev = NULL;
 	}
 
 	rc = msm_ir_led_get_dt_data(pdev->dev.of_node, ir_led_ctrl);
 	if (rc < 0) {
-		pr_err("msm_ir_led_get_dt_data failed\n");
+		pr_debug("msm_ir_led_get_dt_data failed\n");
 		return -EINVAL;
 	}
 
@@ -434,7 +434,7 @@ static int __init msm_ir_led_init_module(void)
 	if (!rc)
 		return rc;
 
-	pr_err("ir-led driver register failed (%d)\n", rc);
+	pr_debug("ir-led driver register failed (%d)\n", rc);
 
 	return rc;
 }

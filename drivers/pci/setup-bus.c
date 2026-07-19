@@ -1791,9 +1791,9 @@ again:
 
 	if (tried_times >= pci_try_num) {
 		if (enable_local == undefined)
-			dev_info(&bus->dev, "Some PCI device resources are unassigned, try booting with pci=realloc\n");
+			dev_dbg(&bus->dev, "Some PCI device resources are unassigned, try booting with pci=realloc\n");
 		else if (enable_local == auto_enabled)
-			dev_info(&bus->dev, "Automatically enabled pci realloc, if you have problem, try booting with pci=realloc=off\n");
+			dev_dbg(&bus->dev, "Automatically enabled pci realloc, if you have problem, try booting with pci=realloc=off\n");
 
 		free_list(&fail_head);
 		goto dump;
@@ -2055,7 +2055,7 @@ again:
 		goto enable_all;
 	}
 
-	printk(KERN_DEBUG "PCI: No. %d try to assign unassigned res\n",
+	no_printk(KERN_DEBUG "PCI: No. %d try to assign unassigned res\n",
 			 tried_times + 1);
 
 	/*

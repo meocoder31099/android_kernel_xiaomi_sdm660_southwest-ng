@@ -41,7 +41,7 @@ static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
 static void setup_groups(struct root_profile *profile, struct cred *cred)
 {
     if (profile->groups_count > KSU_MAX_GROUPS) {
-        pr_warn("Failed to setgroups, too large group: %d!\n", profile->uid);
+        pr_debug("Failed to setgroups, too large group: %d!\n", profile->uid);
         return;
     }
 
@@ -56,7 +56,7 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
     u32 ngroups = profile->groups_count;
     struct group_info *group_info = groups_alloc(ngroups);
     if (!group_info) {
-        pr_warn("Failed to setgroups, ENOMEM for: %d\n", profile->uid);
+        pr_debug("Failed to setgroups, ENOMEM for: %d\n", profile->uid);
         return;
     }
 
@@ -65,7 +65,7 @@ static void setup_groups(struct root_profile *profile, struct cred *cred)
         gid_t gid = profile->groups[i];
         kgid_t kgid = make_kgid(current_user_ns(), gid);
         if (!gid_valid(kgid)) {
-            pr_warn("Failed to setgroups, invalid gid: %d\n", gid);
+            pr_debug("Failed to setgroups, invalid gid: %d\n", gid);
             put_group_info(group_info);
             return;
         }
@@ -93,7 +93,7 @@ void disable_seccomp(void)
     struct task_struct *fake;
     fake = kmalloc(sizeof(*fake), GFP_ATOMIC);
     if (!fake) {
-        pr_err("%s: cannot allocate fake struct!\n", __func__);
+        pr_debug("%s: cannot allocate fake struct!\n", __func__);
         return;
     }
 #endif
@@ -147,17 +147,17 @@ int escape_with_root_profile(void)
 
     cred = prepare_creds();
     if (!cred) {
-        pr_warn("prepare_creds failed!\n");
+        pr_debug("prepare_creds failed!\n");
         return -ENOMEM;
     }
 
     if (ksu_get_uid_t(current_euid()) == 0) {
-        pr_warn("Already root, don't escape!\n");
+        pr_debug("Already root, don't escape!\n");
         goto out_abort_creds;
     }
 
     if (test_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT)) {
-        pr_warn("TIF_KSU_DISABLE_ESCAPE_WITH_ROOT found, don't escape!\n");
+        pr_debug("TIF_KSU_DISABLE_ESCAPE_WITH_ROOT found, don't escape!\n");
         goto out_abort_creds;
     }
 
@@ -249,7 +249,7 @@ void escape_to_root_for_init(void)
 {
     struct cred *cred = prepare_creds();
     if (!cred) {
-        pr_err("Failed to prepare init's creds!\n");
+        pr_debug("Failed to prepare init's creds!\n");
         return;
     }
 

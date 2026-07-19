@@ -208,7 +208,7 @@ static void soc_init_card_debugfs(struct snd_soc_card *card)
 	card->debugfs_card_root = debugfs_create_dir(card->name,
 						     snd_soc_debugfs_root);
 	if (!card->debugfs_card_root) {
-		dev_warn(card->dev,
+		dev_dbg(card->dev,
 			 "ASoC: Failed to create card debugfs directory\n");
 		return;
 	}
@@ -217,7 +217,7 @@ static void soc_init_card_debugfs(struct snd_soc_card *card)
 						    card->debugfs_card_root,
 						    &card->pop_time);
 	if (!card->debugfs_pop_time)
-		dev_warn(card->dev,
+		dev_dbg(card->dev,
 		       "ASoC: Failed to create pop time debugfs file\n");
 }
 
@@ -230,18 +230,18 @@ static void snd_soc_debugfs_init(void)
 {
 	snd_soc_debugfs_root = debugfs_create_dir("asoc", NULL);
 	if (IS_ERR_OR_NULL(snd_soc_debugfs_root)) {
-		pr_warn("ASoC: Failed to create debugfs directory\n");
+		pr_debug("ASoC: Failed to create debugfs directory\n");
 		snd_soc_debugfs_root = NULL;
 		return;
 	}
 
 	if (!debugfs_create_file("dais", 0444, snd_soc_debugfs_root, NULL,
 				 &dai_list_fops))
-		pr_warn("ASoC: Failed to create DAI list debugfs file\n");
+		pr_debug("ASoC: Failed to create DAI list debugfs file\n");
 
 	if (!debugfs_create_file("components", 0444, snd_soc_debugfs_root, NULL,
 				 &component_list_fops))
-		pr_warn("ASoC: Failed to create component list debugfs file\n");
+		pr_debug("ASoC: Failed to create component list debugfs file\n");
 }
 
 static void snd_soc_debugfs_exit(void)
@@ -704,7 +704,7 @@ int snd_soc_resume(struct device *dev)
 	} else {
 		dev_dbg(dev, "ASoC: Scheduling resume work\n");
 		if (!schedule_work(&card->deferred_resume_work))
-			dev_err(dev, "ASoC: resume work item may be lost\n");
+			dev_dbg(dev, "ASoC: resume work item may be lost\n");
 	}
 
 	return 0;
@@ -734,7 +734,7 @@ struct snd_soc_component *soc_find_component(
 	struct snd_soc_component *component;
 
 	if (!of_node && !name) {
-		pr_err("%s: Either of_node or name must be valid\n",
+		pr_debug("%s: Either of_node or name must be valid\n",
 			__func__);
 		return NULL;
 	}
@@ -907,7 +907,7 @@ static int soc_bind_dai_link(struct snd_soc_card *card,
 	cpu_dai_component.dai_name = dai_link->cpu_dai_name;
 	rtd->cpu_dai = snd_soc_find_dai(&cpu_dai_component);
 	if (!rtd->cpu_dai) {
-		dev_info(card->dev, "ASoC: CPU DAI %s not registered\n",
+		dev_dbg(card->dev, "ASoC: CPU DAI %s not registered\n",
 			 dai_link->cpu_dai_name);
 		goto _err_defer;
 	}
@@ -920,7 +920,7 @@ static int soc_bind_dai_link(struct snd_soc_card *card,
 	for (i = 0; i < rtd->num_codecs; i++) {
 		codec_dais[i] = snd_soc_find_dai(&codecs[i]);
 		if (!codec_dais[i]) {
-			dev_err(card->dev, "ASoC: CODEC DAI %s not registered\n",
+			dev_dbg(card->dev, "ASoC: CODEC DAI %s not registered\n",
 				codecs[i].dai_name);
 			goto _err_defer;
 		}
@@ -986,7 +986,7 @@ static void soc_remove_dai(struct snd_soc_dai *dai, int order)
 		if (dai->driver->remove) {
 			err = dai->driver->remove(dai);
 			if (err < 0)
-				dev_err(dai->dev,
+				dev_dbg(dai->dev,
 					"ASoC: failed to remove %s: %d\n",
 					dai->name, err);
 		}
@@ -1046,7 +1046,7 @@ static void soc_remove_dai_links(struct snd_soc_card *card)
 
 	list_for_each_entry_safe(link, _link, &card->dai_link_list, list) {
 		if (link->dobj.type == SND_SOC_DOBJ_DAI_LINK)
-			dev_warn(card->dev, "Topology forgot to remove link %s?\n",
+			dev_dbg(card->dev, "Topology forgot to remove link %s?\n",
 				link->name);
 
 		list_del(&link->list);
@@ -1074,7 +1074,7 @@ static int snd_soc_init_multicodec(struct snd_soc_card *card,
 	}
 
 	if (!dai_link->codecs) {
-		dev_err(card->dev, "ASoC: DAI link has no CODECs\n");
+		dev_dbg(card->dev, "ASoC: DAI link has no CODECs\n");
 		return -EINVAL;
 	}
 
@@ -1088,7 +1088,7 @@ static int soc_init_dai_link(struct snd_soc_card *card,
 
 	ret = snd_soc_init_multicodec(card, link);
 	if (ret) {
-		dev_err(card->dev, "ASoC: failed to init multicodec\n");
+		dev_dbg(card->dev, "ASoC: failed to init multicodec\n");
 		return ret;
 	}
 
@@ -1099,13 +1099,13 @@ static int soc_init_dai_link(struct snd_soc_card *card,
 		 */
 		if (!!link->codecs[i].name ==
 		    !!link->codecs[i].of_node) {
-			dev_err(card->dev, "ASoC: Neither/both codec name/of_node are set for %s\n",
+			dev_dbg(card->dev, "ASoC: Neither/both codec name/of_node are set for %s\n",
 				link->name);
 			return -EINVAL;
 		}
 		/* Codec DAI name must be specified */
 		if (!link->codecs[i].dai_name) {
-			dev_err(card->dev, "ASoC: codec_dai_name not set for %s\n",
+			dev_dbg(card->dev, "ASoC: codec_dai_name not set for %s\n",
 				link->name);
 			return -EINVAL;
 		}
@@ -1116,7 +1116,7 @@ static int soc_init_dai_link(struct snd_soc_card *card,
 	 * can be left unspecified, and a dummy platform will be used.
 	 */
 	if (link->platform_name && link->platform_of_node) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Both platform name/of_node are set for %s\n",
 			link->name);
 		return -EINVAL;
@@ -1128,7 +1128,7 @@ static int soc_init_dai_link(struct snd_soc_card *card,
 	 * name alone..
 	 */
 	if (link->cpu_name && link->cpu_of_node) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Neither/both cpu name/of_node are set for %s\n",
 			link->name);
 		return -EINVAL;
@@ -1139,7 +1139,7 @@ static int soc_init_dai_link(struct snd_soc_card *card,
 	 */
 	if (!link->cpu_dai_name &&
 	    !(link->cpu_name || link->cpu_of_node)) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Neither cpu_dai_name nor cpu_name/of_node are set for %s\n",
 			link->name);
 		return -EINVAL;
@@ -1175,7 +1175,7 @@ int snd_soc_add_dai_link(struct snd_soc_card *card,
 {
 	if (dai_link->dobj.type
 	    && dai_link->dobj.type != SND_SOC_DOBJ_DAI_LINK) {
-		dev_err(card->dev, "Invalid dai link type %d\n",
+		dev_dbg(card->dev, "Invalid dai link type %d\n",
 			dai_link->dobj.type);
 		return -EINVAL;
 	}
@@ -1211,7 +1211,7 @@ void snd_soc_remove_dai_link(struct snd_soc_card *card,
 
 	if (dai_link->dobj.type
 	    && dai_link->dobj.type != SND_SOC_DOBJ_DAI_LINK) {
-		dev_err(card->dev, "Invalid dai link type %d\n",
+		dev_dbg(card->dev, "Invalid dai link type %d\n",
 			dai_link->dobj.type);
 		return;
 	}
@@ -1287,7 +1287,7 @@ static int soc_probe_component(struct snd_soc_card *card,
 
 	if (component->card) {
 		if (component->card != card) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"Trying to bind component to card \"%s\" but is already bound to card \"%s\"\n",
 				card->name, component->card->name);
 			return -ENODEV;
@@ -1310,7 +1310,7 @@ static int soc_probe_component(struct snd_soc_card *card,
 					component->driver->num_dapm_widgets);
 
 		if (ret != 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"Failed to create new controls %d\n", ret);
 			goto err_probe;
 		}
@@ -1319,7 +1319,7 @@ static int soc_probe_component(struct snd_soc_card *card,
 	list_for_each_entry(dai, &component->dai_list, list) {
 		ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
 		if (ret != 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"Failed to create DAI widgets %d\n", ret);
 			goto err_probe;
 		}
@@ -1328,7 +1328,7 @@ static int soc_probe_component(struct snd_soc_card *card,
 	if (component->driver->probe) {
 		ret = component->driver->probe(component);
 		if (ret < 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"ASoC: failed to probe component %d\n", ret);
 			goto err_probe;
 		}
@@ -1343,7 +1343,7 @@ static int soc_probe_component(struct snd_soc_card *card,
 	if (component->init) {
 		ret = component->init(component);
 		if (ret < 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"Failed to do machine specific init %d\n", ret);
 			goto err_probe;
 		}
@@ -1400,7 +1400,7 @@ static int soc_post_component_init(struct snd_soc_pcm_runtime *rtd,
 	if (ret < 0) {
 		/* calling put_device() here to free the rtd->dev */
 		put_device(rtd->dev);
-		dev_err(rtd->card->dev,
+		dev_dbg(rtd->card->dev,
 			"ASoC: failed to register runtime device: %d\n", ret);
 		return ret;
 	}
@@ -1438,7 +1438,7 @@ static int soc_probe_dai(struct snd_soc_dai *dai, int order)
 	if (dai->driver->probe) {
 		int ret = dai->driver->probe(dai);
 		if (ret < 0) {
-			dev_err(dai->dev, "ASoC: failed to probe DAI %s: %d\n",
+			dev_dbg(dai->dev, "ASoC: failed to probe DAI %s: %d\n",
 				dai->name, ret);
 			return ret;
 		}
@@ -1460,7 +1460,7 @@ static int soc_link_dai_pcm_new(struct snd_soc_dai **dais, int num_dais,
 		if (!rtd->dai_link->no_pcm && drv->pcm_new)
 			ret = drv->pcm_new(rtd, dais[i]);
 		if (ret < 0) {
-			dev_err(dais[i]->dev,
+			dev_dbg(dais[i]->dev,
 				"ASoC: Failed to bind %s with pcm device\n",
 				dais[i]->name);
 			return ret;
@@ -1480,7 +1480,7 @@ static int soc_link_dai_widgets(struct snd_soc_card *card,
 	int ret;
 
 	if (rtd->num_codecs > 1)
-		dev_warn(card->dev, "ASoC: Multiple codecs not supported yet\n");
+		dev_dbg(card->dev, "ASoC: Multiple codecs not supported yet\n");
 
 	/* link the DAI widgets */
 	sink = codec_dai->playback_widget;
@@ -1490,7 +1490,7 @@ static int soc_link_dai_widgets(struct snd_soc_card *card,
 					   dai_link->num_params,
 					   source, sink);
 		if (ret != 0) {
-			dev_err(card->dev, "ASoC: Can't link %s to %s: %d\n",
+			dev_dbg(card->dev, "ASoC: Can't link %s to %s: %d\n",
 				sink->name, source->name, ret);
 			return ret;
 		}
@@ -1503,7 +1503,7 @@ static int soc_link_dai_widgets(struct snd_soc_card *card,
 					   dai_link->num_params,
 					   source, sink);
 		if (ret != 0) {
-			dev_err(card->dev, "ASoC: Can't link %s to %s: %d\n",
+			dev_dbg(card->dev, "ASoC: Can't link %s to %s: %d\n",
 				sink->name, source->name, ret);
 			return ret;
 		}
@@ -1546,7 +1546,7 @@ static int soc_probe_link_dais(struct snd_soc_card *card,
 	if (dai_link->init) {
 		ret = dai_link->init(rtd);
 		if (ret < 0) {
-			dev_err(card->dev, "ASoC: failed to init %s: %d\n",
+			dev_dbg(card->dev, "ASoC: failed to init %s: %d\n",
 				dai_link->name, ret);
 			return ret;
 		}
@@ -1588,7 +1588,7 @@ static int soc_probe_link_dais(struct snd_soc_card *card,
 		/*create compress_device"*/
 		ret = cpu_dai->driver->compress_new(rtd, num);
 		if (ret < 0) {
-			dev_err(card->dev, "ASoC: can't create compress %s\n",
+			dev_dbg(card->dev, "ASoC: can't create compress %s\n",
 					 dai_link->stream_name);
 			return ret;
 		}
@@ -1598,7 +1598,7 @@ static int soc_probe_link_dais(struct snd_soc_card *card,
 			/* create the pcm */
 			ret = soc_new_pcm(rtd, num);
 			if (ret < 0) {
-				dev_err(card->dev, "ASoC: can't create pcm %s :%d\n",
+				dev_dbg(card->dev, "ASoC: can't create pcm %s :%d\n",
 				       dai_link->stream_name, ret);
 				return ret;
 			}
@@ -1647,7 +1647,7 @@ static int soc_bind_aux_dev(struct snd_soc_card *card, int num)
 		if (!component)
 			goto err_defer;
 	} else {
-		dev_err(card->dev, "ASoC: Invalid auxiliary device\n");
+		dev_dbg(card->dev, "ASoC: Invalid auxiliary device\n");
 		return -EINVAL;
 	}
 
@@ -1657,7 +1657,7 @@ static int soc_bind_aux_dev(struct snd_soc_card *card, int num)
 	return 0;
 
 err_defer:
-	dev_err(card->dev, "ASoC: %s not registered\n", name);
+	dev_dbg(card->dev, "ASoC: %s not registered\n", name);
 	return -EPROBE_DEFER;
 }
 
@@ -1673,7 +1673,7 @@ static int soc_probe_aux_devices(struct snd_soc_card *card)
 			if (comp->driver->probe_order == order) {
 				ret = soc_probe_component(card,	comp);
 				if (ret < 0) {
-					dev_err(card->dev,
+					dev_dbg(card->dev,
 						"ASoC: failed to probe aux component %s %d\n",
 						comp->name, ret);
 					return ret;
@@ -1730,7 +1730,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 
 		ret = snd_soc_dai_set_fmt(codec_dai, dai_fmt);
 		if (ret != 0 && ret != -ENOTSUPP) {
-			dev_warn(codec_dai->dev,
+			dev_dbg(codec_dai->dev,
 				 "ASoC: Failed to set DAI format: %d\n", ret);
 			return ret;
 		}
@@ -1762,7 +1762,7 @@ int snd_soc_runtime_set_dai_fmt(struct snd_soc_pcm_runtime *rtd,
 
 	ret = snd_soc_dai_set_fmt(cpu_dai, dai_fmt);
 	if (ret != 0 && ret != -ENOTSUPP) {
-		dev_warn(cpu_dai->dev,
+		dev_dbg(cpu_dai->dev,
 			 "ASoC: Failed to set DAI format: %d\n", ret);
 		return ret;
 	}
@@ -1851,7 +1851,7 @@ int snd_soc_set_dmi_name(struct snd_soc_card *card, const char *flavour)
 	/* make up dmi long name as: vendor.product.version.board */
 	vendor = dmi_get_system_info(DMI_BOARD_VENDOR);
 	if (!vendor || !is_dmi_valid(vendor)) {
-		dev_warn(card->dev, "ASoC: no DMI vendor name!\n");
+		dev_dbg(card->dev, "ASoC: no DMI vendor name!\n");
 		return 0;
 	}
 
@@ -1899,7 +1899,7 @@ int snd_soc_set_dmi_name(struct snd_soc_card *card, const char *flavour)
 			cleanup_dmi_name(card->dmi_longname + len);
 	} else if (!product) {
 		/* fall back to using legacy name */
-		dev_warn(card->dev, "ASoC: no DMI board/product name!\n");
+		dev_dbg(card->dev, "ASoC: no DMI board/product name!\n");
 		return 0;
 	}
 
@@ -1952,7 +1952,7 @@ static void soc_check_tplg_fes(struct snd_soc_card *card)
 				continue;
 			}
 
-			dev_info(card->dev, "info: override FE DAI link %s\n",
+			dev_dbg(card->dev, "info: override FE DAI link %s\n",
 				 card->dai_link[i].name);
 
 			/* override platform component */
@@ -1963,11 +1963,11 @@ static void soc_check_tplg_fes(struct snd_soc_card *card)
 				dai_link->no_pcm = 1;
 
 				if (dai_link->dpcm_playback)
-					dev_warn(card->dev,
+					dev_dbg(card->dev,
 						 "invalid configuration, dailink %s has flags no_pcm=0 and dpcm_playback=1\n",
 						 dai_link->name);
 				if (dai_link->dpcm_capture)
-					dev_warn(card->dev,
+					dev_dbg(card->dev,
 						 "invalid configuration, dailink %s has flags no_pcm=0 and dpcm_capture=1\n",
 						 dai_link->name);
 
@@ -2043,7 +2043,7 @@ static int snd_soc_instantiate_card(struct snd_soc_card *card)
 	ret = snd_card_new(card->dev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1,
 			card->owner, 0, &card->snd_card);
 	if (ret < 0) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: can't create sound card for card %s: %d\n",
 			card->name, ret);
 		goto base_error;
@@ -2086,7 +2086,7 @@ static int snd_soc_instantiate_card(struct snd_soc_card *card)
 		list_for_each_entry(rtd, &card->rtd_list, list) {
 			ret = soc_probe_link_components(card, rtd, order);
 			if (ret < 0) {
-				dev_err(card->dev,
+				dev_dbg(card->dev,
 					"ASoC: failed to instantiate card %d\n",
 					ret);
 				goto probe_dai_err;
@@ -2120,7 +2120,7 @@ static int snd_soc_instantiate_card(struct snd_soc_card *card)
 		list_for_each_entry(rtd, &card->rtd_list, list) {
 			ret = soc_probe_link_dais(card, rtd, order);
 			if (ret < 0) {
-				dev_err(card->dev,
+				dev_dbg(card->dev,
 					"ASoC: failed to instantiate card %d\n",
 					ret);
 				goto probe_dai_err;
@@ -2167,7 +2167,7 @@ static int snd_soc_instantiate_card(struct snd_soc_card *card)
 	if (card->late_probe) {
 		ret = card->late_probe(card);
 		if (ret < 0) {
-			dev_err(card->dev, "ASoC: %s late_probe() failed: %d\n",
+			dev_dbg(card->dev, "ASoC: %s late_probe() failed: %d\n",
 				card->name, ret);
 			goto probe_aux_dev_err;
 		}
@@ -2177,7 +2177,7 @@ static int snd_soc_instantiate_card(struct snd_soc_card *card)
 
 	ret = snd_card_register(card->snd_card);
 	if (ret < 0) {
-		dev_err(card->dev, "ASoC: failed to register soundcard %d\n",
+		dev_dbg(card->dev, "ASoC: failed to register soundcard %d\n",
 				ret);
 		goto probe_aux_dev_err;
 	}
@@ -2224,7 +2224,7 @@ static int soc_probe(struct platform_device *pdev)
 	if (!card)
 		return -EINVAL;
 
-	dev_warn(&pdev->dev,
+	dev_dbg(&pdev->dev,
 		 "ASoC: machine %s should use snd_soc_register_card()\n",
 		 card->name);
 
@@ -2376,7 +2376,7 @@ static int snd_soc_add_controls(struct snd_card *card, struct device *dev,
 		err = snd_ctl_add(card, snd_soc_cnew(control, data,
 						     control->name, prefix));
 		if (err < 0) {
-			dev_err(dev, "ASoC: Failed to add %s: %d\n",
+			dev_dbg(dev, "ASoC: Failed to add %s: %d\n",
 				control->name, err);
 			return err;
 		}
@@ -2770,7 +2770,7 @@ int snd_soc_register_card(struct snd_soc_card *card)
 
 		ret = soc_init_dai_link(card, link);
 		if (ret) {
-			dev_err(card->dev, "ASoC: failed to init link %s\n",
+			dev_dbg(card->dev, "ASoC: failed to init link %s\n",
 				link->name);
 			return ret;
 		}
@@ -2887,7 +2887,7 @@ static inline char *fmt_multiple_name(struct device *dev,
 		struct snd_soc_dai_driver *dai_drv)
 {
 	if (dai_drv->name == NULL) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"ASoC: error - multiple DAI %s registered with no name\n",
 			dev_name(dev));
 		return NULL;
@@ -3020,7 +3020,7 @@ int snd_soc_register_dai(struct snd_soc_component *component,
 	int ret;
 
 	if (dai_drv->dobj.type != SND_SOC_DOBJ_PCM) {
-		dev_err(component->dev, "Invalid dai type %d\n",
+		dev_dbg(component->dev, "Invalid dai type %d\n",
 			dai_drv->dobj.type);
 		return -EINVAL;
 	}
@@ -3035,7 +3035,7 @@ int snd_soc_register_dai(struct snd_soc_component *component,
 	 */
 	ret = snd_soc_dapm_new_dai_widgets(dapm, dai);
 	if (ret != 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"Failed to create DAI widgets %d\n", ret);
 	}
 
@@ -3074,7 +3074,7 @@ static int snd_soc_component_initialize(struct snd_soc_component *component,
 
 	component->name = fmt_single_name(dev, &component->id);
 	if (!component->name) {
-		dev_err(dev, "ASoC: Failed to allocate name\n");
+		dev_dbg(dev, "ASoC: Failed to allocate name\n");
 		return -ENOMEM;
 	}
 
@@ -3238,7 +3238,7 @@ int snd_soc_add_component(struct device *dev,
 
 	ret = snd_soc_register_dais(component, dai_drv, num_dai);
 	if (ret < 0) {
-		dev_err(dev, "ASoC: Failed to register DAIs: %d\n", ret);
+		dev_dbg(dev, "ASoC: Failed to register DAIs: %d\n", ret);
 		goto err_cleanup;
 	}
 
@@ -3351,7 +3351,7 @@ int snd_soc_of_parse_card_name(struct snd_soc_card *card,
 	int ret;
 
 	if (!card->dev) {
-		pr_err("card->dev is not set before calling %s\n", __func__);
+		pr_debug("card->dev is not set before calling %s\n", __func__);
 		return -EINVAL;
 	}
 
@@ -3364,7 +3364,7 @@ int snd_soc_of_parse_card_name(struct snd_soc_card *card,
 	 * snd_soc_register_card.
 	 */
 	if (ret < 0 && ret != -EINVAL) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Property '%s' could not be read: %d\n",
 			propname, ret);
 		return ret;
@@ -3391,19 +3391,19 @@ int snd_soc_of_parse_audio_simple_widgets(struct snd_soc_card *card,
 
 	num_widgets = of_property_count_strings(np, propname);
 	if (num_widgets < 0) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Property '%s' does not exist\n",	propname);
 		return -EINVAL;
 	}
 	if (num_widgets & 1) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Property '%s' length is not even\n", propname);
 		return -EINVAL;
 	}
 
 	num_widgets /= 2;
 	if (!num_widgets) {
-		dev_err(card->dev, "ASoC: Property '%s's length is zero\n",
+		dev_dbg(card->dev, "ASoC: Property '%s's length is zero\n",
 			propname);
 		return -EINVAL;
 	}
@@ -3411,7 +3411,7 @@ int snd_soc_of_parse_audio_simple_widgets(struct snd_soc_card *card,
 	widgets = devm_kcalloc(card->dev, num_widgets, sizeof(*widgets),
 			       GFP_KERNEL);
 	if (!widgets) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Could not allocate memory for widgets\n");
 		return -ENOMEM;
 	}
@@ -3420,7 +3420,7 @@ int snd_soc_of_parse_audio_simple_widgets(struct snd_soc_card *card,
 		ret = of_property_read_string_index(np, propname,
 			2 * i, &template);
 		if (ret) {
-			dev_err(card->dev,
+			dev_dbg(card->dev,
 				"ASoC: Property '%s' index %d read error:%d\n",
 				propname, 2 * i, ret);
 			return -EINVAL;
@@ -3435,7 +3435,7 @@ int snd_soc_of_parse_audio_simple_widgets(struct snd_soc_card *card,
 		}
 
 		if (j >= ARRAY_SIZE(simple_widgets)) {
-			dev_err(card->dev,
+			dev_dbg(card->dev,
 				"ASoC: DAPM widget '%s' is not supported\n",
 				template);
 			return -EINVAL;
@@ -3445,7 +3445,7 @@ int snd_soc_of_parse_audio_simple_widgets(struct snd_soc_card *card,
 						    (2 * i) + 1,
 						    &wname);
 		if (ret) {
-			dev_err(card->dev,
+			dev_dbg(card->dev,
 				"ASoC: Property '%s' index %d read error:%d\n",
 				propname, (2 * i) + 1, ret);
 			return -EINVAL;
@@ -3546,14 +3546,14 @@ int snd_soc_of_parse_audio_routing(struct snd_soc_card *card,
 
 	num_routes = of_property_count_strings(np, propname);
 	if (num_routes < 0 || num_routes & 1) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Property '%s' does not exist or its length is not even\n",
 			propname);
 		return -EINVAL;
 	}
 	num_routes /= 2;
 	if (!num_routes) {
-		dev_err(card->dev, "ASoC: Property '%s's length is zero\n",
+		dev_dbg(card->dev, "ASoC: Property '%s's length is zero\n",
 			propname);
 		return -EINVAL;
 	}
@@ -3561,7 +3561,7 @@ int snd_soc_of_parse_audio_routing(struct snd_soc_card *card,
 	routes = devm_kcalloc(card->dev, num_routes, sizeof(*routes),
 			      GFP_KERNEL);
 	if (!routes) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"ASoC: Could not allocate DAPM route table\n");
 		return -ENOMEM;
 	}
@@ -3570,7 +3570,7 @@ int snd_soc_of_parse_audio_routing(struct snd_soc_card *card,
 		ret = of_property_read_string_index(np, propname,
 			2 * i, &routes[i].sink);
 		if (ret) {
-			dev_err(card->dev,
+			dev_dbg(card->dev,
 				"ASoC: Property '%s' index %d could not be read: %d\n",
 				propname, 2 * i, ret);
 			return -EINVAL;
@@ -3578,7 +3578,7 @@ int snd_soc_of_parse_audio_routing(struct snd_soc_card *card,
 		ret = of_property_read_string_index(np, propname,
 			(2 * i) + 1, &routes[i].source);
 		if (ret) {
-			dev_err(card->dev,
+			dev_dbg(card->dev,
 				"ASoC: Property '%s' index %d could not be read: %d\n",
 				propname, (2 * i) + 1, ret);
 			return -EINVAL;
@@ -3910,9 +3910,9 @@ int snd_soc_of_get_dai_link_codecs(struct device *dev,
 						"#sound-dai-cells");
 	if (num_codecs <= 0) {
 		if (num_codecs == -ENOENT)
-			dev_err(dev, "No 'sound-dai' property\n");
+			dev_dbg(dev, "No 'sound-dai' property\n");
 		else
-			dev_err(dev, "Bad phandle in 'sound-dai'\n");
+			dev_dbg(dev, "Bad phandle in 'sound-dai'\n");
 		return num_codecs;
 	}
 	component = devm_kcalloc(dev,

@@ -3176,7 +3176,7 @@ static void __init bpf_iter_register(void)
 {
 	udp_reg_info.ctx_arg_info[0].btf_id = btf_sock_ids[BTF_SOCK_TYPE_UDP];
 	if (bpf_iter_reg_target(&udp_reg_info))
-		pr_warn("Warning: could not register bpf iterator udp\n");
+		pr_debug("Warning: could not register bpf iterator udp\n");
 }
 #endif
 

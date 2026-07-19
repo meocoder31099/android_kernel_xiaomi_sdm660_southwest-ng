@@ -196,7 +196,7 @@ static int dp_cmd_fifo_rx(struct edp_buf *rp, int len, unsigned char *base)
 
 		actual_i = (data >> 16) & 0xFF;
 		if (i != actual_i)
-			pr_warn("Index mismatch: expected %d, found %d\n",
+			pr_debug("Index mismatch: expected %d, found %d\n",
 				i, actual_i);
 	}
 
@@ -239,7 +239,7 @@ static int dp_aux_write_cmds(struct mdss_dp_drv_pdata *ep,
 	len = dp_cmd_fifo_tx(ep);
 
 	if (!wait_for_completion_timeout(&ep->aux_comp, HZ/4)) {
-		pr_err("aux write timeout\n");
+		pr_debug("aux write timeout\n");
 		ep->aux_error_num = EDP_AUX_ERR_TOUT;
 		/* Reset the AUX controller state machine */
 		mdss_dp_aux_reset(&ep->ctrl_io);
@@ -296,7 +296,7 @@ static int dp_aux_read_cmds(struct mdss_dp_drv_pdata *ep,
 	dp_cmd_fifo_tx(ep);
 
 	if (!wait_for_completion_timeout(&ep->aux_comp, HZ/4)) {
-		pr_err("aux read timeout\n");
+		pr_debug("aux read timeout\n");
 		ep->aux_error_num = EDP_AUX_ERR_TOUT;
 		/* Reset the AUX controller state machine */
 		mdss_dp_aux_reset(&ep->ctrl_io);
@@ -399,7 +399,7 @@ retry:
 		mutex_unlock(&dp->attention_lock);
 
 		if (!connected) {
-			pr_err("dp cable disconnected\n");
+			pr_debug("dp cable disconnected\n");
 			ret = -ENODEV;
 			goto end;
 		}
@@ -420,7 +420,7 @@ retry:
 		goto end;
 
 	if (adjust_count >= aux_cfg1_config_count) {
-		pr_err("PHY_AUX_CONFIG1 calibration failed\n");
+		pr_debug("PHY_AUX_CONFIG1 calibration failed\n");
 		goto end;
 	}
 
@@ -551,7 +551,7 @@ int dp_edid_buf_error(char *buf, int len)
 
 	bp = buf;
 	if (len < 128) {
-		pr_err("Error: len=%x\n", len);
+		pr_debug("Error: len=%x\n", len);
 		return -EINVAL;
 	}
 
@@ -559,7 +559,7 @@ int dp_edid_buf_error(char *buf, int len)
 		csum += *bp++;
 
 	if (csum != 0) {
-		pr_err("Error: csum=%x\n", csum);
+		pr_debug("Error: csum=%x\n", csum);
 		return -EINVAL;
 	}
 
@@ -675,7 +675,7 @@ char mdss_dp_gen_link_clk(struct mdss_dp_drv_pdata *dp)
 	       pinfo->clk_rate, pinfo->bpp, lane_cnt);
 
 	if (lane_cnt == 0) {
-		pr_warn("Invalid max lane count\n");
+		pr_debug("Invalid max lane count\n");
 		return 0;
 	}
 
@@ -884,7 +884,7 @@ static int dp_aux_chan_ready(struct mdss_dp_drv_pdata *ep)
 	}
 
 	if (cnt <= 0) {
-		pr_err("aux chan NOT ready\n");
+		pr_debug("aux chan NOT ready\n");
 		return -EIO;
 	}
 
@@ -943,7 +943,7 @@ int mdss_dp_aux_read_edid(struct mdss_dp_drv_pdata *dp,
 			false);
 		rc = dp_aux_read(dp, &cmd);
 		if (rc < 0) {
-			pr_err("aux read failed\n");
+			pr_debug("aux read failed\n");
 			return rc;
 		}
 
@@ -971,7 +971,7 @@ int mdss_dp_edid_read(struct mdss_dp_drv_pdata *dp)
 
 	ret = dp_aux_chan_ready(dp);
 	if (ret) {
-		pr_err("aux chan NOT ready\n");
+		pr_debug("aux chan NOT ready\n");
 		return ret;
 	}
 
@@ -992,7 +992,7 @@ int mdss_dp_edid_read(struct mdss_dp_drv_pdata *dp)
 		mutex_unlock(&dp->attention_lock);
 
 		if (!connected) {
-			pr_err("DP sink not connected\n");
+			pr_debug("DP sink not connected\n");
 			return -ENODEV;
 		}
 
@@ -1009,7 +1009,7 @@ int mdss_dp_edid_read(struct mdss_dp_drv_pdata *dp)
 		rlen = mdss_dp_aux_read_edid(dp, edid_buf, EDID_BLOCK_SIZE,
 			blk_num);
 		if (rlen != EDID_BLOCK_SIZE) {
-			pr_err("Read failed. rlen=%s\n",
+			pr_debug("Read failed. rlen=%s\n",
 				mdss_dp_get_aux_error(rlen));
 			mdss_dp_phy_aux_update_config(dp, PHY_AUX_CFG1);
 			phy_aux_update_requested = true;
@@ -1022,7 +1022,7 @@ int mdss_dp_edid_read(struct mdss_dp_drv_pdata *dp)
 		if (dp_edid_is_valid_header(edid_buf)) {
 			ret = dp_edid_buf_error(edid_buf, rlen);
 			if (ret) {
-				pr_err("corrupt edid block detected\n");
+				pr_debug("corrupt edid block detected\n");
 				mdss_dp_phy_aux_update_config(dp, PHY_AUX_CFG1);
 				phy_aux_update_requested = true;
 				retries--;
@@ -1106,7 +1106,7 @@ int mdss_dp_dpcd_cap_read(struct mdss_dp_drv_pdata *ep)
 
 	rlen = dp_aux_read_buf(ep, 0, len, 0);
 	if (rlen <= 0) {
-		pr_err("edp aux read failed\n");
+		pr_debug("edp aux read failed\n");
 		return rlen;
 	}
 
@@ -1246,7 +1246,7 @@ int mdss_dp_aux_link_status_read(struct mdss_dp_drv_pdata *ep, int len)
 	/* skip byte 0x200 and 0x201 */
 	rlen = dp_aux_read_buf(ep, 0x202, len, 0);
 	if (rlen < len) {
-		pr_err("edp aux read failed\n");
+		pr_debug("edp aux read failed\n");
 		return rlen;
 	}
 	rp = &ep->rxp;
@@ -1387,11 +1387,11 @@ int mdss_dp_aux_parse_vx_px(struct mdss_dp_drv_pdata *ep)
 	int ret = 0;
 	u32 v0, p0, v1, p1, v2, p2, v3, p3;
 
-	pr_info("Parsing DPCP for updated voltage and pre-emphasis levels\n");
+	pr_debug("Parsing DPCP for updated voltage and pre-emphasis levels\n");
 
 	rlen = dp_aux_read_buf(ep, addr1, param_len, 0);
 	if (rlen < param_len) {
-		pr_err("failed reading lanes 0/1\n");
+		pr_debug("failed reading lanes 0/1\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -1400,7 +1400,7 @@ int mdss_dp_aux_parse_vx_px(struct mdss_dp_drv_pdata *ep)
 	bp = rp->data;
 	data = *bp++;
 
-	pr_info("lanes 0/1 (Byte 0x206): 0x%x\n", data);
+	pr_debug("lanes 0/1 (Byte 0x206): 0x%x\n", data);
 
 	v0 = data & 0x3;
 	data = data >> 2;
@@ -1414,7 +1414,7 @@ int mdss_dp_aux_parse_vx_px(struct mdss_dp_drv_pdata *ep)
 
 	rlen = dp_aux_read_buf(ep, addr2, param_len, 0);
 	if (rlen < param_len) {
-		pr_err("failed reading lanes 2/3\n");
+		pr_debug("failed reading lanes 2/3\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -1423,7 +1423,7 @@ int mdss_dp_aux_parse_vx_px(struct mdss_dp_drv_pdata *ep)
 	bp = rp->data;
 	data = *bp++;
 
-	pr_info("lanes 2/3 (Byte 0x207): 0x%x\n", data);
+	pr_debug("lanes 2/3 (Byte 0x207): 0x%x\n", data);
 
 	v2 = data & 0x3;
 	data = data >> 2;
@@ -1435,20 +1435,20 @@ int mdss_dp_aux_parse_vx_px(struct mdss_dp_drv_pdata *ep)
 	p3 = data & 0x3;
 	data = data >> 2;
 
-	pr_info("vx: 0=%d, 1=%d, 2=%d, 3=%d\n", v0, v1, v2, v3);
-	pr_info("px: 0=%d, 1=%d, 2=%d, 3=%d\n", p0, p1, p2, p3);
+	pr_debug("vx: 0=%d, 1=%d, 2=%d, 3=%d\n", v0, v1, v2, v3);
+	pr_debug("px: 0=%d, 1=%d, 2=%d, 3=%d\n", p0, p1, p2, p3);
 
 	/**
 	 * Update the voltage and pre-emphasis levels as per DPCD request
 	 * vector.
 	 */
-	pr_info("Current: v_level = 0x%x, p_level = 0x%x\n",
+	pr_debug("Current: v_level = 0x%x, p_level = 0x%x\n",
 			ep->v_level, ep->p_level);
-	pr_info("Requested: v_level = 0x%x, p_level = 0x%x\n", v0, p0);
+	pr_debug("Requested: v_level = 0x%x, p_level = 0x%x\n", v0, p0);
 	ep->v_level = v0;
 	ep->p_level = p0;
 
-	pr_info("Success\n");
+	pr_debug("Success\n");
 end:
 	return ret;
 }
@@ -1475,7 +1475,7 @@ static int dp_parse_link_training_params(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, test_link_rate_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read link rate\n");
+		pr_debug("failed to read link rate\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1484,7 +1484,7 @@ static int dp_parse_link_training_params(struct mdss_dp_drv_pdata *ep)
 	data = *bp++;
 
 	if (!mdss_dp_aux_is_link_rate_valid(data)) {
-		pr_err("invalid link rate = 0x%x\n", data);
+		pr_debug("invalid link rate = 0x%x\n", data);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1496,7 +1496,7 @@ static int dp_parse_link_training_params(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, test_lane_count_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read lane count\n");
+		pr_debug("failed to read lane count\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1506,7 +1506,7 @@ static int dp_parse_link_training_params(struct mdss_dp_drv_pdata *ep)
 	data &= 0x1F;
 
 	if (!mdss_dp_aux_is_lane_count_valid(data)) {
-		pr_err("invalid lane count = 0x%x\n", data);
+		pr_debug("invalid lane count = 0x%x\n", data);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1539,7 +1539,7 @@ static void dp_sink_parse_sink_count(struct mdss_dp_drv_pdata *ep)
 
 	rlen = dp_aux_read_buf(ep, sink_count_addr, param_len, 0);
 	if (rlen < param_len) {
-		pr_err("failed to read sink count\n");
+		pr_debug("failed to read sink count\n");
 		return;
 	}
 	rp = &ep->rxp;
@@ -1568,7 +1568,7 @@ static int dp_get_test_period(struct mdss_dp_drv_pdata *ep, int const addr)
 	/* TEST_AUDIO_PERIOD_CH_XX */
 	rlen = dp_aux_read_buf(ep, addr, test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read test_audio_period (0x%x)\n", addr);
+		pr_debug("failed to read test_audio_period (0x%x)\n", addr);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1579,7 +1579,7 @@ static int dp_get_test_period(struct mdss_dp_drv_pdata *ep, int const addr)
 	/* Period - Bits 3:0 */
 	data = data & 0xF;
 	if ((int)data > max_audio_period) {
-		pr_err("invalid test_audio_period_ch_1 = 0x%x\n", data);
+		pr_debug("invalid test_audio_period_ch_1 = 0x%x\n", data);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1686,7 +1686,7 @@ static int dp_parse_audio_pattern_type(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, test_audio_pattern_type_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read test audio mode data\n");
+		pr_debug("failed to read test audio mode data\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1696,7 +1696,7 @@ static int dp_parse_audio_pattern_type(struct mdss_dp_drv_pdata *ep)
 
 	/* Audio Pattern Type - Bits 7:0 */
 	if ((int)data > max_audio_pattern_type) {
-		pr_err("invalid audio pattern type = 0x%x\n", data);
+		pr_debug("invalid audio pattern type = 0x%x\n", data);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1727,7 +1727,7 @@ static int dp_parse_audio_mode(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, test_audio_mode_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read test audio mode data\n");
+		pr_debug("failed to read test audio mode data\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1738,7 +1738,7 @@ static int dp_parse_audio_mode(struct mdss_dp_drv_pdata *ep)
 	/* Sampling Rate - Bits 3:0 */
 	sampling_rate = data & 0xF;
 	if (sampling_rate > max_audio_sampling_rate) {
-		pr_err("sampling rate (0x%x) greater than max (0x%x)\n",
+		pr_debug("sampling rate (0x%x) greater than max (0x%x)\n",
 				sampling_rate, max_audio_sampling_rate);
 		ret = -EINVAL;
 		goto exit;
@@ -1747,7 +1747,7 @@ static int dp_parse_audio_mode(struct mdss_dp_drv_pdata *ep)
 	/* Channel Count - Bits 7:4 */
 	channel_count = ((data & 0xF0) >> 4) + 1;
 	if (channel_count > max_audio_channel_count) {
-		pr_err("channel_count (0x%x) greater than max (0x%x)\n",
+		pr_debug("channel_count (0x%x) greater than max (0x%x)\n",
 				channel_count, max_audio_channel_count);
 		ret = -EINVAL;
 		goto exit;
@@ -1804,7 +1804,7 @@ static int dp_parse_phy_test_params(struct mdss_dp_drv_pdata *ep)
 
 	rlen = dp_aux_read_buf(ep, phy_test_pattern_addr, param_len, 0);
 	if (rlen < param_len) {
-		pr_err("failed to read phy test pattern\n");
+		pr_debug("failed to read phy test pattern\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -1838,7 +1838,7 @@ static int dp_parse_test_timing_params1(struct mdss_dp_drv_pdata *ep,
 	/* Read the requested video test pattern (Byte 0x221). */
 	rlen = dp_aux_read_buf(ep, addr, len, 0);
 	if (rlen < len) {
-		pr_err("failed to read 0x%x\n", addr);
+		pr_debug("failed to read 0x%x\n", addr);
 		return -EINVAL;
 	}
 	rp = &ep->rxp;
@@ -1862,7 +1862,7 @@ static int dp_parse_test_timing_params2(struct mdss_dp_drv_pdata *ep,
 	/* Read the requested video test pattern (Byte 0x221). */
 	rlen = dp_aux_read_buf(ep, addr, len, 0);
 	if (rlen < len) {
-		pr_err("failed to read 0x%x\n", addr);
+		pr_debug("failed to read 0x%x\n", addr);
 		return -EINVAL;
 	}
 	rp = &ep->rxp;
@@ -1884,7 +1884,7 @@ static int dp_parse_test_timing_params3(struct mdss_dp_drv_pdata *ep,
 	/* Read the requested video test pattern (Byte 0x221). */
 	rlen = dp_aux_read_buf(ep, addr, 1, 0);
 	if (rlen < 1) {
-		pr_err("failed to read 0x%x\n", addr);
+		pr_debug("failed to read 0x%x\n", addr);
 		return -EINVAL;
 	}
 	rp = &ep->rxp;
@@ -1917,7 +1917,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, test_video_pattern_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read test video pattern\n");
+		pr_debug("failed to read test video pattern\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1926,7 +1926,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	data = *bp++;
 
 	if (!mdss_dp_is_test_video_pattern_valid(data)) {
-		pr_err("invalid test video pattern = 0x%x\n", data);
+		pr_debug("invalid test video pattern = 0x%x\n", data);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1940,7 +1940,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	/* Read the requested color bit depth and dynamic range (Byte 0x232) */
 	rlen = dp_aux_read_buf(ep, test_misc_addr, test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read test bit depth\n");
+		pr_debug("failed to read test bit depth\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1951,7 +1951,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	/* Dynamic Range */
 	dyn_range = (data & BIT(3)) >> 3;
 	if (!mdss_dp_is_dynamic_range_valid(dyn_range)) {
-		pr_err("invalid test dynamic range = 0x%x\n", dyn_range);
+		pr_debug("invalid test dynamic range = 0x%x\n", dyn_range);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1964,7 +1964,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	data &= (BIT(5) | BIT(6) | BIT(7));
 	data >>= 5;
 	if (!mdss_dp_is_test_bit_depth_valid(data)) {
-		pr_err("invalid test bit depth = 0x%x\n", data);
+		pr_debug("invalid test bit depth = 0x%x\n", data);
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1978,7 +1978,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params1(ep, 0x222, 2,
 			&ep->test_data.test_h_total);
 	if (ret) {
-		pr_err("failed to parse test_h_total (0x222)\n");
+		pr_debug("failed to parse test_h_total (0x222)\n");
 		goto exit;
 	}
 	pr_debug("TEST_H_TOTAL = %d\n", ep->test_data.test_h_total);
@@ -1986,7 +1986,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params1(ep, 0x224, 2,
 			&ep->test_data.test_v_total);
 	if (ret) {
-		pr_err("failed to parse test_v_total (0x224)\n");
+		pr_debug("failed to parse test_v_total (0x224)\n");
 		goto exit;
 	}
 	pr_debug("TEST_V_TOTAL = %d\n", ep->test_data.test_v_total);
@@ -1994,7 +1994,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params1(ep, 0x226, 2,
 			&ep->test_data.test_h_start);
 	if (ret) {
-		pr_err("failed to parse test_h_start (0x226)\n");
+		pr_debug("failed to parse test_h_start (0x226)\n");
 		goto exit;
 	}
 	pr_debug("TEST_H_START = %d\n", ep->test_data.test_h_start);
@@ -2002,7 +2002,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params1(ep, 0x228, 2,
 			&ep->test_data.test_v_start);
 	if (ret) {
-		pr_err("failed to parse test_v_start (0x228)\n");
+		pr_debug("failed to parse test_v_start (0x228)\n");
 		goto exit;
 	}
 	pr_debug("TEST_V_START = %d\n", ep->test_data.test_v_start);
@@ -2011,7 +2011,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 			&ep->test_data.test_hsync_pol,
 			&ep->test_data.test_hsync_width);
 	if (ret) {
-		pr_err("failed to parse (0x22A)\n");
+		pr_debug("failed to parse (0x22A)\n");
 		goto exit;
 	}
 	pr_debug("TEST_HSYNC_POL = %d\n", ep->test_data.test_hsync_pol);
@@ -2021,7 +2021,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 			&ep->test_data.test_vsync_pol,
 			&ep->test_data.test_vsync_width);
 	if (ret) {
-		pr_err("failed to parse (0x22C)\n");
+		pr_debug("failed to parse (0x22C)\n");
 		goto exit;
 	}
 	pr_debug("TEST_VSYNC_POL = %d\n", ep->test_data.test_vsync_pol);
@@ -2030,7 +2030,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params1(ep, 0x22E, 2,
 			&ep->test_data.test_h_width);
 	if (ret) {
-		pr_err("failed to parse test_h_width (0x22E)\n");
+		pr_debug("failed to parse test_h_width (0x22E)\n");
 		goto exit;
 	}
 	pr_debug("TEST_H_WIDTH = %d\n", ep->test_data.test_h_width);
@@ -2038,7 +2038,7 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params1(ep, 0x230, 2,
 			&ep->test_data.test_v_height);
 	if (ret) {
-		pr_err("failed to parse test_v_height (0x230)\n");
+		pr_debug("failed to parse test_v_height (0x230)\n");
 		goto exit;
 	}
 	pr_debug("TEST_V_HEIGHT = %d\n", ep->test_data.test_v_height);
@@ -2046,14 +2046,14 @@ static int dp_parse_video_pattern_params(struct mdss_dp_drv_pdata *ep)
 	ret = dp_parse_test_timing_params3(ep, 0x233, &ep->test_data.test_rr_d);
 	ep->test_data.test_rr_d &= BIT(0);
 	if (ret) {
-		pr_err("failed to parse test_rr_d (0x233)\n");
+		pr_debug("failed to parse test_rr_d (0x233)\n");
 		goto exit;
 	}
 	pr_debug("TEST_REFRESH_DENOMINATOR = %d\n", ep->test_data.test_rr_d);
 
 	ret = dp_parse_test_timing_params3(ep, 0x234, &ep->test_data.test_rr_n);
 	if (ret) {
-		pr_err("failed to parse test_rr_n (0x234)\n");
+		pr_debug("failed to parse test_rr_n (0x234)\n");
 		goto exit;
 	}
 	pr_debug("TEST_REFRESH_NUMERATOR = %d\n", ep->test_data.test_rr_n);
@@ -2116,7 +2116,7 @@ static void dp_sink_parse_test_request(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, device_service_irq_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read device service IRQ vector\n");
+		pr_debug("failed to read device service IRQ vector\n");
 		return;
 	}
 	rp = &ep->rxp;
@@ -2137,7 +2137,7 @@ static void dp_sink_parse_test_request(struct mdss_dp_drv_pdata *ep)
 	rlen = dp_aux_read_buf(ep, test_request_addr,
 			test_parameter_len, 0);
 	if (rlen < test_parameter_len) {
-		pr_err("failed to read test_requested\n");
+		pr_debug("failed to read test_requested\n");
 		return;
 	}
 	rp = &ep->rxp;
@@ -2276,7 +2276,7 @@ bool mdss_dp_aux_channel_eq_done(struct mdss_dp_drv_pdata *ep)
 	pr_debug("Entered++\n");
 
 	if (!ep->link_status.interlane_align_done) { /* not align */
-		pr_err("interlane align failed\n");
+		pr_debug("interlane align failed\n");
 		return false;
 	}
 
@@ -2377,7 +2377,7 @@ static void dp_host_train_set(struct mdss_dp_drv_pdata *ep, int train)
 	}
 
 	if (cnt == 0)
-		pr_err("set link_train=%d failed\n", train);
+		pr_debug("set link_train=%d failed\n", train);
 }
 
 char vm_pre_emphasis[4][4] = {
@@ -2581,7 +2581,7 @@ int mdss_dp_link_train(struct mdss_dp_drv_pdata *dp)
 
 	ret = dp_aux_chan_ready(dp);
 	if (ret) {
-		pr_err("LINK Train failed: aux chan NOT ready\n");
+		pr_debug("LINK Train failed: aux chan NOT ready\n");
 		return ret;
 	}
 
@@ -2598,7 +2598,7 @@ int mdss_dp_link_train(struct mdss_dp_drv_pdata *dp)
 			ret = -EINVAL;
 			goto clear;
 		} else {
-			pr_err("Training 1 failed\n");
+			pr_debug("Training 1 failed\n");
 			ret = -EINVAL;
 			goto clear;
 		}
@@ -2617,7 +2617,7 @@ int mdss_dp_link_train(struct mdss_dp_drv_pdata *dp)
 			ret = -EINVAL;
 			goto clear;
 		} else {
-			pr_err("Training 2 failed\n");
+			pr_debug("Training 2 failed\n");
 			ret = -EINVAL;
 			goto clear;
 		}
@@ -2696,7 +2696,7 @@ int mdss_dp_aux_config_sink_frame_crc(struct mdss_dp_drv_pdata *dp,
 
 	rlen = dp_aux_read_buf(dp, test_sink_misc_addr, 1, 0);
 	if (rlen < 1) {
-		pr_err("failed to TEST_SINK_ADDR\n");
+		pr_debug("failed to TEST_SINK_ADDR\n");
 		return -EPERM;
 	}
 	rp = &dp->rxp;
@@ -2705,7 +2705,7 @@ int mdss_dp_aux_config_sink_frame_crc(struct mdss_dp_drv_pdata *dp,
 	pr_debug("crc supported=%s\n", crc_supported ? "true" : "false");
 
 	if (!crc_supported) {
-		pr_err("sink does not support CRC generation\n");
+		pr_debug("sink does not support CRC generation\n");
 		return -EINVAL;
 	}
 
@@ -2737,13 +2737,13 @@ int mdss_dp_aux_read_sink_frame_crc(struct mdss_dp_drv_pdata *dp)
 	len = 1; /* one byte */
 	rlen = dp_aux_read_buf(dp, addr, len, 0);
 	if (rlen < len) {
-		pr_err("failed to read TEST SINK\n");
+		pr_debug("failed to read TEST SINK\n");
 		return -EPERM;
 	}
 	rp = &dp->rxp;
 	bp = rp->data;
 	if (!(bp[0] & BIT(0))) {
-		pr_err("Sink side CRC calculation not enabled, TEST_SINK=0x%08x\n",
+		pr_debug("Sink side CRC calculation not enabled, TEST_SINK=0x%08x\n",
 			(u32)bp[0]);
 		return -EINVAL;
 	}
@@ -2752,7 +2752,7 @@ int mdss_dp_aux_read_sink_frame_crc(struct mdss_dp_drv_pdata *dp)
 	len = 2; /* 2 bytes */
 	rlen = dp_aux_read_buf(dp, addr, len, 0);
 	if (rlen < len) {
-		pr_err("failed to read TEST_CRC_R_Cr\n");
+		pr_debug("failed to read TEST_CRC_R_Cr\n");
 		return -EPERM;
 	}
 	rp = &dp->rxp;
@@ -2763,7 +2763,7 @@ int mdss_dp_aux_read_sink_frame_crc(struct mdss_dp_drv_pdata *dp)
 	len = 2; /* 2 bytes */
 	rlen = dp_aux_read_buf(dp, addr, len, 0);
 	if (rlen < len) {
-		pr_err("failed to read TEST_CRC_G_Y\n");
+		pr_debug("failed to read TEST_CRC_G_Y\n");
 		return -EPERM;
 	}
 	rp = &dp->rxp;
@@ -2774,7 +2774,7 @@ int mdss_dp_aux_read_sink_frame_crc(struct mdss_dp_drv_pdata *dp)
 	len = 2; /* 2 bytes */
 	rlen = dp_aux_read_buf(dp, addr, len, 0);
 	if (rlen < len) {
-		pr_err("failed to read TEST_CRC_B_Cb\n");
+		pr_debug("failed to read TEST_CRC_B_Cb\n");
 		return -EPERM;
 	}
 	rp = &dp->rxp;
@@ -2804,7 +2804,7 @@ int mdss_dp_aux_read_rx_status(struct mdss_dp_drv_pdata *dp, u8 *rx_status)
 	int rc = 0;
 
 	if (!dp) {
-		pr_err("%s Invalid input\n", __func__);
+		pr_debug("%s Invalid input\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2812,7 +2812,7 @@ int mdss_dp_aux_read_rx_status(struct mdss_dp_drv_pdata *dp, u8 *rx_status)
 
 	rc = dp_aux_read_buf(dp, DP_DPCD_CP_IRQ, 1, 0);
 	if (!rc) {
-		pr_err("Error reading CP_IRQ\n");
+		pr_debug("Error reading CP_IRQ\n");
 		return -EINVAL;
 	}
 
@@ -2821,7 +2821,7 @@ int mdss_dp_aux_read_rx_status(struct mdss_dp_drv_pdata *dp, u8 *rx_status)
 	if (cp_irq) {
 		rc = dp_aux_read_buf(dp, DP_DPCD_RXSTATUS, 1, 0);
 		if (!rc) {
-			pr_err("Error reading RxStatus\n");
+			pr_debug("Error reading RxStatus\n");
 			return -EINVAL;
 		}
 

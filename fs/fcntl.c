@@ -990,7 +990,7 @@ static void kill_fasync_rcu(struct fasync_struct *fa, int sig, int band)
 		unsigned long flags;
 
 		if (fa->magic != FASYNC_MAGIC) {
-			printk(KERN_ERR "kill_fasync: bad magic number in "
+			no_printk(KERN_ERR "kill_fasync: bad magic number in "
 			       "fasync_struct!\n");
 			return;
 		}

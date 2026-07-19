@@ -298,7 +298,7 @@ static int ion_system_heap_allocate(struct ion_heap *heap,
 
 	if (ion_heap_is_system_heap_type(buffer->heap->type) &&
 	    is_secure_vmid_valid(vmid)) {
-		pr_info("%s: System heap doesn't support secure allocations\n",
+		pr_debug("%s: System heap doesn't support secure allocations\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -623,12 +623,12 @@ static int ion_system_heap_debug_show(struct ion_heap *heap, struct seq_file *s,
 			   uncached_total + cached_total + secure_total);
 		seq_puts(s, "--------------------------------------------\n");
 	} else {
-		pr_info("-------------------------------------------------\n");
-		pr_info("uncached pool = %lu cached pool = %lu secure pool = %lu\n",
+		pr_debug("-------------------------------------------------\n");
+		pr_debug("uncached pool = %lu cached pool = %lu secure pool = %lu\n",
 			uncached_total, cached_total, secure_total);
-		pr_info("pool total (uncached + cached + secure) = %lu\n",
+		pr_debug("pool total (uncached + cached + secure) = %lu\n",
 			uncached_total + cached_total + secure_total);
-		pr_info("-------------------------------------------------\n");
+		pr_debug("-------------------------------------------------\n");
 	}
 
 	return 0;
@@ -713,14 +713,14 @@ static struct task_struct *ion_create_kworker(struct ion_page_pool **pools,
 	thread = kthread_run(ion_sys_heap_worker, pools,
 			     "ion-pool-%s-worker", buf);
 	if (IS_ERR(thread)) {
-		pr_err("%s: failed to create %s worker thread: %ld\n",
+		pr_debug("%s: failed to create %s worker thread: %ld\n",
 		       __func__, buf, PTR_ERR(thread));
 		return thread;
 	}
 	ret = sched_setattr(thread, &attr);
 	if (ret) {
 		kthread_stop(thread);
-		pr_warn("%s: failed to set task priority for %s worker thread: ret = %d\n",
+		pr_debug("%s: failed to set task priority for %s worker thread: ret = %d\n",
 			__func__, buf, ret);
 		return ERR_PTR(ret);
 	}

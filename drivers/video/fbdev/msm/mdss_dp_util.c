@@ -180,7 +180,7 @@ bool mdss_dp_mainlink_ready(struct mdss_dp_drv_pdata *dp)
 			return true;
 		udelay(1000);
 	}
-	pr_err("mainlink not ready\n");
+	pr_debug("mainlink not ready\n");
 
 	return false;
 }
@@ -704,7 +704,7 @@ static void mdss_dp_calc_tu_parameters(u8 link_rate, u8 ln_cnt,
 			* multiplier, lclk), multiplier))
 			/ multiplier + hblank_margin;
 	if (h_blank < (u32)min_hblank) {
-		pr_err(" WARNING: run_idx=%d Programmed h_blank %d is smaller than the min_hblank %d supported.\n",
+		pr_debug(" WARNING: run_idx=%d Programmed h_blank %d is smaller than the min_hblank %d supported.\n",
 					run_idx, h_blank, min_hblank);
 	}
 
@@ -862,7 +862,7 @@ void mdss_dp_setup_tr_unit(struct dss_io_data *ctrl_io, u8 link_rate,
 	}
 
 	if (tu_entry == tu_table + ARRAY_SIZE(tu_table)) {
-		pr_err("requested res=%d, ln_cnt=%d, lrate=0x%x not supported\n",
+		pr_debug("requested res=%d, ln_cnt=%d, lrate=0x%x not supported\n",
 				res, ln_cnt, link_rate);
 	}
 
@@ -909,7 +909,7 @@ void mdss_dp_phy_aux_update_config(struct mdss_dp_drv_pdata *dp,
 			config_type);
 
 	if (!cfg) {
-		pr_err("invalid config type %s\n",
+		pr_debug("invalid config type %s\n",
 			mdss_dp_phy_aux_config_type_to_string(config_type));
 		return;
 	}
@@ -967,7 +967,7 @@ int mdss_dp_irq_setup(struct mdss_dp_drv_pdata *dp_drv)
 
 	mdss_dp_hw.irq_info = mdss_intr_line();
 	if (mdss_dp_hw.irq_info == NULL) {
-		pr_err("Failed to get mdss irq information\n");
+		pr_debug("Failed to get mdss irq information\n");
 		return -ENODEV;
 	}
 
@@ -975,7 +975,7 @@ int mdss_dp_irq_setup(struct mdss_dp_drv_pdata *dp_drv)
 
 	ret = dp_drv->mdss_util->register_irq(&mdss_dp_hw);
 	if (ret)
-		pr_err("mdss_register_irq failed.\n");
+		pr_debug("mdss_register_irq failed.\n");
 
 	return ret;
 }
@@ -1517,7 +1517,7 @@ void mdss_dp_phy_send_test_pattern(struct mdss_dp_drv_pdata *dp)
 	u32 value = 0x0;
 
 	if (!mdss_dp_is_phy_test_pattern_supported(phy_test_pattern_sel)) {
-		pr_err("test pattern 0x%x not supported\n",
+		pr_debug("test pattern 0x%x not supported\n",
 				phy_test_pattern_sel);
 		return;
 	}
@@ -1575,5 +1575,5 @@ void mdss_dp_phy_send_test_pattern(struct mdss_dp_drv_pdata *dp)
 
 	value = 0x0;
 	value = readl_relaxed(io->base + DP_MAINLINK_READY);
-	pr_info("DP_MAINLINK_READY = 0x%x\n", value);
+	pr_debug("DP_MAINLINK_READY = 0x%x\n", value);
 }

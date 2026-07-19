@@ -48,14 +48,14 @@ void __init mminit_verify_zonelist(void)
 				continue;
 
 			/* Print information about the zonelist */
-			printk(KERN_DEBUG "mminit::zonelist %s %d:%s = ",
+			no_printk(KERN_DEBUG "mminit::zonelist %s %d:%s = ",
 				listid > 0 ? "thisnode" : "general", nid,
 				zone->name);
 
 			/* Iterate the zonelist */
 			for_each_zone_zonelist(zone, z, zonelist, zoneid)
-				pr_cont("%d:%s ", zone_to_nid(zone), zone->name);
-			pr_cont("\n");
+				pr_debug("%d:%s ", zone_to_nid(zone), zone->name);
+			pr_debug("\n");
 		}
 	}
 }

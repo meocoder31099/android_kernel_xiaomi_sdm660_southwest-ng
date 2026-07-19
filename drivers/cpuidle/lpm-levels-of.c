@@ -45,7 +45,7 @@ static int lpm_of_read_u32(struct device_node *dn, const char *key,
 
 	ret = of_property_read_u32(dn, key, val);
 	if (is_err && ret)
-		pr_err("%s:failed to read key:%s ret:%d\n", dn->name, key, ret);
+		pr_debug("%s:failed to read key:%s ret:%d\n", dn->name, key, ret);
 
 	return ret;
 }
@@ -347,7 +347,7 @@ static int parse_cluster_params(struct device_node *dn, struct lpm_cluster *c)
 
 	ret = of_property_read_string(dn, "label", &c->cluster_name);
 	if (ret) {
-		pr_err("Failed to read label ret: %d\n", ret);
+		pr_debug("Failed to read label ret: %d\n", ret);
 		return ret;
 	}
 
@@ -408,7 +408,7 @@ static int parse_cluster_level(struct device_node *dn,
 
 	ret = of_property_read_string(dn, "label", &level->level_name);
 	if (ret) {
-		pr_err("Failed to read label ret: %d\n", ret);
+		pr_debug("Failed to read label ret: %d\n", ret);
 		return ret;
 	}
 
@@ -432,7 +432,7 @@ static int parse_cluster_level(struct device_node *dn,
 
 	ret = parse_power_params(dn, &level->pwr);
 	if (ret) {
-		pr_err("Failed to parse power params ret:%d\n", ret);
+		pr_debug("Failed to parse power params ret:%d\n", ret);
 		return ret;
 	}
 
@@ -454,7 +454,7 @@ static int parse_cpu_mode(struct device_node *n, struct lpm_cpu_level *l)
 
 	ret = of_property_read_string(n, "label", &l->name);
 	if (ret) {
-		pr_err("Failed to read label level: %s\n", l->name);
+		pr_debug("Failed to read label level: %s\n", l->name);
 		return ret;
 	}
 
@@ -469,7 +469,7 @@ static int get_cpumask_for_node(struct device_node *node, struct cpumask *mask)
 
 	cpu_node = of_parse_phandle(node, "qcom,cpu", idx++);
 	if (!cpu_node) {
-		pr_info("%s: No CPU phandle, assuming single cluster\n",
+		pr_debug("%s: No CPU phandle, assuming single cluster\n",
 				node->full_name);
 		/*
 		 * Not all targets have the cpu node populated in the device
@@ -593,7 +593,7 @@ static int parse_cpu_levels(struct device_node *dn, struct lpm_cluster *c)
 
 	ret = parse_cpu(dn, cpu);
 	if (ret) {
-		pr_err("Failed to parse cpu %s\n", dn->name);
+		pr_debug("Failed to parse cpu %s\n", dn->name);
 		return ret;
 	}
 
@@ -653,7 +653,7 @@ struct lpm_cluster *parse_cluster(struct device_node *node,
 
 		if (!of_node_cmp(n->name, "qcom,pm-cluster-level")) {
 			if (parse_cluster_level(n, c)) {
-				pr_err("Failed parse pm-cluster-level\n");
+				pr_debug("Failed parse pm-cluster-level\n");
 				goto failed_parse_cluster;
 			}
 		} else if (!of_node_cmp(n->name, "qcom,pm-cluster")) {
@@ -661,7 +661,7 @@ struct lpm_cluster *parse_cluster(struct device_node *node,
 
 			child = parse_cluster(n, c);
 			if (!child) {
-				pr_err("Failed parse pm-cluster\n");
+				pr_debug("Failed parse pm-cluster\n");
 				goto failed_parse_cluster;
 			}
 
@@ -671,7 +671,7 @@ struct lpm_cluster *parse_cluster(struct device_node *node,
 			c->aff_level = child->aff_level + 1;
 		} else if (!of_node_cmp(n->name, "qcom,pm-cpu")) {
 			if (parse_cpu_levels(n, c)) {
-				pr_err("Failed parse pm-cpu\n");
+				pr_debug("Failed parse pm-cpu\n");
 				goto failed_parse_cluster;
 			}
 
@@ -709,7 +709,7 @@ struct lpm_cluster *lpm_of_parse_cluster(struct platform_device *pdev)
 
 	top = of_find_node_by_name(pdev->dev.of_node, "qcom,pm-cluster");
 	if (!top) {
-		pr_err("Failed to find root node\n");
+		pr_debug("Failed to find root node\n");
 		return ERR_PTR(-ENODEV);
 	}
 
@@ -736,13 +736,13 @@ void cluster_dt_walkthrough(struct lpm_cluster *cluster)
 	for (i = 0; i < cluster->nlevels; i++) {
 		struct lpm_cluster_level *l = &cluster->levels[i];
 
-		pr_info("cluster: %s \t level: %s\n", cluster->cluster_name,
+		pr_debug("cluster: %s \t level: %s\n", cluster->cluster_name,
 							l->level_name);
 	}
 
 	list_for_each_entry(cpu, &cluster->cpu, list) {
 		for (j = 0; j < cpu->nlevels; j++)
-			pr_info("%s\tCPU level name: %s\n", str,
+			pr_debug("%s\tCPU level name: %s\n", str,
 						cpu->levels[j].name);
 	}
 

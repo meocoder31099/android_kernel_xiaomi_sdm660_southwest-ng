@@ -172,7 +172,7 @@ size_t get_cal_info_size(int32_t cal_type)
 		size = 0;
 		break;
 	default:
-		pr_err("%s:Invalid cal type %d!",
+		pr_debug("%s:Invalid cal type %d!",
 			__func__, cal_type);
 	}
 	return size;
@@ -327,7 +327,7 @@ size_t get_user_cal_type_size(int32_t cal_type)
 		size = 0;
 		break;
 	default:
-		pr_err("%s:Invalid cal type %d!",
+		pr_debug("%s:Invalid cal type %d!",
 			__func__, cal_type);
 	}
 	return size;
@@ -349,13 +349,13 @@ static struct cal_type_data *create_cal_type_data(
 
 	if ((info->reg.cal_type < 0) ||
 		(info->reg.cal_type >= MAX_CAL_TYPES)) {
-		pr_err("%s: cal type %d is Invalid!\n",
+		pr_debug("%s: cal type %d is Invalid!\n",
 			__func__, info->reg.cal_type);
 		goto done;
 	}
 
 	if (info->cal_util_callbacks.match_block == NULL) {
-		pr_err("%s: cal type %d no method to match blocks!\n",
+		pr_debug("%s: cal type %d no method to match blocks!\n",
 			__func__, info->reg.cal_type);
 		goto done;
 	}
@@ -391,16 +391,16 @@ int cal_utils_create_cal_types(int num_cal_types,
 	pr_debug("%s\n", __func__);
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n", __func__);
+		pr_debug("%s: cal_type is NULL!\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	} else if (info == NULL) {
-		pr_err("%s: info is NULL!\n", __func__);
+		pr_debug("%s: info is NULL!\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	} else if ((num_cal_types <= 0) ||
 		(num_cal_types > MAX_CAL_TYPES)) {
-		pr_err("%s: num_cal_types of %d is Invalid!\n",
+		pr_debug("%s: num_cal_types of %d is Invalid!\n",
 			__func__, num_cal_types);
 		ret = -EINVAL;
 		goto done;
@@ -409,7 +409,7 @@ int cal_utils_create_cal_types(int num_cal_types,
 	for (i = 0; i < num_cal_types; i++) {
 		if ((info[i].reg.cal_type < 0) ||
 			(info[i].reg.cal_type >= MAX_CAL_TYPES)) {
-			pr_err("%s: cal type %d at index %d is Invalid!\n",
+			pr_debug("%s: cal type %d at index %d is Invalid!\n",
 				__func__, info[i].reg.cal_type, i);
 			ret = -EINVAL;
 			goto done;
@@ -417,7 +417,7 @@ int cal_utils_create_cal_types(int num_cal_types,
 
 		cal_type[i] = create_cal_type_data(&info[i]);
 		if (cal_type[i] == NULL) {
-			pr_err("%s: Could not allocate cal_type of index %d!\n",
+			pr_debug("%s: Could not allocate cal_type of index %d!\n",
 				__func__, i);
 			ret = -EINVAL;
 			goto done;
@@ -425,7 +425,7 @@ int cal_utils_create_cal_types(int num_cal_types,
 
 		ret = audio_cal_register(1, &info[i].reg);
 		if (ret < 0) {
-			pr_err("%s: audio_cal_register failed, ret = %d!\n",
+			pr_debug("%s: audio_cal_register failed, ret = %d!\n",
 				__func__, ret);
 			ret = -EINVAL;
 			goto done;
@@ -473,7 +473,7 @@ static void destroy_all_cal_blocks(struct cal_type_data *cal_type)
 
 		ret = unmap_memory(cal_type, cal_block);
 		if (ret < 0) {
-			pr_err("%s: unmap_memory failed, cal type %d, ret = %d!\n",
+			pr_debug("%s: unmap_memory failed, cal type %d, ret = %d!\n",
 				__func__,
 			       cal_type->info.reg.cal_type,
 				ret);
@@ -511,11 +511,11 @@ void cal_utils_destroy_cal_types(int num_cal_types,
 	pr_debug("%s\n", __func__);
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n", __func__);
+		pr_debug("%s: cal_type is NULL!\n", __func__);
 		goto done;
 	} else if ((num_cal_types <= 0) ||
 		(num_cal_types > MAX_CAL_TYPES)) {
-		pr_err("%s: num_cal_types of %d is Invalid!\n",
+		pr_debug("%s: num_cal_types of %d is Invalid!\n",
 			__func__, num_cal_types);
 		goto done;
 	}
@@ -605,7 +605,7 @@ static int cal_block_ion_alloc(struct cal_block_data *cal_block)
 	int	ret = 0;
 
 	if (cal_block == NULL) {
-		pr_err("%s: cal_block is NULL!\n", __func__);
+		pr_debug("%s: cal_block is NULL!\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -617,7 +617,7 @@ static int cal_block_ion_alloc(struct cal_block_data *cal_block)
 		&cal_block->map_data.map_size,
 		&cal_block->cal_data.kvaddr);
 	if (ret) {
-		pr_err("%s: audio ION import failed, rc = %d\n",
+		pr_debug("%s: audio ION import failed, rc = %d\n",
 			__func__, ret);
 		ret = -ENOMEM;
 		goto done;
@@ -633,10 +633,10 @@ static struct cal_block_data *create_cal_block(struct cal_type_data *cal_type,
 	struct cal_block_data	*cal_block = NULL;
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n", __func__);
+		pr_debug("%s: cal_type is NULL!\n", __func__);
 		goto done;
 	} else if (basic_cal == NULL) {
-		pr_err("%s: basic_cal is NULL!\n", __func__);
+		pr_debug("%s: basic_cal is NULL!\n", __func__);
 		goto done;
 	}
 
@@ -650,7 +650,7 @@ static struct cal_block_data *create_cal_block(struct cal_type_data *cal_type,
 	cal_block->map_data.ion_map_handle = basic_cal->cal_data.mem_handle;
 	if (basic_cal->cal_data.mem_handle > 0) {
 		if (cal_block_ion_alloc(cal_block)) {
-			pr_err("%s: cal_block_ion_alloc failed!\n",
+			pr_debug("%s: cal_block_ion_alloc failed!\n",
 				__func__);
 			goto err;
 		}
@@ -659,7 +659,7 @@ static struct cal_block_data *create_cal_block(struct cal_type_data *cal_type,
 		cal_block->client_info_size = client_info_size;
 		cal_block->client_info = kmalloc(client_info_size, GFP_KERNEL);
 		if (cal_block->client_info == NULL) {
-			pr_err("%s: could not allocats client_info!\n",
+			pr_debug("%s: could not allocats client_info!\n",
 				__func__);
 			goto err;
 		}
@@ -672,7 +672,7 @@ static struct cal_block_data *create_cal_block(struct cal_type_data *cal_type,
 		get_cal_info_size(cal_type->info.reg.cal_type),
 		GFP_KERNEL);
 	if (cal_block->cal_info == NULL) {
-		pr_err("%s: could not allocats cal_info!\n",
+		pr_debug("%s: could not allocats cal_info!\n",
 			__func__);
 		goto err;
 	}
@@ -706,11 +706,11 @@ void cal_utils_clear_cal_block_q6maps(int num_cal_types,
 	pr_debug("%s\n", __func__);
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n", __func__);
+		pr_debug("%s: cal_type is NULL!\n", __func__);
 		goto done;
 	} else if ((num_cal_types <= 0) ||
 		(num_cal_types > MAX_CAL_TYPES)) {
-		pr_err("%s: num_cal_types of %d is Invalid!\n",
+		pr_debug("%s: num_cal_types of %d is Invalid!\n",
 			__func__, num_cal_types);
 		goto done;
 	}
@@ -746,7 +746,7 @@ static int realloc_memory(struct cal_block_data *cal_block)
 
 	ret = cal_block_ion_alloc(cal_block);
 	if (ret < 0)
-		pr_err("%s: realloc_memory failed!\n",
+		pr_debug("%s: realloc_memory failed!\n",
 			__func__);
 	return ret;
 }
@@ -769,7 +769,7 @@ static int map_memory(struct cal_type_data *cal_type,
 		ret = cal_type->info.cal_util_callbacks.
 			map_cal(cal_type->info.reg.cal_type, cal_block);
 		if (ret < 0) {
-			pr_err("%s: map_cal failed, cal type %d, ret = %d!\n",
+			pr_debug("%s: map_cal failed, cal type %d, ret = %d!\n",
 				__func__, cal_type->info.reg.cal_type,
 				ret);
 			goto done;
@@ -795,7 +795,7 @@ static int unmap_memory(struct cal_type_data *cal_type,
 		ret = cal_type->info.cal_util_callbacks.
 			unmap_cal(cal_type->info.reg.cal_type, cal_block);
 		if (ret < 0) {
-			pr_err("%s: unmap_cal failed, cal type %d, ret = %d!\n",
+			pr_debug("%s: unmap_cal failed, cal type %d, ret = %d!\n",
 				__func__, cal_type->info.reg.cal_type,
 				ret);
 			goto done;
@@ -827,27 +827,27 @@ int cal_utils_alloc_cal(size_t data_size, void *data,
 	pr_debug("%s\n", __func__);
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n",
+		pr_debug("%s: cal_type is NULL!\n",
 			__func__);
 		ret = -EINVAL;
 		goto done;
 	}
 	if (data_size < sizeof(struct audio_cal_type_alloc)) {
-		pr_err("%s: data_size of %zd does not equal alloc struct size of %zd!\n",
+		pr_debug("%s: data_size of %zd does not equal alloc struct size of %zd!\n",
 			__func__, data_size,
 		       sizeof(struct audio_cal_type_alloc));
 		ret = -EINVAL;
 		goto done;
 	}
 	if ((client_info_size > 0) && (client_info == NULL)) {
-		pr_err("%s: User info pointer is NULL but size is %zd!\n",
+		pr_debug("%s: User info pointer is NULL but size is %zd!\n",
 			__func__, client_info_size);
 		ret = -EINVAL;
 		goto done;
 	}
 
 	if (alloc_data->cal_data.mem_handle < 0) {
-		pr_err("%s: mem_handle %d invalid!\n",
+		pr_debug("%s: mem_handle %d invalid!\n",
 			__func__, alloc_data->cal_data.mem_handle);
 		ret = -EINVAL;
 		goto done;
@@ -869,7 +869,7 @@ int cal_utils_alloc_cal(size_t data_size, void *data,
 			(struct audio_cal_type_basic *)alloc_data,
 			client_info_size, client_info);
 		if (cal_block == NULL) {
-			pr_err("%s: create_cal_block failed for %d!\n",
+			pr_debug("%s: create_cal_block failed for %d!\n",
 				__func__, alloc_data->cal_data.mem_handle);
 			ret = -EINVAL;
 			goto err;
@@ -906,14 +906,14 @@ int cal_utils_dealloc_cal(size_t data_size, void *data,
 
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n",
+		pr_debug("%s: cal_type is NULL!\n",
 			__func__);
 		ret = -EINVAL;
 		goto done;
 	}
 
 	if (data_size < sizeof(struct audio_cal_type_dealloc)) {
-		pr_err("%s: data_size of %zd does not equal struct size of %zd!\n",
+		pr_debug("%s: data_size of %zd does not equal struct size of %zd!\n",
 			__func__, data_size,
 			sizeof(struct audio_cal_type_dealloc));
 		ret = -EINVAL;
@@ -927,7 +927,7 @@ int cal_utils_dealloc_cal(size_t data_size, void *data,
 	}
 
 	if (dealloc_data->cal_data.mem_handle < 0) {
-		pr_err("%s: mem_handle %d invalid!\n",
+		pr_debug("%s: mem_handle %d invalid!\n",
 			__func__, dealloc_data->cal_data.mem_handle);
 		ret = -EINVAL;
 		goto done;
@@ -938,7 +938,7 @@ int cal_utils_dealloc_cal(size_t data_size, void *data,
 		cal_type,
 		data);
 	if (cal_block == NULL) {
-		pr_err("%s: allocation does not exist for %d!\n",
+		pr_debug("%s: allocation does not exist for %d!\n",
 			__func__, dealloc_data->cal_data.mem_handle);
 		ret = -EINVAL;
 		goto err;
@@ -980,14 +980,14 @@ int cal_utils_set_cal(size_t data_size, void *data,
 	pr_debug("%s\n", __func__);
 
 	if (cal_type == NULL) {
-		pr_err("%s: cal_type is NULL!\n",
+		pr_debug("%s: cal_type is NULL!\n",
 			__func__);
 		ret = -EINVAL;
 		goto done;
 	}
 
 	if ((client_info_size > 0) && (client_info == NULL)) {
-		pr_err("%s: User info pointer is NULL but size is %zd!\n",
+		pr_debug("%s: User info pointer is NULL but size is %zd!\n",
 			__func__, client_info_size);
 		ret = -EINVAL;
 		goto done;
@@ -995,7 +995,7 @@ int cal_utils_set_cal(size_t data_size, void *data,
 
 	if ((data_size > get_user_cal_type_size(
 		cal_type->info.reg.cal_type)) || (data_size < 0)) {
-		pr_err("%s: cal_type %d, data_size of %zd is invalid, expecting %zd!\n",
+		pr_debug("%s: cal_type %d, data_size of %zd is invalid, expecting %zd!\n",
 			__func__, cal_type->info.reg.cal_type, data_size,
 			get_user_cal_type_size(cal_type->info.reg.cal_type));
 		ret = -EINVAL;
@@ -1008,7 +1008,7 @@ int cal_utils_set_cal(size_t data_size, void *data,
 		data);
 	if (cal_block == NULL) {
 		if (basic_data->cal_data.mem_handle > 0) {
-			pr_err("%s: allocation does not exist for %d!\n",
+			pr_debug("%s: allocation does not exist for %d!\n",
 				__func__, basic_data->cal_data.mem_handle);
 			ret = -EINVAL;
 			goto err;
@@ -1018,7 +1018,7 @@ int cal_utils_set_cal(size_t data_size, void *data,
 				basic_data,
 				client_info_size, client_info);
 			if (cal_block == NULL) {
-				pr_err("%s: create_cal_block failed for cal type %d!\n",
+				pr_debug("%s: create_cal_block failed for cal type %d!\n",
 					__func__,
 				       cal_type->info.reg.cal_type);
 				ret = -EINVAL;
@@ -1083,7 +1083,7 @@ bool cal_utils_is_cal_stale(struct cal_block_data *cal_block)
 
 	mutex_lock(&cal_lock);
 	if (!cal_block) {
-		pr_err("%s: cal_block is Null", __func__);
+		pr_debug("%s: cal_block is Null", __func__);
 		goto unlock;
 	}
 

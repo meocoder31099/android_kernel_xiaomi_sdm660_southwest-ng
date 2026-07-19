@@ -188,7 +188,7 @@ static int glink_spss_advertise_cfg(struct device *dev,
 	addr_idx = of_property_match_string(np, "reg-names", "qcom,spss-addr");
 	size_idx = of_property_match_string(np, "reg-names", "qcom,spss-size");
 	if (addr_idx < 0 || size_idx < 0) {
-		dev_err(dev, "failed to find location registers\n");
+		dev_dbg(dev, "failed to find location registers\n");
 		return -EINVAL;
 	}
 
@@ -196,7 +196,7 @@ static int glink_spss_advertise_cfg(struct device *dev,
 		return -ENOMEM;
 	spss_addr = devm_ioremap(dev, addr_r.start, resource_size(&addr_r));
 	if (IS_ERR_OR_NULL(spss_addr)) {
-		dev_err(dev, "failed to map spss addr resource\n");
+		dev_dbg(dev, "failed to map spss addr resource\n");
 		return -ENOMEM;
 	}
 
@@ -204,7 +204,7 @@ static int glink_spss_advertise_cfg(struct device *dev,
 		return -ENOMEM;
 	spss_size = devm_ioremap(dev, size_r.start, resource_size(&size_r));
 	if (IS_ERR_OR_NULL(spss_size)) {
-		dev_err(dev, "failed to map spss size resource\n");
+		dev_dbg(dev, "failed to map spss size resource\n");
 		return -ENOMEM;
 	}
 
@@ -240,14 +240,14 @@ struct qcom_glink *qcom_glink_spss_register(struct device *parent,
 	dev_set_name(dev, "%s:%s", node->parent->name, node->name);
 	ret = device_register(dev);
 	if (ret) {
-		pr_err("failed to register glink edge %s\n", node->name);
+		pr_debug("failed to register glink edge %s\n", node->name);
 		return ERR_PTR(ret);
 	}
 
 	ret = of_property_read_u32(dev->of_node, "qcom,remote-pid",
 				   &remote_pid);
 	if (ret) {
-		dev_err(dev, "failed to parse qcom,remote-pid\n");
+		dev_dbg(dev, "failed to parse qcom,remote-pid\n");
 		goto err_put_dev;
 	}
 
@@ -264,19 +264,19 @@ struct qcom_glink *qcom_glink_spss_register(struct device *parent,
 	ret = qcom_smem_alloc(remote_pid,
 			      SMEM_GLINK_NATIVE_XPRT_DESCRIPTOR, size);
 	if (ret && ret != -EEXIST) {
-		dev_err(dev, "failed to allocate glink descriptors\n");
+		dev_dbg(dev, "failed to allocate glink descriptors\n");
 		goto err_put_dev;
 	}
 
 	cfg = qcom_smem_get(remote_pid,
 			    SMEM_GLINK_NATIVE_XPRT_DESCRIPTOR, &size);
 	if (IS_ERR(cfg)) {
-		dev_err(dev, "failed to acquire xprt descriptor\n");
+		dev_dbg(dev, "failed to acquire xprt descriptor\n");
 		ret = PTR_ERR(cfg);
 		goto err_put_dev;
 	}
 	if (size != tx_size + rx_size + sizeof(*cfg)) {
-		dev_err(dev, "glink descriptor of invalid size\n");
+		dev_dbg(dev, "glink descriptor of invalid size\n");
 		ret = -EINVAL;
 		goto err_put_dev;
 	}

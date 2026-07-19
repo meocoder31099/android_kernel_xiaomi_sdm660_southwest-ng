@@ -389,7 +389,7 @@ static inline int msm_dll_poll_ck_out_en(struct sdhci_host *host,
 
 	while (ck_out_en != poll) {
 		if (--wait_cnt == 0) {
-			pr_err("%s: %s: CK_OUT_EN bit is not %d\n",
+			pr_debug("%s: %s: CK_OUT_EN bit is not %d\n",
 				mmc_hostname(mmc), __func__, poll);
 			rc = -ETIMEDOUT;
 			goto out;
@@ -436,7 +436,7 @@ static int msm_enable_cdr_cm_sdc4_dll(struct sdhci_host *host)
 		goto err;
 	goto out;
 err:
-	pr_err("%s: %s: failed\n", mmc_hostname(host->mmc), __func__);
+	pr_debug("%s: %s: failed\n", mmc_hostname(host->mmc), __func__);
 out:
 	return rc;
 }
@@ -559,7 +559,7 @@ static int msm_config_cm_dll_phase(struct sdhci_host *host, u8 phase)
 	goto out;
 
 err_out:
-	pr_err("%s: %s: Failed to set DLL phase: %d\n",
+	pr_debug("%s: %s: Failed to set DLL phase: %d\n",
 		mmc_hostname(mmc), __func__, phase);
 out:
 	spin_unlock_irqrestore(&host->lock, flags);
@@ -590,7 +590,7 @@ static int msm_find_most_appropriate_phase(struct sdhci_host *host,
 
 	pr_debug("%s: Enter %s\n", mmc_hostname(mmc), __func__);
 	if (!total_phases || (total_phases > MAX_PHASES)) {
-		pr_err("%s: %s: invalid argument: total_phases=%d\n",
+		pr_debug("%s: %s: invalid argument: total_phases=%d\n",
 			mmc_hostname(mmc), __func__, total_phases);
 		return -EINVAL;
 	}
@@ -673,7 +673,7 @@ static int msm_find_most_appropriate_phase(struct sdhci_host *host,
 
 	if (ret >= MAX_PHASES) {
 		ret = -EINVAL;
-		pr_err("%s: %s: invalid phase selected=%d\n",
+		pr_debug("%s: %s: invalid phase selected=%d\n",
 			mmc_hostname(mmc), __func__, ret);
 	}
 
@@ -881,7 +881,7 @@ static int msm_init_cm_dll(struct sdhci_host *host,
 			msm_host_offset->CORE_DLL_STATUS) & CORE_DLL_LOCK)) {
 			/* max. wait for 50us sec for LOCK bit to be set */
 			if (--wait_cnt == 0) {
-				pr_err("%s: %s: DLL failed to LOCK\n",
+				pr_debug("%s: %s: DLL failed to LOCK\n",
 					mmc_hostname(mmc), __func__);
 				rc = -ETIMEDOUT;
 				goto out;
@@ -1004,7 +1004,7 @@ static int sdhci_msm_cdclp533_calibration(struct sdhci_host *host)
 		 calib_done, (calib_done & CORE_CALIBRATION_DONE), 1, 50);
 
 	if (ret == -ETIMEDOUT) {
-		pr_err("%s: %s: CDC Calibration was not completed\n",
+		pr_debug("%s: %s: CDC Calibration was not completed\n",
 				mmc_hostname(host->mmc), __func__);
 		goto out;
 	}
@@ -1013,7 +1013,7 @@ static int sdhci_msm_cdclp533_calibration(struct sdhci_host *host)
 	cdc_err = readl_relaxed(host->ioaddr + CORE_CSR_CDC_STATUS0)
 			& CORE_CDC_ERROR_CODE_MASK;
 	if (cdc_err) {
-		pr_err("%s: %s: CDC Error Code %d\n",
+		pr_debug("%s: %s: CDC Error Code %d\n",
 			mmc_hostname(host->mmc), __func__, cdc_err);
 		ret = -EINVAL;
 		goto out;
@@ -1074,7 +1074,7 @@ static int sdhci_msm_cm_dll_sdc4_calibration(struct sdhci_host *host)
 		 dll_status, (dll_status & CORE_DDR_DLL_LOCK), 10, 1000);
 
 	if (ret == -ETIMEDOUT) {
-		pr_err("%s: %s: CM_DLL_SDC4 Calibration was not completed\n",
+		pr_debug("%s: %s: CM_DLL_SDC4 Calibration was not completed\n",
 				mmc_hostname(host->mmc), __func__);
 		goto out;
 	}
@@ -1233,7 +1233,7 @@ void sdhci_msm_mm_dbg_configure(struct sdhci_host *host, u32 mask,
 	int ret = 0;
 
 	if (testbus > MAX_TESTBUS) {
-		dev_err(&pdev->dev, "%s: testbus should be less than 128.\n",
+		dev_dbg(&pdev->dev, "%s: testbus should be less than 128.\n",
 						__func__);
 		return;
 	}
@@ -1270,7 +1270,7 @@ void sdhci_msm_mm_dbg_configure(struct sdhci_host *host, u32 mask,
 	ret = readl_poll_timeout(host->ioaddr + SDCC_DEBUG_MM_TB_CFG_REG,
 			val, !(val & TB_WRITE_STATUS), 50, 1000);
 	if (ret == -ETIMEDOUT)
-		pr_err("%s: Unable to set mask & match\n",
+		pr_debug("%s: Unable to set mask & match\n",
 				mmc_hostname(host->mmc));
 
 	/* Direct test bus to GPIO */
@@ -1292,7 +1292,7 @@ static ssize_t show_mask_and_match(struct device *dev,
 	if (!host)
 		return -EINVAL;
 
-	pr_info("%s: M&M show func\n", mmc_hostname(host->mmc));
+	pr_debug("%s: M&M show func\n", mmc_hostname(host->mmc));
 
 	return 0;
 }
@@ -1326,7 +1326,7 @@ static ssize_t store_mask_and_match(struct device *dev,
 		i++;
 	}
 
-	pr_info("%s: M&M parameter passed are: %d %d %d %d\n",
+	pr_debug("%s: M&M parameter passed are: %d %d %d %d\n",
 		mmc_hostname(host->mmc), mask, match, bit_shift, testbus);
 	pm_runtime_get_sync(dev);
 	sdhci_msm_mm_dbg_configure(host, mask, match, bit_shift, testbus);
@@ -1374,7 +1374,7 @@ void sdhci_msm_enter_dbg_mode(struct sdhci_host *host)
 			SDCC_DEBUG_FEATURE_CFG_REG);
 	msm_host->debug_mode_enabled = true;
 
-	dev_info(&pdev->dev, "Debug feature enabled 0x%08x\n",
+	dev_dbg(&pdev->dev, "Debug feature enabled 0x%08x\n",
 			readl_relaxed(host->ioaddr +
 			SDCC_DEBUG_FEATURE_CFG_REG));
 }
@@ -1640,7 +1640,7 @@ retry:
 		if (--tuning_seq_cnt)
 			goto retry;
 		/* tuning failed */
-		pr_err("%s: %s: no tuning point found\n",
+		pr_debug("%s: %s: no tuning point found\n",
 			mmc_hostname(mmc), __func__);
 		rc = -EIO;
 	}
@@ -1667,7 +1667,7 @@ static int sdhci_msm_setup_gpio(struct sdhci_msm_pltfm_data *pdata, bool enable)
 	for (i = 0; i < curr->size; i++) {
 		if (!gpio_is_valid(curr->gpio[i].no)) {
 			ret = -EINVAL;
-			pr_err("%s: Invalid gpio = %d\n", __func__,
+			pr_debug("%s: Invalid gpio = %d\n", __func__,
 					curr->gpio[i].no);
 			goto free_gpios;
 		}
@@ -1675,7 +1675,7 @@ static int sdhci_msm_setup_gpio(struct sdhci_msm_pltfm_data *pdata, bool enable)
 			ret = gpio_request(curr->gpio[i].no,
 						curr->gpio[i].name);
 			if (ret) {
-				pr_err("%s: gpio_request(%d, %s) failed %d\n",
+				pr_debug("%s: gpio_request(%d, %s) failed %d\n",
 					__func__, curr->gpio[i].no,
 					curr->gpio[i].name, ret);
 				goto free_gpios;
@@ -1735,7 +1735,7 @@ static int sdhci_msm_setup_pinctrl(struct sdhci_msm_pltfm_data *pdata,
 			pdata->pctrl_data->pins_sleep);
 
 	if (ret < 0)
-		pr_err("%s state for pinctrl failed with %d\n",
+		pr_debug("%s state for pinctrl failed with %d\n",
 			enable ? "Enabling" : "Disabling", ret);
 
 	return ret;
@@ -1777,7 +1777,7 @@ static int sdhci_msm_dt_get_array(struct device *dev, const char *prop_name,
 	}
 	sz = *len = *len / sizeof(*arr);
 	if (sz <= 0 || (size > 0 && (sz > size))) {
-		dev_err(dev, "%s invalid size\n", prop_name);
+		dev_dbg(dev, "%s invalid size\n", prop_name);
 		ret = -EINVAL;
 		goto out;
 	}
@@ -1790,7 +1790,7 @@ static int sdhci_msm_dt_get_array(struct device *dev, const char *prop_name,
 
 	ret = of_property_read_u32_array(np, prop_name, arr, sz);
 	if (ret < 0) {
-		dev_err(dev, "%s failed reading array %d\n", prop_name, ret);
+		dev_dbg(dev, "%s failed reading array %d\n", prop_name, ret);
 		goto out;
 	}
 	*out = arr;
@@ -1812,7 +1812,7 @@ static int sdhci_msm_dt_parse_vreg_info(struct device *dev,
 
 	snprintf(prop_name, MAX_PROP_SIZE, "%s-supply", vreg_name);
 	if (!of_parse_phandle(np, prop_name, 0)) {
-		dev_info(dev, "No vreg data found for %s\n", vreg_name);
+		dev_dbg(dev, "No vreg data found for %s\n", vreg_name);
 		return ret;
 	}
 
@@ -1838,7 +1838,7 @@ static int sdhci_msm_dt_parse_vreg_info(struct device *dev,
 			"qcom,%s-voltage-level", vreg_name);
 	prop = of_get_property(np, prop_name, &len);
 	if (!prop || (len != (2 * sizeof(__be32)))) {
-		dev_warn(dev, "%s %s property\n",
+		dev_dbg(dev, "%s %s property\n",
 			prop ? "invalid format" : "no", prop_name);
 	} else {
 		vreg->low_vol_level = be32_to_cpup(&prop[0]);
@@ -1849,7 +1849,7 @@ static int sdhci_msm_dt_parse_vreg_info(struct device *dev,
 			"qcom,%s-current-level", vreg_name);
 	prop = of_get_property(np, prop_name, &len);
 	if (!prop || (len != (2 * sizeof(__be32)))) {
-		dev_warn(dev, "%s %s property\n",
+		dev_dbg(dev, "%s %s property\n",
 			prop ? "invalid format" : "no", prop_name);
 	} else {
 		vreg->lpm_uA = be32_to_cpup(&prop[0]);
@@ -1889,14 +1889,14 @@ static int sdhci_msm_parse_pinctrl_info(struct device *dev,
 			pctrl_data->pctrl, "active");
 	if (IS_ERR(pctrl_data->pins_active)) {
 		ret = PTR_ERR(pctrl_data->pins_active);
-		dev_err(dev, "Could not get active pinstates, err:%d\n", ret);
+		dev_dbg(dev, "Could not get active pinstates, err:%d\n", ret);
 		goto out;
 	}
 	pctrl_data->pins_sleep = pinctrl_lookup_state(
 			pctrl_data->pctrl, "sleep");
 	if (IS_ERR(pctrl_data->pins_sleep)) {
 		ret = PTR_ERR(pctrl_data->pins_sleep);
-		dev_err(dev, "Could not get sleep pinstates, err:%d\n", ret);
+		dev_dbg(dev, "Could not get sleep pinstates, err:%d\n", ret);
 		goto out;
 	}
 
@@ -1945,10 +1945,10 @@ static int sdhci_msm_dt_parse_gpio_info(struct device *dev,
 	if (!ret) {
 		goto out;
 	} else if (ret == -EPROBE_DEFER) {
-		dev_err(dev, "Pinctrl framework not registered, err:%d\n", ret);
+		dev_dbg(dev, "Pinctrl framework not registered, err:%d\n", ret);
 		goto out;
 	} else {
-		dev_err(dev, "Parsing Pinctrl failed with %d, falling back on GPIO lib\n",
+		dev_dbg(dev, "Parsing Pinctrl failed with %d, falling back on GPIO lib\n",
 			ret);
 		ret = 0;
 	}
@@ -1994,7 +1994,7 @@ static int sdhci_msm_dt_parse_gpio_info(struct device *dev,
 	pdata->pin_data = pin_data;
 out:
 	if (ret)
-		dev_err(dev, "%s failed with err %d\n", __func__, ret);
+		dev_dbg(dev, "%s failed with err %d\n", __func__, ret);
 	return ret;
 }
 
@@ -2028,12 +2028,12 @@ static int sdhci_msm_pm_qos_parse_irq(struct device *dev,
 		pdata->pm_qos_data.irq_cpu = -1;
 		ret = of_property_read_u32(np, "qcom,pm-qos-irq-cpu", &cpu);
 		if (ret) {
-			dev_err(dev, "%s: error %d reading irq cpu\n", __func__,
+			dev_dbg(dev, "%s: error %d reading irq cpu\n", __func__,
 				ret);
 			goto out;
 		}
 		if (cpu < 0 || cpu >= num_possible_cpus()) {
-			dev_err(dev, "%s: invalid irq cpu %d (NR_CPUS=%d)\n",
+			dev_dbg(dev, "%s: invalid irq cpu %d (NR_CPUS=%d)\n",
 				__func__, cpu, num_possible_cpus());
 			ret = -EINVAL;
 			goto out;
@@ -2043,7 +2043,7 @@ static int sdhci_msm_pm_qos_parse_irq(struct device *dev,
 
 	if (of_property_count_u32_elems(np, "qcom,pm-qos-irq-latency") !=
 		SDHCI_POWER_POLICY_NUM) {
-		dev_err(dev, "%s: could not read %d values for 'qcom,pm-qos-irq-latency'\n",
+		dev_dbg(dev, "%s: could not read %d values for 'qcom,pm-qos-irq-latency'\n",
 			__func__, SDHCI_POWER_POLICY_NUM);
 		ret = -EINVAL;
 		goto out;
@@ -2088,7 +2088,7 @@ static int sdhci_msm_pm_qos_parse_cpu_groups(struct device *dev,
 		pdata->pm_qos_data.cpu_group_map.mask[i].bits[0] = mask;
 		if (!cpumask_subset(&pdata->pm_qos_data.cpu_group_map.mask[i],
 			cpu_possible_mask)) {
-			dev_err(dev, "%s: invalid mask 0x%x of cpu group #%d\n",
+			dev_dbg(dev, "%s: invalid mask 0x%x of cpu group #%d\n",
 				__func__, mask, i);
 			ret = -EINVAL;
 			goto free_res;
@@ -2114,7 +2114,7 @@ static int sdhci_msm_pm_qos_parse_latency(struct device *dev, const char *name,
 
 	ret = of_property_count_u32_elems(np, name);
 	if (ret > 0 && ret != SDHCI_POWER_POLICY_NUM * nr_groups) {
-		dev_err(dev, "%s: invalid number of values for property %s: expected=%d actual=%d\n",
+		dev_dbg(dev, "%s: invalid number of values for property %s: expected=%d actual=%d\n",
 			__func__, name,	SDHCI_POWER_POLICY_NUM * nr_groups,
 			ret);
 		return -EINVAL;
@@ -2142,7 +2142,7 @@ static void sdhci_msm_pm_qos_parse(struct device *dev,
 				struct sdhci_msm_pltfm_data *pdata)
 {
 	if (sdhci_msm_pm_qos_parse_irq(dev, pdata))
-		dev_notice(dev, "%s: PM QoS voting for IRQ will be disabled\n",
+		dev_dbg(dev, "%s: PM QoS voting for IRQ will be disabled\n",
 			__func__);
 
 	if (!sdhci_msm_pm_qos_parse_cpu_groups(dev, pdata)) {
@@ -2161,11 +2161,11 @@ static void sdhci_msm_pm_qos_parse(struct device *dev,
 			/* clean-up previously allocated arrays */
 			kfree(pdata->pm_qos_data.latency);
 			kfree(pdata->pm_qos_data.cmdq_latency);
-			dev_err(dev, "%s: invalid PM QoS latency values. Voting for cpu group will be disabled\n",
+			dev_dbg(dev, "%s: invalid PM QoS latency values. Voting for cpu group will be disabled\n",
 				__func__);
 		}
 	} else {
-		dev_notice(dev, "%s: PM QoS voting for cpu group will be disabled\n",
+		dev_dbg(dev, "%s: PM QoS voting for cpu group will be disabled\n",
 			__func__);
 	}
 }
@@ -2184,7 +2184,7 @@ static int sdhci_msm_dt_parse_hsr_info(struct device *dev,
 
 	dll_hsr_reg_count = sizeof(struct sdhci_msm_dll_hsr) / sizeof(u32);
 	if (dll_hsr_table_len != dll_hsr_reg_count) {
-		dev_err(dev, "Number of HSR entries are not matching\n");
+		dev_dbg(dev, "Number of HSR entries are not matching\n");
 		ret = -EINVAL;
 	} else {
 		msm_host->dll_hsr = (struct sdhci_msm_dll_hsr *)dll_hsr_table;
@@ -2192,7 +2192,7 @@ static int sdhci_msm_dt_parse_hsr_info(struct device *dev,
 
 skip_hsr:
 	if (!msm_host->dll_hsr)
-		dev_info(dev, "Failed to get dll hsr settings from dt\n");
+		dev_dbg(dev, "Failed to get dll hsr settings from dt\n");
 	return ret;
 }
 
@@ -2205,7 +2205,7 @@ int sdhci_msm_parse_reset_data(struct device *dev,
 					"core_reset");
 	if (IS_ERR(msm_host->core_reset)) {
 		ret = PTR_ERR(msm_host->core_reset);
-		dev_err(dev, "core_reset unavailable,err = %d\n",
+		dev_dbg(dev, "core_reset unavailable,err = %d\n",
 				ret);
 		msm_host->core_reset = NULL;
 	}
@@ -2222,19 +2222,19 @@ static int sdhci_msm_parse_regulator_info(struct device *dev,
 						    sdhci_msm_slot_reg_data),
 					GFP_KERNEL);
 	if (!pdata->vreg_data) {
-		dev_err(dev, "failed to allocate memory for vreg data\n");
+		dev_dbg(dev, "failed to allocate memory for vreg data\n");
 		goto out;
 	}
 
 	if (sdhci_msm_dt_parse_vreg_info(dev, &pdata->vreg_data->vdd_data,
 					 "vdd")) {
-		dev_err(dev, "failed parsing vdd data\n");
+		dev_dbg(dev, "failed parsing vdd data\n");
 		goto out;
 	}
 	if (sdhci_msm_dt_parse_vreg_info(dev,
 					 &pdata->vreg_data->vdd_io_data,
 					 "vdd-io")) {
-		dev_err(dev, "failed parsing vdd-io data\n");
+		dev_dbg(dev, "failed parsing vdd-io data\n");
 		goto out;
 	}
 
@@ -2276,17 +2276,17 @@ struct sdhci_msm_pltfm_data *sdhci_msm_populate_pdata(struct device *dev,
 	else if (bus_width == 4)
 		pdata->mmc_bus_width = MMC_CAP_4_BIT_DATA;
 	else {
-		dev_notice(dev, "invalid bus-width, default to 1-bit mode\n");
+		dev_dbg(dev, "invalid bus-width, default to 1-bit mode\n");
 		pdata->mmc_bus_width = 0;
 	}
 
 	if (sdhci_msm_dt_get_array(dev, "qcom,clk-rates",
 			&clk_table, &clk_table_len, 0)) {
-		dev_err(dev, "failed parsing supported clock rates\n");
+		dev_dbg(dev, "failed parsing supported clock rates\n");
 		goto out;
 	}
 	if (!clk_table || !clk_table_len) {
-		dev_err(dev, "Invalid clock table\n");
+		dev_dbg(dev, "Invalid clock table\n");
 		goto out;
 	}
 	pdata->sup_clk_table = clk_table;
@@ -2304,7 +2304,7 @@ struct sdhci_msm_pltfm_data *sdhci_msm_populate_pdata(struct device *dev,
 			&ice_clk_table, &ice_clk_table_len, 0)) {
 		if (ice_clk_table && ice_clk_table_len) {
 			if (ice_clk_table_len != 2) {
-				dev_err(dev, "Need max and min frequencies\n");
+				dev_dbg(dev, "Need max and min frequencies\n");
 				goto out;
 			}
 			pdata->sup_ice_clk_table = ice_clk_table;
@@ -2323,7 +2323,7 @@ struct sdhci_msm_pltfm_data *sdhci_msm_populate_pdata(struct device *dev,
 							dev_name(dev));
 	else if (!msm_host->mmc->clk_scaling.pltfm_freq_table ||
 			!msm_host->mmc->clk_scaling.pltfm_freq_table_sz)
-		dev_err(dev, "bad dts clock scaling frequencies\n");
+		dev_dbg(dev, "bad dts clock scaling frequencies\n");
 
 	/*
 	 * Few hosts can support DDR52 mode at the same lower
@@ -2343,7 +2343,7 @@ struct sdhci_msm_pltfm_data *sdhci_msm_populate_pdata(struct device *dev,
 		goto out;
 
 	if (sdhci_msm_dt_parse_gpio_info(dev, pdata)) {
-		dev_err(dev, "failed parsing gpio data\n");
+		dev_dbg(dev, "failed parsing gpio data\n");
 		goto out;
 	}
 
@@ -2397,7 +2397,7 @@ struct sdhci_msm_pltfm_data *sdhci_msm_populate_pdata(struct device *dev,
 		goto out;
 	ret = sdhci_msm_parse_reset_data(dev, msm_host);
 	if (ret)
-		dev_err(dev, "Reset data parsing error\n");
+		dev_dbg(dev, "Reset data parsing error\n");
 
 	return pdata;
 out:
@@ -2467,7 +2467,7 @@ static inline int sdhci_msm_bus_set_vote(struct sdhci_msm_host *msm_host,
 				msm_host->msm_bus_vote.client_handle, vote);
 		spin_lock_irqsave(&host->lock, *flags);
 		if (rc) {
-			pr_err("%s: msm_bus_scale_client_update_request() failed: bus_client_handle=0x%x, vote=%d, err=%d\n",
+			pr_debug("%s: msm_bus_scale_client_update_request() failed: bus_client_handle=0x%x, vote=%d, err=%d\n",
 				mmc_hostname(host->mmc),
 				msm_host->msm_bus_vote.client_handle, vote, rc);
 			goto out;
@@ -2605,7 +2605,7 @@ static int sdhci_msm_cqe_add_host(struct sdhci_host *host,
 	cq_host = cqhci_pltfm_init(pdev);
 	if (IS_ERR(cq_host)) {
 		ret = PTR_ERR(cq_host);
-		dev_err(&pdev->dev, "cqhci-pltfm init: failed: %d\n", ret);
+		dev_dbg(&pdev->dev, "cqhci-pltfm init: failed: %d\n", ret);
 		goto cleanup;
 	}
 
@@ -2624,7 +2624,7 @@ static int sdhci_msm_cqe_add_host(struct sdhci_host *host,
 
 	ret = cqhci_init(cq_host, host->mmc, dma64);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: CQE init: failed (%d)\n",
+		dev_dbg(&pdev->dev, "%s: CQE init: failed (%d)\n",
 					mmc_hostname(host->mmc),
 					ret);
 		goto cleanup;
@@ -2634,7 +2634,7 @@ static int sdhci_msm_cqe_add_host(struct sdhci_host *host,
 	if (ret)
 		goto cleanup;
 
-	dev_info(&pdev->dev, "%s: CQE init: success\n",
+	dev_dbg(&pdev->dev, "%s: CQE init: success\n",
 					mmc_hostname(host->mmc));
 	return ret;
 
@@ -2646,7 +2646,7 @@ cleanup:
 static void sdhci_msm_cqe_add_host(struct sdhci_host *host,
 				struct platform_device *pdev)
 {
-	dev_warn(&pdev->dev, "CQE config not enabled, defaulting to sdhci\n");
+	dev_dbg(&pdev->dev, "CQE config not enabled, defaulting to sdhci\n");
 	return sdhci_add_host(host);
 }
 #endif /* CONFIG_MMC_CQHCI */
@@ -2689,7 +2689,7 @@ static int sdhci_msm_bus_register(struct sdhci_msm_host *host,
 		rc = sdhci_msm_dt_get_array(dev, "qcom,bus-bw-vectors-bps",
 				&data->bw_vecs, &data->bw_vecs_size, 0);
 		if (rc) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"%s: Failed to get bus-bw-vectors-bps\n",
 				__func__);
 			goto out;
@@ -2705,7 +2705,7 @@ static int sdhci_msm_bus_register(struct sdhci_msm_host *host,
 		host->msm_bus_vote.client_handle =
 				msm_bus_scale_register_client(bus_pdata);
 		if (!host->msm_bus_vote.client_handle) {
-			dev_err(&pdev->dev, "msm_bus_scale_register_client()\n");
+			dev_dbg(&pdev->dev, "msm_bus_scale_register_client()\n");
 			rc = -EFAULT;
 			goto out;
 		}
@@ -2761,7 +2761,7 @@ static int sdhci_msm_vreg_init_reg(struct device *dev,
 	vreg->reg = devm_regulator_get(dev, vreg->name);
 	if (IS_ERR(vreg->reg)) {
 		ret = PTR_ERR(vreg->reg);
-		pr_err("%s: devm_regulator_get(%s) failed. ret=%d\n",
+		pr_debug("%s: devm_regulator_get(%s) failed. ret=%d\n",
 			__func__, vreg->name, ret);
 		goto out;
 	}
@@ -2770,7 +2770,7 @@ static int sdhci_msm_vreg_init_reg(struct device *dev,
 		vreg->set_voltage_sup = true;
 		/* sanity check */
 		if (!vreg->high_vol_level || !vreg->hpm_uA) {
-			pr_err("%s: %s invalid constraints specified\n",
+			pr_debug("%s: %s invalid constraints specified\n",
 			       __func__, vreg->name);
 			ret = -EINVAL;
 		}
@@ -2798,7 +2798,7 @@ static int sdhci_msm_vreg_set_optimum_mode(struct sdhci_msm_reg_data
 	if (vreg->set_voltage_sup) {
 		ret = regulator_set_load(vreg->reg, uA_load);
 		if (ret < 0)
-			pr_err("%s: regulator_set_load(reg=%s,uA_load=%d) failed. ret=%d\n",
+			pr_debug("%s: regulator_set_load(reg=%s,uA_load=%d) failed. ret=%d\n",
 			       __func__, vreg->name, uA_load, ret);
 		else
 			/*
@@ -2818,7 +2818,7 @@ static int sdhci_msm_vreg_set_voltage(struct sdhci_msm_reg_data *vreg,
 	if (vreg->set_voltage_sup) {
 		ret = regulator_set_voltage(vreg->reg, min_uV, max_uV);
 		if (ret) {
-			pr_err("%s: regulator_set_voltage(%s)failed. min_uV=%d,max_uV=%d,ret=%d\n",
+			pr_debug("%s: regulator_set_voltage(%s)failed. min_uV=%d,max_uV=%d,ret=%d\n",
 			       __func__, vreg->name, min_uV, max_uV, ret);
 		}
 	}
@@ -2844,7 +2844,7 @@ static int sdhci_msm_vreg_enable(struct sdhci_msm_reg_data *vreg)
 	}
 	ret = regulator_enable(vreg->reg);
 	if (ret) {
-		pr_err("%s: regulator_enable(%s) failed. ret=%d\n",
+		pr_debug("%s: regulator_enable(%s) failed. ret=%d\n",
 				__func__, vreg->name, ret);
 		return ret;
 	}
@@ -2860,7 +2860,7 @@ static int sdhci_msm_vreg_disable(struct sdhci_msm_reg_data *vreg)
 	if (vreg->is_enabled && !vreg->is_always_on) {
 		ret = regulator_disable(vreg->reg);
 		if (ret) {
-			pr_err("%s: regulator_disable(%s) failed. ret=%d\n",
+			pr_debug("%s: regulator_disable(%s) failed. ret=%d\n",
 				__func__, vreg->name, ret);
 			goto out;
 		}
@@ -2954,7 +2954,7 @@ static int sdhci_msm_vreg_init(struct device *dev,
 	}
 
 	if (ret)
-		dev_err(dev, "vreg reset failed (%d)\n", ret);
+		dev_dbg(dev, "vreg reset failed (%d)\n", ret);
 	goto out;
 
 vdd_io_reg_deinit:
@@ -2992,7 +2992,7 @@ static int sdhci_msm_set_vdd_io_vol(struct sdhci_msm_pltfm_data *pdata,
 			set_level = voltage_level;
 			break;
 		default:
-			pr_err("%s: invalid argument level = %d\n",
+			pr_debug("%s: invalid argument level = %d\n",
 					__func__, level);
 			ret = -EINVAL;
 			return ret;
@@ -3017,7 +3017,7 @@ static void sdhci_msm_cfg_sdiowakeup_gpio_irq(struct sdhci_host *host,
 	else if (!enable && msm_host->is_sdiowakeup_enabled)
 		disable_irq_nosync(msm_host->pdata->sdiowakeup_irq);
 	else
-		dev_warn(&msm_host->pdev->dev, "%s: wakeup to config: %d curr: %d\n",
+		dev_dbg(&msm_host->pdev->dev, "%s: wakeup to config: %d curr: %d\n",
 			__func__, enable, msm_host->is_sdiowakeup_enabled);
 	msm_host->is_sdiowakeup_enabled = enable;
 }
@@ -3026,7 +3026,7 @@ static irqreturn_t sdhci_msm_testbus_trigger_irq(int irq, void *data)
 {
 	struct sdhci_host *host = (struct sdhci_host *)data;
 
-	pr_info("%s: match happened against mask\n",
+	pr_debug("%s: match happened against mask\n",
 				mmc_hostname(host->mmc));
 
 	return IRQ_HANDLED;
@@ -3063,7 +3063,7 @@ void sdhci_msm_dump_pwr_ctrl_regs(struct sdhci_host *host)
 		irq_flags = ACCESS_PRIVATE(pwr_irq_desc->irq_data.common,
 				state_use_accessors);
 
-	pr_err("%s: PWRCTL_STATUS: 0x%08x | PWRCTL_MASK: 0x%08x | PWRCTL_CTL: 0x%08x, pwr isr state=0x%x\n",
+	pr_debug("%s: PWRCTL_STATUS: 0x%08x | PWRCTL_MASK: 0x%08x | PWRCTL_CTL: 0x%08x, pwr isr state=0x%x\n",
 		mmc_hostname(host->mmc),
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_PWRCTL_STATUS),
@@ -3098,7 +3098,7 @@ static int sdhci_msm_clear_pwrctl_status(struct sdhci_host *host, u8 value)
 	 */
 	do {
 		if (retry == 0) {
-			pr_err("%s: Timedout clearing (0x%x) pwrctl status register\n",
+			pr_debug("%s: Timedout clearing (0x%x) pwrctl status register\n",
 				mmc_hostname(host->mmc), value);
 			sdhci_msm_dump_pwr_ctrl_regs(host);
 			WARN_ON(1);
@@ -3526,7 +3526,7 @@ static long sdhci_msm_get_bus_aggr_clk_rate(struct sdhci_host *host,
 	unsigned char cnt;
 
 	if (msm_host->pdata->bus_clk_cnt != msm_host->pdata->sup_clk_cnt) {
-		pr_err("%s: %s: mismatch between bus_clk_cnt(%u) and apps_clk_cnt(%u)\n",
+		pr_debug("%s: %s: mismatch between bus_clk_cnt(%u) and apps_clk_cnt(%u)\n",
 				mmc_hostname(host->mmc), __func__,
 				(unsigned int)msm_host->pdata->bus_clk_cnt,
 				(unsigned int)msm_host->pdata->sup_clk_cnt);
@@ -3706,7 +3706,7 @@ static int sdhci_msm_enable_controller_clock(struct sdhci_host *host)
 	if (!IS_ERR(msm_host->pclk)) {
 		rc = clk_prepare_enable(msm_host->pclk);
 		if (rc) {
-			pr_err("%s: %s: failed to enable the pclk with error %d\n",
+			pr_debug("%s: %s: failed to enable the pclk with error %d\n",
 			       mmc_hostname(host->mmc), __func__, rc);
 			goto remove_vote;
 		}
@@ -3715,7 +3715,7 @@ static int sdhci_msm_enable_controller_clock(struct sdhci_host *host)
 	if (!IS_ERR(msm_host->bus_aggr_clk)) {
 		rc = clk_prepare_enable(msm_host->bus_aggr_clk);
 		if (rc) {
-			pr_err("%s: %s: failed to enable the bus aggr clk with error %d\n",
+			pr_debug("%s: %s: failed to enable the bus aggr clk with error %d\n",
 			       mmc_hostname(host->mmc), __func__, rc);
 			goto disable_pclk;
 		}
@@ -3723,7 +3723,7 @@ static int sdhci_msm_enable_controller_clock(struct sdhci_host *host)
 
 	rc = clk_prepare_enable(msm_host->clk);
 	if (rc) {
-		pr_err("%s: %s: failed to enable the host-clk with error %d\n",
+		pr_debug("%s: %s: failed to enable the host-clk with error %d\n",
 		       mmc_hostname(host->mmc), __func__, rc);
 		goto disable_bus_aggr_clk;
 	}
@@ -3731,7 +3731,7 @@ static int sdhci_msm_enable_controller_clock(struct sdhci_host *host)
 	if (!IS_ERR(msm_host->ice_clk)) {
 		rc = clk_prepare_enable(msm_host->ice_clk);
 		if (rc) {
-			pr_err("%s: %s: failed to enable the ice-clk with error %d\n",
+			pr_debug("%s: %s: failed to enable the ice-clk with error %d\n",
 				mmc_hostname(host->mmc), __func__, rc);
 			goto disable_host_clk;
 		}
@@ -3804,7 +3804,7 @@ static int sdhci_msm_prepare_clocks(struct sdhci_host *host, bool enable)
 		if (!IS_ERR_OR_NULL(msm_host->bus_clk)) {
 			rc = clk_prepare_enable(msm_host->bus_clk);
 			if (rc) {
-				pr_err("%s: %s: failed to enable the bus-clock with error %d\n",
+				pr_debug("%s: %s: failed to enable the bus-clock with error %d\n",
 					mmc_hostname(host->mmc), __func__, rc);
 				goto disable_controller_clk;
 			}
@@ -3812,7 +3812,7 @@ static int sdhci_msm_prepare_clocks(struct sdhci_host *host, bool enable)
 		if (!IS_ERR(msm_host->ff_clk)) {
 			rc = clk_prepare_enable(msm_host->ff_clk);
 			if (rc) {
-				pr_err("%s: %s: failed to enable the ff_clk with error %d\n",
+				pr_debug("%s: %s: failed to enable the ff_clk with error %d\n",
 					mmc_hostname(host->mmc), __func__, rc);
 				goto disable_bus_clk;
 			}
@@ -3820,7 +3820,7 @@ static int sdhci_msm_prepare_clocks(struct sdhci_host *host, bool enable)
 		if (!IS_ERR(msm_host->sleep_clk)) {
 			rc = clk_prepare_enable(msm_host->sleep_clk);
 			if (rc) {
-				pr_err("%s: %s: failed to enable the sleep_clk with error %d\n",
+				pr_debug("%s: %s: failed to enable the sleep_clk with error %d\n",
 					mmc_hostname(host->mmc), __func__, rc);
 				goto disable_ff_clk;
 			}
@@ -4051,7 +4051,7 @@ static void sdhci_msm_set_clock(struct sdhci_host *host, unsigned int clock)
 					CORE_DDR_DLL_LOCK)), 10, 1000);
 			}
 			if (rc == -ETIMEDOUT)
-				pr_err("%s: Unable to get DLL_LOCK/DDR_DLL_LOCK, dll_status: 0x%08x\n",
+				pr_debug("%s: Unable to get DLL_LOCK/DDR_DLL_LOCK, dll_status: 0x%08x\n",
 						mmc_hostname(host->mmc),
 						dll_lock);
 		}
@@ -4097,7 +4097,7 @@ static void sdhci_msm_set_clock(struct sdhci_host *host, unsigned int clock)
 				mmc_hostname(host->mmc), __func__, sup_clock);
 		rc = clk_set_rate(msm_host->clk, sup_clock);
 		if (rc) {
-			pr_err("%s: %s: Failed to set rate %u for host-clk : %d\n",
+			pr_debug("%s: %s: Failed to set rate %u for host-clk : %d\n",
 					mmc_hostname(host->mmc), __func__,
 					sup_clock, rc);
 			goto out;
@@ -4113,13 +4113,13 @@ static void sdhci_msm_set_clock(struct sdhci_host *host, unsigned int clock)
 				rc = clk_set_rate(msm_host->bus_aggr_clk,
 						bus_clk_rate);
 				if (rc) {
-					pr_err("%s: %s: Failed to set rate %ld for bus-aggr-clk : %d\n",
+					pr_debug("%s: %s: Failed to set rate %ld for bus-aggr-clk : %d\n",
 						mmc_hostname(host->mmc),
 						__func__, bus_clk_rate, rc);
 					goto out;
 				}
 			} else {
-				pr_err("%s: %s: Unsupported apps clk rate %u for bus-aggr-clk, err: %ld\n",
+				pr_debug("%s: %s: Unsupported apps clk rate %u for bus-aggr-clk, err: %ld\n",
 					mmc_hostname(host->mmc), __func__,
 					sup_clock, bus_clk_rate);
 			}
@@ -4130,7 +4130,7 @@ static void sdhci_msm_set_clock(struct sdhci_host *host, unsigned int clock)
 		 */
 		rc = sdhci_msm_config_pinctrl_drv_type(msm_host->pdata, clock);
 		if (rc)
-			pr_err("%s: %s: Failed to set pinctrl drive type for clock rate %u (%d)\n",
+			pr_debug("%s: %s: Failed to set pinctrl drive type for clock rate %u (%d)\n",
 					mmc_hostname(host->mmc), __func__,
 					clock, rc);
 
@@ -4262,17 +4262,17 @@ static void sdhci_msm_cqe_dump_debug_ram(struct sdhci_host *host)
 
 	if (cq_host->offset_changed)
 		offset += CQE_V5_VENDOR_CFG;
-	pr_err("---- Debug RAM dump ----\n");
-	pr_err(DRV_NAME ": Debug RAM wrap-around: 0x%08x | Debug RAM overlap: 0x%08x\n",
+	pr_debug("---- Debug RAM dump ----\n");
+	pr_debug(DRV_NAME ": Debug RAM wrap-around: 0x%08x | Debug RAM overlap: 0x%08x\n",
 	       cqhci_readl(cq_host, CQ_CMD_DBG_RAM_WA + offset),
 	       cqhci_readl(cq_host, CQ_CMD_DBG_RAM_OL + offset));
 
 	while (i < 16) {
-		pr_err(DRV_NAME ": Debug RAM dump [%d]: 0x%08x\n", i,
+		pr_debug(DRV_NAME ": Debug RAM dump [%d]: 0x%08x\n", i,
 		       cqhci_readl(cq_host, CQ_CMD_DBG_RAM + offset + (4 * i)));
 		i++;
 	}
-	pr_err("-------------------------\n");
+	pr_debug("-------------------------\n");
 }
 
 #define DUMP_FSM readl_relaxed(host->ioaddr + SDCC_DEBUG_FSM_TRACE_RD_REG)
@@ -4282,16 +4282,16 @@ void sdhci_msm_dump_fsm_history(struct sdhci_host *host)
 {
 	u32 sel_fsm;
 
-	pr_err("----------- FSM REGISTER DUMP -----------\n");
+	pr_debug("----------- FSM REGISTER DUMP -----------\n");
 	/* select fsm to dump */
 	for (sel_fsm = 0; sel_fsm <= MAX_FSM; sel_fsm++) {
 		writel_relaxed(sel_fsm, host->ioaddr +
 				SDCC_DEBUG_FSM_TRACE_CFG_REG);
-		pr_err(": selected fsm is 0x%08x\n",
+		pr_debug(": selected fsm is 0x%08x\n",
 				readl_relaxed(host->ioaddr +
 				SDCC_DEBUG_FSM_TRACE_CFG_REG));
 		/* dump selected fsm history */
-		pr_err("0x%08x 0x%08x 0x%08x 0x%08x\n",
+		pr_debug("0x%08x 0x%08x 0x%08x 0x%08x\n",
 				readl_relaxed(host->ioaddr +
 					SDCC_DEBUG_FSM_TRACE_RD_REG),
 				readl_relaxed(host->ioaddr +
@@ -4300,7 +4300,7 @@ void sdhci_msm_dump_fsm_history(struct sdhci_host *host)
 					SDCC_DEBUG_FSM_TRACE_RD_REG),
 				readl_relaxed(host->ioaddr +
 					SDCC_DEBUG_FSM_TRACE_RD_REG));
-		pr_err("0x%08x 0x%08x 0x%08x\n",
+		pr_debug("0x%08x 0x%08x 0x%08x\n",
 				readl_relaxed(host->ioaddr +
 					SDCC_DEBUG_FSM_TRACE_RD_REG),
 				readl_relaxed(host->ioaddr +
@@ -4320,14 +4320,14 @@ void sdhci_msm_dump_fsm_history(struct sdhci_host *host)
 
 void sdhci_msm_dump_desc_history(struct sdhci_host *host)
 {
-	pr_err("----------- DESC HISTORY DUMP -----------\n");
-	pr_err("Current Desc Addr: 0x%08x | Info: 0x%08x\n",
+	pr_debug("----------- DESC HISTORY DUMP -----------\n");
+	pr_debug("Current Desc Addr: 0x%08x | Info: 0x%08x\n",
 			readl_relaxed(host->ioaddr + SDCC_CURR_DESC_ADDR),
 			readl_relaxed(host->ioaddr + SDCC_CURR_DESC_INFO));
-	pr_err("Processed Desc1 Addr: 0x%08x | Info: 0x%08x\n",
+	pr_debug("Processed Desc1 Addr: 0x%08x | Info: 0x%08x\n",
 			readl_relaxed(host->ioaddr + SDCC_PROC_DESC0_ADDR),
 			readl_relaxed(host->ioaddr + SDCC_PROC_DESC0_INFO));
-	pr_err("Processed Desc2 Addr: 0x%08x | Info: 0x%08x\n",
+	pr_debug("Processed Desc2 Addr: 0x%08x | Info: 0x%08x\n",
 			readl_relaxed(host->ioaddr + SDCC_PROC_DESC1_ADDR),
 			readl_relaxed(host->ioaddr + SDCC_PROC_DESC1_INFO));
 }
@@ -4336,9 +4336,9 @@ void sdhci_msm_dump_iib(struct sdhci_host *host)
 {
 	u32 iter;
 
-	pr_err("----------- IIB HISTORY DUMP -----------\n");
+	pr_debug("----------- IIB HISTORY DUMP -----------\n");
 	for (iter = 0; iter < 8; iter++)
-		pr_err("0x%08x\n", readl_relaxed(host->ioaddr +
+		pr_debug("0x%08x\n", readl_relaxed(host->ioaddr +
 			SDCC_DEBUG_IIB_REG + (iter * 4)));
 }
 
@@ -4354,7 +4354,7 @@ void sdhci_msm_dump_vendor_regs(struct sdhci_host *host)
 	u32 debug_reg[MAX_TEST_BUS] = {0};
 
 	sdhci_msm_cache_debug_data(host);
-	pr_info("----------- VENDOR REGISTER DUMP -----------\n");
+	pr_debug("----------- VENDOR REGISTER DUMP -----------\n");
 	if (msm_host->cq_host)
 		sdhci_msm_cqe_dump_debug_ram(host);
 
@@ -4363,35 +4363,35 @@ void sdhci_msm_dump_vendor_regs(struct sdhci_host *host)
 			msm_host_offset->CORE_MCI_DATA_CNT),
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_MCI_FIFO_CNT));
-	pr_info("Data cnt: 0x%08x | Fifo cnt: 0x%08x | Int sts: 0x%08x\n",
+	pr_debug("Data cnt: 0x%08x | Fifo cnt: 0x%08x | Int sts: 0x%08x\n",
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_MCI_DATA_CNT),
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_MCI_FIFO_CNT),
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_MCI_STATUS));
-	pr_info("DLL sts: 0x%08x | DLL cfg:  0x%08x | DLL cfg2: 0x%08x\n",
+	pr_debug("DLL sts: 0x%08x | DLL cfg:  0x%08x | DLL cfg2: 0x%08x\n",
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_DLL_STATUS),
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_DLL_CONFIG),
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_DLL_CONFIG_2));
-	pr_info("DLL cfg3: 0x%08x | DLL usr ctl:  0x%08x | DDR cfg: 0x%08x\n",
+	pr_debug("DLL cfg3: 0x%08x | DLL usr ctl:  0x%08x | DDR cfg: 0x%08x\n",
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_DLL_CONFIG_3),
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_DLL_USR_CTL),
 		sdhci_msm_readl_relaxed(host,
 			msm_host_offset->CORE_DDR_CONFIG));
-	pr_info("SDCC ver: 0x%08x | Vndr adma err : addr0: 0x%08x addr1: 0x%08x\n",
+	pr_debug("SDCC ver: 0x%08x | Vndr adma err : addr0: 0x%08x addr1: 0x%08x\n",
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_MCI_VERSION),
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_VENDOR_SPEC_ADMA_ERR_ADDR0),
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_VENDOR_SPEC_ADMA_ERR_ADDR1));
-	pr_info("Vndr func: 0x%08x | Vndr func2 : 0x%08x Vndr func3: 0x%08x\n",
+	pr_debug("Vndr func: 0x%08x | Vndr func2 : 0x%08x Vndr func3: 0x%08x\n",
 		readl_relaxed(host->ioaddr +
 			msm_host_offset->CORE_VENDOR_SPEC),
 		readl_relaxed(host->ioaddr +
@@ -4429,7 +4429,7 @@ void sdhci_msm_dump_vendor_regs(struct sdhci_host *host)
 		}
 	}
 	for (i = 0; i < MAX_TEST_BUS; i = i + 4)
-		pr_info(" Test bus[%d to %d]: 0x%08x 0x%08x 0x%08x 0x%08x\n",
+		pr_debug(" Test bus[%d to %d]: 0x%08x 0x%08x 0x%08x 0x%08x\n",
 				i, i + 3, debug_reg[i], debug_reg[i+1],
 				debug_reg[i+2], debug_reg[i+3]);
 }
@@ -4481,7 +4481,7 @@ void sdhci_msm_reset_workaround(struct sdhci_host *host, u32 enable)
 		while (readl_relaxed(host->ioaddr +
 		msm_host_offset->CORE_VENDOR_SPEC_FUNC2) & HC_SW_RST_REQ) {
 			if (timeout == 0) {
-				pr_info("%s: Applying wait idle disable workaround\n",
+				pr_debug("%s: Applying wait idle disable workaround\n",
 					mmc_hostname(host->mmc));
 				/*
 				 * Apply the reset workaround to not wait for
@@ -4501,7 +4501,7 @@ void sdhci_msm_reset_workaround(struct sdhci_host *host, u32 enable)
 			timeout--;
 			udelay(10);
 		}
-		pr_info("%s: waiting for SW_RST_REQ is successful\n",
+		pr_debug("%s: waiting for SW_RST_REQ is successful\n",
 				mmc_hostname(host->mmc));
 	} else {
 		writel_relaxed(vendor_func2 & ~HC_SW_RST_WAIT_IDLE_DIS,
@@ -4666,7 +4666,7 @@ static bool sdhci_msm_pm_qos_wq_init(struct sdhci_msm_host *msm_host)
 	msm_host->pm_qos_wq = create_workqueue(wq);
 	if (!msm_host->pm_qos_wq) {
 		ret = false;
-		dev_err(&msm_host->pdev->dev,
+		dev_dbg(&msm_host->pdev->dev,
 				"failed to create pm qos unvote work queue\n");
 	}
 	kfree(wq);
@@ -4720,7 +4720,7 @@ void sdhci_msm_pm_qos_irq_init(struct sdhci_host *host)
 	ret = device_create_file(&msm_host->pdev->dev,
 		&msm_host->pm_qos_irq.enable_attr);
 	if (ret)
-		pr_err("%s: fail to create pm_qos_irq_enable (%d)\n",
+		pr_debug("%s: fail to create pm_qos_irq_enable (%d)\n",
 			__func__, ret);
 
 	msm_host->pm_qos_irq.status_attr.show = sdhci_msm_pm_qos_irq_show;
@@ -4731,7 +4731,7 @@ void sdhci_msm_pm_qos_irq_init(struct sdhci_host *host)
 	ret = device_create_file(&msm_host->pdev->dev,
 			&msm_host->pm_qos_irq.status_attr);
 	if (ret)
-		pr_err("%s: fail to create pm_qos_irq_status (%d)\n",
+		pr_debug("%s: fail to create pm_qos_irq_status (%d)\n",
 			__func__, ret);
 }
 
@@ -4915,7 +4915,7 @@ void sdhci_msm_pm_qos_cpu_init(struct sdhci_host *host,
 		group->latency = PM_QOS_DEFAULT_VALUE;
 		pm_qos_add_request(&group->req, PM_QOS_CPU_DMA_LATENCY,
 			group->latency);
-		pr_info("%s (): voted for group #%d (mask=0x%d) latency=%d\n",
+		pr_debug("%s (): voted for group #%d (mask=0x%d) latency=%d\n",
 			__func__, i,
 			group->req.cpus_affine,
 			group->latency);
@@ -4933,7 +4933,7 @@ void sdhci_msm_pm_qos_cpu_init(struct sdhci_host *host,
 	ret = device_create_file(&msm_host->pdev->dev,
 			&msm_host->pm_qos_group_status_attr);
 	if (ret)
-		dev_err(&msm_host->pdev->dev, "%s: fail to create pm_qos_group_status_attr (%d)\n",
+		dev_dbg(&msm_host->pdev->dev, "%s: fail to create pm_qos_group_status_attr (%d)\n",
 			__func__, ret);
 	msm_host->pm_qos_group_enable_attr.show =
 			sdhci_msm_pm_qos_group_enable_show;
@@ -4946,7 +4946,7 @@ void sdhci_msm_pm_qos_cpu_init(struct sdhci_host *host,
 	ret = device_create_file(&msm_host->pdev->dev,
 			&msm_host->pm_qos_group_enable_attr);
 	if (ret)
-		dev_err(&msm_host->pdev->dev, "%s: fail to create pm_qos_group_enable_attr (%d)\n",
+		dev_dbg(&msm_host->pdev->dev, "%s: fail to create pm_qos_group_enable_attr (%d)\n",
 			__func__, ret);
 }
 
@@ -5035,7 +5035,7 @@ static int sdhci_msm_notify_load(struct sdhci_host *host, enum mmc_load state)
 				mmc_hostname(host->mmc), clk_rate);
 		ret = clk_set_rate(msm_host->ice_clk, clk_rate);
 		if (ret) {
-			pr_err("%s: ICE_CLK rate set failed (%d) for %u\n",
+			pr_debug("%s: ICE_CLK rate set failed (%d) for %u\n",
 				mmc_hostname(host->mmc), ret, clk_rate);
 			return ret;
 		}
@@ -5053,13 +5053,13 @@ static int sdhci_msm_gcc_reset(struct device *dev, struct sdhci_host *host)
 	int ret = -EOPNOTSUPP;
 
 	if (!reset) {
-		dev_err(dev, "unable to acquire core_reset\n");
+		dev_dbg(dev, "unable to acquire core_reset\n");
 		goto out;
 	}
 
 	ret = reset_control_assert(reset);
 	if (ret) {
-		dev_err(dev, "core_reset assert failed %d\n", ret);
+		dev_dbg(dev, "core_reset assert failed %d\n", ret);
 		goto out;
 	}
 
@@ -5072,7 +5072,7 @@ static int sdhci_msm_gcc_reset(struct device *dev, struct sdhci_host *host)
 
 	ret = reset_control_deassert(reset);
 	if (ret) {
-		dev_err(dev, "core_reset deassert failed %d\n", ret);
+		dev_dbg(dev, "core_reset deassert failed %d\n", ret);
 		goto out;
 	}
 
@@ -5090,7 +5090,7 @@ static void sdhci_msm_hw_reset(struct sdhci_host *host)
 	int ret = -ENOTSUPP;
 
 	if (!msm_host->core_reset) {
-		dev_err(&pdev->dev, "%s: failed, err = %d\n", __func__,
+		dev_dbg(&pdev->dev, "%s: failed, err = %d\n", __func__,
 				ret);
 		return;
 	}
@@ -5283,7 +5283,7 @@ static int sdhci_msm_setup_ice_clk(struct sdhci_msm_host *msm_host,
 		ret = clk_set_rate(msm_host->ice_clk,
 				msm_host->pdata->ice_clk_max);
 		if (ret) {
-			dev_err(&pdev->dev, "ICE_CLK rate set failed (%d) for %u\n",
+			dev_dbg(&pdev->dev, "ICE_CLK rate set failed (%d) for %u\n",
 				ret,
 				msm_host->pdata->ice_clk_max);
 			return ret;
@@ -5333,7 +5333,7 @@ static void sdhci_msm_select_bus_mode(struct sdhci_host *host)
 			msm_host->mmc->clk_scaling.lower_bus_speed_mode &=
 				~(MMC_SCALING_LOWER_DDR52_MODE);
 		}
-		pr_info("%s: %s: bus_mode=%d set using kernel command line\n",
+		pr_debug("%s: %s: bus_mode=%d set using kernel command line\n",
 			mmc_hostname(host->mmc), __func__, bus_mode);
 	}
 }
@@ -5386,7 +5386,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	if (pdev->dev.of_node) {
 		ret = of_alias_get_id(pdev->dev.of_node, "sdhc");
 		if (ret <= 0) {
-			dev_err(&pdev->dev, "Failed to get slot index %d\n",
+			dev_dbg(&pdev->dev, "Failed to get slot index %d\n",
 				ret);
 			goto pltfm_free;
 		}
@@ -5404,7 +5404,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 				ret = clk_set_flags(msm_host->clk,
 						CLKFLAG_NORETAIN_MEM);
 				if (ret)
-					dev_err(&pdev->dev,
+					dev_dbg(&pdev->dev,
 					"Core clk set NORETAIN_MEM failed: %d\n",
 					ret);
 			}
@@ -5413,7 +5413,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		}
 
 		if (disable_slots & (1 << (ret - 1))) {
-			dev_info(&pdev->dev, "%s: Slot %d disabled\n", __func__,
+			dev_dbg(&pdev->dev, "%s: Slot %d disabled\n", __func__,
 				ret);
 			ret = -ENODEV;
 			goto pltfm_free;
@@ -5425,11 +5425,11 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		msm_host->pdata = sdhci_msm_populate_pdata(&pdev->dev,
 							   msm_host);
 		if (!msm_host->pdata) {
-			dev_err(&pdev->dev, "DT parsing error\n");
+			dev_dbg(&pdev->dev, "DT parsing error\n");
 			goto pltfm_free;
 		}
 	} else {
-		dev_err(&pdev->dev, "No device tree node\n");
+		dev_dbg(&pdev->dev, "No device tree node\n");
 		goto pltfm_free;
 	}
 
@@ -5453,13 +5453,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	if (!IS_ERR(msm_host->pclk)) {
 		ret = clk_prepare_enable(msm_host->pclk);
 		if (ret) {
-			dev_err(&pdev->dev, "Iface clk not enabled (%d)\n"
+			dev_dbg(&pdev->dev, "Iface clk not enabled (%d)\n"
 					, ret);
 			goto bus_clk_disable;
 		}
 	} else {
 		ret = PTR_ERR(msm_host->pclk);
-		dev_err(&pdev->dev, "Iface clk get failed (%d)\n", ret);
+		dev_dbg(&pdev->dev, "Iface clk get failed (%d)\n", ret);
 	}
 	atomic_set(&msm_host->controller_clock, 1);
 
@@ -5468,7 +5468,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	if (!IS_ERR(msm_host->bus_aggr_clk)) {
 		ret = clk_prepare_enable(msm_host->bus_aggr_clk);
 		if (ret) {
-			dev_err(&pdev->dev, "Bus aggregate clk not enabled\n");
+			dev_dbg(&pdev->dev, "Bus aggregate clk not enabled\n");
 			goto pclk_disable;
 		}
 	}
@@ -5481,24 +5481,24 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	msm_host->clk = devm_clk_get(&pdev->dev, "core_clk");
 	if (IS_ERR(msm_host->clk)) {
 		ret = PTR_ERR(msm_host->clk);
-		dev_err(&pdev->dev, "Core clk get failed (%d)\n", ret);
+		dev_dbg(&pdev->dev, "Core clk get failed (%d)\n", ret);
 		goto bus_aggr_clk_disable;
 	}
 
 	/* Set to the minimum supported clock frequency */
 	ret = clk_set_rate(msm_host->clk, sdhci_msm_get_min_clock(host));
 	if (ret) {
-		dev_err(&pdev->dev, "MClk rate set failed (%d)\n", ret);
+		dev_dbg(&pdev->dev, "MClk rate set failed (%d)\n", ret);
 		goto bus_aggr_clk_disable;
 	}
 	ret = clk_prepare_enable(msm_host->clk);
 	if (ret) {
-		dev_err(&pdev->dev, "Core clk not enabled (%d)\n", ret);
+		dev_dbg(&pdev->dev, "Core clk not enabled (%d)\n", ret);
 		goto bus_aggr_clk_disable;
 	}
 	ret = clk_set_flags(msm_host->clk, CLKFLAG_NORETAIN_MEM);
 	if (ret)
-		dev_err(&pdev->dev, "Core clk set NORETAIN_MEM failed: %d\n",
+		dev_dbg(&pdev->dev, "Core clk set NORETAIN_MEM failed: %d\n",
 			ret);
 
 	msm_host->clk_rate = sdhci_msm_get_min_clock(host);
@@ -5531,7 +5531,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	/* Setup regulators */
 	ret = sdhci_msm_vreg_init(&pdev->dev, msm_host->pdata, true);
 	if (ret) {
-		dev_err(&pdev->dev, "Regulator setup failed (%d)\n", ret);
+		dev_dbg(&pdev->dev, "Regulator setup failed (%d)\n", ret);
 		goto bus_unregister;
 	}
 
@@ -5540,14 +5540,14 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 				IORESOURCE_MEM, "core_mem");
 	if (!msm_host->mci_removed) {
 		if (!core_memres) {
-			dev_err(&pdev->dev, "Failed to get iomem resource\n");
+			dev_dbg(&pdev->dev, "Failed to get iomem resource\n");
 			goto vreg_deinit;
 		}
 		msm_host->core_mem = devm_ioremap(&pdev->dev,
 			core_memres->start, resource_size(core_memres));
 
 		if (!msm_host->core_mem) {
-			dev_err(&pdev->dev, "Failed to remap registers\n");
+			dev_dbg(&pdev->dev, "Failed to remap registers\n");
 			ret = -ENOMEM;
 			goto vreg_deinit;
 		}
@@ -5560,7 +5560,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 						resource_size(tlmm_memres));
 
 		if (!tlmm_mem) {
-			dev_err(&pdev->dev, "Failed to remap tlmm registers\n");
+			dev_dbg(&pdev->dev, "Failed to remap tlmm registers\n");
 			ret = -ENOMEM;
 			goto vreg_deinit;
 		}
@@ -5686,7 +5686,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 					sdhci_msm_pwr_irq, IRQF_ONESHOT,
 					dev_name(&pdev->dev), host);
 	if (ret) {
-		dev_err(&pdev->dev, "Request threaded irq(%d) failed (%d)\n",
+		dev_dbg(&pdev->dev, "Request threaded irq(%d) failed (%d)\n",
 				msm_host->pwr_irq, ret);
 		goto vreg_deinit;
 	}
@@ -5735,7 +5735,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		ret = mmc_gpio_request_cd(msm_host->mmc,
 				msm_host->pdata->status_gpio, 0);
 		if (ret) {
-			dev_err(&pdev->dev, "%s: Failed to request card detection IRQ %d\n",
+			dev_dbg(&pdev->dev, "%s: Failed to request card detection IRQ %d\n",
 					__func__, ret);
 			goto vreg_deinit;
 		}
@@ -5751,13 +5751,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		mmc_dev(host->mmc)->dma_mask = &host->dma_mask;
 		mmc_dev(host->mmc)->coherent_dma_mask  = host->dma_mask;
 	} else {
-		dev_err(&pdev->dev, "%s: Failed to set dma mask\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Failed to set dma mask\n", __func__);
 	}
 
 	msm_host->pdata->sdiowakeup_irq = platform_get_irq_byname(pdev,
 							  "sdiowakeup_irq");
 	if (sdhci_is_valid_gpio_wakeup_int(msm_host)) {
-		dev_info(&pdev->dev, "%s: sdiowakeup_irq = %d\n", __func__,
+		dev_dbg(&pdev->dev, "%s: sdiowakeup_irq = %d\n", __func__,
 				msm_host->pdata->sdiowakeup_irq);
 		msm_host->is_sdiowakeup_enabled = true;
 		ret = request_irq(msm_host->pdata->sdiowakeup_irq,
@@ -5765,7 +5765,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 				  IRQF_SHARED | IRQF_TRIGGER_HIGH,
 				  "sdhci-msm sdiowakeup", host);
 		if (ret) {
-			dev_err(&pdev->dev, "%s: request sdiowakeup IRQ %d: failed: %d\n",
+			dev_dbg(&pdev->dev, "%s: request sdiowakeup IRQ %d: failed: %d\n",
 				__func__, msm_host->pdata->sdiowakeup_irq, ret);
 			msm_host->pdata->sdiowakeup_irq = -1;
 			msm_host->is_sdiowakeup_enabled = false;
@@ -5781,14 +5781,14 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	msm_host->pdata->testbus_trigger_irq = platform_get_irq_byname(pdev,
 							  "tb_trig_irq");
 	if (sdhci_is_valid_gpio_testbus_trigger_int(msm_host)) {
-		dev_info(&pdev->dev, "%s: testbus_trigger_irq = %d\n", __func__,
+		dev_dbg(&pdev->dev, "%s: testbus_trigger_irq = %d\n", __func__,
 				msm_host->pdata->testbus_trigger_irq);
 		ret = request_irq(msm_host->pdata->testbus_trigger_irq,
 				  sdhci_msm_testbus_trigger_irq,
 				  IRQF_SHARED | IRQF_TRIGGER_RISING,
 				  "sdhci-msm tb_trig", host);
 		if (ret) {
-			dev_err(&pdev->dev, "%s: request tb_trig IRQ %d: failed: %d\n",
+			dev_dbg(&pdev->dev, "%s: request tb_trig IRQ %d: failed: %d\n",
 				__func__, msm_host->pdata->testbus_trigger_irq,
 				ret);
 		}
@@ -5801,7 +5801,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		ret = sdhci_add_host(host);
 	}
 	if (ret) {
-		dev_err(&pdev->dev, "Add host failed (%d)\n", ret);
+		dev_dbg(&pdev->dev, "Add host failed (%d)\n", ret);
 		goto vreg_deinit;
 	}
 
@@ -5849,7 +5849,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 	msm_host->auto_cmd21_attr.attr.mode = 0644;
 	ret = device_create_file(&pdev->dev, &msm_host->auto_cmd21_attr);
 	if (ret) {
-		pr_err("%s: %s: failed creating auto-cmd21 attr: %d\n",
+		pr_debug("%s: %s: failed creating auto-cmd21 attr: %d\n",
 		       mmc_hostname(host->mmc), __func__, ret);
 		device_remove_file(&pdev->dev, &msm_host->auto_cmd21_attr);
 	}
@@ -5863,7 +5863,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		ret = device_create_file(&pdev->dev,
 					&msm_host->mask_and_match);
 		if (ret) {
-			pr_err("%s: %s: failed creating M&M attr: %d\n",
+			pr_debug("%s: %s: failed creating M&M attr: %d\n",
 					mmc_hostname(host->mmc), __func__, ret);
 		}
 	}
@@ -6001,7 +6001,7 @@ static int sdhci_msm_cfg_sdio_wakeup(struct sdhci_host *host, bool enable)
 				sdhci_msm_cfg_sdiowakeup_gpio_irq(host, true);
 			goto out;
 		} else {
-			pr_err("%s: sdiowakeup_irq(%d) invalid\n",
+			pr_debug("%s: sdiowakeup_irq(%d) invalid\n",
 					mmc_hostname(host->mmc), enable);
 		}
 	} else {
@@ -6010,14 +6010,14 @@ static int sdhci_msm_cfg_sdio_wakeup(struct sdhci_host *host, bool enable)
 			sdhci_msm_cfg_sdiowakeup_gpio_irq(host, false);
 			msm_host->sdio_pending_processing = false;
 		} else {
-			pr_err("%s: sdiowakeup_irq(%d)invalid\n",
+			pr_debug("%s: sdiowakeup_irq(%d)invalid\n",
 					mmc_hostname(host->mmc), enable);
 
 		}
 	}
 out:
 	if (ret)
-		pr_err("%s: %s: %sable wakeup: failed: %d gpio: %d\n",
+		pr_debug("%s: %s: %sable wakeup: failed: %d gpio: %d\n",
 		       mmc_hostname(host->mmc), __func__, enable ? "en" : "dis",
 		       ret, msm_host->pdata->sdiowakeup_irq);
 	spin_unlock_irqrestore(&host->lock, flags);
@@ -6064,7 +6064,7 @@ static int sdhci_msm_runtime_resume(struct device *dev)
 
 	ret = sdhci_msm_enable_controller_clock(host);
 	if (ret) {
-		pr_err("%s: Failed to enable reqd clocks\n",
+		pr_debug("%s: Failed to enable reqd clocks\n",
 			mmc_hostname(host->mmc));
 	}
 
@@ -6149,7 +6149,7 @@ static int sdhci_msm_suspend_noirq(struct device *dev)
 	 * suspend in case the clocks are ON
 	 */
 	if (atomic_read(&msm_host->clks_on)) {
-		pr_warn("%s: %s: clock ON after suspend, aborting suspend\n",
+		pr_debug("%s: %s: clock ON after suspend, aborting suspend\n",
 			mmc_hostname(host->mmc), __func__);
 		ret = -EAGAIN;
 	}

@@ -114,13 +114,13 @@ int of_dma_configure(struct device *dev, struct device_node *np, bool force_dma)
 		 * it is defined in DT as a mask.
 		 */
 		if (size & 1) {
-			dev_warn(dev, "Invalid size 0x%llx for dma-range\n",
+			dev_dbg(dev, "Invalid size 0x%llx for dma-range\n",
 				 size);
 			size = size + 1;
 		}
 
 		if (!size) {
-			dev_err(dev, "Adjusted size 0x%llx invalid\n", size);
+			dev_dbg(dev, "Adjusted size 0x%llx invalid\n", size);
 			return -EINVAL;
 		}
 		dev_dbg(dev, "dma_pfn_offset(%#08lx)\n", offset);
@@ -133,7 +133,7 @@ int of_dma_configure(struct device *dev, struct device_node *np, bool force_dma)
 	 * coherent mask if not, but we'll no longer do so quietly.
 	 */
 	if (!dev->dma_mask) {
-		dev_warn(dev, "DMA mask not set\n");
+		dev_dbg(dev, "DMA mask not set\n");
 		dev->dma_mask = &dev->coherent_dma_mask;
 	}
 

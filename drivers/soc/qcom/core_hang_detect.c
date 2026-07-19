@@ -125,7 +125,7 @@ static size_t store_threshold(struct kobject *kobj, struct attribute *attr,
 			continue;
 
 		if (scm_io_write(hang_dev->threshold[cpu], threshold_val)) {
-			pr_err("%s: Failed to set threshold for core%d\n",
+			pr_debug("%s: Failed to set threshold for core%d\n",
 					__func__, cpu);
 			return -EIO;
 		}
@@ -165,7 +165,7 @@ static size_t store_pmu_event_sel(struct kobject *kobj, struct attribute *attr,
 		reg_value = scm_io_read(hang_dev->config[cpu]);
 		if (scm_io_write(hang_dev->config[cpu],
 			_WRITE(pmu_event_sel, reg_value, PMU_MUX))) {
-			pr_err("%s: Failed to set pmu event for core%d\n",
+			pr_debug("%s: Failed to set pmu event for core%d\n",
 					__func__, cpu);
 			return -EIO;
 		}
@@ -207,7 +207,7 @@ static size_t store_enable(struct kobject *kobj, struct attribute *attr,
 		reg_value = scm_io_read(hang_dev->config[cpu]);
 		if (scm_io_write(hang_dev->config[cpu],
 			_WRITE(enabled, reg_value, ENABLE))) {
-			pr_err("%s: Failed to set enable for core%d\n",
+			pr_debug("%s: Failed to set enable for core%d\n",
 					__func__, cpu);
 			return -EIO;
 		}
@@ -255,34 +255,34 @@ static int msm_hang_detect_probe(struct platform_device *pdev)
 
 	name = of_get_property(node, "label", NULL);
 	if (!name) {
-		pr_err("%s: Can't get label property\n", __func__);
+		pr_debug("%s: Can't get label property\n", __func__);
 		return -EINVAL;
 	}
 
 	num_reg = of_property_count_u32_elems(node,
 			"qcom,threshold-arr");
 	if (num_reg < 0) {
-		pr_err("%s: Can't get qcom,threshold-arr property\n", __func__);
+		pr_debug("%s: Can't get qcom,threshold-arr property\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32_array(node, "qcom,threshold-arr",
 				treg, num_reg);
 	if (ret) {
-		pr_err("%s: Can't get qcom,threshold-arr property\n", __func__);
+		pr_debug("%s: Can't get qcom,threshold-arr property\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32_array(node, "qcom,config-arr",
 				creg, num_reg);
 	if (ret) {
-		pr_err("%s: Can't get qcom,config-arr property\n", __func__);
+		pr_debug("%s: Can't get qcom,config-arr property\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "cluster-id", &fw_cluster_id);
 	if (ret) {
-		pr_err("%s: Missing cluster-id.\n", __func__);
+		pr_debug("%s: Missing cluster-id.\n", __func__);
 	} else {
 
 		for_each_possible_cpu(cpu) {
@@ -294,7 +294,7 @@ static int msm_hang_detect_probe(struct platform_device *pdev)
 		}
 
 		if (cluster_cpu_count == 0) {
-			pr_err("%s: Unable to find any CPU for cluster:%d\n",
+			pr_debug("%s: Unable to find any CPU for cluster:%d\n",
 					__func__, fw_cluster_id);
 			return -EINVAL;
 		}
@@ -313,7 +313,7 @@ static int msm_hang_detect_probe(struct platform_device *pdev)
 	}
 
 	if (cpu_count == 0) {
-		pr_err("%s: Unable to find any CPU\n", __func__);
+		pr_debug("%s: Unable to find any CPU\n", __func__);
 		return -EINVAL;
 	}
 
@@ -321,13 +321,13 @@ static int msm_hang_detect_probe(struct platform_device *pdev)
 			&cpu_subsys.dev_root->kobj, "%s_%s",
 			"hang_detect", name);
 	if (ret) {
-		pr_err("%s: Error in creation kobject_add\n", __func__);
+		pr_debug("%s: Error in creation kobject_add\n", __func__);
 		goto out_put_kobj;
 	}
 
 	ret = sysfs_create_group(&hang_det->kobj, &hang_attr_group);
 	if (ret) {
-		pr_err("%s: Error in creation sysfs_create_group\n", __func__);
+		pr_debug("%s: Error in creation sysfs_create_group\n", __func__);
 		goto out_del_kobj;
 	}
 

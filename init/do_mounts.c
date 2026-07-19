@@ -159,10 +159,10 @@ no_offset:
 	put_device(dev);
 done:
 	if (clear_root_wait) {
-		pr_err("VFS: PARTUUID= is invalid.\n"
+		pr_debug("VFS: PARTUUID= is invalid.\n"
 		       "Expected PARTUUID=<valid-uuid-id>[/PARTNROFF=%%d]\n");
 		if (root_wait)
-			pr_err("Disabling rootwait; root= is invalid.\n");
+			pr_debug("Disabling rootwait; root= is invalid.\n");
 		root_wait = 0;
 	}
 	return res;
@@ -391,7 +391,7 @@ static int __init do_mount_root(char *name, char *fs, int flags, void *data)
 	ksys_chdir("/root");
 	s = current->fs->pwd.dentry->d_sb;
 	ROOT_DEV = s->s_dev;
-	printk(KERN_INFO
+	no_printk(KERN_INFO
 	       "VFS: Mounted root (%s filesystem)%s on device %u:%u.\n",
 	       s->s_type->name,
 	       sb_rdonly(s) ? " readonly" : "",
@@ -429,13 +429,13 @@ retry:
 #ifdef CONFIG_BLOCK
 		__bdevname(ROOT_DEV, b);
 #endif
-		printk("VFS: Cannot open root device \"%s\" or %s: error %d\n",
+		no_printk("VFS: Cannot open root device \"%s\" or %s: error %d\n",
 				root_device_name, b, err);
-		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
+		no_printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
 
 		printk_all_partitions();
 #ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
-		printk("DEBUG_BLOCK_EXT_DEVT is enabled, you need to specify "
+		no_printk("DEBUG_BLOCK_EXT_DEVT is enabled, you need to specify "
 		       "explicit textual name for \"root=\" boot option.\n");
 #endif
 		panic("VFS: Unable to mount root fs on %s", b);
@@ -445,12 +445,12 @@ retry:
 		goto retry;
 	}
 
-	printk("List of all partitions:\n");
+	no_printk("List of all partitions:\n");
 	printk_all_partitions();
-	printk("No filesystem could mount root, tried: ");
+	no_printk("No filesystem could mount root, tried: ");
 	for (p = fs_names; *p; p += strlen(p)+1)
-		printk(" %s", p);
-	printk("\n");
+		no_printk(" %s", p);
+	no_printk("\n");
 #ifdef CONFIG_BLOCK
 	__bdevname(ROOT_DEV, b);
 #endif
@@ -515,7 +515,7 @@ void __init change_floppy(char *fmt, ...)
 		ksys_ioctl(fd, FDEJECT, 0);
 		ksys_close(fd);
 	}
-	printk(KERN_NOTICE "VFS: Insert %s and press ENTER\n", buf);
+	no_printk(KERN_NOTICE "VFS: Insert %s and press ENTER\n", buf);
 	fd = ksys_open("/dev/console", O_RDWR, 0);
 	if (fd >= 0) {
 		ksys_ioctl(fd, TCGETS, (long)&termios);
@@ -536,7 +536,7 @@ void __init mount_root(void)
 		if (mount_nfs_root())
 			return;
 
-		printk(KERN_ERR "VFS: Unable to mount root fs via NFS, trying floppy.\n");
+		no_printk(KERN_ERR "VFS: Unable to mount root fs via NFS, trying floppy.\n");
 		ROOT_DEV = Root_FD0;
 	}
 #endif
@@ -557,7 +557,7 @@ void __init mount_root(void)
 		int err = create_dev("/dev/root", ROOT_DEV);
 
 		if (err < 0)
-			pr_emerg("Failed to create /dev/root: %d\n", err);
+			pr_debug("Failed to create /dev/root: %d\n", err);
 		mount_block_root("/dev/root", root_mountflags);
 	}
 #endif
@@ -571,7 +571,7 @@ void __init prepare_namespace(void)
 	int is_floppy;
 
 	if (root_delay) {
-		printk(KERN_INFO "Waiting %d sec before mounting root device...\n",
+		no_printk(KERN_INFO "Waiting %d sec before mounting root device...\n",
 		       root_delay);
 		ssleep(root_delay);
 	}
@@ -605,7 +605,7 @@ void __init prepare_namespace(void)
 
 	/* wait for any asynchronous scanning to complete */
 	if ((ROOT_DEV == 0) && root_wait) {
-		printk(KERN_INFO "Waiting for root device %s...\n",
+		no_printk(KERN_INFO "Waiting for root device %s...\n",
 			saved_root_name);
 		while (driver_probe_done() != 0 ||
 			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)

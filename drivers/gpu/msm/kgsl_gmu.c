@@ -99,7 +99,7 @@ static int _gmu_iommu_fault_handler(struct device *dev,
 	else if (flags & IOMMU_FAULT_TRANSACTION_STALLED)
 		fault_type = "transaction stalled";
 
-	dev_err(dev, "GMU fault addr = %lX, context=%s (%s %s fault)\n",
+	dev_dbg(dev, "GMU fault addr = %lX, context=%s (%s %s fault)\n",
 			addr, name,
 			(flags & IOMMU_FAULT_WRITE) ? "write" : "read",
 			fault_type);
@@ -146,7 +146,7 @@ static int alloc_and_map(struct gmu_device *gmu, struct gmu_memdesc *md,
 	ret = iommu_map(domain, md->gmuaddr, md->physaddr, md->size, attrs);
 
 	if (ret) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"gmu map err: gaddr=0x%016llX, paddr=0x%pa\n",
 				md->gmuaddr, &(md->physaddr));
 		free_gmu_mem(gmu, md);
@@ -191,7 +191,7 @@ static struct gmu_memdesc *allocate_gmu_kmem(struct gmu_device *gmu,
 			&gmu->kmem_bitmap, GMU_KERNEL_ENTRIES);
 
 	if (entry_idx >= GMU_KERNEL_ENTRIES) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Ran out of GMU kernel mempool slots\n");
 		return ERR_PTR(-EINVAL);
 	}
@@ -199,7 +199,7 @@ static struct gmu_memdesc *allocate_gmu_kmem(struct gmu_device *gmu,
 	/* Non-TCM requests have page alignment requirement */
 	if ((mem_type != GMU_ITCM) && (mem_type != GMU_DTCM) &&
 			addr & (PAGE_SIZE - 1)) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Invalid alignment request 0x%X\n",
 				addr);
 		return ERR_PTR(-EINVAL);
@@ -250,7 +250,7 @@ static struct gmu_memdesc *allocate_gmu_kmem(struct gmu_device *gmu,
 		break;
 
 	default:
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Invalid memory type (%d) requested\n",
 				mem_type);
 		clear_bit(entry_idx, &gmu->kmem_bitmap);
@@ -290,7 +290,7 @@ static int gmu_iommu_cb_probe(struct gmu_device *gmu,
 	ctx->dev = dev;
 	ctx->domain = iommu_domain_alloc(&platform_bus_type);
 	if (ctx->domain == NULL) {
-		dev_err(&gmu->pdev->dev, "gmu iommu fail to alloc %s domain\n",
+		dev_dbg(&gmu->pdev->dev, "gmu iommu fail to alloc %s domain\n",
 			ctx->name);
 		return -ENODEV;
 	}
@@ -305,7 +305,7 @@ static int gmu_iommu_cb_probe(struct gmu_device *gmu,
 
 	ret = iommu_attach_device(ctx->domain, dev);
 	if (ret) {
-		dev_err(&gmu->pdev->dev, "gmu iommu fail to attach %s device\n",
+		dev_dbg(&gmu->pdev->dev, "gmu iommu fail to attach %s device\n",
 			ctx->name);
 		iommu_domain_free(ctx->domain);
 	}
@@ -356,7 +356,7 @@ static int gmu_iommu_init(struct gmu_device *gmu, struct device_node *node)
 
 	for (i = 0; i < ARRAY_SIZE(gmu_ctx); i++) {
 		if (gmu_ctx[i].domain == NULL) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"Missing GMU %s context bank node\n",
 				gmu_ctx[i].name);
 			return -EINVAL;
@@ -606,7 +606,7 @@ static int rpmh_arc_cmds(struct gmu_device *gmu,
 		return -EINVAL;
 
 	if (len > (MAX_GX_LEVELS << 1)) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"gfx cmddb size %d larger than alloc buf %d of %s\n",
 			len, (MAX_GX_LEVELS << 1), res_id);
 		return -EINVAL;
@@ -727,7 +727,7 @@ static int rpmh_arc_votes_init(struct kgsl_device *device,
 	freq_tbl = gmu->gpu_freqs;
 
 	if (num_freqs > pri_rail->num || num_freqs > MAX_GX_LEVELS) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"Defined more GPU DCVS levels than RPMh can support\n");
 		return -EINVAL;
 	}
@@ -746,7 +746,7 @@ static int rpmh_arc_votes_init(struct kgsl_device *device,
 			freq_tbl[i], true);
 
 		if (IS_ERR(opp)) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"Failed to find opp freq %d for GPU\n",
 				freq_tbl[i]);
 			return PTR_ERR(opp);
@@ -965,13 +965,13 @@ static int gmu_reg_probe(struct kgsl_device *device)
 	res = platform_get_resource_byname(gmu->pdev, IORESOURCE_MEM,
 			"kgsl_gmu_reg");
 	if (res == NULL) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"platform_get_resource kgsl_gmu_reg failed\n");
 		return -EINVAL;
 	}
 
 	if (res->start == 0 || resource_size(res) == 0) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"dev %d kgsl_gmu_reg invalid register region\n",
 				gmu->pdev->dev.id);
 		return -EINVAL;
@@ -982,7 +982,7 @@ static int gmu_reg_probe(struct kgsl_device *device)
 	device->gmu_core.reg_virt = devm_ioremap(&gmu->pdev->dev,
 			res->start, resource_size(res));
 	if (device->gmu_core.reg_virt == NULL) {
-		dev_err(&gmu->pdev->dev, "kgsl_gmu_reg ioremap failed\n");
+		dev_dbg(&gmu->pdev->dev, "kgsl_gmu_reg ioremap failed\n");
 		return -ENODEV;
 	}
 
@@ -1000,13 +1000,13 @@ static int gmu_clocks_probe(struct gmu_device *gmu, struct device_node *node)
 		c = devm_clk_get(&gmu->pdev->dev, cname);
 
 		if (IS_ERR(c)) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"dt: Couldn't get GMU clock: %s\n", cname);
 			return PTR_ERR(c);
 		}
 
 		if (i >= MAX_GMU_CLKS) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"dt: too many GMU clocks defined\n");
 			return -EINVAL;
 		}
@@ -1023,14 +1023,14 @@ static int gmu_gpu_bw_probe(struct kgsl_device *device, struct gmu_device *gmu)
 		kgsl_get_bus_scale_table(device);
 
 	if (bus_scale_table == NULL) {
-		dev_err(&gmu->pdev->dev, "dt: cannot get bus table\n");
+		dev_dbg(&gmu->pdev->dev, "dt: cannot get bus table\n");
 		return -ENODEV;
 	}
 
 	gmu->num_bwlevels = bus_scale_table->num_usecases;
 	gmu->pcl = msm_bus_scale_register_client(bus_scale_table);
 	if (!gmu->pcl) {
-		dev_err(&gmu->pdev->dev, "dt: cannot register bus client\n");
+		dev_dbg(&gmu->pdev->dev, "dt: cannot register bus client\n");
 		return -ENODEV;
 	}
 
@@ -1043,14 +1043,14 @@ static int gmu_cnoc_bw_probe(struct gmu_device *gmu)
 
 	cnoc_table = msm_bus_cl_get_pdata(gmu->pdev);
 	if (cnoc_table == NULL) {
-		dev_err(&gmu->pdev->dev, "dt: cannot get cnoc table\n");
+		dev_dbg(&gmu->pdev->dev, "dt: cannot get cnoc table\n");
 		return -ENODEV;
 	}
 
 	gmu->num_cnocbwlevels = cnoc_table->num_usecases;
 	gmu->ccl = msm_bus_scale_register_client(cnoc_table);
 	if (!gmu->ccl) {
-		dev_err(&gmu->pdev->dev, "dt: cannot register cnoc client\n");
+		dev_dbg(&gmu->pdev->dev, "dt: cannot register cnoc client\n");
 		return -ENODEV;
 	}
 
@@ -1070,7 +1070,7 @@ static int gmu_regulators_probe(struct gmu_device *gmu,
 			gmu->cx_gdsc = devm_regulator_get(dev, name);
 			if (IS_ERR(gmu->cx_gdsc)) {
 				ret = PTR_ERR(gmu->cx_gdsc);
-				dev_err(dev, "dt: GMU couldn't get CX gdsc\n");
+				dev_dbg(dev, "dt: GMU couldn't get CX gdsc\n");
 				gmu->cx_gdsc = NULL;
 				return ret;
 			}
@@ -1078,12 +1078,12 @@ static int gmu_regulators_probe(struct gmu_device *gmu,
 			gmu->gx_gdsc = devm_regulator_get(dev, name);
 			if (IS_ERR(gmu->gx_gdsc)) {
 				ret = PTR_ERR(gmu->gx_gdsc);
-				dev_err(dev, "dt: GMU couldn't get GX gdsc\n");
+				dev_dbg(dev, "dt: GMU couldn't get GX gdsc\n");
 				gmu->gx_gdsc = NULL;
 				return ret;
 			}
 		} else {
-			dev_err(dev, "dt: Unknown GMU regulator: %s\n", name);
+			dev_dbg(dev, "dt: Unknown GMU regulator: %s\n", name);
 			return -ENODEV;
 		}
 	}
@@ -1112,7 +1112,7 @@ static void gmu_aop_send_acd_state(struct kgsl_device *device, bool flag)
 
 	ret = mbox_send_message(gmu->mailbox.channel, &msg);
 	if (ret < 0)
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"AOP mbox send message failed: %d\n", ret);
 }
 
@@ -1283,7 +1283,7 @@ static void gmu_acd_probe(struct kgsl_device *device, struct gmu_device *gmu,
 
 	ret = gmu_aop_mailbox_init(device, gmu);
 	if (ret)
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"AOP mailbox init failed: %d\n", ret);
 }
 
@@ -1424,7 +1424,7 @@ static int gmu_enable_clks(struct kgsl_device *device)
 
 	ret = clk_set_rate(gmu->clks[0], GMU_FREQUENCY);
 	if (ret) {
-		dev_err(&gmu->pdev->dev, "fail to set default GMU clk freq %d\n",
+		dev_dbg(&gmu->pdev->dev, "fail to set default GMU clk freq %d\n",
 				GMU_FREQUENCY);
 		return ret;
 	}
@@ -1432,7 +1432,7 @@ static int gmu_enable_clks(struct kgsl_device *device)
 	while ((j < MAX_GMU_CLKS) && gmu->clks[j]) {
 		ret = clk_prepare_enable(gmu->clks[j]);
 		if (ret) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 					"fail to enable gpucc clk idx %d\n",
 					j);
 			return ret;
@@ -1471,7 +1471,7 @@ static int gmu_enable_gdsc(struct gmu_device *gmu)
 
 	ret = regulator_enable(gmu->cx_gdsc);
 	if (ret)
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"Failed to enable GMU CX gdsc, error %d\n", ret);
 
 	return ret;
@@ -1489,7 +1489,7 @@ static int gmu_disable_gdsc(struct kgsl_device *device)
 
 	ret = regulator_disable(gmu->cx_gdsc);
 	if (ret) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"Failed to disable GMU CX gdsc, error %d\n", ret);
 		return ret;
 	}
@@ -1511,7 +1511,7 @@ static int gmu_disable_gdsc(struct kgsl_device *device)
 	if (!gmu_core_dev_cx_is_on(device))
 		return 0;
 
-	dev_err(&gmu->pdev->dev, "GMU CX gdsc off timeout\n");
+	dev_dbg(&gmu->pdev->dev, "GMU CX gdsc off timeout\n");
 	return -ETIMEDOUT;
 }
 
@@ -1541,7 +1541,7 @@ static int gmu_suspend(struct kgsl_device *device)
 	if (ADRENO_QUIRK(adreno_dev, ADRENO_QUIRK_CX_GDSC))
 		regulator_set_mode(gmu->cx_gdsc, REGULATOR_MODE_NORMAL);
 
-	dev_err(&gmu->pdev->dev, "Suspended GMU\n");
+	dev_dbg(&gmu->pdev->dev, "Suspended GMU\n");
 
 	clear_bit(GMU_FAULT, &device->gmu_core.flags);
 
@@ -1614,7 +1614,7 @@ static int gmu_start(struct kgsl_device *device)
 		ret = msm_bus_scale_client_update_request(gmu->pcl,
 				pwr->pwrlevels[pwr->num_pwrlevels - 1].bus_min);
 		if (ret)
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"Failed to allocate gmu b/w: %d\n", ret);
 
 		ret = gmu_dev_ops->rpmh_gpu_pwrctrl(device, GMU_FW_START,
@@ -1730,7 +1730,7 @@ static void gmu_stop(struct kgsl_device *device)
 	return;
 
 error:
-	dev_err(&gmu->pdev->dev, "Failed to stop GMU\n");
+	dev_dbg(&gmu->pdev->dev, "Failed to stop GMU\n");
 	gmu_core_snapshot(device);
 	/*
 	 * We failed to stop the gmu successfully. Force a suspend

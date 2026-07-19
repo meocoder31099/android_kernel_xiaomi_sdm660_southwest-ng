@@ -212,7 +212,7 @@ int dp_mux_set_parent_14nm(void *context, unsigned int reg, unsigned int val)
 
 	rc = mdss_pll_resource_enable(dp_res, true);
 	if (rc) {
-		pr_err("Failed to enable mdss DP PLL resources\n");
+		pr_debug("Failed to enable mdss DP PLL resources\n");
 		return rc;
 	}
 
@@ -243,7 +243,7 @@ int dp_mux_get_parent_14nm(void *context, unsigned int reg, unsigned int *val)
 
 	rc = mdss_pll_resource_enable(dp_res, true);
 	if (rc) {
-		pr_err("Failed to enable dp_res resources\n");
+		pr_debug("Failed to enable dp_res resources\n");
 		return rc;
 	}
 
@@ -327,7 +327,7 @@ int dp_config_vco_rate_14nm(struct dp_pll_vco_clk *vco,
 
 	res = dp_vco_pll_init_db_14nm(pdb, rate);
 	if (res) {
-		pr_err("VCO Init DB failed\n");
+		pr_debug("VCO Init DB failed\n");
 		return res;
 	}
 
@@ -514,7 +514,7 @@ static bool dp_14nm_pll_lock_status(struct mdss_pll_resources *dp_res)
 			((status & BIT(0)) > 0),
 			DP_PLL_POLL_SLEEP_US,
 			DP_PLL_POLL_TIMEOUT_US)) {
-		pr_err("C_READY status is not high. Status=%x\n", status);
+		pr_debug("C_READY status is not high. Status=%x\n", status);
 		pll_locked = false;
 	} else {
 		pll_locked = true;
@@ -535,7 +535,7 @@ static bool dp_14nm_phy_rdy_status(struct mdss_pll_resources *dp_res)
 			((status & (BIT(1) | BIT(0))) > 0),
 			DP_PHY_POLL_SLEEP_US,
 			DP_PHY_POLL_TIMEOUT_US)) {
-		pr_err("Phy_ready is not high. Status=%x\n", status);
+		pr_debug("Phy_ready is not high. Status=%x\n", status);
 		phy_ready = false;
 	}
 
@@ -630,7 +630,7 @@ int dp_vco_prepare_14nm(struct clk_hw *hw)
 	pr_debug("rate=%ld\n", vco->rate);
 	rc = mdss_pll_resource_enable(dp_res, true);
 	if (rc) {
-		pr_err("Failed to enable mdss DP pll resources\n");
+		pr_debug("Failed to enable mdss DP pll resources\n");
 		goto error;
 	}
 
@@ -639,7 +639,7 @@ int dp_vco_prepare_14nm(struct clk_hw *hw)
 		rc = vco->hw.init->ops->set_rate(hw,
 			dp_res->vco_cached_rate, dp_res->vco_cached_rate);
 		if (rc) {
-			pr_err("index=%d vco_set_rate failed. rc=%d\n",
+			pr_debug("index=%d vco_set_rate failed. rc=%d\n",
 				rc, dp_res->index);
 			mdss_pll_resource_enable(dp_res, false);
 			goto error;
@@ -649,7 +649,7 @@ int dp_vco_prepare_14nm(struct clk_hw *hw)
 	rc = dp_pll_enable_14nm(hw);
 	if (rc) {
 		mdss_pll_resource_enable(dp_res, false);
-		pr_err("ndx=%d failed to enable dp pll\n",
+		pr_debug("ndx=%d failed to enable dp pll\n",
 					dp_res->index);
 		goto error;
 	}
@@ -665,13 +665,13 @@ void dp_vco_unprepare_14nm(struct clk_hw *hw)
 	struct mdss_pll_resources *dp_res = vco->priv;
 
 	if (!dp_res) {
-		pr_err("Invalid input parameter\n");
+		pr_debug("Invalid input parameter\n");
 		return;
 	}
 
 	if (!dp_res->pll_on &&
 		mdss_pll_resource_enable(dp_res, true)) {
-		pr_err("pll resource can't be enabled\n");
+		pr_debug("pll resource can't be enabled\n");
 		return;
 	}
 	dp_res->vco_cached_rate = vco->rate;
@@ -691,7 +691,7 @@ int dp_vco_set_rate_14nm(struct clk_hw *hw, unsigned long rate,
 
 	rc = mdss_pll_resource_enable(dp_res, true);
 	if (rc) {
-		pr_err("pll resource can't be enabled\n");
+		pr_debug("pll resource can't be enabled\n");
 		return rc;
 	}
 
@@ -699,7 +699,7 @@ int dp_vco_set_rate_14nm(struct clk_hw *hw, unsigned long rate,
 
 	rc = dp_config_vco_rate_14nm(vco, rate);
 	if (rc)
-		pr_err("Failed to set clk rate\n");
+		pr_debug("Failed to set clk rate\n");
 
 	mdss_pll_resource_enable(dp_res, false);
 
@@ -722,7 +722,7 @@ unsigned long dp_vco_recalc_rate_14nm(struct clk_hw *hw,
 
 	rc = mdss_pll_resource_enable(dp_res, true);
 	if (rc) {
-		pr_err("Failed to enable mdss DP pll=%d\n", dp_res->index);
+		pr_debug("Failed to enable mdss DP pll=%d\n", dp_res->index);
 		return rc;
 	}
 
@@ -784,12 +784,12 @@ int dp_pll_clock_register_14nm(struct platform_device *pdev,
 	int num_clks = ARRAY_SIZE(mdss_dp_pllcc_14nm);
 
 	if (!pdev || !pdev->dev.of_node) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
 	if (!pll_res || !pll_res->pll_base || !pll_res->phy_base) {
-		pr_err("Invalid input parameters\n");
+		pr_debug("Invalid input parameters\n");
 		return -EINVAL;
 	}
 
@@ -824,7 +824,7 @@ int dp_pll_clock_register_14nm(struct platform_device *pdev,
 		clk = devm_clk_register(&pdev->dev,
 				mdss_dp_pllcc_14nm[i]);
 		if (IS_ERR(clk)) {
-			pr_err("clk registration failed for DP: %d\n",
+			pr_debug("clk registration failed for DP: %d\n",
 					pll_res->index);
 			rc = -EINVAL;
 			goto clk_reg_fail;
@@ -835,7 +835,7 @@ int dp_pll_clock_register_14nm(struct platform_device *pdev,
 	rc = of_clk_add_provider(pdev->dev.of_node,
 			of_clk_src_onecell_get, clk_data);
 	if (rc) {
-		pr_err("Clock register failed rc=%d\n", rc);
+		pr_debug("Clock register failed rc=%d\n", rc);
 		rc = -EPROBE_DEFER;
 	} else {
 		pr_debug("SUCCESS\n");

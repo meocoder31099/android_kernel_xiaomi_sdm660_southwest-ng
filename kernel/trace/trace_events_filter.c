@@ -2162,7 +2162,7 @@ static int test_pred_visited_fn(struct filter_pred *pred, void *event)
 	struct ftrace_event_field *field = pred->field;
 
 	test_pred_visited = 1;
-	printk(KERN_INFO "\npred visited %s\n", field->name);
+	no_printk(KERN_INFO "\npred visited %s\n", field->name);
 	return 1;
 }
 
@@ -2194,7 +2194,7 @@ static __init int ftrace_test_event_filter(void)
 {
 	int i;
 
-	printk(KERN_INFO "Testing ftrace filter: ");
+	no_printk(KERN_INFO "Testing ftrace filter: ");
 
 	for (i = 0; i < DATA_CNT; i++) {
 		struct event_filter *filter = NULL;
@@ -2204,7 +2204,7 @@ static __init int ftrace_test_event_filter(void)
 		err = create_filter(&event_ftrace_test_filter, d->filter,
 				    false, &filter);
 		if (err) {
-			printk(KERN_INFO
+			no_printk(KERN_INFO
 			       "Failed to get filter for '%s', err %d\n",
 			       d->filter, err);
 			__free_filter(filter);
@@ -2230,14 +2230,14 @@ static __init int ftrace_test_event_filter(void)
 		__free_filter(filter);
 
 		if (test_pred_visited) {
-			printk(KERN_INFO
+			no_printk(KERN_INFO
 			       "Failed, unwanted pred visited for filter %s\n",
 			       d->filter);
 			break;
 		}
 
 		if (err != d->match) {
-			printk(KERN_INFO
+			no_printk(KERN_INFO
 			       "Failed to match filter '%s', expected %d\n",
 			       d->filter, d->match);
 			break;
@@ -2245,7 +2245,7 @@ static __init int ftrace_test_event_filter(void)
 	}
 
 	if (i == DATA_CNT)
-		printk(KERN_CONT "OK\n");
+		no_printk(KERN_CONT "OK\n");
 
 	return 0;
 }

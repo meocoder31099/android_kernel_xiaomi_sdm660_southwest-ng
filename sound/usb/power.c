@@ -65,7 +65,7 @@ int snd_usb_power_domain_set(struct snd_usb_audio *chip,
 			      UAC3_AC_POWER_DOMAIN_CONTROL << 8, idx,
 			      &current_state, sizeof(current_state));
 	if (err < 0) {
-		dev_err(&dev->dev, "Can't get UAC3 power state for id %d\n",
+		dev_dbg(&dev->dev, "Can't get UAC3 power state for id %d\n",
 			pd->pd_id);
 		return err;
 	}
@@ -81,7 +81,7 @@ int snd_usb_power_domain_set(struct snd_usb_audio *chip,
 			      UAC3_AC_POWER_DOMAIN_CONTROL << 8, idx,
 			      &state, sizeof(state));
 	if (err < 0) {
-		dev_err(&dev->dev, "Can't set UAC3 power state to %d for id %d\n",
+		dev_dbg(&dev->dev, "Can't set UAC3 power state to %d for id %d\n",
 			state, pd->pd_id);
 		return err;
 	}

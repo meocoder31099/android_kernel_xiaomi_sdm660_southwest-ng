@@ -311,7 +311,7 @@ EXPORT_SYMBOL_GPL(nf_log_buf_open);
 void nf_log_buf_close(struct nf_log_buf *m)
 {
 	m->buf[m->count] = 0;
-	printk("%s\n", m->buf);
+	no_printk("%s\n", m->buf);
 
 	if (likely(m != &emergency))
 		kfree(m);

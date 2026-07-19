@@ -1324,7 +1324,7 @@ static void __blk_mq_run_hw_queue(struct blk_mq_hw_ctx *hctx)
 	 */
 	if (!cpumask_test_cpu(raw_smp_processor_id(), hctx->cpumask) &&
 		cpu_online(hctx->next_cpu)) {
-		printk(KERN_WARNING "run queue from wrong CPU %d, hctx %s\n",
+		no_printk(KERN_WARNING "run queue from wrong CPU %d, hctx %s\n",
 			raw_smp_processor_id(),
 			cpumask_empty(hctx->cpumask) ? "inactive": "active");
 		dump_stack();
@@ -2827,12 +2827,12 @@ static int blk_mq_alloc_rq_maps(struct blk_mq_tag_set *set)
 	} while (set->queue_depth);
 
 	if (!set->queue_depth || err) {
-		pr_err("blk-mq: failed to allocate request map\n");
+		pr_debug("blk-mq: failed to allocate request map\n");
 		return -ENOMEM;
 	}
 
 	if (depth != set->queue_depth)
-		pr_info("blk-mq: reduced tag depth (%u -> %u)\n",
+		pr_debug("blk-mq: reduced tag depth (%u -> %u)\n",
 						depth, set->queue_depth);
 
 	return 0;
@@ -2888,7 +2888,7 @@ int blk_mq_alloc_tag_set(struct blk_mq_tag_set *set)
 		return -EINVAL;
 
 	if (set->queue_depth > BLK_MQ_MAX_DEPTH) {
-		pr_info("blk-mq: reduced tag depth to %u\n",
+		pr_debug("blk-mq: reduced tag depth to %u\n",
 			BLK_MQ_MAX_DEPTH);
 		set->queue_depth = BLK_MQ_MAX_DEPTH;
 	}

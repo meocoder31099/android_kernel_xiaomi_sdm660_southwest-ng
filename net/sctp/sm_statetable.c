@@ -68,7 +68,7 @@ static const struct sctp_sm_table_entry bug = {
 	const struct sctp_sm_table_entry *rtn;				\
 									\
 	if ((event_subtype._type > (_max))) {				\
-		pr_warn("table %p possible attack: event %d exceeds max %d\n", \
+		pr_debug("table %p possible attack: event %d exceeds max %d\n", \
 			_table, event_subtype._type, _max);		\
 		rtn = &bug;						\
 	} else								\

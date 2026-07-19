@@ -203,13 +203,13 @@ static int glink_rpm_parse_toc(struct device *dev,
 	toc = buf;
 
 	if (le32_to_cpu(toc->magic) != RPM_TOC_MAGIC) {
-		dev_err(dev, "RPM TOC has invalid magic\n");
+		dev_dbg(dev, "RPM TOC has invalid magic\n");
 		goto err_inval;
 	}
 
 	num_entries = le32_to_cpu(toc->count);
 	if (num_entries > RPM_TOC_MAX_ENTRIES) {
-		dev_err(dev, "Invalid number of toc entries\n");
+		dev_dbg(dev, "Invalid number of toc entries\n");
 		goto err_inval;
 	}
 
@@ -219,7 +219,7 @@ static int glink_rpm_parse_toc(struct device *dev,
 		size = le32_to_cpu(toc->entries[i].size);
 
 		if (offset > msg_ram_size || offset + size > msg_ram_size) {
-			dev_err(dev, "TOC entry with invalid size\n");
+			dev_dbg(dev, "TOC entry with invalid size\n");
 			continue;
 		}
 
@@ -242,7 +242,7 @@ static int glink_rpm_parse_toc(struct device *dev,
 	}
 
 	if (!rx->fifo || !tx->fifo) {
-		dev_err(dev, "Unable to find rx and tx descriptors\n");
+		dev_dbg(dev, "Unable to find rx and tx descriptors\n");
 		goto err_inval;
 	}
 

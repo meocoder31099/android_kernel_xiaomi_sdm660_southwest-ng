@@ -233,7 +233,7 @@ static int kgsl_bus_scale_request(struct kgsl_device *device,
 		ret = msm_bus_scale_client_update_request(pwr->pcl, buslevel);
 
 	if (ret)
-		dev_err(device->dev, "GPU BW scaling failure: %d\n", ret);
+		dev_dbg(device->dev, "GPU BW scaling failure: %d\n", ret);
 
 	return ret;
 }
@@ -259,7 +259,7 @@ int kgsl_clk_set_rate(struct kgsl_device *device,
 			pl->gpu_freq, clocks[0]);
 
 	if (ret)
-		dev_err(device->dev, "GPU clk freq set failure: %d\n",
+		dev_dbg(device->dev, "GPU clk freq set failure: %d\n",
 			     ret);
 
 	return ret;
@@ -348,7 +348,7 @@ static int kgsl_pwrctrl_cx_ipeak_vote(struct kgsl_device *device,
 			 * if mitigation not done to limit peak power.
 			 */
 			if (ret) {
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"ipeak voting failed for client%d: %d\n",
 						i, ret);
 				return ret;
@@ -379,7 +379,7 @@ static void kgsl_pwrctrl_cx_ipeak_unvote(struct kgsl_device *device,
 
 			/* Failed to withdraw the voting from ipeak driver */
 			if (ret)
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"Failed to withdraw ipeak vote for client%d: %d\n",
 					i, ret);
 		}
@@ -401,7 +401,7 @@ static int kgsl_pwrctrl_cx_ipeak_init(struct kgsl_device *device)
 
 	for_each_child_of_node(node, child) {
 		if (i >= ARRAY_SIZE(pwr->gpu_ipeak_client)) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"dt: too many CX ipeak clients defined\n",
 					i);
 			ret = -EINVAL;
@@ -419,13 +419,13 @@ static int kgsl_pwrctrl_cx_ipeak_init(struct kgsl_device *device)
 			if (IS_ERR_OR_NULL(cx_ipeak_client->client)) {
 				ret = IS_ERR(cx_ipeak_client->client) ?
 				PTR_ERR(cx_ipeak_client->client) : -EINVAL;
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"Failed to register client%d with CX Ipeak %d\n",
 					i, ret);
 			}
 		} else {
 			ret = -EINVAL;
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"Failed to get GPU-CX-Ipeak client%d frequency\n",
 				i);
 		}
@@ -441,7 +441,7 @@ static int kgsl_pwrctrl_cx_ipeak_init(struct kgsl_device *device)
 	/* cx_ipeak limits for GPU freq throttling */
 	pwr->cx_ipeak_pwr_limit = kgsl_pwr_limits_add(KGSL_DEVICE_3D0);
 	if (IS_ERR_OR_NULL(pwr->cx_ipeak_pwr_limit)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"Failed to get cx_ipeak power limit\n");
 		ret = -EINVAL;
 		goto error;
@@ -455,7 +455,7 @@ static int kgsl_pwrctrl_cx_ipeak_init(struct kgsl_device *device)
 		if (ret) {
 			kgsl_pwr_limits_del(pwr->cx_ipeak_pwr_limit);
 			if (ret != -ENOENT) {
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"Failed to register GPU-CX-Ipeak victim\n");
 				goto error;
 			}
@@ -760,7 +760,7 @@ static ssize_t thermal_pwrlevel_store(struct device *dev,
 
 	if (kgsl_pwr_limits_set_freq(pwr->sysfs_pwr_limit,
 			pwr->pwrlevels[level].gpu_freq)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"Failed to set sysfs thermal limit via limits fw\n");
 		mutex_lock(&device->mutex);
 		pwr->thermal_pwrlevel = level;
@@ -1766,7 +1766,7 @@ static int _regulator_enable(struct kgsl_device *device,
 
 	ret = regulator_enable(regulator->reg);
 	if (ret)
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "Failed to enable regulator '%s': %d\n",
 			     regulator->name, ret);
 	return ret;
@@ -1924,7 +1924,7 @@ static int _get_regulator(struct kgsl_device *device,
 	if (IS_ERR(regulator->reg)) {
 		int ret = PTR_ERR(regulator->reg);
 
-		dev_err(&device->pdev->dev,
+		dev_dbg(&device->pdev->dev,
 			"Couldn't get regulator: %s (%d)\n", str, ret);
 		return ret;
 	}
@@ -1964,7 +1964,7 @@ static int get_regulators(struct kgsl_device *device)
 		int ret;
 
 		if (index == KGSL_MAX_REGULATORS) {
-			dev_err(dev, "Too many regulators defined\n");
+			dev_dbg(dev, "Too many regulators defined\n");
 			return -ENOMEM;
 		}
 
@@ -1997,7 +1997,7 @@ static int _get_clocks(struct kgsl_device *device)
 			if (IS_ERR(pwr->grp_clks[i])) {
 				int ret = PTR_ERR(pwr->grp_clks[i]);
 
-				dev_err(dev, "Couldn't get clock: %s (%d)\n",
+				dev_dbg(dev, "Couldn't get clock: %s (%d)\n",
 					name, ret);
 				pwr->grp_clks[i] = NULL;
 				return ret;
@@ -2011,7 +2011,7 @@ static int _get_clocks(struct kgsl_device *device)
 
 	if (pwr->isense_clk_indx && of_property_read_u32(dev->of_node,
 		"qcom,isense-clk-on-level", &pwr->isense_clk_on_level)) {
-		dev_err(dev, "Couldn't get isense clock on level\n");
+		dev_dbg(dev, "Couldn't get isense clock on level\n");
 		return -ENXIO;
 	}
 	return 0;
@@ -2052,7 +2052,7 @@ static void _gpu_clk_prepare_enable(struct kgsl_device *device,
 		return;
 err:
 	/* Failure is fatal so BUG() to facilitate debug */
-	dev_err(device->dev, "GPU Clock %s enable error:%d\n", name, ret);
+	dev_dbg(device->dev, "GPU Clock %s enable error:%d\n", name, ret);
 }
 
 /*
@@ -2065,7 +2065,7 @@ static void _bimc_clk_prepare_enable(struct kgsl_device *device,
 	int ret = clk_prepare_enable(clk);
 	/* Failure is fatal so BUG() to facilitate debug */
 	if (ret)
-		dev_err(device->dev, "GPU clock %s enable error:%d\n",
+		dev_dbg(device->dev, "GPU clock %s enable error:%d\n",
 				name, ret);
 }
 
@@ -2189,7 +2189,7 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 		device->pwrctrl.ctrl_flags |= BIT(KGSL_PWRFLAGS_NAP_OFF);
 
 	if (pwr->num_pwrlevels == 0) {
-		dev_err(device->dev, "No power levels are defined\n");
+		dev_dbg(device->dev, "No power levels are defined\n");
 		result = -EINVAL;
 		goto error_cleanup_clks;
 	}
@@ -2333,7 +2333,7 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 
 	pwr->cooling_pwr_limit = kgsl_pwr_limits_add(KGSL_DEVICE_3D0);
 	if (IS_ERR_OR_NULL(pwr->cooling_pwr_limit)) {
-		dev_err(device->dev, "Failed to add cooling power limit\n");
+		dev_dbg(device->dev, "Failed to add cooling power limit\n");
 		result = -EINVAL;
 		pwr->cooling_pwr_limit = NULL;
 		goto error_cleanup_bus_ib;
@@ -2553,7 +2553,7 @@ static void kgsl_pwrctrl_disable(struct kgsl_device *device)
 	if (!status)
 		device->cur_l3_pwrlevel = 0;
 	else
-		dev_err(device->dev, "Could not clear l3_vote: %d\n",
+		dev_dbg(device->dev, "Could not clear l3_vote: %d\n",
 			     status);
 
 	if (gmu_core_gpmu_isenabled(device)) {
@@ -2650,7 +2650,7 @@ static int _wake(struct kgsl_device *device)
 
 		if (status) {
 			kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
-			dev_err(device->dev, "start failed %d\n", status);
+			dev_dbg(device->dev, "start failed %d\n", status);
 			break;
 		}
 		kgsl_pwrctrl_axi(device, KGSL_PWRFLAGS_ON);
@@ -2688,7 +2688,7 @@ static int _wake(struct kgsl_device *device)
 				device->pwrctrl.interval_timeout);
 		break;
 	default:
-		dev_warn(device->dev, "unhandled state %s\n",
+		dev_dbg(device->dev, "unhandled state %s\n",
 				kgsl_pwrstate_to_str(device->state));
 		kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
 		status = -EINVAL;
@@ -2783,7 +2783,7 @@ _nap(struct kgsl_device *device)
 	case KGSL_STATE_RESET:
 		break;
 	case KGSL_STATE_AWARE:
-		dev_warn(device->dev,
+		dev_dbg(device->dev,
 			"transition AWARE -> NAP is not permitted\n");
 		/* fallthrough */
 	default:
@@ -2883,7 +2883,7 @@ static int _suspend(struct kgsl_device *device)
 
 err:
 	device->ftbl->resume(device);
-	dev_err(device->dev, "device failed to SUSPEND %d\n", ret);
+	dev_dbg(device->dev, "device failed to SUSPEND %d\n", ret);
 	return ret;
 }
 
@@ -2932,7 +2932,7 @@ int kgsl_pwrctrl_change_state(struct kgsl_device *device, int state)
 		kgsl_pwrctrl_set_state(device, KGSL_STATE_RESET);
 		break;
 	default:
-		dev_err(device->dev, "bad state request 0x%x\n", state);
+		dev_dbg(device->dev, "bad state request 0x%x\n", state);
 		kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
 		status = -EINVAL;
 		break;

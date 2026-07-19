@@ -440,7 +440,7 @@ static u8 gic_get_cpumask(struct gic_chip_data *gic)
 	}
 
 	if (!mask && num_possible_cpus() > 1)
-		pr_crit("GIC CPU mask not found - kernel will fail to boot.\n");
+		pr_debug("GIC CPU mask not found - kernel will fail to boot.\n");
 
 	return mask;
 }
@@ -952,7 +952,7 @@ static void __init gic_init_physaddr(struct device_node *node)
 	struct resource res;
 	if (of_address_to_resource(node, 0, &res) == 0) {
 		gic_dist_physaddr = res.start;
-		pr_info("GIC physical location is %#lx\n", gic_dist_physaddr);
+		pr_debug("GIC physical location is %#lx\n", gic_dist_physaddr);
 	}
 }
 
@@ -1212,7 +1212,7 @@ static int __init __gic_init_bases(struct gic_chip_data *gic,
 					  gic_starting_cpu, NULL);
 		set_handle_irq(gic_handle_irq);
 		if (static_branch_likely(&supports_deactivate_key))
-			pr_info("GIC: Using split EOI/Deactivate mode\n");
+			pr_debug("GIC: Using split EOI/Deactivate mode\n");
 	}
 
 	if (static_branch_likely(&supports_deactivate_key) && gic == &gic_data[0]) {
@@ -1290,7 +1290,7 @@ static bool gic_check_eoimode(struct device_node *node, void __iomem **base)
 			return false;
 
 		if (!gicv2_force_probe) {
-			pr_warn("GIC: GICv2 detected, but range too small and irqchip.gicv2_force_probe not set\n");
+			pr_debug("GIC: GICv2 detected, but range too small and irqchip.gicv2_force_probe not set\n");
 			return false;
 		}
 
@@ -1303,7 +1303,7 @@ static bool gic_check_eoimode(struct device_node *node, void __iomem **base)
 			 * the second was *something*. Let's trust it
 			 * to be a GICv2, and update the mapping.
 			 */
-			pr_warn("GIC: GICv2 at %pa, but range is too small (broken DT?), assuming 8kB\n",
+			pr_debug("GIC: GICv2 at %pa, but range is too small (broken DT?), assuming 8kB\n",
 				&cpuif_res.start);
 			iounmap(*base);
 			*base = alt;
@@ -1320,7 +1320,7 @@ static bool gic_check_eoimode(struct device_node *node, void __iomem **base)
 		alt = ioremap(cpuif_res.start, SZ_128K);
 		if (!alt)
 			return false;
-		pr_warn("GIC: Aliased GICv2 at %pa, trying to find the canonical range over 128kB\n",
+		pr_debug("GIC: Aliased GICv2 at %pa, trying to find the canonical range over 128kB\n",
 			&cpuif_res.start);
 		cpuif_res.end = cpuif_res.start + SZ_128K -1;
 		iounmap(*base);
@@ -1343,7 +1343,7 @@ static bool gic_check_eoimode(struct device_node *node, void __iomem **base)
 		 */
 		*base += 0xf000;
 		cpuif_res.start += 0xf000;
-		pr_warn("GIC: Adjusting CPU interface base to %pa\n",
+		pr_debug("GIC: Adjusting CPU interface base to %pa\n",
 			&cpuif_res.start);
 	}
 
@@ -1605,13 +1605,13 @@ static int __init gic_v2_acpi_init(struct acpi_subtable_header *header,
 	count = acpi_table_parse_madt(ACPI_MADT_TYPE_GENERIC_INTERRUPT,
 				      gic_acpi_parse_madt_cpu, 0);
 	if (count <= 0) {
-		pr_err("No valid GICC entries exist\n");
+		pr_debug("No valid GICC entries exist\n");
 		return -EINVAL;
 	}
 
 	gic->raw_cpu_base = ioremap(acpi_data.cpu_phys_base, ACPI_GIC_CPU_IF_MEM_SIZE);
 	if (!gic->raw_cpu_base) {
-		pr_err("Unable to map GICC registers\n");
+		pr_debug("Unable to map GICC registers\n");
 		return -ENOMEM;
 	}
 
@@ -1619,7 +1619,7 @@ static int __init gic_v2_acpi_init(struct acpi_subtable_header *header,
 	gic->raw_dist_base = ioremap(dist->base_address,
 				     ACPI_GICV2_DIST_MEM_SIZE);
 	if (!gic->raw_dist_base) {
-		pr_err("Unable to map GICD registers\n");
+		pr_debug("Unable to map GICD registers\n");
 		gic_teardown(gic);
 		return -ENOMEM;
 	}
@@ -1637,14 +1637,14 @@ static int __init gic_v2_acpi_init(struct acpi_subtable_header *header,
 	 */
 	domain_handle = irq_domain_alloc_fwnode(gic->raw_dist_base);
 	if (!domain_handle) {
-		pr_err("Unable to allocate domain handle\n");
+		pr_debug("Unable to allocate domain handle\n");
 		gic_teardown(gic);
 		return -ENOMEM;
 	}
 
 	ret = __gic_init_bases(gic, -1, domain_handle);
 	if (ret) {
-		pr_err("Failed to initialise GIC\n");
+		pr_debug("Failed to initialise GIC\n");
 		irq_domain_free_fwnode(domain_handle);
 		gic_teardown(gic);
 		return ret;

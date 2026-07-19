@@ -113,7 +113,7 @@ static int adc_tm_register_tzd(struct adc_tm_chip *adc_tm, int dt_chan_num,
 					&adc_tm->sensor[i], &adc_tm_ops_iio);
 
 			if (IS_ERR(tzd)) {
-				pr_err("Error registering TZ zone:%ld for dt_ch:%d\n",
+				pr_debug("Error registering TZ zone:%ld for dt_ch:%d\n",
 					PTR_ERR(tzd), adc_tm->sensor[i].adc_ch);
 				continue;
 			}
@@ -238,7 +238,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 		ret = adc_tm_decimation_from_dt(adc_tm->prop.decimation,
 							data->decimation);
 		if (ret < 0) {
-			dev_err(dev, "Invalid decimation value\n");
+			dev_dbg(dev, "Invalid decimation value\n");
 			return ret;
 		}
 		adc_tm->prop.decimation = ret;
@@ -251,7 +251,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 	if (!ret) {
 		ret = adc_tm_avg_samples_from_dt(adc_tm->prop.fast_avg_samples);
 		if (ret < 0) {
-			dev_err(dev, "Invalid fast average with%d\n", ret);
+			dev_dbg(dev, "Invalid fast average with%d\n", ret);
 			return -EINVAL;
 		}
 	} else {
@@ -273,7 +273,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 
 		ret = of_property_read_u32(child, "reg", &channel_num);
 		if (ret) {
-			dev_err(dev, "Invalid channel num\n");
+			dev_dbg(dev, "Invalid channel num\n");
 			return -EINVAL;
 		}
 
@@ -288,7 +288,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 			ret = adc_tm_hw_settle_time_from_dt(hw_settle_time,
 							data->hw_settle);
 			if (ret < 0) {
-				pr_err("Invalid channel hw settle time property\n");
+				pr_debug("Invalid channel hw settle time property\n");
 				return ret;
 			}
 			hw_settle_time = ret;
@@ -301,7 +301,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 			ret = adc_tm_decimation_from_dt(decimation,
 					data->decimation);
 			if (ret < 0) {
-				dev_err(dev, "Invalid decimation value\n");
+				dev_dbg(dev, "Invalid decimation value\n");
 				return ret;
 			}
 			decimation = ret;
@@ -313,7 +313,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 		if (!ret) {
 			ret = adc_tm_avg_samples_from_dt(fast_avg_samples);
 			if (ret < 0) {
-				dev_err(dev, "Invalid fast average with %d\n",
+				dev_dbg(dev, "Invalid fast average with %d\n",
 						ret);
 				return -EINVAL;
 			}
@@ -362,7 +362,7 @@ static int adc_tm_get_dt_data(struct platform_device *pdev,
 			adc_tm->sensor[idx].req_wq = alloc_workqueue(
 				"qpnp_adc_notify_wq", WQ_HIGHPRI, 0);
 			if (!adc_tm->sensor[idx].req_wq) {
-				pr_err("Requesting priority wq failed\n");
+				pr_debug("Requesting priority wq failed\n");
 				return -ENOMEM;
 			}
 			INIT_WORK(&adc_tm->sensor[idx].work, notify_adc_tm_fn);
@@ -398,7 +398,7 @@ static int adc_tm_probe(struct platform_device *pdev)
 		dt_chan_num++;
 
 	if (!dt_chan_num) {
-		dev_err(dev, "No channel listing\n");
+		dev_dbg(dev, "No channel listing\n");
 		return -EINVAL;
 	}
 
@@ -410,7 +410,7 @@ static int adc_tm_probe(struct platform_device *pdev)
 		indio_chan_count++;
 
 	if (indio_chan_count != dt_chan_num) {
-		dev_err(dev, "VADC IIO channel missing in main node\n");
+		dev_dbg(dev, "VADC IIO channel missing in main node\n");
 		return -EINVAL;
 	}
 
@@ -446,14 +446,14 @@ static int adc_tm_probe(struct platform_device *pdev)
 
 	ret = adc_tm_get_dt_data(pdev, adc_tm, channels, dt_chan_num);
 	if (ret) {
-		dev_err(dev, "adc-tm get dt data failed\n");
+		dev_dbg(dev, "adc-tm get dt data failed\n");
 		return ret;
 	}
 
 	if (of_device_is_compatible(node, "qcom,adc-tm5-iio")) {
 		ret = adc_tm_register_tzd(adc_tm, dt_chan_num, false);
 		if (ret) {
-			dev_err(dev, "adc-tm failed to register with of thermal\n");
+			dev_dbg(dev, "adc-tm failed to register with of thermal\n");
 			goto fail;
 		}
 		return 0;
@@ -461,19 +461,19 @@ static int adc_tm_probe(struct platform_device *pdev)
 
 	ret = adc_tm_init(adc_tm, dt_chan_num);
 	if (ret) {
-		dev_err(dev, "adc-tm init failed\n");
+		dev_dbg(dev, "adc-tm init failed\n");
 		goto fail;
 	}
 
 	ret = adc_tm_register_tzd(adc_tm, dt_chan_num, true);
 	if (ret) {
-		dev_err(dev, "adc-tm failed to register with of thermal\n");
+		dev_dbg(dev, "adc-tm failed to register with of thermal\n");
 		goto fail;
 	}
 
 	ret = adc_tm_register_interrupts(adc_tm);
 	if (ret) {
-		pr_err("adc-tm register interrupts failed:%d\n", ret);
+		pr_debug("adc-tm register interrupts failed:%d\n", ret);
 		goto fail;
 	}
 

@@ -157,7 +157,7 @@ static int msm_cpufreq_init(struct cpufreq_policy *policy)
 	policy->freq_table = table;
 	ret = cpufreq_table_validate_and_sort(policy);
 	if (ret) {
-		pr_err("cpufreq: failed to get policy min/max\n");
+		pr_debug("cpufreq: failed to get policy min/max\n");
 		return ret;
 	}
 
@@ -321,7 +321,7 @@ static void msm_cpufreq_ready(struct cpufreq_policy *policy)
 	if (of_find_property(np, "#cooling-cells", NULL)) {
 		cdev[cpu] = cpufreq_platform_cooling_register(policy, NULL);
 		if (IS_ERR(cdev[cpu])) {
-			pr_err("running cpufreq for CPU%d without cooling dev: %ld\n",
+			pr_debug("running cpufreq for CPU%d without cooling dev: %ld\n",
 			       cpu, PTR_ERR(cdev[cpu]));
 			cdev[cpu] = NULL;
 		}
@@ -447,7 +447,7 @@ static int msm_cpufreq_probe(struct platform_device *pdev)
 
 		/* CPU0 must contain freq table */
 		if (cpu == 0 && IS_ERR(ftbl)) {
-			dev_err(dev, "Failed to parse CPU0's freq table\n");
+			dev_dbg(dev, "Failed to parse CPU0's freq table\n");
 			return PTR_ERR(ftbl);
 		}
 		if (cpu == 0) {
@@ -456,7 +456,7 @@ static int msm_cpufreq_probe(struct platform_device *pdev)
 		}
 
 		if (cpu_clk[cpu] != cpu_clk[cpu - 1] && IS_ERR(ftbl)) {
-			dev_err(dev, "Failed to parse CPU%d's freq table\n",
+			dev_dbg(dev, "Failed to parse CPU%d's freq table\n",
 				cpu);
 			return PTR_ERR(ftbl);
 		}
@@ -464,7 +464,7 @@ static int msm_cpufreq_probe(struct platform_device *pdev)
 		/* Use previous CPU's table if it shares same clock */
 		if (cpu_clk[cpu] == cpu_clk[cpu - 1]) {
 			if (!IS_ERR(ftbl)) {
-				dev_warn(dev, "Conflicting tables for CPU%d\n",
+				dev_dbg(dev, "Conflicting tables for CPU%d\n",
 					 cpu);
 				devm_kfree(dev, ftbl);
 			}

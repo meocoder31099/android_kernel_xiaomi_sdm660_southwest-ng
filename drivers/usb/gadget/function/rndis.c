@@ -469,7 +469,7 @@ static int gen_ndis_query_resp(struct rndis_params *params, u32 OID, u8 *buf,
 		break;
 
 	default:
-		pr_warn("%s: query unknown OID 0x%08X\n", __func__, OID);
+		pr_debug("%s: query unknown OID 0x%08X\n", __func__, OID);
 	}
 	if (retval < 0)
 		length = 0;
@@ -525,7 +525,7 @@ static int gen_ndis_set_resp(struct rndis_params *params, u32 OID,
 			pr_debug("%s(): disable flow control\n", __func__);
 			rndis_flow_control(params, false);
 		} else {
-			pr_err("%s(): enable flow control\n", __func__);
+			pr_debug("%s(): enable flow control\n", __func__);
 			rndis_flow_control(params, true);
 		}
 		break;
@@ -537,7 +537,7 @@ static int gen_ndis_set_resp(struct rndis_params *params, u32 OID,
 		break;
 
 	default:
-		pr_warn("%s: set unknown OID 0x%08X, size %d\n",
+		pr_debug("%s: set unknown OID 0x%08X, size %d\n",
 			__func__, OID, buf_len);
 	}
 
@@ -864,7 +864,7 @@ int rndis_msg_parser(struct rndis_params *params, u8 *buf)
 		 * In one case those messages seemed to relate to the host
 		 * suspending itself.
 		 */
-		pr_warn("%s: unknown RNDIS message 0x%08X len %d\n",
+		pr_debug("%s: unknown RNDIS message 0x%08X len %d\n",
 			__func__, MsgType, MsgLength);
 		/* Garbled message can be huge, so limit what we display */
 		if (MsgLength > 16)
@@ -1041,7 +1041,7 @@ void rndis_set_max_pkt_xfer(struct rndis_params *params, u8 max_pkt_per_xfer)
 void rndis_flow_control(struct rndis_params *params, bool enable_flow_control)
 {
 	if (!params) {
-		pr_err("%s: failed, params NULL\n", __func__);
+		pr_debug("%s: failed, params NULL\n", __func__);
 		return;
 	}
 
@@ -1158,7 +1158,7 @@ int rndis_rm_hdr(struct gether *port,
 		}
 
 		if (skb->len < sizeof(*hdr)) {
-			pr_err("invalid rndis pkt: skblen:%u hdr_len:%lu\n",
+			pr_debug("invalid rndis pkt: skblen:%u hdr_len:%lu\n",
 					skb->len, sizeof(*hdr));
 			dev_kfree_skb_any(skb);
 			return -EINVAL;
@@ -1171,14 +1171,14 @@ int rndis_rm_hdr(struct gether *port,
 
 		if (skb->len < msg_len ||
 				((data_offset + data_len + 8) > msg_len)) {
-			pr_err("invalid rndis message: %d/%d/%d/%d, len:%d\n",
+			pr_debug("invalid rndis message: %d/%d/%d/%d, len:%d\n",
 					le32_to_cpu(hdr->MessageType), msg_len,
 					data_offset, data_len, skb->len);
 			dev_kfree_skb_any(skb);
 			return -EOVERFLOW;
 		}
 		if (le32_to_cpu(hdr->MessageType) != RNDIS_MSG_PACKET) {
-			pr_err("invalid rndis message: %d/%d/%d/%d, len:%d\n",
+			pr_debug("invalid rndis message: %d/%d/%d/%d, len:%d\n",
 					le32_to_cpu(hdr->MessageType), msg_len,
 					data_offset, data_len, skb->len);
 			dev_kfree_skb_any(skb);
@@ -1194,7 +1194,7 @@ int rndis_rm_hdr(struct gether *port,
 
 		skb2 = skb_clone(skb, GFP_ATOMIC);
 		if (!skb2) {
-			pr_err("%s:skb clone failed\n", __func__);
+			pr_debug("%s:skb clone failed\n", __func__);
 			dev_kfree_skb_any(skb);
 			return -ENOMEM;
 		}
@@ -1215,7 +1215,7 @@ void rndis_set_pkt_alignment_factor(struct rndis_params *params,
 	pr_debug("%s:\n", __func__);
 
 	if (!params) {
-		pr_err("%s: failed, params NULL\n", __func__);
+		pr_debug("%s: failed, params NULL\n", __func__);
 		return;
 	}
 

@@ -101,7 +101,7 @@ static void ipa_data_start_endless_xfer(struct ipa_data_ch_info *port, bool in)
 	if (!port->port_usb || (in && !port->tx_req)
 				|| (!in && !port->rx_req)) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
-		pr_err("%s(): port_usb/req is NULL.\n", __func__);
+		pr_debug("%s(): port_usb/req is NULL.\n", __func__);
 		return;
 	}
 
@@ -116,12 +116,12 @@ static void ipa_data_start_endless_xfer(struct ipa_data_ch_info *port, bool in)
 		pr_debug("%s: enqueue endless TX_REQ(IN)\n", __func__);
 		status = usb_ep_queue(ep, port->tx_req, GFP_ATOMIC);
 		if (status)
-			pr_err("error enqueuing endless TX_REQ, %d\n", status);
+			pr_debug("error enqueuing endless TX_REQ, %d\n", status);
 	} else {
 		pr_debug("%s: enqueue endless RX_REQ(OUT)\n", __func__);
 		status = usb_ep_queue(ep, port->rx_req, GFP_ATOMIC);
 		if (status)
-			pr_err("error enqueuing endless RX_REQ, %d\n", status);
+			pr_debug("error enqueuing endless RX_REQ, %d\n", status);
 	}
 }
 
@@ -143,7 +143,7 @@ static void ipa_data_stop_endless_xfer(struct ipa_data_ch_info *port, bool in)
 	if (!port->port_usb || (in && !port->tx_req)
 				|| (!in && !port->rx_req)) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
-		pr_err("%s(): port_usb/req is NULL.\n", __func__);
+		pr_debug("%s(): port_usb/req is NULL.\n", __func__);
 		return;
 	}
 
@@ -158,12 +158,12 @@ static void ipa_data_stop_endless_xfer(struct ipa_data_ch_info *port, bool in)
 		pr_debug("%s: dequeue endless TX_REQ(IN)\n", __func__);
 		status = usb_ep_dequeue(ep, port->tx_req);
 		if (status)
-			pr_err("error dequeueing endless TX_REQ, %d\n", status);
+			pr_debug("error dequeueing endless TX_REQ, %d\n", status);
 	} else {
 		pr_debug("%s: dequeue endless RX_REQ(OUT)\n", __func__);
 		status = usb_ep_dequeue(ep, port->rx_req);
 		if (status)
-			pr_err("error dequeueing endless RX_REQ, %d\n", status);
+			pr_debug("error dequeueing endless RX_REQ, %d\n", status);
 	}
 }
 
@@ -182,7 +182,7 @@ void ipa_data_start_rx_tx(enum ipa_func_type func)
 	/* queue in & out requests */
 	port = ipa_data_ports[func];
 	if (!port) {
-		pr_err("%s: port is NULL, can't start tx, rx\n", __func__);
+		pr_debug("%s: port is NULL, can't start tx, rx\n", __func__);
 		return;
 	}
 
@@ -190,13 +190,13 @@ void ipa_data_start_rx_tx(enum ipa_func_type func)
 
 	if (!port->port_usb || !port->port_usb->in ||
 		!port->port_usb->out) {
-		pr_err("%s: Can't start tx, rx, ep not enabled\n", __func__);
+		pr_debug("%s: Can't start tx, rx, ep not enabled\n", __func__);
 		spin_unlock_irqrestore(&port->port_lock, flags);
 		return;
 	}
 
 	if (!port->rx_req || !port->tx_req) {
-		pr_err("%s: No request d->rx_req=%pK, d->tx_req=%pK\n",
+		pr_debug("%s: No request d->rx_req=%pK, d->tx_req=%pK\n",
 			__func__, port->rx_req, port->tx_req);
 		spin_unlock_irqrestore(&port->port_lock, flags);
 		return;
@@ -252,7 +252,7 @@ static void ipa_data_disconnect_work(struct work_struct *w)
 	spin_unlock_irqrestore(&port->port_lock, flags);
 	ret = usb_bam_disconnect_ipa(port->usb_bam_type, &port->ipa_params);
 	if (ret)
-		pr_err("usb_bam_disconnect_ipa failed: err:%d\n", ret);
+		pr_debug("usb_bam_disconnect_ipa failed: err:%d\n", ret);
 
 	if (port->func_type == USB_IPA_FUNC_RNDIS) {
 		/*
@@ -307,18 +307,18 @@ void ipa_data_disconnect(struct data_port *gp, enum ipa_func_type func)
 
 	pr_debug("dev:%pK port number:%d\n", gp, func);
 	if (func >= USB_IPA_NUM_FUNCS) {
-		pr_err("invalid ipa portno#%d\n", func);
+		pr_debug("invalid ipa portno#%d\n", func);
 		return;
 	}
 
 	if (!gp) {
-		pr_err("data port is null\n");
+		pr_debug("data port is null\n");
 		return;
 	}
 
 	port = ipa_data_ports[func];
 	if (!port) {
-		pr_err("port %u is NULL\n", func);
+		pr_debug("port %u is NULL\n", func);
 		return;
 	}
 
@@ -418,7 +418,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 	if (!port->port_usb) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
 		usb_gadget_autopm_put_async(port->gadget);
-		pr_err("%s(): port_usb is NULL.\n", __func__);
+		pr_debug("%s(): port_usb is NULL.\n", __func__);
 		return;
 	}
 
@@ -429,7 +429,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 	if (!gadget) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
 		usb_gadget_autopm_put_async(port->gadget);
-		pr_err("%s: gport is NULL.\n", __func__);
+		pr_debug("%s: gport is NULL.\n", __func__);
 		return;
 	}
 
@@ -467,7 +467,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 		spin_lock_irqsave(&port->port_lock, flags);
 		if (!port->port_usb || port->rx_req == NULL) {
 			spin_unlock_irqrestore(&port->port_lock, flags);
-			pr_err("%s: port_usb is NULL, or rx_req cleaned\n",
+			pr_debug("%s: port_usb is NULL, or rx_req cleaned\n",
 				__func__);
 			goto out;
 		}
@@ -481,7 +481,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 					port->port_usb->out);
 			ret = msm_ep_config(gport->out, port->rx_req);
 			if (ret) {
-				pr_err("msm_ep_config() failed for OUT EP\n");
+				pr_debug("msm_ep_config() failed for OUT EP\n");
 				spin_unlock_irqrestore(&port->port_lock, flags);
 				goto out;
 			}
@@ -504,7 +504,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 		spin_lock_irqsave(&port->port_lock, flags);
 		if (!port->port_usb || port->tx_req == NULL) {
 			spin_unlock_irqrestore(&port->port_lock, flags);
-			pr_err("%s: port_usb is NULL, or tx_req cleaned\n",
+			pr_debug("%s: port_usb is NULL, or tx_req cleaned\n",
 				__func__);
 			goto unconfig_msm_ep_out;
 		}
@@ -518,7 +518,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 
 			ret = msm_ep_config(gport->in, port->tx_req);
 			if (ret) {
-				pr_err("msm_ep_config() failed for IN EP\n");
+				pr_debug("msm_ep_config() failed for IN EP\n");
 				spin_unlock_irqrestore(&port->port_lock, flags);
 				goto unconfig_msm_ep_out;
 			}
@@ -538,7 +538,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 		teth_bridge_params.client = port->ipa_params.src_client;
 		ret = teth_bridge_init(&teth_bridge_params);
 		if (ret) {
-			pr_err("%s:teth_bridge_init() failed\n", __func__);
+			pr_debug("%s:teth_bridge_init() failed\n", __func__);
 			spin_unlock_irqrestore(&port->port_lock, flags);
 			goto unconfig_msm_ep_in;
 		}
@@ -576,7 +576,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 		ret = usb_bam_connect_ipa(port->usb_bam_type,
 						&port->ipa_params);
 		if (ret) {
-			pr_err("usb_bam_connect_ipa out failed err:%d\n", ret);
+			pr_debug("usb_bam_connect_ipa out failed err:%d\n", ret);
 			goto disconnect_usb_bam_ipa_out;
 		}
 		spin_lock_irqsave(&port->port_lock, flags);
@@ -619,7 +619,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 		ret = usb_bam_connect_ipa(port->usb_bam_type,
 						&port->ipa_params);
 		if (ret) {
-			pr_err("usb_bam_connect_ipa IN failed err:%d\n", ret);
+			pr_debug("usb_bam_connect_ipa IN failed err:%d\n", ret);
 			goto disconnect_usb_bam_ipa_out;
 		}
 		spin_lock_irqsave(&port->port_lock, flags);
@@ -658,7 +658,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 				rndis_data->dl_max_transfer_size,
 				rndis_data->priv);
 		if (ret) {
-			pr_err("%s: failed to connect IPA: err:%d\n",
+			pr_debug("%s: failed to connect IPA: err:%d\n",
 				__func__, ret);
 			return;
 		}
@@ -683,7 +683,7 @@ static void ipa_data_connect_work(struct work_struct *w)
 			port->ipa_params.src_client;
 		ret = teth_bridge_connect(&connect_params);
 		if (ret) {
-			pr_err("%s:teth_bridge_connect() failed\n", __func__);
+			pr_debug("%s:teth_bridge_connect() failed\n", __func__);
 			goto disconnect_usb_bam_ipa_out;
 		}
 	}
@@ -764,13 +764,13 @@ int ipa_data_connect(struct data_port *gp, enum ipa_func_type func,
 			gp, func, src_connection_idx, dst_connection_idx);
 
 	if (func >= USB_IPA_NUM_FUNCS) {
-		pr_err("invalid portno#%d\n", func);
+		pr_debug("invalid portno#%d\n", func);
 		ret = -ENODEV;
 		goto err;
 	}
 
 	if (!gp) {
-		pr_err("gadget port is null\n");
+		pr_debug("gadget port is null\n");
 		ret = -ENODEV;
 		goto err;
 	}
@@ -785,7 +785,7 @@ int ipa_data_connect(struct data_port *gp, enum ipa_func_type func,
 		port->rx_req = usb_ep_alloc_request(gp->out, GFP_ATOMIC);
 		if (!port->rx_req) {
 			spin_unlock_irqrestore(&port->port_lock, flags);
-			pr_err("%s: failed to allocate rx_req\n", __func__);
+			pr_debug("%s: failed to allocate rx_req\n", __func__);
 			goto err;
 		}
 		port->rx_req->context = port;
@@ -797,7 +797,7 @@ int ipa_data_connect(struct data_port *gp, enum ipa_func_type func,
 	if (gp->in) {
 		port->tx_req = usb_ep_alloc_request(gp->in, GFP_ATOMIC);
 		if (!port->tx_req) {
-			pr_err("%s: failed to allocate tx_req\n", __func__);
+			pr_debug("%s: failed to allocate tx_req\n", __func__);
 			goto free_rx_req;
 		}
 		port->tx_req->context = port;
@@ -824,7 +824,7 @@ int ipa_data_connect(struct data_port *gp, enum ipa_func_type func,
 		port->port_usb->in->endless = true;
 		ret = usb_ep_enable(port->port_usb->in);
 		if (ret) {
-			pr_err("usb_ep_enable failed eptype:IN ep:%pK\n",
+			pr_debug("usb_ep_enable failed eptype:IN ep:%pK\n",
 						port->port_usb->in);
 			usb_ep_free_request(port->port_usb->in, port->tx_req);
 			port->tx_req = NULL;
@@ -837,7 +837,7 @@ int ipa_data_connect(struct data_port *gp, enum ipa_func_type func,
 		port->port_usb->out->endless = true;
 		ret = usb_ep_enable(port->port_usb->out);
 		if (ret) {
-			pr_err("usb_ep_enable failed eptype:OUT ep:%pK\n",
+			pr_debug("usb_ep_enable failed eptype:OUT ep:%pK\n",
 						port->port_usb->out);
 			usb_ep_free_request(port->port_usb->out, port->rx_req);
 			port->rx_req = NULL;
@@ -902,7 +902,7 @@ static void ipa_data_start(void *param, enum usb_bam_pipe_dir dir)
 	struct usb_gadget *gadget = NULL;
 
 	if (!port || !port->port_usb || !port->port_usb->cdev->gadget) {
-		pr_err("%s:port,cdev or gadget is  NULL\n", __func__);
+		pr_debug("%s:port,cdev or gadget is  NULL\n", __func__);
 		return;
 	}
 
@@ -934,7 +934,7 @@ static void ipa_data_stop(void *param, enum usb_bam_pipe_dir dir)
 	struct usb_gadget *gadget = NULL;
 
 	if (!port || !port->port_usb || !port->port_usb->cdev->gadget) {
-		pr_err("%s:port,cdev or gadget is  NULL\n", __func__);
+		pr_debug("%s:port,cdev or gadget is  NULL\n", __func__);
 		return;
 	}
 
@@ -969,19 +969,19 @@ void ipa_data_suspend(struct data_port *gp, enum ipa_func_type func,
 	unsigned long flags;
 
 	if (func >= USB_IPA_NUM_FUNCS) {
-		pr_err("invalid ipa portno#%d\n", func);
+		pr_debug("invalid ipa portno#%d\n", func);
 		return;
 	}
 
 	if (!gp) {
-		pr_err("data port is null\n");
+		pr_debug("data port is null\n");
 		return;
 	}
 	pr_debug("%s: suspended port %d\n", __func__, func);
 
 	port = ipa_data_ports[func];
 	if (!port) {
-		pr_err("%s(): Port is NULL.\n", __func__);
+		pr_debug("%s(): Port is NULL.\n", __func__);
 		return;
 	}
 
@@ -1031,14 +1031,14 @@ static void bam2bam_data_suspend_work(struct work_struct *w)
 	 * for SUSPEND --> DISCONNECT scenario.
 	 */
 	if (!port->is_connected) {
-		pr_err("%s: Not yet connected. SUSPEND pending.\n", __func__);
+		pr_debug("%s: Not yet connected. SUSPEND pending.\n", __func__);
 		spin_unlock_irqrestore(&port->port_lock, flags);
 		return;
 	}
 	ret = usb_bam_register_wake_cb(port->usb_bam_type,
 			port->dst_connection_idx, NULL, port);
 	if (ret) {
-		pr_err("%s(): Failed to register BAM wake callback.\n",
+		pr_debug("%s(): Failed to register BAM wake callback.\n",
 				__func__);
 		spin_unlock_irqrestore(&port->port_lock, flags);
 		return;
@@ -1087,18 +1087,18 @@ void ipa_data_resume(struct data_port *gp, enum ipa_func_type func,
 	pr_debug("dev:%pK port number:%d\n", gp, func);
 
 	if (func >= USB_IPA_NUM_FUNCS) {
-		pr_err("invalid ipa portno#%d\n", func);
+		pr_debug("invalid ipa portno#%d\n", func);
 		return;
 	}
 
 	if (!gp) {
-		pr_err("data port is null\n");
+		pr_debug("data port is null\n");
 		return;
 	}
 
 	port = ipa_data_ports[func];
 	if (!port) {
-		pr_err("port %u is NULL\n", func);
+		pr_debug("port %u is NULL\n", func);
 		return;
 	}
 
@@ -1154,12 +1154,12 @@ static void bam2bam_data_resume_work(struct work_struct *w)
 
 	spin_lock_irqsave(&port->port_lock, flags);
 	if (!port->port_usb || !port->port_usb->cdev) {
-		pr_err("port->port_usb or cdev is NULL\n");
+		pr_debug("port->port_usb or cdev is NULL\n");
 		goto exit;
 	}
 
 	if (!port->port_usb->cdev->gadget) {
-		pr_err("port->port_usb->cdev->gadget is NULL\n");
+		pr_debug("port->port_usb->cdev->gadget is NULL\n");
 		goto exit;
 	}
 
@@ -1167,7 +1167,7 @@ static void bam2bam_data_resume_work(struct work_struct *w)
 	gadget = port->port_usb->cdev->gadget;
 	if (!gadget) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
-		pr_err("%s(): Gadget is NULL.\n", __func__);
+		pr_debug("%s(): Gadget is NULL.\n", __func__);
 		return;
 	}
 
@@ -1175,7 +1175,7 @@ static void bam2bam_data_resume_work(struct work_struct *w)
 				port->dst_connection_idx, NULL, NULL);
 	if (ret) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
-		pr_err("%s(): Failed to register BAM wake callback.\n",
+		pr_debug("%s(): Failed to register BAM wake callback.\n",
 								__func__);
 		return;
 	}
@@ -1288,13 +1288,13 @@ int ipa_data_setup(enum ipa_func_type func)
 	pr_debug("requested %d IPA BAM port\n", func);
 
 	if (func >= USB_IPA_NUM_FUNCS) {
-		pr_err("Invalid num of ports count:%d\n", func);
+		pr_debug("Invalid num of ports count:%d\n", func);
 		return -EINVAL;
 	}
 
 	ret = ipa_data_port_alloc(func);
 	if (ret) {
-		pr_err("Failed to alloc port:%d\n", func);
+		pr_debug("Failed to alloc port:%d\n", func);
 		return ret;
 	}
 
@@ -1311,7 +1311,7 @@ int ipa_data_setup(enum ipa_func_type func)
 	ipa_data_wq = alloc_workqueue("k_usb_ipa_data",
 				WQ_UNBOUND | WQ_MEM_RECLAIM, 1);
 	if (!ipa_data_wq) {
-		pr_err("Failed to create workqueue\n");
+		pr_debug("Failed to create workqueue\n");
 		ret = -ENOMEM;
 		goto free_rndis_data;
 	}
@@ -1331,7 +1331,7 @@ free_ipa_ports:
 void ipa_data_set_ul_max_xfer_size(u32 max_transfer_size)
 {
 	if (!max_transfer_size) {
-		pr_err("%s: invalid parameters\n", __func__);
+		pr_debug("%s: invalid parameters\n", __func__);
 		return;
 	}
 	rndis_data->ul_max_transfer_size = max_transfer_size;
@@ -1342,7 +1342,7 @@ void ipa_data_set_dl_max_xfer_size(u32 max_transfer_size)
 {
 
 	if (!max_transfer_size) {
-		pr_err("%s: invalid parameters\n", __func__);
+		pr_debug("%s: invalid parameters\n", __func__);
 		return;
 	}
 	rndis_data->dl_max_transfer_size = max_transfer_size;
@@ -1352,7 +1352,7 @@ void ipa_data_set_dl_max_xfer_size(u32 max_transfer_size)
 void ipa_data_set_ul_max_pkt_num(u8 max_packets_number)
 {
 	if (!max_packets_number) {
-		pr_err("%s: invalid parameters\n", __func__);
+		pr_debug("%s: invalid parameters\n", __func__);
 		return;
 	}
 
@@ -1376,7 +1376,7 @@ void ipa_data_start_rndis_ipa(enum ipa_func_type func)
 
 	port = ipa_data_ports[func];
 	if (!port) {
-		pr_err("%s: port is NULL\n", __func__);
+		pr_debug("%s: port is NULL\n", __func__);
 		return;
 	}
 
@@ -1402,7 +1402,7 @@ void ipa_data_stop_rndis_ipa(enum ipa_func_type func)
 
 	port = ipa_data_ports[func];
 	if (!port) {
-		pr_err("%s: port is NULL\n", __func__);
+		pr_debug("%s: port is NULL\n", __func__);
 		return;
 	}
 

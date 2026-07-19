@@ -62,7 +62,7 @@ int hw_breakpoint_slots(int type)
 	case TYPE_DATA:
 		return get_num_wrps();
 	default:
-		pr_warning("unknown slot type: %d\n", type);
+		pr_debug("unknown slot type: %d\n", type);
 		return 0;
 	}
 }
@@ -123,7 +123,7 @@ static u64 read_wb_reg(int reg, int n)
 	GEN_READ_WB_REG_CASES(AARCH64_DBG_REG_WVR, AARCH64_DBG_REG_NAME_WVR, val);
 	GEN_READ_WB_REG_CASES(AARCH64_DBG_REG_WCR, AARCH64_DBG_REG_NAME_WCR, val);
 	default:
-		pr_warning("attempt to read from unknown breakpoint register %d\n", n);
+		pr_debug("attempt to read from unknown breakpoint register %d\n", n);
 	}
 
 	return val;
@@ -138,7 +138,7 @@ static void write_wb_reg(int reg, int n, u64 val)
 	GEN_WRITE_WB_REG_CASES(AARCH64_DBG_REG_WVR, AARCH64_DBG_REG_NAME_WVR, val);
 	GEN_WRITE_WB_REG_CASES(AARCH64_DBG_REG_WCR, AARCH64_DBG_REG_NAME_WCR, val);
 	default:
-		pr_warning("attempt to write to unknown breakpoint register %d\n", n);
+		pr_debug("attempt to write to unknown breakpoint register %d\n", n);
 	}
 	isb();
 }
@@ -156,7 +156,7 @@ static enum dbg_active_el debug_exception_level(int privilege)
 	case AARCH64_BREAKPOINT_EL1:
 		return DBG_ACTIVE_EL1;
 	default:
-		pr_warning("invalid breakpoint privilege level %d\n", privilege);
+		pr_debug("invalid breakpoint privilege level %d\n", privilege);
 		return -EINVAL;
 	}
 }
@@ -1017,7 +1017,7 @@ static int __init arch_hw_breakpoint_init(void)
 	core_num_brps = get_num_brps();
 	core_num_wrps = get_num_wrps();
 
-	pr_info("found %d breakpoint and %d watchpoint registers.\n",
+	pr_debug("found %d breakpoint and %d watchpoint registers.\n",
 		core_num_brps, core_num_wrps);
 
 	/* Register debug fault handlers. */
@@ -1034,7 +1034,7 @@ static int __init arch_hw_breakpoint_init(void)
 			  "perf/arm64/hw_breakpoint:starting",
 			  hw_breakpoint_reset, NULL);
 	if (ret)
-		pr_err("failed to register CPU hotplug notifier: %d\n", ret);
+		pr_debug("failed to register CPU hotplug notifier: %d\n", ret);
 
 	/* Register cpu_suspend hw breakpoint restore hook */
 	cpu_suspend_set_dbg_restorer(hw_breakpoint_reset);

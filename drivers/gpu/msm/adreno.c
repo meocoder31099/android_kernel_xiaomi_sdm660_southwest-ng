@@ -181,7 +181,7 @@ static inline int adreno_of_read_property(struct device *dev,
 	int ret = of_property_read_u32(node, prop, ptr);
 
 	if (ret)
-		dev_err(dev, "%pOF: Unable to read '%s'\n", node, prop);
+		dev_dbg(dev, "%pOF: Unable to read '%s'\n", node, prop);
 	return ret;
 }
 
@@ -263,7 +263,7 @@ void adreno_efuse_speed_bin_array(struct adreno_device *adreno_dev)
 	if (of_property_read_u32_array(device->pdev->dev.of_node,
 			"qcom,gpu-speed-bin-vectors",
 			bin_vector, count)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"Speed-bin-vectors is invalid\n");
 		kfree(bin_vector);
 		return;
@@ -299,10 +299,10 @@ static int _get_counter(struct adreno_device *adreno_dev,
 			lo, hi, PERFCOUNTER_FLAG_KERNEL);
 
 		if (ret) {
-			dev_err(KGSL_DEVICE(adreno_dev)->dev,
+			dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 				     "Unable to allocate fault detect performance counter %d/%d\n",
 				     group, countable);
-			dev_err(KGSL_DEVICE(adreno_dev)->dev,
+			dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 				     "GPU fault detect will be less reliable\n");
 		}
 	}
@@ -679,7 +679,7 @@ adreno_get_soc_hw_revision_node(struct adreno_device *adreno_dev,
 			return child;
 	}
 
-	dev_warn(KGSL_DEVICE(adreno_dev)->dev,
+	dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 		      "No matching SOC HW revision found for efused HW rev=%u\n",
 		      adreno_dev->soc_hw_rev);
 	return NULL;
@@ -699,7 +699,7 @@ static void adreno_update_soc_hw_revision_quirks(
 	if (of_property_read_u32(node, "qcom,chipid", &adreno_dev->chipid)) {
 		if (of_property_read_u32(pdev->dev.of_node,
 				"qcom,chipid", &adreno_dev->chipid)) {
-			dev_crit(KGSL_DEVICE(adreno_dev)->dev,
+			dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 				"No GPU chip ID was specified\n");
 			BUG();
 			return;
@@ -723,7 +723,7 @@ static int adreno_identify_gpu(struct adreno_device *adreno_dev)
 	adreno_dev->gpucore = _get_gpu_core(adreno_dev->chipid);
 
 	if (adreno_dev->gpucore == NULL) {
-		dev_crit(&device->pdev->dev,
+		dev_dbg(&device->pdev->dev,
 			"Unknown GPU chip ID %8.8X\n", adreno_dev->chipid);
 		return -ENODEV;
 	}
@@ -733,7 +733,7 @@ static int adreno_identify_gpu(struct adreno_device *adreno_dev)
 	 * message
 	 */
 	if (adreno_dev->gpucore->features & ADRENO_DEPRECATED) {
-		dev_err(&device->pdev->dev,
+		dev_dbg(&device->pdev->dev,
 			"Support for GPU %d.%d.%d.%d has been deprecated\n",
 			adreno_dev->gpucore->core,
 			adreno_dev->gpucore->major,
@@ -850,7 +850,7 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 			"operating-points-v2", NULL)) {
 		ret = dev_pm_opp_of_add_table(&device->pdev->dev);
 		if (ret) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"Unable to set the GPU OPP table: %d\n", ret);
 			return ret;
 		}
@@ -866,7 +866,7 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 			return -EINVAL;
 
 		if (index >= KGSL_MAX_PWRLEVELS) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"%pOF: Pwrlevel index %d is out of range\n",
 					child, index);
 			continue;
@@ -887,7 +887,7 @@ static int adreno_of_parse_pwrlevels(struct adreno_device *adreno_dev,
 		ret = kgsl_of_property_read_ddrtype(child,
 			"qcom,bus-freq", &level->bus_freq);
 		if (ret) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"%pOF: Couldn't read the bus frequency for power level %d\n",
 				child, index);
 			return ret;
@@ -917,7 +917,7 @@ static void adreno_of_get_bimc_iface_clk(struct adreno_device *adreno_dev,
 		pwr->gpu_bimc_int_clk = devm_clk_get(&device->pdev->dev,
 				"bimc_gpu_clk");
 		if (IS_ERR_OR_NULL(pwr->gpu_bimc_int_clk)) {
-			dev_err(&device->pdev->dev,
+			dev_dbg(&device->pdev->dev,
 					"dt: Couldn't get bimc_gpu_clk (%d)\n",
 					PTR_ERR(pwr->gpu_bimc_int_clk));
 			pwr->gpu_bimc_int_clk = NULL;
@@ -968,7 +968,7 @@ static int adreno_of_get_legacy_pwrlevels(struct adreno_device *adreno_dev,
 	node = of_find_node_by_name(parent, "qcom,gpu-pwrlevels");
 
 	if (node == NULL) {
-		dev_err(KGSL_DEVICE(adreno_dev)->dev,
+		dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 			"Unable to find 'qcom,gpu-pwrlevels'\n");
 		return -EINVAL;
 	}
@@ -1023,7 +1023,7 @@ static int adreno_of_get_pwrlevels(struct adreno_device *adreno_dev,
 		}
 	}
 
-	dev_err(KGSL_DEVICE(adreno_dev)->dev,
+	dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 		"GPU speed_bin:%d mismatch for efused bin:%d\n",
 		adreno_dev->speed_bin, bin);
 	return -ENODEV;
@@ -1058,7 +1058,7 @@ l3_pwrlevel_probe(struct kgsl_device *device, struct device_node *node)
 	device->l3_clk = devm_clk_get(&device->pdev->dev, "l3_vote");
 
 	if (IS_ERR_OR_NULL(device->l3_clk)) {
-		dev_err(&device->pdev->dev,
+		dev_dbg(&device->pdev->dev,
 			"Unable to get the l3_vote clock\n");
 		device->l3_clk = NULL;
 	}
@@ -1073,7 +1073,7 @@ static int adreno_of_get_power(struct adreno_device *adreno_dev,
 	unsigned int timeout;
 
 	if (of_property_read_string(node, "label", &pdev->name)) {
-		dev_err(device->dev, "Unable to read 'label'\n");
+		dev_dbg(device->dev, "Unable to read 'label'\n");
 		return -EINVAL;
 	}
 
@@ -1084,12 +1084,12 @@ static int adreno_of_get_power(struct adreno_device *adreno_dev,
 	res = platform_get_resource_byname(device->pdev, IORESOURCE_MEM,
 					   device->iomemname);
 	if (res == NULL) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "platform_get_resource_byname failed\n");
 		return -EINVAL;
 	}
 	if (res->start == 0 || resource_size(res) == 0) {
-		dev_err(device->dev, "dev %d invalid register region\n",
+		dev_dbg(device->dev, "dev %d invalid register region\n",
 			     device->id);
 		return -EINVAL;
 	}
@@ -1145,7 +1145,7 @@ static void adreno_cx_dbgc_probe(struct kgsl_device *device)
 					adreno_dev->cx_dbgc_len);
 
 	if (adreno_dev->cx_dbgc_virt == NULL)
-		dev_warn(device->dev, "cx_dbgc ioremap failed\n");
+		dev_dbg(device->dev, "cx_dbgc ioremap failed\n");
 }
 
 static void adreno_cx_misc_probe(struct kgsl_device *device)
@@ -1180,7 +1180,7 @@ static void adreno_rscc_probe(struct kgsl_device *device)
 	adreno_dev->rscc_virt = devm_ioremap(device->dev, res->start,
 						adreno_dev->rscc_len);
 	if (adreno_dev->rscc_virt == NULL)
-		dev_warn(device->dev, "rscc ioremap failed\n");
+		dev_dbg(device->dev, "rscc ioremap failed\n");
 }
 
 static void adreno_isense_probe(struct kgsl_device *device)
@@ -1198,7 +1198,7 @@ static void adreno_isense_probe(struct kgsl_device *device)
 	adreno_dev->isense_virt = devm_ioremap(device->dev, res->start,
 					adreno_dev->isense_len);
 	if (adreno_dev->isense_virt == NULL)
-		dev_warn(device->dev, "isense ioremap failed\n");
+		dev_dbg(device->dev, "isense ioremap failed\n");
 }
 
 static void adreno_efuse_read_soc_hw_rev(struct adreno_device *adreno_dev)
@@ -1214,7 +1214,7 @@ static void adreno_efuse_read_soc_hw_rev(struct adreno_device *adreno_dev)
 
 	ret = adreno_efuse_map(adreno_dev);
 	if (ret) {
-		dev_err(KGSL_DEVICE(adreno_dev)->dev,
+		dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 			"Unable to map hardware revision fuse: ret=%d\n", ret);
 		return;
 	}
@@ -1223,7 +1223,7 @@ static void adreno_efuse_read_soc_hw_rev(struct adreno_device *adreno_dev)
 	adreno_efuse_unmap(adreno_dev);
 
 	if (ret) {
-		dev_err(KGSL_DEVICE(adreno_dev)->dev,
+		dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 			"Unable to read hardware revision fuse: ret=%d\n", ret);
 		return;
 	}
@@ -1426,7 +1426,7 @@ static int adreno_probe(struct platform_device *pdev)
 	device->pdev = pdev;
 
 	if (adreno_is_gpu_disabled(adreno_dev)) {
-		dev_err(&pdev->dev, "adreno: GPU is disabled on this device\n");
+		dev_dbg(&pdev->dev, "adreno: GPU is disabled on this device\n");
 		return -ENODEV;
 	}
 
@@ -1546,7 +1546,7 @@ static int adreno_probe(struct platform_device *pdev)
 	adreno_dev->gpu_llc_slice = adreno_llc_getd(LLCC_GPU);
 	if (IS_ERR(adreno_dev->gpu_llc_slice) &&
 			PTR_ERR(adreno_dev->gpu_llc_slice) != -ENOENT)
-		dev_warn(device->dev,
+		dev_dbg(device->dev,
 			"Failed to get GPU LLC slice descriptor %ld\n",
 			PTR_ERR(adreno_dev->gpu_llc_slice));
 
@@ -1554,7 +1554,7 @@ static int adreno_probe(struct platform_device *pdev)
 	adreno_dev->gpuhtw_llc_slice = adreno_llc_getd(LLCC_GPUHTW);
 	if (IS_ERR(adreno_dev->gpuhtw_llc_slice) &&
 			PTR_ERR(adreno_dev->gpuhtw_llc_slice) != -ENOENT)
-		dev_warn(device->dev,
+		dev_dbg(device->dev,
 			"Failed to get gpuhtw LLC slice descriptor %ld\n",
 			PTR_ERR(adreno_dev->gpuhtw_llc_slice));
 out:
@@ -1721,7 +1721,7 @@ static void do_gbif_halt(struct adreno_device *adreno_dev,
 	if ((val & mask) == mask)
 		return;
 
-	dev_err(device->dev, "%s GBIF Halt ack timed out\n", client);
+	dev_dbg(device->dev, "%s GBIF Halt ack timed out\n", client);
 }
 
 /**
@@ -2103,7 +2103,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 				PERFCOUNTER_FLAG_KERNEL);
 
 			if (ret) {
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					     "Unable to get perf counters for bus DCVS\n");
 				adreno_dev->starved_ram_lo = 0;
 			}
@@ -2117,7 +2117,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 					PERFCOUNTER_FLAG_KERNEL);
 
 				if (ret) {
-					dev_err(device->dev,
+					dev_dbg(device->dev,
 						     "Unable to get perf counters for bus DCVS\n");
 					adreno_dev->starved_ram_lo_ch1 = 0;
 				}
@@ -2131,7 +2131,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 					PERFCOUNTER_FLAG_KERNEL);
 
 				if (ret) {
-					dev_err(device->dev,
+					dev_dbg(device->dev,
 						     "Unable to get perf counters for bus DCVS\n");
 					adreno_dev->ram_cycles_lo = 0;
 				}
@@ -2146,7 +2146,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 					PERFCOUNTER_FLAG_KERNEL);
 
 				if (ret) {
-					dev_err(device->dev,
+					dev_dbg(device->dev,
 						     "Unable to get perf counters for bus DCVS\n");
 					adreno_dev->ram_cycles_lo_ch1_read = 0;
 				}
@@ -2161,7 +2161,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 					PERFCOUNTER_FLAG_KERNEL);
 
 				if (ret) {
-					dev_err(device->dev,
+					dev_dbg(device->dev,
 						     "Unable to get perf counters for bus DCVS\n");
 					adreno_dev->ram_cycles_lo_ch0_write = 0;
 				}
@@ -2176,7 +2176,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 					PERFCOUNTER_FLAG_KERNEL);
 
 				if (ret) {
-					dev_err(device->dev,
+					dev_dbg(device->dev,
 						     "Unable to get perf counters for bus DCVS\n");
 					adreno_dev->ram_cycles_lo_ch1_write = 0;
 				}
@@ -2191,7 +2191,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 					PERFCOUNTER_FLAG_KERNEL);
 
 				if (ret) {
-					dev_err(device->dev,
+					dev_dbg(device->dev,
 						     "Unable to get perf counters for bus DCVS\n");
 					adreno_dev->ram_cycles_lo = 0;
 				}
@@ -2455,7 +2455,7 @@ int adreno_reset(struct kgsl_device *device, int fault)
 		if (ret == 0) {
 			ret = adreno_soft_reset(device);
 			if (ret)
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"Device soft reset failed: ret=%d\n",
 					ret);
 		}
@@ -2493,7 +2493,7 @@ int adreno_reset(struct kgsl_device *device, int fault)
 		return ret;
 
 	if (i != 0)
-		dev_warn(device->dev,
+		dev_dbg(device->dev,
 			      "Device hard reset tried %d tries\n", i);
 
 	/*
@@ -2650,7 +2650,7 @@ static int adreno_prop_gaming_bin(struct kgsl_device *device,
 		return ret;
 	}
 
-	dev_err(device->dev, "failed to read gaming_bin nvmem cell\n");
+	dev_dbg(device->dev, "failed to read gaming_bin nvmem cell\n");
 	return -EINVAL;
 }
 
@@ -3098,7 +3098,7 @@ void adreno_spin_idle_debug(struct adreno_device *adreno_dev,
 	unsigned int status, status3, intstatus;
 	unsigned int hwfault, cx_status;
 
-	dev_err(device->dev, str);
+	dev_dbg(device->dev, str);
 
 	adreno_readreg(adreno_dev, ADRENO_REG_CP_RB_RPTR, &rptr);
 	adreno_readreg(adreno_dev, ADRENO_REG_CP_RB_WPTR, &wptr);
@@ -3117,20 +3117,20 @@ void adreno_spin_idle_debug(struct adreno_device *adreno_dev,
 	if (gmu_core_isenabled(device)) {
 		gmu_core_regread(device,
 				A6XX_GPU_GMU_AO_GPU_CX_BUSY_STATUS, &cx_status);
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"rb=%d pos=%X/%X rbbm_status=%8.8X/%8.8X int_0_status=%8.8X cx_busy_status:%8.8X\n",
 				adreno_dev->cur_rb->id, rptr, wptr, status,
 				status3, intstatus, cx_status);
 
-		dev_err(device->dev, " hwfault=%8.8X\n", hwfault);
+		dev_dbg(device->dev, " hwfault=%8.8X\n", hwfault);
 		gmu_core_snapshot(device);
 	} else {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"rb=%d pos=%X/%X rbbm_status=%8.8X/%8.8X int_0_status=%8.8X\n",
 				adreno_dev->cur_rb->id, rptr, wptr, status,
 				status3, intstatus);
 
-		dev_err(device->dev, " hwfault=%8.8X\n", hwfault);
+		dev_dbg(device->dev, " hwfault=%8.8X\n", hwfault);
 		kgsl_device_snapshot(device, NULL, false);
 	}
 }
@@ -3429,7 +3429,7 @@ int adreno_gmu_fenced_write(struct adreno_device *adreno_dev,
 	ts2 = gmu_core_dev_read_ao_counter(device);
 
 	if (i == GMU_CORE_LONG_WAKEUP_RETRY_LIMIT) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"Timed out waiting %d usecs to write fenced register 0x%x, timestamps %llu %llu, status 0x%x\n",
 			i * GMU_CORE_WAKEUP_DELAY_US,
 			reg_offset, ts1, ts2, status);
@@ -3437,7 +3437,7 @@ int adreno_gmu_fenced_write(struct adreno_device *adreno_dev,
 		return -ETIMEDOUT;
 	}
 
-	dev_err(device->dev,
+	dev_dbg(device->dev,
 		"Waited %d usecs to write fenced register 0x%x. status 0x%x\n",
 		i * GMU_CORE_WAKEUP_DELAY_US, reg_offset, status);
 
@@ -3966,7 +3966,7 @@ static void adreno_iommu_sync(struct kgsl_device *device, bool sync)
 		desc.arginfo = SCM_ARGS(1);
 		ret = scm_call2_atomic(SCM_SIP_FNID(SCM_SVC_PWR, 0x8), &desc);
 		if (ret)
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				     "MMU sync with Hypervisor off %x\n", ret);
 	} else {
 		desc.args[0] = false;
@@ -3998,7 +3998,7 @@ static void _regulator_disable(struct device *dev,
 	if (!regulator_is_enabled(regulator->reg))
 		return;
 
-	dev_err(dev, "regulator '%s' disable timed out\n", regulator->name);
+	dev_dbg(dev, "regulator '%s' disable timed out\n", regulator->name);
 }
 
 static void adreno_regulator_disable_poll(struct kgsl_device *device)

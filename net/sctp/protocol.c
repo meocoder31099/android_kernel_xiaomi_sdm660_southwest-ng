@@ -204,7 +204,7 @@ static void sctp_v4_copy_ip_options(struct sock *sk, struct sock *newsk)
 			memcpy(newopt, inet_opt, sizeof(*inet_opt) +
 			       inet_opt->opt.optlen);
 		else
-			pr_err("%s: Failed to copy ip options\n", __func__);
+			pr_debug("%s: Failed to copy ip options\n", __func__);
 	}
 	RCU_INIT_POINTER(newinet->inet_opt, newopt);
 	rcu_read_unlock();
@@ -855,7 +855,7 @@ static int sctp_ctl_sock_init(struct net *net)
 					   net);
 
 	if (err < 0) {
-		pr_err("Failed to create the SCTP control socket\n");
+		pr_debug("Failed to create the SCTP control socket\n");
 		return err;
 	}
 	return 0;
@@ -1367,7 +1367,7 @@ static int __net_init sctp_ctrlsock_init(struct net *net)
 	/* Initialize the control inode/socket for handling OOTB packets.  */
 	status = sctp_ctl_sock_init(net);
 	if (status)
-		pr_err("Failed to initialize the SCTP control sock\n");
+		pr_debug("Failed to initialize the SCTP control sock\n");
 
 	return status;
 }
@@ -1470,7 +1470,7 @@ static __init int sctp_init(void)
 	sctp_ep_hashtable =
 		kmalloc_array(64, sizeof(struct sctp_hashbucket), GFP_KERNEL);
 	if (!sctp_ep_hashtable) {
-		pr_err("Failed endpoint_hash alloc\n");
+		pr_debug("Failed endpoint_hash alloc\n");
 		status = -ENOMEM;
 		goto err_ehash_alloc;
 	}
@@ -1490,7 +1490,7 @@ static __init int sctp_init(void)
 	} while (!sctp_port_hashtable && --order > 0);
 
 	if (!sctp_port_hashtable) {
-		pr_err("Failed bind hash alloc\n");
+		pr_debug("Failed bind hash alloc\n");
 		status = -ENOMEM;
 		goto err_bhash_alloc;
 	}
@@ -1517,7 +1517,7 @@ static __init int sctp_init(void)
 	if (status)
 		goto err_thash_alloc;
 
-	pr_info("Hash tables configured (bind %d/%d)\n", sctp_port_hashsize,
+	pr_debug("Hash tables configured (bind %d/%d)\n", sctp_port_hashsize,
 		num_entries);
 
 	sctp_sysctl_register();
@@ -1553,7 +1553,7 @@ static __init int sctp_init(void)
 		goto err_v6_add_protocol;
 
 	if (sctp_offload_init() < 0)
-		pr_crit("%s: Cannot add SCTP protocol offload\n", __func__);
+		pr_debug("%s: Cannot add SCTP protocol offload\n", __func__);
 
 out:
 	return status;

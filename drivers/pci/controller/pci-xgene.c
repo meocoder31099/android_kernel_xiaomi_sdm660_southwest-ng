@@ -207,13 +207,13 @@ static int xgene_get_csr_resource(struct acpi_device *adev,
 				     acpi_dev_filter_resource_type_cb,
 				     (void *) flags);
 	if (ret < 0) {
-		dev_err(dev, "failed to parse _CRS method, error code %d\n",
+		dev_dbg(dev, "failed to parse _CRS method, error code %d\n",
 			ret);
 		return ret;
 	}
 
 	if (ret == 0) {
-		dev_err(dev, "no IO and memory resources present in _CRS\n");
+		dev_dbg(dev, "no IO and memory resources present in _CRS\n");
 		return -EINVAL;
 	}
 
@@ -237,7 +237,7 @@ static int xgene_pcie_ecam_init(struct pci_config_window *cfg, u32 ipversion)
 
 	ret = xgene_get_csr_resource(adev, &csr);
 	if (ret) {
-		dev_err(dev, "can't get CSR resource\n");
+		dev_dbg(dev, "can't get CSR resource\n");
 		return ret;
 	}
 	port->csr_base = devm_pci_remap_cfg_resource(dev, &csr);
@@ -331,13 +331,13 @@ static int xgene_pcie_init_port(struct xgene_pcie_port *port)
 
 	port->clk = clk_get(dev, NULL);
 	if (IS_ERR(port->clk)) {
-		dev_err(dev, "clock not available\n");
+		dev_dbg(dev, "clock not available\n");
 		return -ENODEV;
 	}
 
 	rc = clk_prepare_enable(port->clk);
 	if (rc) {
-		dev_err(dev, "clock enable failed\n");
+		dev_dbg(dev, "clock enable failed\n");
 		return rc;
 	}
 
@@ -385,7 +385,7 @@ static void xgene_pcie_setup_ob_reg(struct xgene_pcie_port *port,
 	if (size >= min_size)
 		mask = ~(size - 1) | flag;
 	else
-		dev_warn(dev, "res size 0x%llx less than minimum 0x%x\n",
+		dev_dbg(dev, "res size 0x%llx less than minimum 0x%x\n",
 			 (u64)size, min_size);
 
 	xgene_pcie_writel(port, offset, lower_32_bits(cpu_addr));
@@ -442,7 +442,7 @@ static int xgene_pcie_map_ranges(struct xgene_pcie_port *port,
 		case IORESOURCE_BUS:
 			break;
 		default:
-			dev_err(dev, "invalid resource %pR\n", res);
+			dev_dbg(dev, "invalid resource %pR\n", res);
 			return -EINVAL;
 		}
 	}
@@ -501,7 +501,7 @@ static void xgene_pcie_setup_ib_reg(struct xgene_pcie_port *port,
 
 	region = xgene_pcie_select_ib_reg(ib_reg_mask, range->size);
 	if (region < 0) {
-		dev_warn(dev, "invalid pcie dma-range config\n");
+		dev_dbg(dev, "invalid pcie dma-range config\n");
 		return;
 	}
 
@@ -543,7 +543,7 @@ static int xgene_pcie_parse_map_dma_ranges(struct xgene_pcie_port *port)
 	u8 ib_reg_mask = 0;
 
 	if (of_pci_dma_range_parser_init(&parser, np)) {
-		dev_err(dev, "missing dma-ranges property\n");
+		dev_dbg(dev, "missing dma-ranges property\n");
 		return -EINVAL;
 	}
 
@@ -590,9 +590,9 @@ static int xgene_pcie_setup(struct xgene_pcie_port *port, struct list_head *res,
 
 	xgene_pcie_linkup(port, &lanes, &speed);
 	if (!port->link_up)
-		dev_info(dev, "(rc) link down\n");
+		dev_dbg(dev, "(rc) link down\n");
 	else
-		dev_info(dev, "(rc) x%d gen-%d link up\n", lanes, speed + 1);
+		dev_dbg(dev, "(rc) x%d gen-%d link up\n", lanes, speed + 1);
 	return 0;
 }
 

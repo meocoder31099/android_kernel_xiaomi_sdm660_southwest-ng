@@ -348,7 +348,7 @@ static void sg_complete(struct urb *urb)
 			&& (io->status != -ECONNRESET
 				|| status != -ECONNRESET)
 			&& urb->actual_length) {
-		dev_err(io->dev->bus->controller,
+		dev_dbg(io->dev->bus->controller,
 			"dev %s ep%d%s scatterlist error %d/%d\n",
 			io->dev->devpath,
 			usb_endpoint_num(&urb->ep->desc),
@@ -377,7 +377,7 @@ static void sg_complete(struct urb *urb)
 				    retval != -ENODEV &&
 				    retval != -EBUSY &&
 				    retval != -EIDRM)
-					dev_err(&io->dev->dev,
+					dev_dbg(&io->dev->dev,
 						"%s, unlink --> %d\n",
 						__func__, retval);
 			} else if (urb == io->urbs[i])
@@ -628,7 +628,7 @@ void usb_sg_wait(struct usb_sg_request *io)
 	retval = wait_for_completion_timeout(&io->complete,
 						msecs_to_jiffies(5000));
 	if (retval == 0) {
-		dev_err(&io->dev->dev, "%s, timed out while waiting for io_complete\n",
+		dev_dbg(&io->dev->dev, "%s, timed out while waiting for io_complete\n",
 				__func__);
 		usb_sg_cancel(io);
 	}
@@ -668,7 +668,7 @@ void usb_sg_cancel(struct usb_sg_request *io)
 		    && retval != -ENODEV
 		    && retval != -EBUSY
 		    && retval != -EIDRM)
-			dev_warn(&io->dev->dev, "%s, unlink --> %d\n",
+			dev_dbg(&io->dev->dev, "%s, unlink --> %d\n",
 				 __func__, retval);
 	}
 
@@ -843,7 +843,7 @@ static int usb_get_langid(struct usb_device *dev, unsigned char *tbuf)
 	if (err == -ENODATA || (err > 0 && err < 4)) {
 		dev->string_langid = 0x0409;
 		dev->have_langid = 1;
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"language id specifier not provided by device, defaulting to English\n");
 		return 0;
 	}
@@ -852,7 +852,7 @@ static int usb_get_langid(struct usb_device *dev, unsigned char *tbuf)
 	 * deal with strings at all. Set string_langid to -1 in order to
 	 * prevent any string to be retrieved from the device */
 	if (err < 0) {
-		dev_info(&dev->dev, "string descriptor 0 read error: %d\n",
+		dev_dbg(&dev->dev, "string descriptor 0 read error: %d\n",
 					err);
 		dev->string_langid = -1;
 		return -EPIPE;
@@ -1461,7 +1461,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate)
 
 	alt = usb_altnum_to_altsetting(iface, alternate);
 	if (!alt) {
-		dev_warn(&dev->dev, "selecting invalid altsetting %d\n",
+		dev_dbg(&dev->dev, "selecting invalid altsetting %d\n",
 			 alternate);
 		return -EINVAL;
 	}
@@ -1480,7 +1480,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate)
 	 * so that the xHCI driver can recalculate the U1/U2 timeouts.
 	 */
 	if (usb_disable_lpm(dev)) {
-		dev_err(&iface->dev, "%s Failed to disable LPM\n", __func__);
+		dev_dbg(&iface->dev, "%s Failed to disable LPM\n", __func__);
 		mutex_unlock(hcd->bandwidth_mutex);
 		return -ENOMEM;
 	}
@@ -1490,7 +1490,7 @@ int usb_set_interface(struct usb_device *dev, int interface, int alternate)
 
 	ret = usb_hcd_alloc_bandwidth(dev, NULL, iface->cur_altsetting, alt);
 	if (ret < 0) {
-		dev_info(&dev->dev, "Not enough bandwidth for altsetting %d\n",
+		dev_dbg(&dev->dev, "Not enough bandwidth for altsetting %d\n",
 				alternate);
 		usb_enable_lpm(dev);
 		mutex_unlock(hcd->bandwidth_mutex);
@@ -1636,7 +1636,7 @@ int usb_set_interface_timeout(struct usb_device *dev, int interface,
 
 	alt = usb_altnum_to_altsetting(iface, alternate);
 	if (!alt) {
-		dev_warn(&dev->dev, "selecting invalid altsetting %d\n",
+		dev_dbg(&dev->dev, "selecting invalid altsetting %d\n",
 			 alternate);
 		return -EINVAL;
 	}
@@ -1649,7 +1649,7 @@ int usb_set_interface_timeout(struct usb_device *dev, int interface,
 	 * so that the xHCI driver can recalculate the U1/U2 timeouts.
 	 */
 	if (usb_disable_lpm(dev)) {
-		dev_err(&iface->dev, "%s Failed to disable LPM\n", __func__);
+		dev_dbg(&iface->dev, "%s Failed to disable LPM\n", __func__);
 		mutex_unlock(hcd->bandwidth_mutex);
 		return -ENOMEM;
 	}
@@ -1659,7 +1659,7 @@ int usb_set_interface_timeout(struct usb_device *dev, int interface,
 
 	ret = usb_hcd_alloc_bandwidth(dev, NULL, iface->cur_altsetting, alt);
 	if (ret < 0) {
-		dev_info(&dev->dev, "Not enough bandwidth for altsetting %d\n",
+		dev_dbg(&dev->dev, "Not enough bandwidth for altsetting %d\n",
 				alternate);
 		usb_enable_lpm(dev);
 		mutex_unlock(hcd->bandwidth_mutex);
@@ -1793,7 +1793,7 @@ int usb_reset_configuration(struct usb_device *dev)
 	 * that the xHCI driver can recalculate the U1/U2 timeouts.
 	 */
 	if (usb_disable_lpm(dev)) {
-		dev_err(&dev->dev, "%s Failed to disable LPM\n", __func__);
+		dev_dbg(&dev->dev, "%s Failed to disable LPM\n", __func__);
 		mutex_unlock(hcd->bandwidth_mutex);
 		return -ENOMEM;
 	}
@@ -1960,7 +1960,7 @@ static struct usb_interface_assoc_descriptor *find_iad(struct usb_device *dev,
 			if (!retval)
 				retval = intf_assoc;
 			else
-				dev_err(&dev->dev, "Interface #%d referenced"
+				dev_dbg(&dev->dev, "Interface #%d referenced"
 					" by multiple IADs\n", inum);
 		}
 	}
@@ -2062,7 +2062,7 @@ int usb_set_configuration(struct usb_device *dev, int configuration)
 	 * Use -1 if you really want to unconfigure the device.
 	 */
 	if (cp && configuration == 0)
-		dev_warn(&dev->dev, "config 0 descriptor??\n");
+		dev_dbg(&dev->dev, "config 0 descriptor??\n");
 
 	/* Allocate memory for new interfaces before doing anything else,
 	 * so that if we run out then nothing will have changed. */
@@ -2090,7 +2090,7 @@ free_interfaces:
 
 		i = dev->bus_mA - usb_get_max_power(dev, cp);
 		if (i < 0)
-			dev_warn(&dev->dev, "new config #%d exceeds power "
+			dev_dbg(&dev->dev, "new config #%d exceeds power "
 					"limit by %dmA\n",
 					configuration, -i);
 	}
@@ -2121,7 +2121,7 @@ free_interfaces:
 	 * timeouts.
 	 */
 	if (dev->actconfig && usb_disable_lpm(dev)) {
-		dev_err(&dev->dev, "%s Failed to disable LPM\n", __func__);
+		dev_dbg(&dev->dev, "%s Failed to disable LPM\n", __func__);
 		mutex_unlock(hcd->bandwidth_mutex);
 		ret = -ENOMEM;
 		goto free_interfaces;
@@ -2247,7 +2247,7 @@ free_interfaces:
 		device_enable_async_suspend(&intf->dev);
 		ret = device_add(&intf->dev);
 		if (ret != 0) {
-			dev_err(&dev->dev, "device_add(%s) --> %d\n",
+			dev_dbg(&dev->dev, "device_add(%s) --> %d\n",
 				dev_name(&intf->dev), ret);
 			continue;
 		}
@@ -2381,16 +2381,16 @@ int cdc_parse_cdc_header(struct usb_cdc_parsed_header *hdr,
 	while (buflen > 0) {
 		elength = buffer[0];
 		if (!elength) {
-			dev_err(&intf->dev, "skipping garbage byte\n");
+			dev_dbg(&intf->dev, "skipping garbage byte\n");
 			elength = 1;
 			goto next_desc;
 		}
 		if ((buflen < elength) || (elength < 3)) {
-			dev_err(&intf->dev, "invalid descriptor buffer length\n");
+			dev_dbg(&intf->dev, "invalid descriptor buffer length\n");
 			break;
 		}
 		if (buffer[1] != USB_DT_CS_INTERFACE) {
-			dev_err(&intf->dev, "skipping garbage\n");
+			dev_dbg(&intf->dev, "skipping garbage\n");
 			goto next_desc;
 		}
 
@@ -2399,7 +2399,7 @@ int cdc_parse_cdc_header(struct usb_cdc_parsed_header *hdr,
 			if (elength < sizeof(struct usb_cdc_union_desc))
 				goto next_desc;
 			if (union_header) {
-				dev_err(&intf->dev, "More than one union descriptor, skipping ...\n");
+				dev_dbg(&intf->dev, "More than one union descriptor, skipping ...\n");
 				goto next_desc;
 			}
 			union_header = (struct usb_cdc_union_desc *)buffer;

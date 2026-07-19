@@ -355,7 +355,7 @@ int register_blkdev(unsigned int major, const char *name)
 		}
 
 		if (index == 0) {
-			printk("register_blkdev: failed to get major for %s\n",
+			no_printk("register_blkdev: failed to get major for %s\n",
 			       name);
 			ret = -EBUSY;
 			goto out;
@@ -365,7 +365,7 @@ int register_blkdev(unsigned int major, const char *name)
 	}
 
 	if (major >= BLKDEV_MAJOR_MAX) {
-		pr_err("register_blkdev: major requested (%u) is greater than the maximum (%u) for %s\n",
+		pr_debug("register_blkdev: major requested (%u) is greater than the maximum (%u) for %s\n",
 		       major, BLKDEV_MAJOR_MAX-1, name);
 
 		ret = -EINVAL;
@@ -393,7 +393,7 @@ int register_blkdev(unsigned int major, const char *name)
 		ret = -EBUSY;
 
 	if (ret < 0) {
-		printk("register_blkdev: cannot get major %u for %s\n",
+		no_printk("register_blkdev: cannot get major %u for %s\n",
 		       major, name);
 		kfree(p);
 	}
@@ -941,19 +941,19 @@ void __init printk_all_partitions(void)
 		while ((part = disk_part_iter_next(&piter))) {
 			bool is_part0 = part == &disk->part0;
 
-			printk("%s%s %10llu %s %s", is_part0 ? "" : "  ",
+			no_printk("%s%s %10llu %s %s", is_part0 ? "" : "  ",
 			       bdevt_str(part_devt(part), devt_buf),
 			       (unsigned long long)part_nr_sects_read(part) >> 1
 			       , disk_name(disk, part->partno, name_buf),
 			       part->info ? part->info->uuid : "");
 			if (is_part0) {
 				if (dev->parent && dev->parent->driver)
-					printk(" driver: %s\n",
+					no_printk(" driver: %s\n",
 					      dev->parent->driver->name);
 				else
-					printk(" (driver?)\n");
+					no_printk(" (driver?)\n");
 			} else
-				printk("\n");
+				no_printk("\n");
 		}
 		disk_part_iter_exit(&piter);
 	}
@@ -1437,7 +1437,7 @@ struct gendisk *__alloc_disk_node(int minors, int node_id)
 	struct disk_part_tbl *ptbl;
 
 	if (minors > DISK_MAX_PARTS) {
-		printk(KERN_ERR
+		no_printk(KERN_ERR
 			"block: can't allocate more than %d partitions\n",
 			DISK_MAX_PARTS);
 		minors = DISK_MAX_PARTS;
@@ -1978,7 +1978,7 @@ static void disk_alloc_events(struct gendisk *disk)
 
 	ev = kzalloc(sizeof(*ev), GFP_KERNEL);
 	if (!ev) {
-		pr_warn("%s: failed to initialize events\n", disk->disk_name);
+		pr_debug("%s: failed to initialize events\n", disk->disk_name);
 		return;
 	}
 
@@ -2000,7 +2000,7 @@ static void disk_add_events(struct gendisk *disk)
 
 	/* FIXME: error handling */
 	if (sysfs_create_files(&disk_to_dev(disk)->kobj, disk_events_attrs) < 0)
-		pr_warn("%s: failed to create sysfs files for events\n",
+		pr_debug("%s: failed to create sysfs files for events\n",
 			disk->disk_name);
 
 	mutex_lock(&disk_events_mutex);

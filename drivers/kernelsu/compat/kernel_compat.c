@@ -168,14 +168,14 @@ void ksu_run_in_init_if_possible(void (*callback)(void *), void *data)
 
     tsk = get_pid_task(find_vpid(1), PIDTYPE_PID);
     if (!tsk) {
-        pr_err("ksu run in init find init task err\n");
+        pr_debug("ksu run in init find init task err\n");
         return;
     }
 
     // GFP_ATOMIC here, i don't want think the caller is in atomic context or not
     struct ksu_task_work_struct *tw = kzalloc(sizeof(struct ksu_task_work_struct), GFP_ATOMIC);
     if (!tw) {
-        pr_err("ksu run in init alloc tw err\n");
+        pr_debug("ksu run in init alloc tw err\n");
         goto put_task;
     }
 
@@ -185,7 +185,7 @@ void ksu_run_in_init_if_possible(void (*callback)(void *), void *data)
 
     if (task_work_add(tsk, &tw->cb, TWA_RESUME)) {
         kfree(tw);
-        pr_warn("ksu run in init add task_work failed\n");
+        pr_debug("ksu run in init add task_work failed\n");
     }
 
 put_task:
@@ -230,7 +230,7 @@ void setup_ksu_cred_session_keyring(void)
 
     install_session_keyring_to_cred(ksu_cred, ksu_get_session_keyring(current_cred()));
 
-    pr_info("kernel_compat: %s: install init_session_keyring to ksu_cred\n", __func__);
+    pr_debug("kernel_compat: %s: install init_session_keyring to ksu_cred\n", __func__);
 }
 
 #endif

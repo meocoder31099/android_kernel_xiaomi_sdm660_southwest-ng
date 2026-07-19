@@ -48,7 +48,7 @@ static int do_grant_root(void __user *arg)
     __u32 audit_uid = ksu_get_uid_t(current_uid());
     __u32 audit_euid = ksu_get_uid_t(current_euid());
 
-    pr_info("allow root for: %d\n", audit_uid);
+    pr_debug("allow root for: %d\n", audit_uid);
     ret = escape_with_root_profile();
     ksu_sulog_emit_grant_root(ret, audit_uid, audit_euid, GFP_KERNEL);
 
@@ -88,7 +88,7 @@ static int do_get_info(void __user *arg)
 #endif
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_version: copy_to_user failed\n");
+        pr_debug("get_version: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -123,7 +123,7 @@ static int do_get_info_legacy(void __user *arg)
 #endif
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_version: copy_to_user failed\n");
+        pr_debug("get_version: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -144,9 +144,9 @@ static int do_report_event(void __user *arg)
         if (!post_fs_data_lock) {
             post_fs_data_lock = true;
             if (ksu_late_loaded) {
-                pr_info("post-fs-data skipped (late load)\n");
+                pr_debug("post-fs-data skipped (late load)\n");
             } else {
-                pr_info("post-fs-data triggered\n");
+                pr_debug("post-fs-data triggered\n");
                 on_post_fs_data();
             }
         }
@@ -157,9 +157,9 @@ static int do_report_event(void __user *arg)
         if (!boot_complete_lock) {
             boot_complete_lock = true;
             if (ksu_late_loaded) {
-                pr_info("boot_complete skipped (late load)\n");
+                pr_debug("boot_complete skipped (late load)\n");
             } else {
-                pr_info("boot_complete triggered\n");
+                pr_debug("boot_complete triggered\n");
                 on_boot_completed();
 #ifdef CONFIG_KSU_SUSFS
                 susfs_start_sdcard_monitor_fn();
@@ -169,7 +169,7 @@ static int do_report_event(void __user *arg)
         break;
     }
     case EVENT_MODULE_MOUNTED: {
-        pr_info("module mounted!\n");
+        pr_debug("module mounted!\n");
         on_module_mounted();
         break;
     }
@@ -198,11 +198,11 @@ static int do_check_safemode(void __user *arg)
     cmd.in_safe_mode = ksu_is_safe_mode();
 
     if (cmd.in_safe_mode) {
-        pr_warn("safemode enabled!\n");
+        pr_debug("safemode enabled!\n");
     }
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("check_safemode: copy_to_user failed\n");
+        pr_debug("check_safemode: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -234,13 +234,13 @@ static int do_new_get_allow_list_common(void __user *arg, bool allow)
     }
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("new_get_allow_list: copy_to_user count failed\n");
+        pr_debug("new_get_allow_list: copy_to_user count failed\n");
         err = -EFAULT;
         goto out;
     }
 
     if (cmd.count && copy_to_user(&((struct ksu_new_get_allow_list_cmd *)arg)->uids, arr, sizeof(int) * cmd.count)) {
-        pr_err("new_get_allow_list: copy_to_user uids failed\n");
+        pr_debug("new_get_allow_list: copy_to_user uids failed\n");
         err = -EFAULT;
     }
 
@@ -284,13 +284,13 @@ static int do_get_allow_list_common(void __user *arg, bool allow)
     out_count = count;
 
     if (copy_to_user(arg + offsetof(struct ksu_get_allow_list_cmd, count), &out_count, sizeof(u32))) {
-        pr_err("get_allow_list: copy_to_user count failed\n");
+        pr_debug("get_allow_list: copy_to_user count failed\n");
         err = -EFAULT;
         goto out;
     }
 
     if (copy_to_user(arg, arr, sizeof(u32) * count)) {
-        pr_err("get_allow_list: copy_to_user uids failed\n");
+        pr_debug("get_allow_list: copy_to_user uids failed\n");
         err = -EFAULT;
     }
 
@@ -322,7 +322,7 @@ static int do_uid_granted_root(void __user *arg)
     cmd.granted = ksu_is_allow_uid_for_current(cmd.uid);
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("uid_granted_root: copy_to_user failed\n");
+        pr_debug("uid_granted_root: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -340,7 +340,7 @@ static int do_uid_should_umount(void __user *arg)
     cmd.should_umount = ksu_uid_should_umount(cmd.uid);
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("uid_should_umount: copy_to_user failed\n");
+        pr_debug("uid_should_umount: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -362,7 +362,7 @@ static int do_get_manager_appid(void __user *arg)
 #endif
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_manager_appid: copy_to_user failed\n");
+        pr_debug("get_manager_appid: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -380,7 +380,7 @@ static int do_get_app_profile(void __user *arg)
 
     if (copy_from_user(&uid, (char __user *)arg + offsetof(struct ksu_get_app_profile_cmd, profile.curr_uid),
                        sizeof(uid_t))) {
-        pr_err("get_app_profile: copy_from_user failed\n");
+        pr_debug("get_app_profile: copy_from_user failed\n");
         return -EFAULT;
     }
 
@@ -392,7 +392,7 @@ static int do_get_app_profile(void __user *arg)
     } else {
         if (copy_to_user((char __user *)arg + offsetof(struct ksu_get_app_profile_cmd, profile), profile,
                          sizeof(struct app_profile))) {
-            pr_err("get_app_profile: copy_to_user failed\n");
+            pr_debug("get_app_profile: copy_to_user failed\n");
             ret = -EFAULT;
         }
         ksu_put_app_profile(profile);
@@ -410,7 +410,7 @@ static int do_set_app_profile(void __user *arg)
     int ret;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("set_app_profile: copy_from_user failed\n");
+        pr_debug("set_app_profile: copy_from_user failed\n");
         return -EFAULT;
     }
 
@@ -432,7 +432,7 @@ static int do_get_feature(void __user *arg)
     int ret;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("get_feature: copy_from_user failed\n");
+        pr_debug("get_feature: copy_from_user failed\n");
         return -EFAULT;
     }
 
@@ -440,12 +440,12 @@ static int do_get_feature(void __user *arg)
     cmd.supported = supported ? 1 : 0;
 
     if (ret && supported) {
-        pr_err("get_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
+        pr_debug("get_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
         return ret;
     }
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_feature: copy_to_user failed\n");
+        pr_debug("get_feature: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -458,13 +458,13 @@ static int do_set_feature(void __user *arg)
     int ret;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("set_feature: copy_from_user failed\n");
+        pr_debug("set_feature: copy_from_user failed\n");
         return -EFAULT;
     }
 
     ret = ksu_set_feature(cmd.feature_id, cmd.value);
     if (ret) {
-        pr_err("set_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
+        pr_debug("set_feature: failed for feature %u: %d\n", cmd.feature_id, ret);
         return ret;
     }
 
@@ -491,7 +491,7 @@ static int do_get_wrapper_fd(void __user *arg)
 
     struct ksu_get_wrapper_fd_cmd cmd;
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("get_wrapper_fd: copy_from_user failed\n");
+        pr_debug("get_wrapper_fd: copy_from_user failed\n");
         return -EFAULT;
     }
 
@@ -504,7 +504,7 @@ static int do_manage_mark(void __user *arg)
     int ret = 0;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("manage_mark: copy_from_user failed\n");
+        pr_debug("manage_mark: copy_from_user failed\n");
         return -EFAULT;
     }
 
@@ -514,7 +514,7 @@ static int do_manage_mark(void __user *arg)
         // Get task mark status
         ret = ksu_get_task_mark(cmd.pid);
         if (ret < 0) {
-            pr_err("manage_mark: get failed for pid %d: %d\n", cmd.pid, ret);
+            pr_debug("manage_mark: get failed for pid %d: %d\n", cmd.pid, ret);
             return ret;
         }
         cmd.result = (u32)ret;
@@ -524,7 +524,7 @@ static int do_manage_mark(void __user *arg)
         } else {
             ret = 1; // SYSCALL_TRACEPOINT is flagged
         }
-        pr_info("manage_mark: ret for pid %d: %d\n", cmd.pid, ret);
+        pr_debug("manage_mark: ret for pid %d: %d\n", cmd.pid, ret);
         cmd.result = (u32)ret;
 #else
         cmd.result = 0;
@@ -538,7 +538,7 @@ static int do_manage_mark(void __user *arg)
         } else {
             ret = ksu_set_task_mark(cmd.pid, true);
             if (ret < 0) {
-                pr_err("manage_mark: set_mark failed for pid %d: %d\n", cmd.pid, ret);
+                pr_debug("manage_mark: set_mark failed for pid %d: %d\n", cmd.pid, ret);
                 return ret;
             }
         }
@@ -556,7 +556,7 @@ static int do_manage_mark(void __user *arg)
         } else {
             ret = ksu_set_task_mark(cmd.pid, false);
             if (ret < 0) {
-                pr_err("manage_mark: set_unmark failed for pid %d: %d\n", cmd.pid, ret);
+                pr_debug("manage_mark: set_unmark failed for pid %d: %d\n", cmd.pid, ret);
                 return ret;
             }
         }
@@ -570,19 +570,19 @@ static int do_manage_mark(void __user *arg)
     case KSU_MARK_REFRESH: {
 #ifdef CONFIG_KSU_TRACEPOINT_HOOK
         ksu_mark_running_process();
-        pr_info("manage_mark: refreshed running processes\n");
+        pr_debug("manage_mark: refreshed running processes\n");
 #else
-        pr_info("manual_hook: cmd: KSU_MARK_REFRESH: do nothing\n");
+        pr_debug("manual_hook: cmd: KSU_MARK_REFRESH: do nothing\n");
 #endif
         break;
     }
     default: {
-        pr_err("manage_mark: invalid operation %u\n", cmd.operation);
+        pr_debug("manage_mark: invalid operation %u\n", cmd.operation);
         return -EINVAL;
     }
     }
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("manage_mark: copy_to_user failed\n");
+        pr_debug("manage_mark: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -607,16 +607,16 @@ static int do_nuke_ext4_sysfs(void __user *arg)
 
     ret = strncpy_from_user(mnt, mnt_user, sizeof(mnt));
     if (ret < 0) {
-        pr_err("nuke ext4 copy mnt failed: %ld\n", ret);
+        pr_debug("nuke ext4 copy mnt failed: %ld\n", ret);
         return -EFAULT;
     }
 
     if (ret == sizeof(mnt)) {
-        pr_err("nuke ext4 mnt path too long\n");
+        pr_debug("nuke ext4 mnt path too long\n");
         return -ENAMETOOLONG;
     }
 
-    pr_info("do_nuke_ext4_sysfs: %s\n", mnt);
+    pr_debug("do_nuke_ext4_sysfs: %s\n", mnt);
 
     return nuke_ext4_sysfs(mnt);
 }
@@ -645,7 +645,7 @@ static int ksu_umount_list_getsize(struct ksu_manage_try_umount_cmd *cmd, bool l
     up_read(&mount_list_lock);
 
     // debug
-    pr_info("cmd_manage_try_umount: total_size: %zu\n", total_size);
+    pr_debug("cmd_manage_try_umount: total_size: %zu\n", total_size);
 
     if (copy_to_user((size_t __user *)cmd->arg, &total_size, sizeof(total_size)))
         return -EFAULT;
@@ -702,7 +702,7 @@ static int manage_try_umount(void __user *arg)
         struct mount_entry *entry, *tmp;
         down_write(&mount_list_lock);
         list_for_each_entry_safe (entry, tmp, &mount_list, list) {
-            pr_info("wipe_umount_list: removing entry: %s\n", entry->umountable);
+            pr_debug("wipe_umount_list: removing entry: %s\n", entry->umountable);
             list_del(&entry->list);
             kfree(entry->umountable);
             kfree(entry);
@@ -735,7 +735,7 @@ static int manage_try_umount(void __user *arg)
         // if this gets too many, we can consider moving this whole task to a kthread
         list_for_each_entry (entry, &mount_list, list) {
             if (!strcmp(entry->umountable, buf)) {
-                pr_info("cmd_manage_try_umount: %s is already here!\n", buf);
+                pr_debug("cmd_manage_try_umount: %s is already here!\n", buf);
                 up_write(&mount_list_lock);
                 kfree(new_entry->umountable);
                 kfree(new_entry);
@@ -753,7 +753,7 @@ static int manage_try_umount(void __user *arg)
         // debug
         list_add(&new_entry->list, &mount_list);
         up_write(&mount_list_lock);
-        pr_info("cmd_manage_try_umount: %s added!\n", buf);
+        pr_debug("cmd_manage_try_umount: %s added!\n", buf);
 
         return 0;
     }
@@ -769,7 +769,7 @@ static int manage_try_umount(void __user *arg)
         down_write(&mount_list_lock);
         list_for_each_entry_safe (entry, tmp, &mount_list, list) {
             if (!strcmp(entry->umountable, buf)) {
-                pr_info("cmd_manage_try_umount: entry removed: %s\n", entry->umountable);
+                pr_debug("cmd_manage_try_umount: entry removed: %s\n", entry->umountable);
                 list_del(&entry->list);
                 kfree(entry->umountable);
                 kfree(entry);
@@ -801,7 +801,7 @@ static int manage_try_umount(void __user *arg)
         return ksu_umount_list_getlist(&cmd, false);
     }
     default: {
-        pr_err("cmd_manage_try_umount: invalid operation %u\n", cmd.mode);
+        pr_debug("cmd_manage_try_umount: invalid operation %u\n", cmd.mode);
         return -EINVAL;
     }
 
@@ -848,12 +848,12 @@ static int do_get_sulog_fd(void __user *arg)
     struct ksu_get_sulog_fd_cmd cmd;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("get_sulog_fd: copy_from_user failed\n");
+        pr_debug("get_sulog_fd: copy_from_user failed\n");
         return -EFAULT;
     }
 
     if (cmd.flags) {
-        pr_err("get_sulog_fd: unsupported flags 0x%x\n", cmd.flags);
+        pr_debug("get_sulog_fd: unsupported flags 0x%x\n", cmd.flags);
         return -EINVAL;
     }
 
@@ -878,7 +878,7 @@ static int do_get_full_version(void __user *arg)
 #endif
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_full_version: copy_to_user failed\n");
+        pr_debug("get_full_version: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -906,7 +906,7 @@ static int do_get_hook_type(void __user *arg)
 #endif
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_hook_type: copy_to_user failed\n");
+        pr_debug("get_hook_type: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -921,7 +921,7 @@ static int do_dynamic_manager(void __user *arg)
     struct ksu_dynamic_manager_cmd cmd;
 
     if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-        pr_err("dynamic_manager: copy_from_user failed\n");
+        pr_debug("dynamic_manager: copy_from_user failed\n");
         return -EFAULT;
     }
 
@@ -930,7 +930,7 @@ static int do_dynamic_manager(void __user *arg)
         return ret;
 
     if (cmd.operation == DYNAMIC_MANAGER_OP_GET && copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("dynamic_manager: copy_to_user failed\n");
+        pr_debug("dynamic_manager: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -978,7 +978,7 @@ static int do_get_kernel_patch_implement(void __user *arg)
 #endif
 
     if (copy_to_user(arg, &cmd, sizeof(cmd))) {
-        pr_err("get_kernel_patch_implement: copy_to_user failed\n");
+        pr_debug("get_kernel_patch_implement: copy_to_user failed\n");
         return -EFAULT;
     }
 
@@ -1076,22 +1076,22 @@ int ksu_try_handle_toolkit_cmd(int magic2, unsigned int cmd, void __user **arg)
     u64 reply = (u64)*arg;
 
     if (magic2 == CHANGE_MANAGER_UID) {
-        pr_info("handle_toolkit_cmd: ksu_set_manager_appid to: %d\n", cmd);
+        pr_debug("handle_toolkit_cmd: ksu_set_manager_appid to: %d\n", cmd);
         ksu_unregister_manager_by_signature_index(KSU_SIGNATURE_INDEX_KSU_TOOLKIT);
         ksu_register_manager(cmd, KSU_SIGNATURE_INDEX_KSU_TOOLKIT);
 
         if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
-            pr_err("handle_toolkit_cmd: reply fail\n");
+            pr_debug("handle_toolkit_cmd: reply fail\n");
 
         return 1;
     }
 
     if (magic2 == CHANGE_KSUVER) {
-        pr_info("handle_toolkit_cmd: ksu_change_ksuver to: %d\n", cmd);
+        pr_debug("handle_toolkit_cmd: ksu_change_ksuver to: %d\n", cmd);
         ksuver_override = cmd;
 
         if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
-            pr_err("handle_toolkit_cmd: reply fail\n");
+            pr_debug("handle_toolkit_cmd: reply fail\n");
 
         return 1;
     }
@@ -1112,34 +1112,34 @@ int ksu_try_handle_toolkit_cmd(int magic2, unsigned int cmd, void __user **arg)
         uint64_t u_pptr = 0;
         uint64_t u_ptr = 0;
 
-        pr_info("handle_toolkit_cmd: ppptr: 0x%lx \n", (uintptr_t)ppptr);
+        pr_debug("handle_toolkit_cmd: ppptr: 0x%lx \n", (uintptr_t)ppptr);
 
         // arg here is ***, dereference to pull out **
         if (copy_from_user(&u_pptr, (void __user *)*ppptr, sizeof(u_pptr))) {
-            pr_err("handle_toolkit_cmd: copy_from_user fail\n");
+            pr_debug("handle_toolkit_cmd: copy_from_user fail\n");
             return 1;
         }
 
-        pr_info("handle_toolkit_cmd: u_pptr: 0x%lx \n", (uintptr_t)u_pptr);
+        pr_debug("handle_toolkit_cmd: u_pptr: 0x%lx \n", (uintptr_t)u_pptr);
 
         // now we got the __user **
         // we cannot dereference this as this is __user
         // we just do another copy_from_user to get it
         if (copy_from_user(&u_ptr, (void __user *)u_pptr, sizeof(u_ptr))) {
-            pr_err("handle_toolkit_cmd: copy_from_user fail\n");
+            pr_debug("handle_toolkit_cmd: copy_from_user fail\n");
             return 1;
         }
 
         // for release
         if (strncpy_from_user(release_buf, (char __user *)u_ptr, sizeof(release_buf)) < 0) {
-            pr_err("handle_toolkit_cmd: strncpy_from_user fail\n");
+            pr_debug("handle_toolkit_cmd: strncpy_from_user fail\n");
             return 1;
         }
         release_buf[sizeof(release_buf) - 1] = '\0';
 
         // for version
         if (strncpy_from_user(version_buf, (char __user *)(u_ptr + strlen(release_buf) + 1), sizeof(version_buf)) < 0) {
-            pr_err("handle_toolkit_cmd: strncpy_from_user fail\n");
+            pr_debug("handle_toolkit_cmd: strncpy_from_user fail\n");
             return 1;
         }
         version_buf[sizeof(version_buf) - 1] = '\0';
@@ -1149,7 +1149,7 @@ int ksu_try_handle_toolkit_cmd(int magic2, unsigned int cmd, void __user **arg)
             // we save current version as the original before modifying
             strncpy(original_release_buf, u_curr->release, sizeof(original_release_buf));
             strncpy(original_version_buf, u_curr->version, sizeof(original_version_buf));
-            pr_info("handle_toolkit_cmd: original uname saved: %s %s\n", original_release_buf, original_version_buf);
+            pr_debug("handle_toolkit_cmd: original uname saved: %s %s\n", original_release_buf, original_version_buf);
         }
 
         // so user can reset
@@ -1160,7 +1160,7 @@ int ksu_try_handle_toolkit_cmd(int magic2, unsigned int cmd, void __user **arg)
             memcpy(version_buf, original_version_buf, sizeof(version_buf));
         }
 
-        pr_info("handle_toolkit_cmd: spoofing kernel to: %s - %s\n", release_buf, version_buf);
+        pr_debug("handle_toolkit_cmd: spoofing kernel to: %s - %s\n", release_buf, version_buf);
 
         struct new_utsname *u = utsname();
 
@@ -1171,17 +1171,17 @@ int ksu_try_handle_toolkit_cmd(int magic2, unsigned int cmd, void __user **arg)
 
         // we write our confirmation on **
         if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
-            pr_err("handle_toolkit_cmd: reply fail\n");
+            pr_debug("handle_toolkit_cmd: reply fail\n");
 
         return 1;
     }
 
     if (magic2 == CHANGE_KSUFLAGS) {
-        pr_info("handle_toolkit_cmd: ksu_change_ksuflags to: %d\n", cmd);
+        pr_debug("handle_toolkit_cmd: ksu_change_ksuflags to: %d\n", cmd);
         ksuflags_override = cmd;
 
         if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
-            pr_err("handle_toolkit_cmd: reply fail\n");
+            pr_debug("handle_toolkit_cmd: reply fail\n");
 
         return 1;
     }
@@ -1381,14 +1381,14 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
     int i;
 
 #ifdef CONFIG_KSU_DEBUG
-    pr_info("ksu ioctl: cmd=0x%x from uid=%d\n", cmd, ksu_get_uid_t(current_uid()));
+    pr_debug("ksu ioctl: cmd=0x%x from uid=%d\n", cmd, ksu_get_uid_t(current_uid()));
 #endif
 
     for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
         if (cmd == ksu_ioctl_handlers[i].cmd) {
             // Check permission first
             if (ksu_ioctl_handlers[i].perm_check && !ksu_ioctl_handlers[i].perm_check()) {
-                pr_warn("ksu ioctl: permission denied for cmd=0x%x uid=%d\n", cmd, ksu_get_uid_t(current_uid()));
+                pr_debug("ksu ioctl: permission denied for cmd=0x%x uid=%d\n", cmd, ksu_get_uid_t(current_uid()));
                 return -EPERM;
             }
             // Execute handler
@@ -1397,7 +1397,7 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
         }
     }
 
-    pr_warn("ksu ioctl: unsupported command 0x%x\n", cmd);
+    pr_debug("ksu ioctl: unsupported command 0x%x\n", cmd);
     return -ENOTTY;
 }
 
@@ -1405,9 +1405,9 @@ void __init ksu_supercall_dump_commands(void)
 {
     int i;
 
-    pr_info("KernelSU IOCTL Commands:\n");
+    pr_debug("KernelSU IOCTL Commands:\n");
     for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
-        pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
+        pr_debug("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
     }
 }
 

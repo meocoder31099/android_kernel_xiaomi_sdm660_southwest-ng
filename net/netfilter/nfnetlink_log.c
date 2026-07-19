@@ -54,7 +54,7 @@
 #define NFULNL_COPY_RANGE_MAX	(0xFFFF - NLA_HDRLEN)
 
 #define PRINTR(x, args...)	do { if (net_ratelimit()) \
-				     printk(x, ## args); } while (0);
+				     no_printk(x, ## args); } while (0);
 
 struct nfulnl_instance {
 	struct hlist_node hlist;	/* global list of instances */
@@ -1091,20 +1091,20 @@ static int __init nfnetlink_log_init(void)
 
 	status = register_pernet_subsys(&nfnl_log_net_ops);
 	if (status < 0) {
-		pr_err("failed to register pernet ops\n");
+		pr_debug("failed to register pernet ops\n");
 		goto out;
 	}
 
 	netlink_register_notifier(&nfulnl_rtnl_notifier);
 	status = nfnetlink_subsys_register(&nfulnl_subsys);
 	if (status < 0) {
-		pr_err("failed to create netlink socket\n");
+		pr_debug("failed to create netlink socket\n");
 		goto cleanup_netlink_notifier;
 	}
 
 	status = nf_log_register(NFPROTO_UNSPEC, &nfulnl_logger);
 	if (status < 0) {
-		pr_err("failed to register logger\n");
+		pr_debug("failed to register logger\n");
 		goto cleanup_subsys;
 	}
 

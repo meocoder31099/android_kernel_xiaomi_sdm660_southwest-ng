@@ -114,17 +114,17 @@ static int msm_csid_cid_lut(
 	uint32_t val = 0;
 
 	if (!csid_lut_params) {
-		pr_err("%s:%d csid_lut_params NULL\n", __func__, __LINE__);
+		pr_debug("%s:%d csid_lut_params NULL\n", __func__, __LINE__);
 		return -EINVAL;
 	}
 	if (csid_lut_params->num_cid > MAX_CID) {
-		pr_err("%s:%d num_cid exceeded limit num_cid = %d max = %d\n",
+		pr_debug("%s:%d num_cid exceeded limit num_cid = %d max = %d\n",
 			__func__, __LINE__, csid_lut_params->num_cid, MAX_CID);
 		return -EINVAL;
 	}
 	for (i = 0; i < csid_lut_params->num_cid; i++) {
 		if (csid_lut_params->vc_cfg[i]->cid >= MAX_CID) {
-			pr_err("%s: cid outside range %d\n",
+			pr_debug("%s: cid outside range %d\n",
 				 __func__, csid_lut_params->vc_cfg[i]->cid);
 			return -EINVAL;
 		}
@@ -137,7 +137,7 @@ static int msm_csid_cid_lut(
 			csid_lut_params->vc_cfg[i]->decode_format);
 		if (csid_lut_params->vc_cfg[i]->dt < 0x12 ||
 			csid_lut_params->vc_cfg[i]->dt > 0x37) {
-			pr_err("%s: unsupported data type 0x%x\n",
+			pr_debug("%s: unsupported data type 0x%x\n",
 				 __func__, csid_lut_params->vc_cfg[i]->dt);
 			return rc;
 		}
@@ -303,7 +303,7 @@ static int msm_csid_reset(struct csid_device *csid_dev)
 			CSID_TIMEOUT);
 	}
 	if (rc < 0) {
-		pr_err("wait_for_completion in %s fail rc = %d\n",
+		pr_debug("wait_for_completion in %s fail rc = %d\n",
 			__func__, rc);
 	} else if (rc == 0) {
 		irq = msm_camera_vio_r(csid_dev->base,
@@ -316,7 +316,7 @@ static int msm_csid_reset(struct csid_device *csid_dev)
 			CDBG("%s succeeded", __func__);
 		} else {
 			rc = 0;
-			pr_err("%s reset csid_irq_status failed = 0x%x\n",
+			pr_debug("%s reset csid_irq_status failed = 0x%x\n",
 				__func__, irq);
 		}
 		if (rc == 0)
@@ -361,7 +361,7 @@ static int msm_csid_config(struct csid_device *csid_dev,
 
 	csidbase = csid_dev->base;
 	if (!csidbase || !csid_params) {
-		pr_err("%s:%d csidbase %pK, csid params %pK\n", __func__,
+		pr_debug("%s:%d csidbase %pK, csid params %pK\n", __func__,
 			__LINE__, csidbase, csid_params);
 		return -EINVAL;
 	}
@@ -374,7 +374,7 @@ static int msm_csid_config(struct csid_device *csid_dev,
 		csid_params->phy_sel);
 	if ((csid_params->lane_cnt == 0) ||
 		(csid_params->lane_cnt > MAX_LANE_COUNT)) {
-		pr_err("%s:%d invalid lane count = %d\n",
+		pr_debug("%s:%d invalid lane count = %d\n",
 			__func__, __LINE__, csid_params->lane_cnt);
 		return -EINVAL;
 	}
@@ -391,7 +391,7 @@ static int msm_csid_config(struct csid_device *csid_dev,
 			csid_params->phy_sel, csid_params->is_secure);
 		if (scm_call2(SCM_SIP_FNID(SCM_SVC_CAMERASS,
 			SECURE_SYSCALL_ID), &desc)) {
-			pr_err("%s:%d scm call to hypervisor failed\n",
+			pr_debug("%s:%d scm call to hypervisor failed\n",
 				__func__, __LINE__);
 			return -EINVAL;
 		}
@@ -402,12 +402,12 @@ static int msm_csid_config(struct csid_device *csid_dev,
 	csid_dev->csid_lane_cnt = csid_params->lane_cnt;
 	rc = msm_csid_reset(csid_dev);
 	if (rc < 0) {
-		pr_err("%s:%d msm_csid_reset failed\n", __func__, __LINE__);
+		pr_debug("%s:%d msm_csid_reset failed\n", __func__, __LINE__);
 		return rc;
 	}
 
 	if (!msm_csid_find_max_clk_rate(csid_dev))
-		pr_err("msm_csid_find_max_clk_rate failed\n");
+		pr_debug("msm_csid_find_max_clk_rate failed\n");
 
 	clk_rate = (csid_params->csi_clk > 0) ?
 				(csid_params->csi_clk) : csid_dev->csid_max_clk;
@@ -415,7 +415,7 @@ static int msm_csid_config(struct csid_device *csid_dev,
 	clk_rate = msm_camera_clk_set_rate(&csid_dev->pdev->dev,
 		csid_dev->csid_clk[csid_dev->csid_clk_index], clk_rate);
 	if (clk_rate < 0) {
-		pr_err("csi_src_clk set failed\n");
+		pr_debug("csi_src_clk set failed\n");
 		return -EINVAL;
 	}
 
@@ -460,13 +460,13 @@ static int msm_csid_config(struct csid_device *csid_dev,
 				continue;
 			lane_num = (csid_params->lane_assign >> j) & 0xF;
 			if (lane_num >= PHY_LANE_MAX) {
-				pr_err("%s:%d invalid lane number %d\n",
+				pr_debug("%s:%d invalid lane number %d\n",
 					__func__, __LINE__, lane_num);
 				return -EINVAL;
 			}
 			if (csid_dev->ctrl_reg->csid_lane_assign[lane_num] >=
 				PHY_LANE_MAX){
-				pr_err("%s:%d invalid lane map %d\n",
+				pr_debug("%s:%d invalid lane map %d\n",
 					__func__, __LINE__,
 					csid_dev->ctrl_reg->csid_lane_assign[
 						lane_num]);
@@ -521,7 +521,7 @@ static int msm_csid_config(struct csid_device *csid_dev,
 
 	rc = msm_csid_cid_lut(&csid_params->lut_params, csid_dev);
 	if (rc < 0) {
-		pr_err("%s:%d config cid lut failed\n", __func__, __LINE__);
+		pr_debug("%s:%d config cid lut failed\n", __func__, __LINE__);
 		return rc;
 	}
 	msm_csid_set_debug_reg(csid_dev, csid_params);
@@ -543,7 +543,7 @@ static irqreturn_t msm_csid_irq(int irq_num, void *data)
 	struct csid_device *csid_dev = data;
 
 	if (!csid_dev) {
-		pr_err("%s:%d csid_dev NULL\n", __func__, __LINE__);
+		pr_debug("%s:%d csid_dev NULL\n", __func__, __LINE__);
 		return IRQ_HANDLED;
 	}
 	irq = msm_camera_io_r(csid_dev->base +
@@ -575,7 +575,7 @@ static irqreturn_t msm_csid_irq(int irq_num, void *data)
 	struct csid_device *csid_dev = data;
 
 	if (!csid_dev) {
-		pr_err("%s:%d csid_dev NULL\n", __func__, __LINE__);
+		pr_debug("%s:%d csid_dev NULL\n", __func__, __LINE__);
 		return IRQ_HANDLED;
 	}
 
@@ -625,7 +625,7 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 	int rc = 0;
 
 	if (!csid_version) {
-		pr_err("%s:%d csid_version NULL\n", __func__, __LINE__);
+		pr_debug("%s:%d csid_version NULL\n", __func__, __LINE__);
 		rc = -EINVAL;
 		return rc;
 	}
@@ -634,7 +634,7 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 	csid_dev->reg_ptr = NULL;
 
 	if (csid_dev->csid_state == CSID_POWER_UP) {
-		pr_err("%s: csid invalid state %d\n", __func__,
+		pr_debug("%s: csid invalid state %d\n", __func__,
 			csid_dev->csid_state);
 		return -EINVAL;
 	}
@@ -642,7 +642,7 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 	rc = cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_CSID,
 			CAM_AHB_SVS_VOTE);
 	if (rc < 0) {
-		pr_err("%s: failed to vote for AHB\n", __func__);
+		pr_debug("%s: failed to vote for AHB\n", __func__);
 		return rc;
 	}
 
@@ -653,7 +653,7 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 		csid_dev->regulator_count, NULL, 0,
 		&csid_dev->csid_reg_ptr[0], 1);
 	if (rc < 0) {
-		pr_err("%s:%d csid config_vreg failed\n", __func__, __LINE__);
+		pr_debug("%s:%d csid config_vreg failed\n", __func__, __LINE__);
 		goto top_vreg_config_failed;
 	}
 
@@ -661,7 +661,7 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 		csid_vreg_info, ARRAY_SIZE(csid_vreg_info),
 		NULL, 0, &csid_dev->csi_vdd, 1);
 	if (rc < 0) {
-		pr_err("%s: regulator on failed\n", __func__);
+		pr_debug("%s: regulator on failed\n", __func__);
 		goto csid_vreg_config_failed;
 	}
 
@@ -669,7 +669,7 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 		csid_dev->regulator_count, NULL, 0,
 		&csid_dev->csid_reg_ptr[0], 1);
 	if (rc < 0) {
-		pr_err("%s:%d csid enable_vreg failed\n", __func__, __LINE__);
+		pr_debug("%s:%d csid enable_vreg failed\n", __func__, __LINE__);
 		goto top_vreg_enable_failed;
 	}
 
@@ -677,14 +677,14 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 		csid_vreg_info, ARRAY_SIZE(csid_vreg_info),
 		NULL, 0, &csid_dev->csi_vdd, 1);
 	if (rc < 0) {
-		pr_err("%s: regulator enable failed\n", __func__);
+		pr_debug("%s: regulator enable failed\n", __func__);
 		goto csid_vreg_enable_failed;
 	}
 	rc = msm_camera_clk_enable(&csid_dev->pdev->dev,
 		csid_dev->csid_clk_info, csid_dev->csid_clk,
 		csid_dev->num_clk, true);
 	if (rc < 0) {
-		pr_err("%s:%d clock enable failed\n",
+		pr_debug("%s:%d clock enable failed\n",
 			 __func__, __LINE__);
 		goto clk_enable_failed;
 	}
@@ -711,11 +711,11 @@ static int msm_csid_init(struct csid_device *csid_dev, uint32_t *csid_version)
 	} else {
 		rc = msm_camera_enable_irq(csid_dev->irq, true);
 		if (rc < 0)
-			pr_err("%s: irq enable failed\n", __func__);
+			pr_debug("%s: irq enable failed\n", __func__);
 	}
 	rc = msm_csid_reset(csid_dev);
 	if (rc < 0) {
-		pr_err("%s:%d msm_csid_reset failed\n", __func__, __LINE__);
+		pr_debug("%s:%d msm_csid_reset failed\n", __func__, __LINE__);
 		goto msm_csid_reset_fail;
 	}
 
@@ -745,7 +745,7 @@ csid_vreg_config_failed:
 top_vreg_config_failed:
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_CSID,
 		CAM_AHB_SUSPEND_VOTE) < 0)
-		pr_err("%s: failed to remove vote from AHB\n", __func__);
+		pr_debug("%s: failed to remove vote from AHB\n", __func__);
 	return rc;
 }
 
@@ -754,7 +754,7 @@ static int msm_csid_release(struct csid_device *csid_dev)
 	uint32_t irq;
 
 	if (csid_dev->csid_state != CSID_POWER_UP) {
-		pr_err("%s: csid invalid state %d\n", __func__,
+		pr_debug("%s: csid invalid state %d\n", __func__,
 			csid_dev->csid_state);
 		return -EINVAL;
 	}
@@ -772,7 +772,7 @@ static int msm_csid_release(struct csid_device *csid_dev)
 
 		if (scm_call2(SCM_SIP_FNID(SCM_SVC_CAMERASS,
 			SECURE_SYSCALL_ID), &desc)) {
-			pr_err("%s:%d scm call to hyp with protect 0 failed\n",
+			pr_debug("%s:%d scm call to hyp with protect 0 failed\n",
 				__func__, __LINE__);
 			return -EINVAL;
 		}
@@ -822,7 +822,7 @@ static int msm_csid_release(struct csid_device *csid_dev)
 
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_CSID,
 		CAM_AHB_SUSPEND_VOTE) < 0)
-		pr_err("%s: failed to remove vote from AHB\n", __func__);
+		pr_debug("%s: failed to remove vote from AHB\n", __func__);
 	return 0;
 }
 
@@ -832,7 +832,7 @@ static int32_t msm_csid_cmd(struct csid_device *csid_dev, void *arg)
 	struct csid_cfg_data *cdata = (struct csid_cfg_data *)arg;
 
 	if (!csid_dev || !cdata) {
-		pr_err("%s:%d csid_dev %pK, cdata %pK\n", __func__, __LINE__,
+		pr_debug("%s:%d csid_dev %pK, cdata %pK\n", __func__, __LINE__,
 			csid_dev, cdata);
 		return -EINVAL;
 	}
@@ -848,7 +848,7 @@ static int32_t msm_csid_cmd(struct csid_device *csid_dev, void *arg)
 		if (copy_from_user(&csid_dev->testmode_params,
 			(void __user *)cdata->cfg.csid_testmode_params,
 			sizeof(struct msm_camera_csid_testmode_parms))) {
-			pr_err("%s: %d failed\n", __func__, __LINE__);
+			pr_debug("%s: %d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -862,13 +862,13 @@ static int32_t msm_csid_cmd(struct csid_device *csid_dev, void *arg)
 		if (copy_from_user(&csid_params,
 			(void __user *)cdata->cfg.csid_params,
 			sizeof(struct msm_camera_csid_params))) {
-			pr_err("%s: %d failed\n", __func__, __LINE__);
+			pr_debug("%s: %d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
 		if (csid_params.lut_params.num_cid < 1 ||
 			csid_params.lut_params.num_cid > MAX_CID) {
-			pr_err("%s: %d num_cid outside range\n",
+			pr_debug("%s: %d num_cid outside range\n",
 				 __func__, __LINE__);
 			rc = -EINVAL;
 			break;
@@ -896,7 +896,7 @@ MEM_CLEAN:
 		rc = msm_csid_release(csid_dev);
 		break;
 	default:
-		pr_err("%s: %d failed\n", __func__, __LINE__);
+		pr_debug("%s: %d failed\n", __func__, __LINE__);
 		rc = -ENOIOCTLCMD;
 		break;
 	}
@@ -908,7 +908,7 @@ static int32_t msm_csid_get_subdev_id(struct csid_device *csid_dev, void *arg)
 	uint32_t *subdev_id = (uint32_t *)arg;
 
 	if (!subdev_id) {
-		pr_err("%s:%d failed\n", __func__, __LINE__);
+		pr_debug("%s:%d failed\n", __func__, __LINE__);
 		return -EINVAL;
 	}
 	*subdev_id = csid_dev->pdev->id;
@@ -970,7 +970,7 @@ static int32_t msm_csid_cmd32(struct csid_device *csid_dev, void *arg)
 	cdata = &local_arg;
 
 	if (!csid_dev || !cdata) {
-		pr_err("%s:%d csid_dev %pK, cdata %pK\n", __func__, __LINE__,
+		pr_debug("%s:%d csid_dev %pK, cdata %pK\n", __func__, __LINE__,
 			csid_dev, cdata);
 		return -EINVAL;
 	}
@@ -989,7 +989,7 @@ static int32_t msm_csid_cmd32(struct csid_device *csid_dev, void *arg)
 			(void __user *)
 			compat_ptr(arg32->cfg.csid_testmode_params),
 			sizeof(struct msm_camera_csid_testmode_parms))) {
-			pr_err("%s: %d failed\n", __func__, __LINE__);
+			pr_debug("%s: %d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -1007,7 +1007,7 @@ static int32_t msm_csid_cmd32(struct csid_device *csid_dev, void *arg)
 		if (copy_from_user(&csid_params32,
 			(void __user *)compat_ptr(arg32->cfg.csid_params),
 			sizeof(struct msm_camera_csid_params32))) {
-			pr_err("%s: %d failed\n", __func__, __LINE__);
+			pr_debug("%s: %d failed\n", __func__, __LINE__);
 			rc = -EFAULT;
 			break;
 		}
@@ -1026,7 +1026,7 @@ static int32_t msm_csid_cmd32(struct csid_device *csid_dev, void *arg)
 
 		if (csid_params.lut_params.num_cid < 1 ||
 			csid_params.lut_params.num_cid > MAX_CID) {
-			pr_err("%s: %d num_cid outside range %d\n", __func__,
+			pr_debug("%s: %d num_cid outside range %d\n", __func__,
 				__LINE__, csid_params.lut_params.num_cid);
 			rc = -EINVAL;
 			break;
@@ -1045,7 +1045,7 @@ static int32_t msm_csid_cmd32(struct csid_device *csid_dev, void *arg)
 			if (copy_from_user(&vc_cfg32,
 				(void __user *)compat_ptr(lut_par32.vc_cfg[i]),
 				sizeof(vc_cfg32))) {
-				pr_err("%s: %d failed\n", __func__, __LINE__);
+				pr_debug("%s: %d failed\n", __func__, __LINE__);
 				kfree(vc_cfg);
 				vc_cfg = NULL;
 				rc = -EFAULT;
@@ -1070,7 +1070,7 @@ MEM_CLEAN32:
 		rc = msm_csid_release(csid_dev);
 		break;
 	default:
-		pr_err("%s: %d failed\n", __func__, __LINE__);
+		pr_debug("%s: %d failed\n", __func__, __LINE__);
 		rc = -ENOIOCTLCMD;
 		break;
 	}
@@ -1174,7 +1174,7 @@ static int csid_probe(struct platform_device *pdev)
 		rc = of_property_read_u32((&pdev->dev)->of_node,
 			"cell-index", &pdev->id);
 		if (rc < 0) {
-			pr_err("%s:%d failed to read cell-index\n", __func__,
+			pr_debug("%s:%d failed to read cell-index\n", __func__,
 				__LINE__);
 			goto csid_no_resource;
 		}
@@ -1183,7 +1183,7 @@ static int csid_probe(struct platform_device *pdev)
 		rc = of_property_read_u32((&pdev->dev)->of_node,
 			"qcom,csi-vdd-voltage", &csi_vdd_voltage);
 		if (rc < 0) {
-			pr_err("%s:%d failed to read qcom,csi-vdd-voltage\n",
+			pr_debug("%s:%d failed to read qcom,csi-vdd-voltage\n",
 				__func__, __LINE__);
 			goto csid_no_resource;
 		}
@@ -1197,7 +1197,7 @@ static int csid_probe(struct platform_device *pdev)
 	rc = msm_camera_get_clk_info(pdev, &new_csid_dev->csid_clk_info,
 		&new_csid_dev->csid_clk, &new_csid_dev->num_clk);
 	if (rc < 0) {
-		pr_err("%s: msm_camera_get_clk_info failed\n", __func__);
+		pr_debug("%s: msm_camera_get_clk_info failed\n", __func__);
 		rc = -EFAULT;
 		goto csid_no_resource;
 	}
@@ -1205,14 +1205,14 @@ static int csid_probe(struct platform_device *pdev)
 	rc = msm_camera_get_dt_vreg_data(pdev->dev.of_node,
 		&(new_csid_dev->csid_vreg), &(new_csid_dev->regulator_count));
 	if (rc < 0) {
-		pr_err("%s: get vreg data from dtsi fail\n", __func__);
+		pr_debug("%s: get vreg data from dtsi fail\n", __func__);
 		rc = -EFAULT;
 		goto csid_no_resource;
 	}
 
 	if ((new_csid_dev->regulator_count < 0) ||
 		(new_csid_dev->regulator_count > MAX_REGULATOR)) {
-		pr_err("%s: invalid reg count = %d, max is %d\n", __func__,
+		pr_debug("%s: invalid reg count = %d, max is %d\n", __func__,
 			new_csid_dev->regulator_count, MAX_REGULATOR);
 		rc = -EFAULT;
 		goto csid_no_resource;
@@ -1220,13 +1220,13 @@ static int csid_probe(struct platform_device *pdev)
 
 	new_csid_dev->base = msm_camera_get_reg_base(pdev, "csid", true);
 	if (!new_csid_dev->base) {
-		pr_err("%s: no mem resource?\n", __func__);
+		pr_debug("%s: no mem resource?\n", __func__);
 		rc = -ENODEV;
 		goto csid_invalid_vreg_data;
 	}
 	new_csid_dev->irq = msm_camera_get_irq(pdev, "csid");
 	if (!new_csid_dev->irq) {
-		pr_err("%s: no irq resource?\n", __func__);
+		pr_debug("%s: no irq resource?\n", __func__);
 		rc = -ENODEV;
 		goto csid_invalid_irq;
 	}
@@ -1249,13 +1249,13 @@ static int csid_probe(struct platform_device *pdev)
 	rc = msm_camera_register_irq(pdev, new_csid_dev->irq,
 		msm_csid_irq, IRQF_TRIGGER_RISING, "csid", new_csid_dev);
 	if (rc < 0) {
-		pr_err("%s: irq request fail\n", __func__);
+		pr_debug("%s: irq request fail\n", __func__);
 		rc = -EBUSY;
 		goto csid_invalid_irq;
 	}
 	rc = msm_camera_enable_irq(new_csid_dev->irq, false);
 	if (rc < 0) {
-		pr_err("%s Error registering irq\n", __func__);
+		pr_debug("%s Error registering irq\n", __func__);
 		rc = -EBUSY;
 		goto csid_invalid_irq;
 	}
@@ -1339,7 +1339,7 @@ static int csid_probe(struct platform_device *pdev)
 			csid_lane_assign_v3_5_1;
 		new_csid_dev->hw_dts_version = CSID_VERSION_V35_1;
 	} else {
-		pr_err("%s:%d, invalid hw version : 0x%x\n", __func__, __LINE__,
+		pr_debug("%s:%d, invalid hw version : 0x%x\n", __func__, __LINE__,
 			new_csid_dev->hw_dts_version);
 		rc = -EINVAL;
 		goto csid_invalid_irq;

@@ -363,7 +363,7 @@ static void memlat_monitor_work(struct work_struct *work)
 		mutex_lock(&df->lock);
 		err = update_devfreq(df);
 		if (err)
-			dev_err(mon->hw.dev, "Memlat update failed: %d\n", err);
+			dev_dbg(mon->hw.dev, "Memlat update failed: %d\n", err);
 		mutex_unlock(&df->lock);
 	}
 
@@ -568,14 +568,14 @@ static int memlat_cpu_grp_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	if (get_mask_from_dev_handle(pdev, &cpu_grp->cpus)) {
-		dev_err(dev, "No CPUs specified.\n");
+		dev_dbg(dev, "No CPUs specified.\n");
 		return -ENODEV;
 	}
 
 	num_mons = of_get_available_child_count(dev->of_node);
 
 	if (!num_mons) {
-		dev_err(dev, "No mons provided.\n");
+		dev_dbg(dev, "No mons provided.\n");
 		return -ENODEV;
 	}
 
@@ -638,13 +638,13 @@ static int memlat_mon_probe(struct platform_device *pdev, bool is_compute)
 		memlat_wq = create_freezable_workqueue("memlat_wq");
 
 	if (!memlat_wq) {
-		dev_err(dev, "Couldn't create memlat workqueue.\n");
+		dev_dbg(dev, "Couldn't create memlat workqueue.\n");
 		return -ENOMEM;
 	}
 
 	cpu_grp = dev_get_drvdata(dev->parent);
 	if (!cpu_grp) {
-		dev_err(dev, "Mon initialized without cpu_grp.\n");
+		dev_dbg(dev, "Mon initialized without cpu_grp.\n");
 		return -ENODEV;
 	}
 
@@ -658,7 +658,7 @@ static int memlat_mon_probe(struct platform_device *pdev, bool is_compute)
 		cpumask_copy(&mon->cpus, &cpu_grp->cpus);
 	} else {
 		if (!cpumask_subset(&mon->cpus, &cpu_grp->cpus)) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"Mon CPUs must be a subset of cpu_grp CPUs. mon=%*pbl cpu_grp=%*pbl\n",
 				cpumask_pr_args(&mon->cpus),
 				cpumask_pr_args(&cpu_grp->cpus));
@@ -672,7 +672,7 @@ static int memlat_mon_probe(struct platform_device *pdev, bool is_compute)
 	hw = &mon->hw;
 	hw->of_node = of_parse_phandle(dev->of_node, "qcom,target-dev", 0);
 	if (!hw->of_node) {
-		dev_err(dev, "Couldn't find a target device.\n");
+		dev_dbg(dev, "Couldn't find a target device.\n");
 		ret = -ENODEV;
 		goto unlock_out;
 	}
@@ -716,7 +716,7 @@ static int memlat_mon_probe(struct platform_device *pdev, bool is_compute)
 		ret = of_property_read_u32(dev->of_node, "qcom,cachemiss-ev",
 						&event_id);
 		if (ret) {
-			dev_err(dev, "Cache miss event missing for mon: %d\n",
+			dev_dbg(dev, "Cache miss event missing for mon: %d\n",
 					ret);
 			ret = -EINVAL;
 			goto unlock_out;
@@ -793,12 +793,12 @@ static int arm_memlat_mon_driver_probe(struct platform_device *pdev)
 		/*
 		 * This should never happen.
 		 */
-		dev_err(dev, "Invalid memlat mon type specified: %u\n", type);
+		dev_dbg(dev, "Invalid memlat mon type specified: %u\n", type);
 		return -EINVAL;
 	}
 
 	if (ret) {
-		dev_err(dev, "Failure to probe memlat device: %d\n", ret);
+		dev_dbg(dev, "Failure to probe memlat device: %d\n", ret);
 		return ret;
 	}
 

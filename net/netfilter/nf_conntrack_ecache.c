@@ -374,7 +374,7 @@ static int nf_conntrack_event_init_sysctl(struct net *net)
 	net->ct.event_sysctl_header =
 		register_net_sysctl(net, "net/netfilter", table);
 	if (!net->ct.event_sysctl_header) {
-		pr_err("can't register to sysctl\n");
+		pr_debug("can't register to sysctl\n");
 		goto out_register;
 	}
 	return 0;
@@ -421,7 +421,7 @@ int nf_conntrack_ecache_init(void)
 {
 	int ret = nf_ct_extend_register(&event_extend);
 	if (ret < 0)
-		pr_err("Unable to register event extension\n");
+		pr_debug("Unable to register event extension\n");
 
 	BUILD_BUG_ON(__IPCT_MAX >= 16);	/* ctmask, missed use u16 */
 

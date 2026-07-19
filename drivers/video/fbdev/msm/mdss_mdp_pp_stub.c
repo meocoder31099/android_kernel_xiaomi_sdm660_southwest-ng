@@ -29,7 +29,7 @@ void *pp_get_driver_ops_stub(struct mdp_pp_driver_ops *ops)
 	int i = 0;
 
 	if (!ops) {
-		pr_err("PP driver ops invalid %pK\n", ops);
+		pr_debug("PP driver ops invalid %pK\n", ops);
 		return ERR_PTR(-EINVAL);
 	}
 	for (i = 0; i < PP_MAX_FEATURES; i++) {
@@ -50,7 +50,7 @@ void *pp_get_driver_ops_stub(struct mdp_pp_driver_ops *ops)
 static int pp_stub_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid version param\n");
+		pr_debug("invalid version param\n");
 		return -EINVAL;
 	}
 	*version = mdp_pp_unknown;
@@ -78,7 +78,7 @@ static void pp_opmode_config(int location, struct pp_sts_type *pp_sts,
 static int pp_get_hist_isr(u32 *isr_mask)
 {
 	if (!isr_mask) {
-		pr_err("invalid params isr_mask %pK\n", isr_mask);
+		pr_debug("invalid params isr_mask %pK\n", isr_mask);
 		return -EINVAL;
 	}
 
@@ -91,7 +91,7 @@ static int pp_get_hist_offset(u32 block, u32 *ctl_off)
 	int ret = 0;
 
 	if (!ctl_off) {
-		pr_err("invalid params ctl_off %pK\n", ctl_off);
+		pr_debug("invalid params ctl_off %pK\n", ctl_off);
 		return -EINVAL;
 	}
 	*ctl_off = U32_MAX;

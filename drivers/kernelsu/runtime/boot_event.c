@@ -19,11 +19,11 @@ void on_post_fs_data(void)
 {
     static bool done = false;
     if (done) {
-        pr_info("on_post_fs_data already done\n");
+        pr_debug("on_post_fs_data already done\n");
         return;
     }
     done = true;
-    pr_info("on_post_fs_data!\n");
+    pr_debug("on_post_fs_data!\n");
 
     ksu_load_allow_list();
     ksu_observer_init();
@@ -32,7 +32,7 @@ void on_post_fs_data(void)
     ksu_selinux_hide_handle_post_fs_data();
 
     // scan manager
-    pr_info("post-fs-data triggered, scanning manager...");
+    pr_debug("post-fs-data triggered, scanning manager...");
     track_throne(0);
 }
 
@@ -47,14 +47,14 @@ int nuke_ext4_sysfs(const char *mnt)
 
     err = kern_path(mnt, 0, &path);
     if (err) {
-        pr_err("nuke path err: %d\n", err);
+        pr_debug("nuke path err: %d\n", err);
         return err;
     }
 
     sb = path.dentry->d_inode->i_sb;
     name = sb->s_type->name;
     if (strcmp(name, "ext4") != 0) {
-        pr_info("nuke but module aren't mounted\n");
+        pr_debug("nuke but module aren't mounted\n");
         path_put(&path);
         return -EINVAL;
     }
@@ -67,21 +67,21 @@ int nuke_ext4_sysfs(const char *mnt)
 #else
 int nuke_ext4_sysfs(const char *mnt)
 {
-    pr_info("%s: feature not implemented!\n", __func__);
+    pr_debug("%s: feature not implemented!\n", __func__);
     return 0;
 }
 #endif
 
 void on_module_mounted(void)
 {
-    pr_info("on_module_mounted!\n");
+    pr_debug("on_module_mounted!\n");
     ksu_module_mounted = true;
 }
 
 void on_boot_completed(void)
 {
     ksu_boot_completed = true;
-    pr_info("on_boot_completed!\n");
+    pr_debug("on_boot_completed!\n");
     track_throne(TRACK_THRONE_PRUNE_ONLY);
     ksu_selinux_hide_drop_backup_if_unused();
 }

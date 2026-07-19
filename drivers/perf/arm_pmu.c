@@ -575,7 +575,7 @@ int armpmu_request_irq(int irq, int cpu)
 		err = irq_force_affinity(irq, cpumask_of(cpu));
 
 		if (err && num_possible_cpus() > 1) {
-			pr_warn("unable to set irq affinity (irq=%d, cpu=%u)\n",
+			pr_debug("unable to set irq affinity (irq=%d, cpu=%u)\n",
 				irq, cpu);
 			goto err_out;
 		}
@@ -599,7 +599,7 @@ int armpmu_request_irq(int irq, int cpu)
 	return 0;
 
 err_out:
-	pr_err("unable to request IRQ%d for ARM PMU counters\n", irq);
+	pr_debug("unable to request IRQ%d for ARM PMU counters\n", irq);
 	return err;
 }
 
@@ -791,13 +791,13 @@ static struct arm_pmu *__armpmu_alloc(gfp_t flags)
 
 	pmu = kzalloc(sizeof(*pmu), flags);
 	if (!pmu) {
-		pr_info("failed to allocate PMU device!\n");
+		pr_debug("failed to allocate PMU device!\n");
 		goto out;
 	}
 
 	pmu->hw_events = alloc_percpu_gfp(struct pmu_hw_events, flags);
 	if (!pmu->hw_events) {
-		pr_info("failed to allocate per-cpu PMU data.\n");
+		pr_debug("failed to allocate per-cpu PMU data.\n");
 		goto out_free_pmu;
 	}
 
@@ -874,7 +874,7 @@ int armpmu_register(struct arm_pmu *pmu)
 	if (!__oprofile_cpu_pmu)
 		__oprofile_cpu_pmu = pmu;
 
-	pr_info("enabled with %s PMU driver, %d counters available\n",
+	pr_debug("enabled with %s PMU driver, %d counters available\n",
 		pmu->name, pmu->num_events);
 
 	return 0;
@@ -893,7 +893,7 @@ static int arm_pmu_hp_init(void)
 				      arm_perf_starting_cpu,
 				      arm_perf_teardown_cpu);
 	if (ret)
-		pr_err("CPU hotplug notifier for ARM PMU could not be registered: %d\n",
+		pr_debug("CPU hotplug notifier for ARM PMU could not be registered: %d\n",
 		       ret);
 	return ret;
 }

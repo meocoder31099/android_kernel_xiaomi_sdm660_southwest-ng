@@ -93,7 +93,7 @@ void wiphy_read_of_freq_limits(struct wiphy *wiphy)
 		return;
 
 	if (!len || len % sizeof(u32) || len / sizeof(u32) % 2) {
-		dev_err(dev, "ieee80211-freq-limit wrong format");
+		dev_dbg(dev, "ieee80211-freq-limit wrong format");
 		return;
 	}
 	n_freq_limits = len / sizeof(u32) / 2;
@@ -133,6 +133,6 @@ void wiphy_read_of_freq_limits(struct wiphy *wiphy)
 out_kfree:
 	kfree(freq_limits);
 	if (err)
-		dev_err(dev, "Failed to get limits: %d\n", err);
+		dev_dbg(dev, "Failed to get limits: %d\n", err);
 }
 EXPORT_SYMBOL(wiphy_read_of_freq_limits);

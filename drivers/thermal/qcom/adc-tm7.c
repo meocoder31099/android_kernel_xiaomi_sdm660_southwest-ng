@@ -105,7 +105,7 @@ static int32_t adc_tm_read_reg(struct adc_tm_chip *chip,
 
 	ret = regmap_bulk_read(chip->regmap, (chip->base + reg), data, len);
 	if (ret < 0)
-		pr_err("adc-tm read reg %d failed with %d\n", reg, ret);
+		pr_debug("adc-tm read reg %d failed with %d\n", reg, ret);
 
 	return ret;
 }
@@ -117,7 +117,7 @@ static int32_t adc_tm_write_reg(struct adc_tm_chip *chip,
 
 	ret = regmap_bulk_write(chip->regmap, (chip->base + reg), data, len);
 	if (ret < 0)
-		pr_err("adc-tm write reg %d failed with %d\n", reg, ret);
+		pr_debug("adc-tm write reg %d failed with %d\n", reg, ret);
 
 	return ret;
 }
@@ -131,28 +131,28 @@ static int32_t adc_tm7_conv_req(struct adc_tm_chip *chip)
 	data = ADC_TM_EN;
 	rc = adc_tm_write_reg(chip, ADC_TM_EN_CTL1, &data, 1);
 	if (rc < 0) {
-		pr_err("adc-tm enable failed with %d\n", rc);
+		pr_debug("adc-tm enable failed with %d\n", rc);
 		return rc;
 	}
 
 	data = ADC_TM_CFG_HS_FLAG;
 	rc = adc_tm_write_reg(chip, ADC_TM_CFG_HS_SET, &data, 1);
 	if (rc < 0) {
-		pr_err("adc-tm handshake failed with %d\n", rc);
+		pr_debug("adc-tm handshake failed with %d\n", rc);
 		return rc;
 	}
 
 	data = ADC_TM_CONV_REQ_EN;
 	rc = adc_tm_write_reg(chip, ADC_TM_CONV_REQ, &data, 1);
 	if (rc < 0) {
-		pr_err("adc-tm request conversion failed with %d\n", rc);
+		pr_debug("adc-tm request conversion failed with %d\n", rc);
 		return rc;
 	}
 
 	for (count = 0; count < ADC_TM_POLL_RETRY_COUNT; count++) {
 		rc = adc_tm_read_reg(chip, ADC_TM_CFG_HS_SET, &data, 1);
 		if (rc < 0) {
-			pr_err("adc-tm read failed with %d\n", rc);
+			pr_debug("adc-tm read failed with %d\n", rc);
 			return rc;
 		}
 
@@ -162,7 +162,7 @@ static int32_t adc_tm7_conv_req(struct adc_tm_chip *chip)
 			ADC_TM_POLL_DELAY_MAX_US);
 	}
 
-	pr_err("adc-tm conversion request handshake timed out\n");
+	pr_debug("adc-tm conversion request handshake timed out\n");
 
 	return -ETIMEDOUT;
 }
@@ -176,7 +176,7 @@ static int adc_tm7_configure(struct adc_tm_sensor *sensor)
 
 	ret = adc_tm_read_reg(chip, ADC_TM_SID, buf, 14);
 	if (ret < 0) {
-		pr_err("adc-tm block read failed with %d\n", ret);
+		pr_debug("adc-tm block read failed with %d\n", ret);
 		return ret;
 	}
 
@@ -211,7 +211,7 @@ static int adc_tm7_configure(struct adc_tm_sensor *sensor)
 
 	ret = adc_tm_write_reg(chip, ADC_TM_SID, buf, 14);
 	if (ret < 0)
-		pr_err("adc-tm block write failed with %d\n", ret);
+		pr_debug("adc-tm block write failed with %d\n", ret);
 
 	return ret;
 }
@@ -393,15 +393,15 @@ void notify_adc_tm7_fn(struct adc_tm_sensor *adc_tm)
 	}
 	ret = adc_tm7_manage_thresholds(adc_tm);
 	if (ret < 0)
-		pr_err("Error in reverse scaling:%d\n", ret);
+		pr_debug("Error in reverse scaling:%d\n", ret);
 
 	ret = adc_tm7_configure(adc_tm);
 	if (ret < 0)
-		pr_err("Error during adc-tm configure:%d\n", ret);
+		pr_debug("Error during adc-tm configure:%d\n", ret);
 
 	ret = adc_tm7_conv_req(chip);
 	if (ret < 0)
-		pr_err("Error enabling adc-tm with %d\n", ret);
+		pr_debug("Error enabling adc-tm with %d\n", ret);
 
 	mutex_unlock(&chip->adc_mutex_lock);
 
@@ -458,7 +458,7 @@ static int32_t adc_tm7_channel_measure(struct adc_tm_chip *chip,
 	}
 
 	if (!chan_found)  {
-		pr_err("not a valid ADC_TM channel\n");
+		pr_debug("not a valid ADC_TM channel\n");
 		return -EINVAL;
 	}
 
@@ -470,20 +470,20 @@ static int32_t adc_tm7_channel_measure(struct adc_tm_chip *chip,
 	/* set right thresholds for the sensor */
 	ret = adc_tm7_manage_thresholds(&chip->sensor[dt_index]);
 	if (ret < 0)
-		pr_err("Error in reverse scaling:%d\n", ret);
+		pr_debug("Error in reverse scaling:%d\n", ret);
 
 	chip->sensor[dt_index].meas_en = ADC_TM_MEAS_EN;
 
 	/* configure channel */
 	ret = adc_tm7_configure(&chip->sensor[dt_index]);
 	if (ret < 0) {
-		pr_err("Error during adc-tm configure:%d\n", ret);
+		pr_debug("Error during adc-tm configure:%d\n", ret);
 		goto fail_unlock;
 	}
 
 	ret = adc_tm7_conv_req(chip);
 	if (ret < 0)
-		pr_err("Error enabling adc-tm with %d\n", ret);
+		pr_debug("Error enabling adc-tm with %d\n", ret);
 
 fail_unlock:
 	mutex_unlock(&chip->adc_mutex_lock);
@@ -511,7 +511,7 @@ static int32_t adc_tm7_disable_chan_meas(struct adc_tm_chip *chip,
 	}
 
 	if (i == chip->dt_channels)  {
-		pr_err("not a valid ADC_TM channel\n");
+		pr_debug("not a valid ADC_TM channel\n");
 		return -EINVAL;
 	}
 
@@ -523,19 +523,19 @@ static int32_t adc_tm7_disable_chan_meas(struct adc_tm_chip *chip,
 				ADC_TM_HIGH_LOW_THR_DISABLE;
 			ret = adc_tm7_manage_thresholds(&chip->sensor[i]);
 			if (ret < 0) {
-				pr_err("Error in reverse scaling:%d\n",
+				pr_debug("Error in reverse scaling:%d\n",
 						ret);
 				goto fail;
 			}
 			ret = adc_tm7_configure(&chip->sensor[i]);
 			if (ret < 0) {
-				pr_err("Error during adc-tm configure:%d\n",
+				pr_debug("Error during adc-tm configure:%d\n",
 						ret);
 				goto fail;
 			}
 			ret = adc_tm7_conv_req(chip);
 			if (ret < 0) {
-				pr_err("Error enabling adc-tm with %d\n", ret);
+				pr_debug("Error enabling adc-tm with %d\n", ret);
 				goto fail;
 			}
 		}
@@ -567,7 +567,7 @@ static int adc_tm7_set_trip_temp(struct adc_tm_sensor *sensor,
 		tm_config.low_thr_temp = low_temp;
 
 	if ((high_temp == INT_MAX) && (low_temp == INT_MIN)) {
-		pr_err("No trips to set\n");
+		pr_debug("No trips to set\n");
 		return -EINVAL;
 	}
 
@@ -596,13 +596,13 @@ static int adc_tm7_set_trip_temp(struct adc_tm_sensor *sensor,
 
 	ret = adc_tm7_configure(sensor);
 	if (ret < 0) {
-		pr_err("Error during adc-tm configure:%d\n", ret);
+		pr_debug("Error during adc-tm configure:%d\n", ret);
 		goto fail;
 	}
 
 	ret = adc_tm7_conv_req(chip);
 	if (ret < 0) {
-		pr_err("Error enabling adc-tm with %d\n", ret);
+		pr_debug("Error enabling adc-tm with %d\n", ret);
 		goto fail;
 	}
 
@@ -620,45 +620,45 @@ static irqreturn_t adc_tm7_handler(int irq, void *data)
 
 	ret = adc_tm_read_reg(chip, ADC_TM_STATUS_LOW_CLR, &status_low, 1);
 	if (ret < 0) {
-		pr_err("adc-tm read status low failed with %d\n", ret);
+		pr_debug("adc-tm read status low failed with %d\n", ret);
 		goto handler_end;
 	}
 
 	ret = adc_tm_read_reg(chip, ADC_TM_STATUS_HIGH_CLR, &status_high, 1);
 	if (ret < 0) {
-		pr_err("adc-tm read status high failed with %d\n", ret);
+		pr_debug("adc-tm read status high failed with %d\n", ret);
 		goto handler_end;
 	}
 
 	ret = adc_tm_write_reg(chip, ADC_TM_STATUS_LOW_CLR, &status_low, 1);
 	if (ret < 0) {
-		pr_err("adc-tm clear status low failed with %d\n", ret);
+		pr_debug("adc-tm clear status low failed with %d\n", ret);
 		goto handler_end;
 	}
 
 	ret = adc_tm_write_reg(chip, ADC_TM_STATUS_HIGH_CLR, &status_high, 1);
 	if (ret < 0) {
-		pr_err("adc-tm clear status high failed with %d\n", ret);
+		pr_debug("adc-tm clear status high failed with %d\n", ret);
 		goto handler_end;
 	}
 
 	val = BIT(0);
 	ret = adc_tm_write_reg(chip, ADC_TM_DATA_HOLD_CTL, &val, 1);
 	if (ret < 0) {
-		pr_err("adc-tm set hold failed with %d\n", ret);
+		pr_debug("adc-tm set hold failed with %d\n", ret);
 		goto handler_end;
 	}
 
 	ret = adc_tm_read_reg(chip, ADC_TM_Mn_DATA0(0), buf, 16);
 	if (ret < 0) {
-		pr_err("adc-tm read conversion data failed with %d\n", ret);
+		pr_debug("adc-tm read conversion data failed with %d\n", ret);
 		goto handler_end;
 	}
 
 	val = 0;
 	ret = adc_tm_write_reg(chip, ADC_TM_DATA_HOLD_CTL, &val, 1);
 	if (ret < 0) {
-		pr_err("adc-tm clear hold failed with %d\n", ret);
+		pr_debug("adc-tm clear hold failed with %d\n", ret);
 		goto handler_end;
 	}
 
@@ -670,7 +670,7 @@ static irqreturn_t adc_tm7_handler(int irq, void *data)
 
 		if (!chip->sensor[i].non_thermal &&
 				IS_ERR(chip->sensor[i].tzd)) {
-			pr_err("thermal device not found\n");
+			pr_debug("thermal device not found\n");
 			continue;
 		}
 
@@ -706,7 +706,7 @@ static irqreturn_t adc_tm7_handler(int irq, void *data)
 			pr_debug("notifying of_thermal\n");
 			temp = therm_fwd_scale_adc7((int64_t)code);
 			if (temp == -EINVAL) {
-				pr_err("Invalid temperature reading\n");
+				pr_debug("Invalid temperature reading\n");
 				continue;
 			}
 			of_thermal_handle_trip_temp(chip->sensor[i].tzd,
@@ -748,7 +748,7 @@ static int adc_tm7_register_interrupts(struct adc_tm_chip *chip)
 
 	irq = platform_get_irq_byname(pdev, "thr-int-en");
 	if (irq < 0) {
-		dev_err(&pdev->dev, "failed to get irq %s\n",
+		dev_dbg(&pdev->dev, "failed to get irq %s\n",
 			"thr-int-en");
 		return irq;
 	}
@@ -758,7 +758,7 @@ static int adc_tm7_register_interrupts(struct adc_tm_chip *chip)
 			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
 			"thr-int-en", chip);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to get irq %s\n",
+		dev_dbg(&pdev->dev, "failed to get irq %s\n",
 				"thr-int-en");
 		return ret;
 	}
@@ -776,12 +776,12 @@ static int adc_tm7_init(struct adc_tm_chip *chip, uint32_t dt_chans)
 	ret = adc_tm_read_reg(chip, ADC_TM_NUM_BTM_CHAN,
 			&channels_available, 1);
 	if (ret < 0) {
-		pr_err("read failed for BTM channels\n");
+		pr_debug("read failed for BTM channels\n");
 		return ret;
 	}
 
 	if (dt_chans > channels_available) {
-		pr_err("Number of nodes greater than channels supported:%d\n",
+		pr_debug("Number of nodes greater than channels supported:%d\n",
 							channels_available);
 		return -EINVAL;
 	}

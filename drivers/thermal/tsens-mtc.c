@@ -11,7 +11,7 @@ struct tsens_device *tsens_controller_is_present(void)
 	struct tsens_device *tmdev_chip = NULL;
 
 	if (list_empty(&tsens_device_list)) {
-		pr_err("%s: TSENS controller not available\n", __func__);
+		pr_debug("%s: TSENS controller not available\n", __func__);
 		return tmdev_chip;
 	}
 
@@ -33,7 +33,7 @@ int tsens_mtc_reset_history_counter(unsigned int zone)
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -75,7 +75,7 @@ int tsens_set_mtc_zone_sw_mask(unsigned int zone, unsigned int th1_enable,
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -128,7 +128,7 @@ int tsens_get_mtc_zone_log(unsigned int zone, void *zone_log)
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -179,7 +179,7 @@ int tsens_get_mtc_zone_history(unsigned int zone, void *zone_hist)
 
 	tmdev = tsens_controller_is_present();
 	if (!tmdev) {
-		pr_err("No TSENS controller present\n");
+		pr_debug("No TSENS controller present\n");
 		return -EPROBE_DEFER;
 	}
 

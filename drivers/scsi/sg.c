@@ -1343,7 +1343,7 @@ sg_rq_end_io(struct request *rq, blk_status_t status)
 
 	sdp = sfp->parentdp;
 	if (unlikely(atomic_read(&sdp->detaching)))
-		pr_info("%s: device detaching\n", __func__);
+		pr_debug("%s: device detaching\n", __func__);
 
 	sense = req->sense;
 	result = req->result;
@@ -1514,7 +1514,7 @@ sg_add_device(struct device *cl_dev, struct class_interface *cl_intf)
 
 	disk = alloc_disk(1);
 	if (!disk) {
-		pr_warn("%s: alloc_disk failed\n", __func__);
+		pr_debug("%s: alloc_disk failed\n", __func__);
 		return -ENOMEM;
 	}
 	disk->major = SCSI_GENERIC_MAJOR;
@@ -1522,7 +1522,7 @@ sg_add_device(struct device *cl_dev, struct class_interface *cl_intf)
 	error = -ENOMEM;
 	cdev = cdev_alloc();
 	if (!cdev) {
-		pr_warn("%s: cdev_alloc failed\n", __func__);
+		pr_debug("%s: cdev_alloc failed\n", __func__);
 		goto out;
 	}
 	cdev->owner = THIS_MODULE;
@@ -1530,7 +1530,7 @@ sg_add_device(struct device *cl_dev, struct class_interface *cl_intf)
 
 	sdp = sg_alloc(disk, scsidp);
 	if (IS_ERR(sdp)) {
-		pr_warn("%s: sg_alloc failed\n", __func__);
+		pr_debug("%s: sg_alloc failed\n", __func__);
 		error = PTR_ERR(sdp);
 		goto out;
 	}
@@ -1548,17 +1548,17 @@ sg_add_device(struct device *cl_dev, struct class_interface *cl_intf)
 						      sdp->index),
 						sdp, "%s", disk->disk_name);
 		if (IS_ERR(sg_class_member)) {
-			pr_err("%s: device_create failed\n", __func__);
+			pr_debug("%s: device_create failed\n", __func__);
 			error = PTR_ERR(sg_class_member);
 			goto cdev_add_err;
 		}
 		error = sysfs_create_link(&scsidp->sdev_gendev.kobj,
 					  &sg_class_member->kobj, "generic");
 		if (error)
-			pr_err("%s: unable to make symlink 'generic' back "
+			pr_debug("%s: unable to make symlink 'generic' back "
 			       "to sg%d\n", __func__, sdp->index);
 	} else
-		pr_warn("%s: sg_sys Invalid\n", __func__);
+		pr_debug("%s: sg_sys Invalid\n", __func__);
 
 	dev_set_drvdata(cl_dev, sdp);
 

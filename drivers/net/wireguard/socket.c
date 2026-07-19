@@ -385,7 +385,7 @@ retry:
 
 	ret = udp_sock_create(net, &port4, &new4);
 	if (ret < 0) {
-		pr_err("%s: Could not create IPv4 socket\n", wg->dev->name);
+		pr_debug("%s: Could not create IPv4 socket\n", wg->dev->name);
 		goto out;
 	}
 	set_sock_opts(new4);
@@ -399,7 +399,7 @@ retry:
 			udp_tunnel_sock_release(new4);
 			if (ret == -EADDRINUSE && !port && retries++ < 100)
 				goto retry;
-			pr_err("%s: Could not create IPv6 socket\n",
+			pr_debug("%s: Could not create IPv6 socket\n",
 			       wg->dev->name);
 			goto out;
 		}

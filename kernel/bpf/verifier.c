@@ -289,7 +289,7 @@ void bpf_verifier_vlog(struct bpf_verifier_log *log, const char *fmt,
 	log->kbuf[n] = '\0';
 
 	if (log->level == BPF_LOG_KERNEL) {
-		pr_err("BPF:%s\n", log->kbuf);
+		pr_debug("BPF:%s\n", log->kbuf);
 		return;
 	}
 	if (!copy_to_user(log->ubuf + log->len_used, log->kbuf, n + 1))

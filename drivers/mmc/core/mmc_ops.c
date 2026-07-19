@@ -432,7 +432,7 @@ static int mmc_switch_status_error(struct mmc_host *host, u32 status)
 			return -EBADMSG;
 	} else {
 		if (R1_STATUS(status))
-			pr_warn("%s: unexpected status %#x after switch\n",
+			pr_debug("%s: unexpected status %#x after switch\n",
 				mmc_hostname(host), status);
 		if (status & R1_SWITCH_ERROR)
 			return -EBADMSG;
@@ -506,7 +506,7 @@ int mmc_poll_for_busy(struct mmc_card *card, unsigned int timeout_ms,
 
 		/* Timeout if the device still remains busy. */
 		if (expired && busy) {
-			pr_err("%s: Card stuck being busy! %s\n",
+			pr_debug("%s: Card stuck being busy! %s\n",
 				mmc_hostname(host), __func__);
 			return -ETIMEDOUT;
 		}
@@ -544,7 +544,7 @@ int __mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 	mmc_retune_hold(host);
 
 	if (!timeout_ms) {
-		pr_warn("%s: unspecified timeout for CMD6 - use generic\n",
+		pr_debug("%s: unspecified timeout for CMD6 - use generic\n",
 			mmc_hostname(host));
 		timeout_ms = card->ext_csd.generic_cmd6_time;
 	}
@@ -739,7 +739,7 @@ mmc_send_bus_test(struct mmc_card *card, struct mmc_host *host, u8 opcode,
 	else if (len == 4)
 		test_buf = testdata_4bit;
 	else {
-		pr_err("%s: Invalid bus_width %d\n",
+		pr_debug("%s: Invalid bus_width %d\n",
 		       mmc_hostname(host), len);
 		kfree(data_buf);
 		return -EINVAL;
@@ -818,7 +818,7 @@ static int mmc_send_hpi_cmd(struct mmc_card *card, u32 *status)
 	int err;
 
 	if (!card->ext_csd.hpi_en) {
-		pr_warn("%s: Card didn't support HPI command\n",
+		pr_debug("%s: Card didn't support HPI command\n",
 			mmc_hostname(card->host));
 		return -EINVAL;
 	}
@@ -859,13 +859,13 @@ int mmc_interrupt_hpi(struct mmc_card *card)
 	unsigned long prg_wait;
 
 	if (!card->ext_csd.hpi_en) {
-		pr_info("%s: HPI enable bit unset\n", mmc_hostname(card->host));
+		pr_debug("%s: HPI enable bit unset\n", mmc_hostname(card->host));
 		return 1;
 	}
 
 	err = mmc_send_status(card, &status);
 	if (err) {
-		pr_err("%s: Get card status fail\n", mmc_hostname(card->host));
+		pr_debug("%s: Get card status fail\n", mmc_hostname(card->host));
 		goto out;
 	}
 
@@ -952,7 +952,7 @@ void mmc_run_bkops(struct mmc_card *card)
 
 	err = mmc_read_bkops_status(card);
 	if (err) {
-		pr_err("%s: Failed to read bkops status: %d\n",
+		pr_debug("%s: Failed to read bkops status: %d\n",
 		       mmc_hostname(card->host), err);
 		return;
 	}
@@ -971,7 +971,7 @@ void mmc_run_bkops(struct mmc_card *card)
 	err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
 			 EXT_CSD_BKOPS_START, 1, MMC_BKOPS_TIMEOUT_MS);
 	if (err)
-		pr_warn("%s: Error %d starting bkops\n",
+		pr_debug("%s: Error %d starting bkops\n",
 			mmc_hostname(card->host), err);
 
 	mmc_retune_release(card->host);
@@ -990,7 +990,7 @@ int mmc_flush_cache(struct mmc_card *card)
 				 EXT_CSD_FLUSH_CACHE, 1,
 				 MMC_CACHE_FLUSH_TIMEOUT_MS);
 		if (err)
-			pr_err("%s: cache flush error %d\n",
+			pr_debug("%s: cache flush error %d\n",
 					mmc_hostname(card->host), err);
 	}
 

@@ -51,7 +51,7 @@ int __init default_rootfs(void)
 	return 0;
 
 out:
-	printk(KERN_WARNING "Failed to create a rootfs\n");
+	no_printk(KERN_WARNING "Failed to create a rootfs\n");
 	return err;
 }
 #if !IS_BUILTIN(CONFIG_BLK_DEV_INITRD)

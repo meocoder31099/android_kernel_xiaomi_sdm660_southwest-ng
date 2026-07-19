@@ -97,7 +97,7 @@ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
 		ret = of_property_read_u32_index(np, "opp-supported-hw", count,
 						 &version);
 		if (ret) {
-			dev_warn(dev, "%s: failed to read opp-supported-hw property at index %d: %d\n",
+			dev_dbg(dev, "%s: failed to read opp-supported-hw property at index %d: %d\n",
 				 __func__, count, ret);
 			return false;
 		}
@@ -141,7 +141,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
 			if (!supplies)
 				return 0;
 
-			dev_err(dev, "%s: opp-microvolt missing although OPP managing regulators\n",
+			dev_dbg(dev, "%s: opp-microvolt missing although OPP managing regulators\n",
 				__func__);
 			return -EINVAL;
 		}
@@ -151,20 +151,20 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
 		/* Initialize regulator_count */
 		supplies = opp_table->regulator_count = 1;
 	} else if (unlikely(!supplies)) {
-		dev_err(dev, "%s: opp-microvolt wasn't expected\n", __func__);
+		dev_dbg(dev, "%s: opp-microvolt wasn't expected\n", __func__);
 		return -EINVAL;
 	}
 
 	vcount = of_property_count_u32_elems(opp->np, name);
 	if (vcount < 0) {
-		dev_err(dev, "%s: Invalid %s property (%d)\n",
+		dev_dbg(dev, "%s: Invalid %s property (%d)\n",
 			__func__, name, vcount);
 		return vcount;
 	}
 
 	/* There can be one or three elements per supply */
 	if (vcount != supplies && vcount != supplies * 3) {
-		dev_err(dev, "%s: Invalid number of elements in %s property (%d) with supplies (%d)\n",
+		dev_dbg(dev, "%s: Invalid number of elements in %s property (%d) with supplies (%d)\n",
 			__func__, name, vcount, supplies);
 		return -EINVAL;
 	}
@@ -175,7 +175,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
 
 	ret = of_property_read_u32_array(opp->np, name, microvolt, vcount);
 	if (ret) {
-		dev_err(dev, "%s: error parsing %s: %d\n", __func__, name, ret);
+		dev_dbg(dev, "%s: error parsing %s: %d\n", __func__, name, ret);
 		ret = -EINVAL;
 		goto free_microvolt;
 	}
@@ -197,14 +197,14 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
 	if (prop) {
 		icount = of_property_count_u32_elems(opp->np, name);
 		if (icount < 0) {
-			dev_err(dev, "%s: Invalid %s property (%d)\n", __func__,
+			dev_dbg(dev, "%s: Invalid %s property (%d)\n", __func__,
 				name, icount);
 			ret = icount;
 			goto free_microvolt;
 		}
 
 		if (icount != supplies) {
-			dev_err(dev, "%s: Invalid number of elements in %s property (%d) with supplies (%d)\n",
+			dev_dbg(dev, "%s: Invalid number of elements in %s property (%d) with supplies (%d)\n",
 				__func__, name, icount, supplies);
 			ret = -EINVAL;
 			goto free_microvolt;
@@ -219,7 +219,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
 		ret = of_property_read_u32_array(opp->np, name, microamp,
 						 icount);
 		if (ret) {
-			dev_err(dev, "%s: error parsing %s: %d\n", __func__,
+			dev_dbg(dev, "%s: error parsing %s: %d\n", __func__,
 				name, ret);
 			ret = -EINVAL;
 			goto free_microamp;
@@ -314,7 +314,7 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
 		/* "opp-hz" is optional for devices like power domains. */
 		if (!of_find_property(dev->of_node, "#power-domain-cells",
 				      NULL)) {
-			dev_err(dev, "%s: opp-hz not found\n", __func__);
+			dev_dbg(dev, "%s: opp-hz not found\n", __func__);
 			goto free_opp;
 		}
 
@@ -360,7 +360,7 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
 	/* OPP to select on device suspend */
 	if (of_property_read_bool(np, "opp-suspend")) {
 		if (opp_table->suspend_opp) {
-			dev_warn(dev, "%s: Multiple suspend OPPs found (%lu %lu)\n",
+			dev_dbg(dev, "%s: Multiple suspend OPPs found (%lu %lu)\n",
 				 __func__, opp_table->suspend_opp->rate,
 				 new_opp->rate);
 		} else {
@@ -416,7 +416,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
 
 		ret = _opp_add_static_v2(opp_table, dev, np);
 		if (ret) {
-			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+			dev_dbg(dev, "%s: Failed to add OPP, %d\n", __func__,
 				ret);
 			_dev_pm_opp_remove_table(opp_table, dev, false);
 			of_node_put(np);
@@ -426,7 +426,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
 
 	/* There should be one or more OPPs defined */
 	if (!count) {
-		dev_err(dev, "%s: no supported OPPs", __func__);
+		dev_dbg(dev, "%s: no supported OPPs", __func__);
 		ret = -ENOENT;
 		goto put_opp_table;
 	}
@@ -436,7 +436,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
 
 	/* Either all or none of the nodes shall have performance state set */
 	if (pstate_count && pstate_count != count) {
-		dev_err(dev, "Not all nodes have performance state set (%d: %d)\n",
+		dev_dbg(dev, "Not all nodes have performance state set (%d: %d)\n",
 			count, pstate_count);
 		ret = -ENOENT;
 		_dev_pm_opp_remove_table(opp_table, dev, false);
@@ -478,7 +478,7 @@ static int _of_add_opp_table_v1(struct device *dev)
 	 */
 	nr = prop->length / sizeof(u32);
 	if (nr % 2) {
-		dev_err(dev, "%s: Invalid OPP table\n", __func__);
+		dev_dbg(dev, "%s: Invalid OPP table\n", __func__);
 		return -EINVAL;
 	}
 
@@ -493,7 +493,7 @@ static int _of_add_opp_table_v1(struct device *dev)
 
 		ret = _opp_add_v1(opp_table, dev, freq, volt, false);
 		if (ret) {
-			dev_err(dev, "%s: Failed to add OPP %ld (%d)\n",
+			dev_dbg(dev, "%s: Failed to add OPP %ld (%d)\n",
 				__func__, freq, ret);
 			_dev_pm_opp_remove_table(opp_table, dev, false);
 			break;
@@ -626,7 +626,7 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
 	for_each_cpu(cpu, cpumask) {
 		cpu_dev = get_cpu_device(cpu);
 		if (!cpu_dev) {
-			pr_err("%s: failed to get cpu%d device\n", __func__,
+			pr_debug("%s: failed to get cpu%d device\n", __func__,
 			       cpu);
 			continue;
 		}
@@ -692,7 +692,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
 
 		cpu_np = of_cpu_device_node_get(cpu);
 		if (!cpu_np) {
-			dev_err(cpu_dev, "%s: failed to get cpu%d node\n",
+			dev_dbg(cpu_dev, "%s: failed to get cpu%d node\n",
 				__func__, cpu);
 			ret = -ENOENT;
 			goto put_cpu_node;
@@ -702,7 +702,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
 		tmp_np = _opp_of_get_opp_desc_node(cpu_np, 0);
 		of_node_put(cpu_np);
 		if (!tmp_np) {
-			pr_err("%pOF: Couldn't find opp node\n", cpu_np);
+			pr_debug("%pOF: Couldn't find opp node\n", cpu_np);
 			ret = -ENOENT;
 			goto put_cpu_node;
 		}
@@ -748,7 +748,7 @@ struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev,
 
 	required_np = of_parse_phandle(np, "required-opps", 0);
 	if (unlikely(!required_np)) {
-		dev_err(dev, "Unable to parse required-opps\n");
+		dev_dbg(dev, "Unable to parse required-opps\n");
 		goto put_opp_table;
 	}
 
@@ -785,7 +785,7 @@ EXPORT_SYMBOL_GPL(of_dev_pm_opp_find_required_opp);
 struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
 {
 	if (IS_ERR_OR_NULL(opp)) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return NULL;
 	}
 

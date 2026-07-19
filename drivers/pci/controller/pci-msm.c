@@ -271,7 +271,7 @@
 
 #define PCIE_GEN_DBG(x...) do { \
 	if (msm_pcie_debug_mask) \
-		pr_alert(x); \
+		pr_debug(x); \
 	} while (0)
 
 #define PCIE_DBG(dev, fmt, arg...) do {			 \
@@ -281,7 +281,7 @@
 	if ((dev) && (dev)->ipc_log)   \
 		ipc_log_string((dev)->ipc_log, "%s: " fmt, __func__, ##arg); \
 	if (msm_pcie_debug_mask)   \
-		pr_alert("%s: " fmt, __func__, ##arg);		  \
+		pr_debug("%s: " fmt, __func__, ##arg);		  \
 	} while (0)
 
 #define PCIE_DBG2(dev, fmt, arg...) do {			 \
@@ -289,7 +289,7 @@
 		ipc_log_string((dev)->ipc_log, "DBG2:%s: " fmt, \
 				__func__, ##arg);\
 	if (msm_pcie_debug_mask)   \
-		pr_alert("%s: " fmt, __func__, ##arg);              \
+		pr_debug("%s: " fmt, __func__, ##arg);              \
 	} while (0)
 
 #define PCIE_DBG3(dev, fmt, arg...) do {			 \
@@ -297,7 +297,7 @@
 		ipc_log_string((dev)->ipc_log, "DBG3:%s: " fmt, \
 				__func__, ##arg);\
 	if (msm_pcie_debug_mask)   \
-		pr_alert("%s: " fmt, __func__, ##arg);              \
+		pr_debug("%s: " fmt, __func__, ##arg);              \
 	} while (0)
 
 #define PCIE_DUMP(dev, fmt, arg...) do {			\
@@ -310,7 +310,7 @@
 	if ((dev) && (dev)->ipc_log_dump) \
 		ipc_log_string((dev)->ipc_log_dump, \
 			"DBG_FS:%s: " fmt, __func__, ##arg); \
-	pr_alert("%s: " fmt, __func__, ##arg); \
+	pr_debug("%s: " fmt, __func__, ##arg); \
 	} while (0)
 
 #define PCIE_INFO(dev, fmt, arg...) do {			 \
@@ -319,7 +319,7 @@
 			"INFO:%s: " fmt, __func__, ##arg); \
 	if ((dev) && (dev)->ipc_log)   \
 		ipc_log_string((dev)->ipc_log, "%s: " fmt, __func__, ##arg); \
-	pr_info("%s: " fmt, __func__, ##arg);  \
+	pr_debug("%s: " fmt, __func__, ##arg);  \
 	} while (0)
 
 #define PCIE_ERR(dev, fmt, arg...) do {			 \
@@ -328,7 +328,7 @@
 			"ERR:%s: " fmt, __func__, ##arg); \
 	if ((dev) && (dev)->ipc_log)   \
 		ipc_log_string((dev)->ipc_log, "%s: " fmt, __func__, ##arg); \
-	pr_err("%s: " fmt, __func__, arg);  \
+	pr_debug("%s: " fmt, __func__, arg);  \
 	} while (0)
 
 
@@ -1253,7 +1253,7 @@ int msm_pcie_reg_dump(struct pci_dev *pci_dev, u8 *buff, u32 len)
 	pcie_dev = PCIE_BUS_PRIV_DATA(root_pci_dev->bus);
 
 	if (!pcie_dev) {
-		pr_err("PCIe: did not find RC for pci endpoint device.\n");
+		pr_debug("PCIe: did not find RC for pci endpoint device.\n");
 		return -ENODEV;
 	}
 
@@ -2395,7 +2395,7 @@ int msm_pcie_debug_info(struct pci_dev *dev, u32 option, u32 base,
 	struct msm_pcie_dev_t *pdev = NULL;
 
 	if (!dev) {
-		pr_err("PCIe: the input pci dev is NULL.\n");
+		pr_debug("PCIe: the input pci dev is NULL.\n");
 		return -ENODEV;
 	}
 
@@ -2546,7 +2546,7 @@ static ssize_t msm_pcie_debugfs_case_select(struct file *file,
 	if (ret)
 		return ret;
 
-	pr_alert("PCIe: TEST: %d\n", testcase);
+	pr_debug("PCIe: TEST: %d\n", testcase);
 
 	for (i = 0; i < MAX_RC_NUM; i++) {
 		if (rc_sel & BIT(i))
@@ -2575,17 +2575,17 @@ static ssize_t msm_pcie_debugfs_rc_select(struct file *file,
 		return ret;
 
 	if ((!new_rc_sel) || (new_rc_sel > rc_sel_max)) {
-		pr_alert("PCIe: invalid value for rc_sel: 0x%x\n", new_rc_sel);
-		pr_alert("PCIe: rc_sel is still 0x%x\n", rc_sel ? rc_sel : 0x1);
+		pr_debug("PCIe: invalid value for rc_sel: 0x%x\n", new_rc_sel);
+		pr_debug("PCIe: rc_sel is still 0x%x\n", rc_sel ? rc_sel : 0x1);
 	} else {
 		rc_sel = new_rc_sel;
-		pr_alert("PCIe: rc_sel is now: 0x%x\n", rc_sel);
+		pr_debug("PCIe: rc_sel is now: 0x%x\n", rc_sel);
 	}
 
-	pr_alert("PCIe: the following RC(s) will be tested:\n");
+	pr_debug("PCIe: the following RC(s) will be tested:\n");
 	for (i = 0; i < MAX_RC_NUM; i++)
 		if (rc_sel & BIT(i))
-			pr_alert("RC %d\n", i);
+			pr_debug("RC %d\n", i);
 
 	return count;
 }
@@ -2606,13 +2606,13 @@ static ssize_t msm_pcie_debugfs_base_select(struct file *file,
 		return ret;
 
 	if (!new_base_sel || new_base_sel > MSM_PCIE_MAX_RES) {
-		pr_alert("PCIe: invalid value for base_sel: 0x%x\n",
+		pr_debug("PCIe: invalid value for base_sel: 0x%x\n",
 			new_base_sel);
-		pr_alert("PCIe: base_sel is still 0x%x\n", base_sel);
+		pr_debug("PCIe: base_sel is still 0x%x\n", base_sel);
 	} else {
 		base_sel = new_base_sel;
-		pr_alert("PCIe: base_sel is now 0x%x\n", base_sel);
-		pr_alert("%s\n", msm_pcie_res_info[base_sel - 1].name);
+		pr_debug("PCIe: base_sel is now 0x%x\n", base_sel);
+		pr_debug("%s\n", msm_pcie_res_info[base_sel - 1].name);
 	}
 
 	return count;
@@ -2664,7 +2664,7 @@ static ssize_t msm_pcie_debugfs_wr_offset(struct file *file,
 	if (ret)
 		return ret;
 
-	pr_alert("PCIe: wr_offset is now 0x%x\n", wr_offset);
+	pr_debug("PCIe: wr_offset is now 0x%x\n", wr_offset);
 
 	return count;
 }
@@ -2685,7 +2685,7 @@ static ssize_t msm_pcie_debugfs_wr_mask(struct file *file,
 	if (ret)
 		return ret;
 
-	pr_alert("PCIe: wr_mask is now 0x%x\n", wr_mask);
+	pr_debug("PCIe: wr_mask is now 0x%x\n", wr_mask);
 
 	return count;
 }
@@ -2705,7 +2705,7 @@ static ssize_t msm_pcie_debugfs_wr_value(struct file *file,
 	if (ret)
 		return ret;
 
-	pr_alert("PCIe: wr_value is now 0x%x\n", wr_value);
+	pr_debug("PCIe: wr_value is now 0x%x\n", wr_value);
 
 	return count;
 }
@@ -2735,7 +2735,7 @@ static ssize_t msm_pcie_debugfs_boot_option(struct file *file,
 			}
 		}
 	} else {
-		pr_err("PCIe: Invalid input for boot_option: 0x%x.\n",
+		pr_debug("PCIe: Invalid input for boot_option: 0x%x.\n",
 			new_boot_option);
 	}
 
@@ -2797,7 +2797,7 @@ static ssize_t msm_pcie_debugfs_corr_counter_limit(struct file *file,
 	if (ret)
 		return ret;
 
-	pr_info("PCIe: corr_counter_limit is now %u\n", corr_counter_limit);
+	pr_debug("PCIe: corr_counter_limit is now %u\n", corr_counter_limit);
 
 	return count;
 }
@@ -2813,7 +2813,7 @@ static void msm_pcie_debugfs_init(void)
 
 	dent_msm_pcie = debugfs_create_dir("pci-msm", NULL);
 	if (IS_ERR(dent_msm_pcie)) {
-		pr_err("PCIe: fail to create the folder for debug_fs.\n");
+		pr_debug("PCIe: fail to create the folder for debug_fs.\n");
 		return;
 	}
 
@@ -2821,7 +2821,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_rc_select_ops);
 	if (!dfile_rc_sel || IS_ERR(dfile_rc_sel)) {
-		pr_err("PCIe: fail to create the file for debug_fs rc_sel.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs rc_sel.\n");
 		goto rc_sel_error;
 	}
 
@@ -2829,7 +2829,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_case_ops);
 	if (!dfile_case || IS_ERR(dfile_case)) {
-		pr_err("PCIe: fail to create the file for debug_fs case.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs case.\n");
 		goto case_error;
 	}
 
@@ -2837,7 +2837,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_base_select_ops);
 	if (!dfile_base_sel || IS_ERR(dfile_base_sel)) {
-		pr_err("PCIe: fail to create the file for debug_fs base_sel.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs base_sel.\n");
 		goto base_sel_error;
 	}
 
@@ -2845,7 +2845,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_linkdown_panic_ops);
 	if (!dfile_linkdown_panic || IS_ERR(dfile_linkdown_panic)) {
-		pr_err("PCIe: fail to create the file for debug_fs linkdown_panic.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs linkdown_panic.\n");
 		goto linkdown_panic_error;
 	}
 
@@ -2853,7 +2853,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_wr_offset_ops);
 	if (!dfile_wr_offset || IS_ERR(dfile_wr_offset)) {
-		pr_err("PCIe: fail to create the file for debug_fs wr_offset.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs wr_offset.\n");
 		goto wr_offset_error;
 	}
 
@@ -2861,7 +2861,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_wr_mask_ops);
 	if (!dfile_wr_mask || IS_ERR(dfile_wr_mask)) {
-		pr_err("PCIe: fail to create the file for debug_fs wr_mask.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs wr_mask.\n");
 		goto wr_mask_error;
 	}
 
@@ -2869,7 +2869,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_wr_value_ops);
 	if (!dfile_wr_value || IS_ERR(dfile_wr_value)) {
-		pr_err("PCIe: fail to create the file for debug_fs wr_value.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs wr_value.\n");
 		goto wr_value_error;
 	}
 
@@ -2877,7 +2877,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_boot_option_ops);
 	if (!dfile_boot_option || IS_ERR(dfile_boot_option)) {
-		pr_err("PCIe: fail to create the file for debug_fs boot_option.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs boot_option.\n");
 		goto boot_option_error;
 	}
 
@@ -2885,7 +2885,7 @@ static void msm_pcie_debugfs_init(void)
 					dent_msm_pcie, NULL,
 					&msm_pcie_debugfs_aer_enable_ops);
 	if (!dfile_aer_enable || IS_ERR(dfile_aer_enable)) {
-		pr_err("PCIe: fail to create the file for debug_fs aer_enable.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs aer_enable.\n");
 		goto aer_enable_error;
 	}
 
@@ -2893,7 +2893,7 @@ static void msm_pcie_debugfs_init(void)
 				0664, dent_msm_pcie, NULL,
 				&msm_pcie_debugfs_corr_counter_limit_ops);
 	if (!dfile_corr_counter_limit || IS_ERR(dfile_corr_counter_limit)) {
-		pr_err("PCIe: fail to create the file for debug_fs corr_counter_limit.\n");
+		pr_debug("PCIe: fail to create the file for debug_fs corr_counter_limit.\n");
 		goto corr_counter_limit_error;
 	}
 	return;
@@ -3130,7 +3130,7 @@ static inline int msm_pcie_oper_conf(struct pci_bus *bus, u32 devfn, int oper,
 	dev = PCIE_BUS_PRIV_DATA(bus);
 
 	if (!dev) {
-		pr_err("PCIe: No device found for this bus.\n");
+		pr_debug("PCIe: No device found for this bus.\n");
 		*val = ~0;
 		rv = PCIBIOS_DEVICE_NOT_FOUND;
 		goto out;
@@ -6520,7 +6520,7 @@ decrease_rc_num:
 		pcie_dev->rc_idx, ret);
 out:
 	if (rc_idx < 0 || rc_idx >= MAX_RC_NUM)
-		pr_err("PCIe: Invalid RC index %d. Driver probe failed\n",
+		pr_debug("PCIe: Invalid RC index %d. Driver probe failed\n",
 			rc_idx);
 
 	mutex_unlock(&pcie_drv.drv_lock);
@@ -6540,7 +6540,7 @@ static int msm_pcie_remove(struct platform_device *pdev)
 	ret = of_property_read_u32((&pdev->dev)->of_node,
 				"cell-index", &rc_idx);
 	if (ret) {
-		pr_err("%s: Did not find RC index.\n", __func__);
+		pr_debug("%s: Did not find RC index.\n", __func__);
 		goto out;
 	} else {
 		pcie_drv.rc_num--;
@@ -6969,7 +6969,7 @@ static int msm_pcie_drv_rpmsg_cb(struct rpmsg_device *rpdev, void *data,
 
 	while (len) {
 		if (len < sizeof(*drv_header)) {
-			pr_err("PCIe: DRV: invalid header length: %d\n",
+			pr_debug("PCIe: DRV: invalid header length: %d\n",
 				len);
 			return -EINVAL;
 		}
@@ -6979,7 +6979,7 @@ static int msm_pcie_drv_rpmsg_cb(struct rpmsg_device *rpdev, void *data,
 		len -= sizeof(*drv_header);
 
 		if (drv_header->dev_id >= MAX_RC_NUM) {
-			pr_err("PCIe: DRV: invalid device id: %d\n",
+			pr_debug("PCIe: DRV: invalid device id: %d\n",
 				drv_header->dev_id);
 			return -EINVAL;
 		}
@@ -7116,7 +7116,7 @@ static int __init pcie_init(void)
 	int ret = 0, i;
 	char rc_name[MAX_RC_NAME_LEN];
 
-	pr_alert("pcie:%s.\n", __func__);
+	pr_debug("pcie:%s.\n", __func__);
 
 	pcie_drv.rc_num = 0;
 	mutex_init(&pcie_drv.drv_lock);
@@ -7126,7 +7126,7 @@ static int __init pcie_init(void)
 		msm_pcie_dev[i].ipc_log =
 			ipc_log_context_create(PCIE_LOG_PAGES, rc_name, 0);
 		if (msm_pcie_dev[i].ipc_log == NULL)
-			pr_err("%s: unable to create IPC log context for %s\n",
+			pr_debug("%s: unable to create IPC log context for %s\n",
 				__func__, rc_name);
 		else
 			PCIE_DBG(&msm_pcie_dev[i],
@@ -7136,7 +7136,7 @@ static int __init pcie_init(void)
 		msm_pcie_dev[i].ipc_log_long =
 			ipc_log_context_create(PCIE_LOG_PAGES, rc_name, 0);
 		if (msm_pcie_dev[i].ipc_log_long == NULL)
-			pr_err("%s: unable to create IPC log context for %s\n",
+			pr_debug("%s: unable to create IPC log context for %s\n",
 				__func__, rc_name);
 		else
 			PCIE_DBG(&msm_pcie_dev[i],
@@ -7146,7 +7146,7 @@ static int __init pcie_init(void)
 		msm_pcie_dev[i].ipc_log_dump =
 			ipc_log_context_create(PCIE_LOG_PAGES, rc_name, 0);
 		if (msm_pcie_dev[i].ipc_log_dump == NULL)
-			pr_err("%s: unable to create IPC log context for %s\n",
+			pr_debug("%s: unable to create IPC log context for %s\n",
 				__func__, rc_name);
 		else
 			PCIE_DBG(&msm_pcie_dev[i],
@@ -7189,7 +7189,7 @@ static int __init pcie_init(void)
 
 	ret = register_rpmsg_driver(&msm_pcie_drv_rpmsg_driver);
 	if (ret)
-		pr_warn("PCIe: DRV: failed to register with rpmsg: ret: %d\n",
+		pr_debug("PCIe: DRV: failed to register with rpmsg: ret: %d\n",
 			ret);
 
 	ret = platform_driver_register(&msm_pcie_driver);
@@ -7704,7 +7704,7 @@ int msm_pcie_pm_control(enum msm_pcie_pm_opt pm_opt, u32 busnr, void *user,
 
 
 	if (!user) {
-		pr_err("PCIe: endpoint device is NULL\n");
+		pr_debug("PCIe: endpoint device is NULL\n");
 		ret = -ENODEV;
 		goto out;
 	}
@@ -7717,7 +7717,7 @@ int msm_pcie_pm_control(enum msm_pcie_pm_opt pm_opt, u32 busnr, void *user,
 			"PCIe: RC%d: pm_opt:%d;busnr:%d;options:%d\n",
 			rc_idx, pm_opt, busnr, options);
 	} else {
-		pr_err(
+		pr_debug(
 			"PCIe: did not find RC for pci endpoint device.\n"
 			);
 		ret = -ENODEV;
@@ -7886,12 +7886,12 @@ int msm_pcie_register_event(struct msm_pcie_register_event *reg)
 	struct msm_pcie_dev_t *pcie_dev;
 
 	if (!reg) {
-		pr_err("PCIe: Event registration is NULL\n");
+		pr_debug("PCIe: Event registration is NULL\n");
 		return -ENODEV;
 	}
 
 	if (!reg->user) {
-		pr_err("PCIe: User of event registration is NULL\n");
+		pr_debug("PCIe: User of event registration is NULL\n");
 		return -ENODEV;
 	}
 
@@ -7959,12 +7959,12 @@ int msm_pcie_deregister_event(struct msm_pcie_register_event *reg)
 	struct msm_pcie_dev_t *pcie_dev;
 
 	if (!reg) {
-		pr_err("PCIe: Event deregistration is NULL\n");
+		pr_debug("PCIe: Event deregistration is NULL\n");
 		return -ENODEV;
 	}
 
 	if (!reg->user) {
-		pr_err("PCIe: User of event deregistration is NULL\n");
+		pr_debug("PCIe: User of event deregistration is NULL\n");
 		return -ENODEV;
 	}
 
@@ -8016,7 +8016,7 @@ int msm_pcie_recover_config(struct pci_dev *dev)
 		PCIE_DBG(pcie_dev,
 			"Recovery for the link of RC%d\n", pcie_dev->rc_idx);
 	} else {
-		pr_err("PCIe: the input pci dev is NULL.\n");
+		pr_debug("PCIe: the input pci dev is NULL.\n");
 		return -ENODEV;
 	}
 
@@ -8059,7 +8059,7 @@ int msm_pcie_shadow_control(struct pci_dev *dev, bool enable)
 			"User requests to %s shadow\n",
 			enable ? "enable" : "disable");
 	} else {
-		pr_err("PCIe: the input pci dev is NULL.\n");
+		pr_debug("PCIe: the input pci dev is NULL.\n");
 		return -ENODEV;
 	}
 

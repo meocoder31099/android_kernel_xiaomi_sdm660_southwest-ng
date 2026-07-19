@@ -23,7 +23,7 @@
 
 static int anon_ksu_release(struct inode *inode, struct file *filp)
 {
-    pr_info("ksu fd released\n");
+    pr_debug("ksu fd released\n");
     return 0;
 }
 
@@ -42,10 +42,10 @@ static const struct file_operations anon_ksu_fops = {
 static void ksu_install_fd_to_user(int __user *outp)
 {
     int fd = ksu_install_fd();
-    pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+    pr_debug("[%d] install ksu fd: %d\n", current->pid, fd);
 
     if (copy_to_user(outp, &fd, sizeof(fd))) {
-        pr_err("install ksu fd reply err\n");
+        pr_debug("install ksu fd reply err\n");
         do_close_fd(fd);
     }
 }
@@ -59,14 +59,14 @@ int ksu_install_fd(void)
     // Get unused fd
     fd = get_unused_fd_flags(O_CLOEXEC);
     if (fd < 0) {
-        pr_err("ksu_install_fd: failed to get unused fd\n");
+        pr_debug("ksu_install_fd: failed to get unused fd\n");
         return fd;
     }
 
     // Create anonymous inode file
     filp = anon_inode_getfile("[ksu_driver]", &anon_ksu_fops, NULL, O_RDWR | O_CLOEXEC);
     if (IS_ERR(filp)) {
-        pr_err("ksu_install_fd: failed to create anon inode file\n");
+        pr_debug("ksu_install_fd: failed to create anon inode file\n");
         put_unused_fd(fd);
         return PTR_ERR(filp);
     }
@@ -74,7 +74,7 @@ int ksu_install_fd(void)
     // Install fd
     fd_install(fd, filp);
 
-    pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+    pr_debug("ksu fd installed: %d for pid %d\n", fd, current->pid);
 
     return fd;
 }
@@ -94,7 +94,7 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
         return -EINVAL;
 
 #ifdef CONFIG_KSU_DEBUG
-    pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1, magic2);
+    pr_debug("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1, magic2);
 #endif
 
     // Check if this is a request to install KSU fd
@@ -157,9 +157,9 @@ void __init ksu_supercalls_init(void)
 #ifdef CONFIG_KSU_TRACEPOINT_HOOK
     rc = register_kprobe(&reboot_kp);
     if (rc) {
-        pr_err("reboot kprobe failed: %d\n", rc);
+        pr_debug("reboot kprobe failed: %d\n", rc);
     } else {
-        pr_info("reboot kprobe registered successfully\n");
+        pr_debug("reboot kprobe registered successfully\n");
     }
 #endif
 }

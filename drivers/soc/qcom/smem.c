@@ -408,7 +408,7 @@ static int qcom_smem_alloc_private(struct qcom_smem *smem,
 	/* Check that we don't grow into the cached region */
 	alloc_size = sizeof(*hdr) + ALIGN(size, 8);
 	if ((void *)hdr + alloc_size > cached) {
-		dev_err(smem->dev, "Out of memory\n");
+		dev_dbg(smem->dev, "Out of memory\n");
 		return -ENOSPC;
 	}
 
@@ -428,7 +428,7 @@ static int qcom_smem_alloc_private(struct qcom_smem *smem,
 
 	return 0;
 bad_canary:
-	dev_err(smem->dev, "Found invalid canary in hosts %hu:%hu partition\n",
+	dev_dbg(smem->dev, "Found invalid canary in hosts %hu:%hu partition\n",
 		le16_to_cpu(phdr->host0), le16_to_cpu(phdr->host1));
 
 	return -EINVAL;
@@ -486,7 +486,7 @@ int qcom_smem_alloc(unsigned host, unsigned item, size_t size)
 		return -EPROBE_DEFER;
 
 	if (item < SMEM_ITEM_LAST_FIXED) {
-		dev_err(__smem->dev,
+		dev_dbg(__smem->dev,
 			"Rejecting allocation of static entry %d\n", item);
 		return -EINVAL;
 	}
@@ -665,7 +665,7 @@ static void *qcom_smem_get_private(struct qcom_smem *smem,
 	return ERR_PTR(-ENOENT);
 
 invalid_canary:
-	dev_err(smem->dev, "Found invalid canary in hosts %hu:%hu partition\n",
+	dev_dbg(smem->dev, "Found invalid canary in hosts %hu:%hu partition\n",
 			le16_to_cpu(phdr->host0), le16_to_cpu(phdr->host1));
 
 	return ERR_PTR(-EINVAL);
@@ -840,7 +840,7 @@ static struct smem_ptable *qcom_smem_get_ptable(struct qcom_smem *smem)
 
 	version = le32_to_cpu(ptable->version);
 	if (version != 1) {
-		dev_err(smem->dev,
+		dev_dbg(smem->dev,
 			"Unsupported partition header version %d\n", version);
 		return ERR_PTR(-EINVAL);
 	}
@@ -874,7 +874,7 @@ static int qcom_smem_set_global_partition(struct qcom_smem *smem)
 	int i;
 
 	if (smem->global_partition_desc.virt_base) {
-		dev_err(smem->dev, "Already found the global partition\n");
+		dev_dbg(smem->dev, "Already found the global partition\n");
 		return -EINVAL;
 	}
 
@@ -894,12 +894,12 @@ static int qcom_smem_set_global_partition(struct qcom_smem *smem)
 	}
 
 	if (!found) {
-		dev_err(smem->dev, "Missing entry for global partition\n");
+		dev_dbg(smem->dev, "Missing entry for global partition\n");
 		return -EINVAL;
 	}
 
 	if (!le32_to_cpu(entry->offset) || !le32_to_cpu(entry->size)) {
-		dev_err(smem->dev, "Invalid entry for global partition\n");
+		dev_dbg(smem->dev, "Invalid entry for global partition\n");
 		return -EINVAL;
 	}
 
@@ -913,23 +913,23 @@ static int qcom_smem_set_global_partition(struct qcom_smem *smem)
 	host1 = le16_to_cpu(header->host1);
 
 	if (memcmp(header->magic, SMEM_PART_MAGIC, sizeof(header->magic))) {
-		dev_err(smem->dev, "Global partition has invalid magic\n");
+		dev_dbg(smem->dev, "Global partition has invalid magic\n");
 		return -EINVAL;
 	}
 
 	if (host0 != SMEM_GLOBAL_HOST && host1 != SMEM_GLOBAL_HOST) {
-		dev_err(smem->dev, "Global partition hosts are invalid\n");
+		dev_dbg(smem->dev, "Global partition hosts are invalid\n");
 		return -EINVAL;
 	}
 
 	if (le32_to_cpu(header->size) != le32_to_cpu(entry->size)) {
-		dev_err(smem->dev, "Global partition has invalid size\n");
+		dev_dbg(smem->dev, "Global partition has invalid size\n");
 		return -EINVAL;
 	}
 
 	size = le32_to_cpu(header->offset_free_uncached);
 	if (size > le32_to_cpu(header->size)) {
-		dev_err(smem->dev,
+		dev_dbg(smem->dev,
 			"Global partition has invalid free pointer\n");
 		return -EINVAL;
 	}
@@ -977,14 +977,14 @@ static int qcom_smem_enumerate_partitions(struct qcom_smem *smem,
 			remote_host = host0;
 
 		if (remote_host >= SMEM_HOST_COUNT) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Invalid remote host %d\n",
 				remote_host);
 			return -EINVAL;
 		}
 
 		if (smem->partition_desc[remote_host].virt_base) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Already found a partition for host %d\n",
 				remote_host);
 			return -EINVAL;
@@ -1002,31 +1002,31 @@ static int qcom_smem_enumerate_partitions(struct qcom_smem *smem,
 
 		if (memcmp(header->magic, SMEM_PART_MAGIC,
 			    sizeof(header->magic))) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Partition %d has invalid magic\n", i);
 			return -EINVAL;
 		}
 
 		if (host0 != local_host && host1 != local_host) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Partition %d hosts are invalid\n", i);
 			return -EINVAL;
 		}
 
 		if (host0 != remote_host && host1 != remote_host) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Partition %d hosts are invalid\n", i);
 			return -EINVAL;
 		}
 
 		if (le32_to_cpu(header->size) != le32_to_cpu(entry->size)) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Partition %d has invalid size\n", i);
 			return -EINVAL;
 		}
 
 		if (le32_to_cpu(header->offset_free_uncached) > le32_to_cpu(header->size)) {
-			dev_err(smem->dev,
+			dev_dbg(smem->dev,
 				"Partition %d has invalid free pointer\n", i);
 			return -EINVAL;
 		}
@@ -1052,7 +1052,7 @@ static int qcom_smem_map_memory(struct qcom_smem *smem, struct device *dev,
 
 	np = of_parse_phandle(dev->of_node, name, 0);
 	if (!np) {
-		dev_err(dev, "No %s specified\n", name);
+		dev_dbg(dev, "No %s specified\n", name);
 		return -EINVAL;
 	}
 
@@ -1079,7 +1079,7 @@ static int qcom_smem_map_toc(struct qcom_smem *smem, struct device *dev,
 
 	np = of_parse_phandle(dev->of_node, name, 0);
 	if (!np) {
-		dev_err(dev, "No %s specified\n", name);
+		dev_dbg(dev, "No %s specified\n", name);
 		return -EINVAL;
 	}
 
@@ -1170,14 +1170,14 @@ static int qcom_smem_probe(struct platform_device *pdev)
 	header = smem->regions[0].virt_base;
 	if (le32_to_cpu(header->initialized) != 1 ||
 	    le32_to_cpu(header->reserved)) {
-		dev_err(&pdev->dev, "SMEM is not initialized by SBL\n");
+		dev_dbg(&pdev->dev, "SMEM is not initialized by SBL\n");
 		return -EINVAL;
 	}
 
 	hwlock_id = of_hwspin_lock_get_id(pdev->dev.of_node, 0);
 	if (hwlock_id < 0) {
 		if (hwlock_id != -EPROBE_DEFER)
-			dev_err(&pdev->dev, "failed to retrieve hwlock\n");
+			dev_dbg(&pdev->dev, "failed to retrieve hwlock\n");
 		return hwlock_id;
 	}
 
@@ -1198,7 +1198,7 @@ static int qcom_smem_probe(struct platform_device *pdev)
 		smem->item_count = SMEM_ITEM_COUNT;
 		break;
 	default:
-		dev_err(&pdev->dev, "Unsupported SMEM version 0x%x\n", version);
+		dev_dbg(&pdev->dev, "Unsupported SMEM version 0x%x\n", version);
 		return -EINVAL;
 	}
 

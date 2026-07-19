@@ -505,7 +505,7 @@ static int process_notifier(struct notifier_block *self,
 
 	uid_entry = find_or_register_uid(uid);
 	if (!uid_entry) {
-		pr_err("%s: failed to find uid %d\n", __func__, uid);
+		pr_debug("%s: failed to find uid %d\n", __func__, uid);
 		goto exit;
 	}
 
@@ -539,7 +539,7 @@ static int __init proc_uid_sys_stats_init(void)
 
 	cpu_parent = proc_mkdir("uid_cputime", NULL);
 	if (!cpu_parent) {
-		pr_err("%s: failed to create uid_cputime proc entry\n",
+		pr_debug("%s: failed to create uid_cputime proc entry\n",
 			__func__);
 		goto err;
 	}
@@ -551,7 +551,7 @@ static int __init proc_uid_sys_stats_init(void)
 
 	io_parent = proc_mkdir("uid_io", NULL);
 	if (!io_parent) {
-		pr_err("%s: failed to create uid_io proc entry\n",
+		pr_debug("%s: failed to create uid_io proc entry\n",
 			__func__);
 		goto err;
 	}
@@ -561,7 +561,7 @@ static int __init proc_uid_sys_stats_init(void)
 
 	proc_parent = proc_mkdir("uid_procstat", NULL);
 	if (!proc_parent) {
-		pr_err("%s: failed to create uid_procstat proc entry\n",
+		pr_debug("%s: failed to create uid_procstat proc entry\n",
 			__func__);
 		goto err;
 	}

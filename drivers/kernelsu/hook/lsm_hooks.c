@@ -199,7 +199,7 @@ static int ksu_unregister_file_permission(void *data)
     struct security_operations *ops = (struct security_operations *)selinux_ops_addr;
 
     if (orig_file_permission) {
-        pr_info("%s: restoring file_permission 0x%lx -> 0x%lx\n", __func__, (long)ops->file_permission,
+        pr_debug("%s: restoring file_permission 0x%lx -> 0x%lx\n", __func__, (long)ops->file_permission,
                 (long)orig_file_permission);
         ops->file_permission = orig_file_permission;
     }
@@ -219,18 +219,18 @@ void __init ksu_lsm_hook_built_in_init(void)
     if (strcmp((char *)ops, "selinux"))
         goto show_not_found_warning;
 
-    pr_info("%s: selinux_ops: 0x%lx .name = %s\n", __func__, (long)ops, (const char *)ops);
+    pr_debug("%s: selinux_ops: 0x%lx .name = %s\n", __func__, (long)ops, (const char *)ops);
 
     stop_machine(ksu_register_lsm_hook, NULL, NULL);
     return;
 show_not_found_warning:
-    pr_alert("*************************************************************");
-    pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-    pr_alert("**                                                         **");
-    pr_alert("**                 selinux_ops NOT FOUND                   **");
-    pr_alert("**     ReSukiSU won't working due lost necessary hooks     **");
-    pr_alert("**                                                         **");
-    pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
-    pr_alert("*************************************************************");
+    pr_debug("*************************************************************");
+    pr_debug("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+    pr_debug("**                                                         **");
+    pr_debug("**                 selinux_ops NOT FOUND                   **");
+    pr_debug("**     ReSukiSU won't working due lost necessary hooks     **");
+    pr_debug("**                                                         **");
+    pr_debug("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
+    pr_debug("*************************************************************");
 }
 #endif // linux kernel < 4.2

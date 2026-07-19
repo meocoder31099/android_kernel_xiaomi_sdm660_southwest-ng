@@ -110,7 +110,7 @@ MODULE_PARM_DESC(usbfs_snoop_max,
 #define snoop(dev, format, arg...)				\
 	do {							\
 		if (usbfs_snoop)				\
-			dev_info(dev, format, ## arg);		\
+			dev_dbg(dev, format, ## arg);		\
 	} while (0)
 
 enum snoop_when {
@@ -463,21 +463,21 @@ static void snoop_urb(struct usb_device *udev,
 
 	if (userurb) {		/* Async */
 		if (when == SUBMIT)
-			dev_info(&udev->dev, "userurb %px, ep%d %s-%s, "
+			dev_dbg(&udev->dev, "userurb %px, ep%d %s-%s, "
 					"length %u\n",
 					userurb, ep, t, d, length);
 		else
-			dev_info(&udev->dev, "userurb %px, ep%d %s-%s, "
+			dev_dbg(&udev->dev, "userurb %px, ep%d %s-%s, "
 					"actual_length %u status %d\n",
 					userurb, ep, t, d, length,
 					timeout_or_status);
 	} else {
 		if (when == SUBMIT)
-			dev_info(&udev->dev, "ep%d %s-%s, length %u, "
+			dev_dbg(&udev->dev, "ep%d %s-%s, length %u, "
 					"timeout %d\n",
 					ep, t, d, length, timeout_or_status);
 		else
-			dev_info(&udev->dev, "ep%d %s-%s, actual_length %u, "
+			dev_dbg(&udev->dev, "ep%d %s-%s, actual_length %u, "
 					"status %d\n",
 					ep, t, d, length, timeout_or_status);
 	}
@@ -690,7 +690,7 @@ static void driver_disconnect(struct usb_interface *intf)
 	if (likely(ifnum < 8*sizeof(ps->ifclaimed)))
 		clear_bit(ifnum, &ps->ifclaimed);
 	else
-		dev_warn(&intf->dev, "interface number %u out of range\n",
+		dev_dbg(&intf->dev, "interface number %u out of range\n",
 			 ifnum);
 
 	usb_set_intfdata(intf, NULL);
@@ -788,7 +788,7 @@ static int checkintf(struct usb_dev_state *ps, unsigned int ifnum)
 	if (test_bit(ifnum, &ps->ifclaimed))
 		return 0;
 	/* if not yet claimed, claim it for the driver */
-	dev_warn(&ps->dev->dev, "usbfs: process %d (%s) did not claim "
+	dev_dbg(&ps->dev->dev, "usbfs: process %d (%s) did not claim "
 		 "interface %u before use\n", task_pid_nr(current),
 		 current->comm, ifnum);
 	return claimintf(ps, ifnum);
@@ -862,7 +862,7 @@ static int check_ctrlrecip(struct usb_dev_state *ps, unsigned int requesttype,
 			 */
 			ret = findintfep(ps->dev, index ^ 0x80);
 			if (ret >= 0)
-				dev_info(&ps->dev->dev,
+				dev_dbg(&ps->dev->dev,
 					"%s: process %i (%s) requesting ep %02x but needs %02x\n",
 					__func__, task_pid_nr(current),
 					current->comm, index, index ^ 0x80);
@@ -1248,7 +1248,7 @@ static void check_reset_of_active_ep(struct usb_device *udev,
 	eps = (epnum & USB_DIR_IN) ? udev->ep_in : udev->ep_out;
 	ep = eps[epnum & 0x0f];
 	if (ep && !list_empty(&ep->urb_list))
-		dev_warn(&udev->dev, "Process %d (%s) called USBDEVFS_%s for active endpoint 0x%02x\n",
+		dev_dbg(&udev->dev, "Process %d (%s) called USBDEVFS_%s for active endpoint 0x%02x\n",
 				task_pid_nr(current), current->comm,
 				ioctl_name, epnum);
 }
@@ -1342,7 +1342,7 @@ static int proc_resetdevice(struct usb_dev_state *ps)
 			number = interface->cur_altsetting->desc.bInterfaceNumber;
 			if (usb_interface_claimed(interface) &&
 					!test_bit(number, &ps->ifclaimed)) {
-				dev_warn(&ps->dev->dev,
+				dev_dbg(&ps->dev->dev,
 					"usbfs: interface %d claimed by %s while '%s' resets device\n",
 					number,	interface->dev.driver->name, current->comm);
 				return -EACCES;
@@ -1390,7 +1390,7 @@ static int proc_setconfig(struct usb_dev_state *ps, void __user *arg)
 
 		for (i = 0; i < actconfig->desc.bNumInterfaces; ++i) {
 			if (usb_interface_claimed(actconfig->interface[i])) {
-				dev_warn(&ps->dev->dev,
+				dev_dbg(&ps->dev->dev,
 					"usbfs: interface %d claimed by %s "
 					"while '%s' sets config #%d\n",
 					actconfig->interface[i]
@@ -1716,9 +1716,9 @@ static int proc_do_submiturb(struct usb_dev_state *ps, struct usbdevfs_urb *uurb
 	as->urb->transfer_flags = u;
 
 	if (!allow_short && uurb->flags & USBDEVFS_URB_SHORT_NOT_OK)
-		dev_warn(&ps->dev->dev, "Requested nonsensical USBDEVFS_URB_SHORT_NOT_OK.\n");
+		dev_dbg(&ps->dev->dev, "Requested nonsensical USBDEVFS_URB_SHORT_NOT_OK.\n");
 	if (!allow_zero && uurb->flags & USBDEVFS_URB_ZERO_PACKET)
-		dev_warn(&ps->dev->dev, "Requested nonsensical USBDEVFS_URB_ZERO_PACKET.\n");
+		dev_dbg(&ps->dev->dev, "Requested nonsensical USBDEVFS_URB_ZERO_PACKET.\n");
 
 	as->urb->transfer_buffer_length = uurb->buffer_length;
 	as->urb->setup_packet = (unsigned char *)dr;
@@ -2678,13 +2678,13 @@ int __init usb_devio_init(void)
 	retval = register_chrdev_region(USB_DEVICE_DEV, USB_DEVICE_MAX,
 					"usb_device");
 	if (retval) {
-		printk(KERN_ERR "Unable to register minors for usb_device\n");
+		no_printk(KERN_ERR "Unable to register minors for usb_device\n");
 		goto out;
 	}
 	cdev_init(&usb_device_cdev, &usbdev_file_operations);
 	retval = cdev_add(&usb_device_cdev, USB_DEVICE_DEV, USB_DEVICE_MAX);
 	if (retval) {
-		printk(KERN_ERR "Unable to get usb_device major %d\n",
+		no_printk(KERN_ERR "Unable to get usb_device major %d\n",
 		       USB_DEVICE_MAJOR);
 		goto error_cdev;
 	}
