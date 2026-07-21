@@ -210,7 +210,7 @@ static const int bbr_pacing_margin_percent = 1;
  * and send the same number of packets per RTT that an un-paced, slow-starting
  * Reno or CUBIC flow would:
  */
- static const int bbr_startup_pacing_gain = BBR_UNIT * 277 / 100  1;
+ static const int bbr_startup_pacing_gain = BBR_UNIT * 277 / 100 + 1;
  /* The gain for deriving startup cwnd: */
  static const int bbr_startup_cwnd_gain = BBR_UNIT * 2;
  /* The pacing gain in BBR_DRAIN is calculated to typically drain
