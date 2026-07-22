@@ -88,7 +88,7 @@ jobs:
             SWAP_SIZE="4G"
           fi
 
-          echo "Adding ${SWAP_SIZE} swap (LTO mode: ${LTO_MODE})..."
+          echo "Adding ${SWAP_SIZE} swap (LTO mode: ${LTO_MODE})...."
           sudo fallocate -l "$SWAP_SIZE" /swapfile_ci
           sudo chmod 600 /swapfile_ci
           sudo mkswap /swapfile_ci
@@ -108,7 +108,133 @@ jobs:
             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       # ------------------------------------------------------------------
-      # 5. CACHE & DOWNLOAD TOOLCHAIN (AOSP OR NEUTRON)
+      # 4.5. SETUP RESUKISU (KERNELSU)
+      # ------------------------------------------------------------------
+      - name: Set up ReSukiSU (KernelSU)
+        working-directory: kernel
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
+
+      # ------------------------------------------------------------------
+      # 4.6. DISABLE LOGS IN RESUKISU
+      # ------------------------------------------------------------------
+      - name: Disable logs in ReSukiSU
+        run: |
+          # Ghi mã nguồn python tối ưu ra file tạm
+          cat << 'EOF' > disable_logs.py
+          import argparse
+          import os
+          import re
+
+          def replace_logs_in_file(file_path):
+              replacements = [
+                  (re.compile(r"\bprintk(\s*\()"), r"no_printk\1"),
+                  (re.compile(r"\bpr_info(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_err(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_warn(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_warning(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_notice(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_alert(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_emerg(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_crit(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bpr_cont(\s*\()"), r"pr_debug\1"),
+                  (re.compile(r"\bdev_info(\s*\()"), r"dev_dbg\1"),
+                  (re.compile(r"\bdev_err(\s*\()"), r"dev_dbg\1"),
+                  (re.compile(r"\bdev_warn(\s*\()"), r"dev_dbg\1"),
+                  (re.compile(r"\bdev_notice(\s*\()"), r"dev_dbg\1"),
+                  (re.compile(r"\bdev_alert(\s*\()"), r"dev_dbg\1"),
+                  (re.compile(r"\bdev_crit(\s*\()"), r"dev_dbg\1"),
+                  (re.compile(r"\bdev_emerg(\s*\()"), r"dev_dbg\1"),
+              ]
+
+              try:
+                  with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                      lines = f.readlines()
+
+                  modified_lines = []
+                  changes_made = False
+
+                  for line in lines:
+                      if re.match(r"^\s*#\s*(?:include|define)\b", line):
+                          modified_lines.append(line)
+                          continue
+
+                      modified_line = line
+                      for pattern, replacement in replacements:
+                          new_line, count = pattern.subn(replacement, modified_line)
+                          if count > 0:
+                              modified_line = new_line
+                              changes_made = True
+
+                      modified_lines.append(modified_line)
+
+                  if changes_made:
+                      with open(file_path, "w", encoding="utf-8") as f:
+                          f.writelines(modified_lines)
+                      return True
+
+              except Exception as e:
+                  print(f"Lỗi khi xử lý tệp {file_path}: {e}")
+
+              return False
+
+          def main():
+              parser = argparse.ArgumentParser(description="Vô hiệu hóa log trong các tệp nguồn của KernelSU.")
+              parser.add_argument("target_dir", help="Đường dẫn tới thư mục KernelSU")
+              parser.add_argument("-v", "--verbose", action="store_true", help="Hiển thị chi tiết từng tệp được sửa")
+
+              args = parser.parse_args()
+
+              if not os.path.exists(args.target_dir):
+                  print(f"Lỗi: Không tìm thấy thư mục: {args.target_dir}")
+                  return
+
+              compiled_files = []
+              for root, _, files in os.walk(args.target_dir):
+                  for file in files:
+                      if file.endswith((".c", ".h")):
+                          compiled_files.append(os.path.join(root, file))
+
+              if not compiled_files:
+                  print("Không tìm thấy tệp nguồn .c hoặc .h nào để xử lý.")
+                  return
+
+              total_files = len(compiled_files)
+              print(f"Tổng số tệp quét được trong KernelSU: {total_files}")
+
+              processed_count = 0
+              modified_count = 0
+
+              for file_path in sorted(compiled_files):
+                  processed_count += 1
+                  is_modified = replace_logs_in_file(file_path)
+
+                  if is_modified:
+                      modified_count += 1
+                      if args.verbose:
+                          rel_path = os.path.relpath(file_path, args.target_dir)
+                          print(f"[ĐÃ SỬA] {rel_path}")
+
+                  if not args.verbose:
+                      print(f"Tiến trình: {processed_count}/{total_files} tệp (Đã sửa: {modified_count})...", end="\r", flush=True)
+
+              if not args.verbose:
+                  print()
+
+              print(f"Hoàn tất. Đã tắt log thành công ở: {modified_count} tệp.")
+
+          if __name__ == "__main__":
+              main()
+          EOF
+
+          # Chạy chương trình python trỏ thẳng tới thư mục KernelSU vừa clone
+          python3 disable_logs.py "${{ github.workspace }}/kernel/KernelSU" -v
+
+          # Dọn dẹp tệp python tạm
+          rm -f disable_logs.py
+
+      # ------------------------------------------------------------------
+      # 5. CACHE & DOWNLOAD TOOLCHAIN (ALWAYS CACHED - EXCEPTION CACHE RULE)
       # ------------------------------------------------------------------
       # AOSP Clang Configuration
       - name: Cache AOSP Clang toolchain
@@ -174,7 +300,7 @@ jobs:
       # ------------------------------------------------------------------
       - name: Restore ccache
         if: ${{ github.event.inputs.use_cache != 'false' }}
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
@@ -297,11 +423,11 @@ jobs:
           exit "$BUILD_EXIT"
 
       # ------------------------------------------------------------------
-      # 8.5. SAVE CCACHE (Always runs to store the newly built object files)
+      # 8.5. SAVE CCACHE
       # ------------------------------------------------------------------
       - name: Save ccache
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ~/.ccache
           key: ccache-${{ github.event.inputs.toolchain || 'aosp' }}-${{ github.event.inputs.defconfig }}-${{ github.run_id }}
