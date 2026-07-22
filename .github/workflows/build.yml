@@ -108,6 +108,14 @@ jobs:
             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       # ------------------------------------------------------------------
+      # 4.5. SETUP RESUKISU (KERNELSU)
+      # ------------------------------------------------------------------
+      - name: Set up ReSukiSU (KernelSU)
+        working-directory: kernel
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
+
+      # ------------------------------------------------------------------
       # 5. CACHE & DOWNLOAD TOOLCHAIN (ALWAYS CACHED - EXCEPTION CACHE RULE)
       # ------------------------------------------------------------------
       # AOSP Clang Configuration
