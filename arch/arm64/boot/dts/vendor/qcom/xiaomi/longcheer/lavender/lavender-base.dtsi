@@ -129,6 +129,10 @@
 	};
 };
 
+&mdss_dsi1 {
+	status = "disabled";
+};
+
 / {
 	chosen {
 		custom-zram-size-gb = <3>; 
