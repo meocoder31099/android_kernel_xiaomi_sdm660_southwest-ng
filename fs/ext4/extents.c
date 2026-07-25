@@ -782,10 +782,10 @@ ext4_ext_binsearch_idx(struct inode *inode,
 		for (k = 0; k < le16_to_cpu(eh->eh_entries); k++, ix++) {
 		  if (k != 0 &&
 		      le32_to_cpu(ix->ei_block) <= le32_to_cpu(ix[-1].ei_block)) {
-				printk(KERN_DEBUG "k=%d, ix=0x%p, "
+				no_printk(KERN_DEBUG "k=%d, ix=0x%p, "
 				       "first=0x%p\n", k,
 				       ix, EXT_FIRST_INDEX(eh));
-				printk(KERN_DEBUG "%u <= %u\n",
+				no_printk(KERN_DEBUG "%u <= %u\n",
 				       le32_to_cpu(ix->ei_block),
 				       le32_to_cpu(ix[-1].ei_block));
 			}
@@ -3131,7 +3131,7 @@ void ext4_ext_init(struct super_block *sb)
 
 	if (ext4_has_feature_extents(sb)) {
 #if defined(AGGRESSIVE_TEST) || defined(CHECK_BINSEARCH) || defined(EXTENTS_STATS)
-		printk(KERN_INFO "EXT4-fs: file extents enabled"
+		no_printk(KERN_INFO "EXT4-fs: file extents enabled"
 #ifdef AGGRESSIVE_TEST
 		       ", aggressive tests"
 #endif
@@ -3162,10 +3162,10 @@ void ext4_ext_release(struct super_block *sb)
 #ifdef EXTENTS_STATS
 	if (EXT4_SB(sb)->s_ext_blocks && EXT4_SB(sb)->s_ext_extents) {
 		struct ext4_sb_info *sbi = EXT4_SB(sb);
-		printk(KERN_ERR "EXT4-fs: %lu blocks in %lu extents (%lu ave)\n",
+		no_printk(KERN_ERR "EXT4-fs: %lu blocks in %lu extents (%lu ave)\n",
 			sbi->s_ext_blocks, sbi->s_ext_extents,
 			sbi->s_ext_blocks / sbi->s_ext_extents);
-		printk(KERN_ERR "EXT4-fs: extents: %lu min, %lu max, max depth %lu\n",
+		no_printk(KERN_ERR "EXT4-fs: extents: %lu min, %lu max, max depth %lu\n",
 			sbi->s_ext_min, sbi->s_ext_max, sbi->s_depth_max);
 	}
 #endif

@@ -443,7 +443,7 @@ void __init tick_nohz_init(void)
 	 * interrupts to avoid circular dependency on the tick
 	 */
 	if (!arch_irq_work_has_interrupt()) {
-		pr_warn("NO_HZ: Can't run full dynticks because arch doesn't support irq work self-IPIs\n");
+		pr_debug("NO_HZ: Can't run full dynticks because arch doesn't support irq work self-IPIs\n");
 		cpumask_clear(tick_nohz_full_mask);
 		tick_nohz_full_running = false;
 		return;
@@ -452,7 +452,7 @@ void __init tick_nohz_init(void)
 	cpu = smp_processor_id();
 
 	if (cpumask_test_cpu(cpu, tick_nohz_full_mask)) {
-		pr_warn("NO_HZ: Clearing %d from nohz_full range for timekeeping\n",
+		pr_debug("NO_HZ: Clearing %d from nohz_full range for timekeeping\n",
 			cpu);
 		cpumask_clear_cpu(cpu, tick_nohz_full_mask);
 	}
@@ -464,7 +464,7 @@ void __init tick_nohz_init(void)
 					"kernel/nohz:predown", NULL,
 					tick_nohz_cpu_down);
 	WARN_ON(ret < 0);
-	pr_info("NO_HZ: Full dynticks CPUs: %*pbl.\n",
+	pr_debug("NO_HZ: Full dynticks CPUs: %*pbl.\n",
 		cpumask_pr_args(tick_nohz_full_mask));
 }
 #endif
@@ -913,7 +913,7 @@ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
 
 		if (ratelimit < 10 &&
 		    (local_softirq_pending() & SOFTIRQ_STOP_IDLE_MASK)) {
-			pr_warn("NOHZ: local_softirq_pending %02x\n",
+			pr_debug("NOHZ: local_softirq_pending %02x\n",
 				(unsigned int) local_softirq_pending());
 			ratelimit++;
 		}
@@ -1289,7 +1289,7 @@ void register_tick_sched_wakeup_callback(void (*cb)(void))
 	if (!wake_callback)
 		wake_callback = cb;
 	else
-		pr_warn("tick-sched wake cb already exists; skipping.\n");
+		pr_debug("tick-sched wake cb already exists; skipping.\n");
 }
 EXPORT_SYMBOL_GPL(register_tick_sched_wakeup_callback);
 

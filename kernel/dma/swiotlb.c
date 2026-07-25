@@ -166,11 +166,11 @@ void swiotlb_print_info(void)
 	unsigned long bytes = io_tlb_nslabs << IO_TLB_SHIFT;
 
 	if (no_iotlb_memory) {
-		pr_warn("No low mem\n");
+		pr_debug("No low mem\n");
 		return;
 	}
 
-	pr_info("mapped [mem %#010llx-%#010llx] (%luMB)\n",
+	pr_debug("mapped [mem %#010llx-%#010llx] (%luMB)\n",
 	       (unsigned long long)io_tlb_start,
 	       (unsigned long long)io_tlb_end,
 	       bytes >> 20);
@@ -276,7 +276,7 @@ swiotlb_init(int verbose)
 				    PAGE_ALIGN(io_tlb_nslabs << IO_TLB_SHIFT));
 		io_tlb_start = 0;
 	}
-	pr_warn("Cannot allocate buffer");
+	pr_debug("Cannot allocate buffer");
 	no_iotlb_memory = true;
 }
 
@@ -318,7 +318,7 @@ swiotlb_late_init_with_default_size(size_t default_size)
 		return -ENOMEM;
 	}
 	if (order != get_order(bytes)) {
-		pr_warn("only able to allocate %ld MB\n",
+		pr_debug("only able to allocate %ld MB\n",
 			(PAGE_SIZE << order) >> 20);
 		io_tlb_nslabs = SLABS_PER_PAGE << order;
 	}
@@ -575,7 +575,7 @@ phys_addr_t swiotlb_tbl_map_single(struct device *hwdev,
 not_found:
 	spin_unlock_irqrestore(&io_tlb_lock, flags);
 	if (!(attrs & DMA_ATTR_NO_WARN) && printk_ratelimit())
-		dev_warn(hwdev, "swiotlb buffer is full (sz: %zd bytes)\n", size);
+		dev_dbg(hwdev, "swiotlb buffer is full (sz: %zd bytes)\n", size);
 	return SWIOTLB_MAP_ERROR;
 found:
 	spin_unlock_irqrestore(&io_tlb_lock, flags);
@@ -731,7 +731,7 @@ swiotlb_alloc_buffer(struct device *dev, size_t size, dma_addr_t *dma_handle,
 	return phys_to_virt(phys_addr);
 
 out_unmap:
-	dev_warn(dev, "hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+	dev_dbg(dev, "hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
 		(unsigned long long)dev->coherent_dma_mask,
 		(unsigned long long)*dma_handle);
 
@@ -743,7 +743,7 @@ out_unmap:
 			DMA_ATTR_SKIP_CPU_SYNC);
 out_warn:
 	if (!(attrs & DMA_ATTR_NO_WARN) && printk_ratelimit()) {
-		dev_warn(dev,
+		dev_dbg(dev,
 			"swiotlb: coherent allocation failed, size=%zu\n",
 			size);
 		dump_stack();

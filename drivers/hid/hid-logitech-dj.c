@@ -358,7 +358,7 @@ static void logi_dj_recv_destroy_djhid_device(struct dj_receiver_dev *djrcv_dev,
 		hid_destroy_device(dj_dev->hdev);
 		kfree(dj_dev);
 	} else {
-		dev_err(&djrcv_dev->hdev->dev, "%s: can't destroy a NULL device\n",
+		dev_dbg(&djrcv_dev->hdev->dev, "%s: can't destroy a NULL device\n",
 			__func__);
 	}
 }
@@ -393,7 +393,7 @@ static void logi_dj_recv_add_djhid_device(struct dj_receiver_dev *djrcv_dev,
 
 	dj_hiddev = hid_allocate_device();
 	if (IS_ERR(dj_hiddev)) {
-		dev_err(&djrcv_hdev->dev, "%s: hid_allocate_device failed\n",
+		dev_dbg(&djrcv_hdev->dev, "%s: hid_allocate_device failed\n",
 			__func__);
 		return;
 	}
@@ -420,7 +420,7 @@ static void logi_dj_recv_add_djhid_device(struct dj_receiver_dev *djrcv_dev,
 	dj_dev = kzalloc(sizeof(struct dj_device), GFP_KERNEL);
 
 	if (!dj_dev) {
-		dev_err(&djrcv_hdev->dev, "%s: failed allocating dj_device\n",
+		dev_dbg(&djrcv_hdev->dev, "%s: failed allocating dj_device\n",
 			__func__);
 		goto dj_device_allocate_fail;
 	}
@@ -435,7 +435,7 @@ static void logi_dj_recv_add_djhid_device(struct dj_receiver_dev *djrcv_dev,
 	djrcv_dev->paired_dj_devices[dj_report->device_index] = dj_dev;
 
 	if (hid_add_device(dj_hiddev)) {
-		dev_err(&djrcv_hdev->dev, "%s: failed adding dj_device\n",
+		dev_dbg(&djrcv_hdev->dev, "%s: failed adding dj_device\n",
 			__func__);
 		goto hid_add_device_fail;
 	}
@@ -467,7 +467,7 @@ static void delayedwork_callback(struct work_struct *work)
 				sizeof(struct dj_report));
 
 	if (count != sizeof(struct dj_report)) {
-		dev_err(&djrcv_dev->hdev->dev, "%s: workitem triggered without "
+		dev_dbg(&djrcv_dev->hdev->dev, "%s: workitem triggered without "
 			"notifications available\n", __func__);
 		spin_unlock_irqrestore(&djrcv_dev->lock, flags);
 		return;
@@ -505,7 +505,7 @@ static void delayedwork_callback(struct work_struct *work)
 			/* everything went fine, so just leave */
 			break;
 		}
-		dev_err(&djrcv_dev->hdev->dev,
+		dev_dbg(&djrcv_dev->hdev->dev,
 			"%s:logi_dj_recv_query_paired_devices "
 			"error:%d\n", __func__, retval);
 		}
@@ -594,7 +594,7 @@ static int logi_dj_recv_send_report(struct dj_receiver_dev *djrcv_dev,
 	report = output_report_enum->report_id_hash[REPORT_ID_DJ_SHORT];
 
 	if (!report) {
-		dev_err(&hdev->dev, "%s: unable to find dj report\n", __func__);
+		dev_dbg(&hdev->dev, "%s: unable to find dj report\n", __func__);
 		return -ENODEV;
 	}
 
@@ -866,7 +866,7 @@ static int logi_dj_dj_event(struct hid_device *hdev,
 		 * so ignore those reports too.
 		 */
 		if (dj_report->device_index != DJ_RECEIVER_INDEX)
-			dev_err(&hdev->dev, "%s: invalid device index:%d\n",
+			dev_dbg(&hdev->dev, "%s: invalid device index:%d\n",
 				__func__, dj_report->device_index);
 		return false;
 	}
@@ -937,7 +937,7 @@ static int logi_dj_hidpp_event(struct hid_device *hdev,
 		 * This driver can ignore safely the receiver notifications,
 		 * so ignore those reports too.
 		 */
-		dev_err(&hdev->dev, "%s: invalid device index:%d\n",
+		dev_dbg(&hdev->dev, "%s: invalid device index:%d\n",
 				__func__, dj_report->device_index);
 		return false;
 	}
@@ -966,20 +966,20 @@ static int logi_dj_raw_event(struct hid_device *hdev,
 	switch (data[0]) {
 	case REPORT_ID_DJ_SHORT:
 		if (size != DJREPORT_SHORT_LENGTH) {
-			dev_err(&hdev->dev, "DJ report of bad size (%d)", size);
+			dev_dbg(&hdev->dev, "DJ report of bad size (%d)", size);
 			return false;
 		}
 		return logi_dj_dj_event(hdev, report, data, size);
 	case REPORT_ID_HIDPP_SHORT:
 		if (size != HIDPP_REPORT_SHORT_LENGTH) {
-			dev_err(&hdev->dev,
+			dev_dbg(&hdev->dev,
 				"Short HID++ report of bad size (%d)", size);
 			return false;
 		}
 		return logi_dj_hidpp_event(hdev, report, data, size);
 	case REPORT_ID_HIDPP_LONG:
 		if (size != HIDPP_REPORT_LONG_LENGTH) {
-			dev_err(&hdev->dev,
+			dev_dbg(&hdev->dev,
 				"Long HID++ report of bad size (%d)", size);
 			return false;
 		}
@@ -1012,7 +1012,7 @@ static int logi_dj_probe(struct hid_device *hdev,
 
 	djrcv_dev = kzalloc(sizeof(struct dj_receiver_dev), GFP_KERNEL);
 	if (!djrcv_dev) {
-		dev_err(&hdev->dev,
+		dev_dbg(&hdev->dev,
 			"%s:failed allocating dj_receiver_dev\n", __func__);
 		return -ENOMEM;
 	}
@@ -1022,7 +1022,7 @@ static int logi_dj_probe(struct hid_device *hdev,
 	if (kfifo_alloc(&djrcv_dev->notif_fifo,
 			DJ_MAX_NUMBER_NOTIFICATIONS * sizeof(struct dj_report),
 			GFP_KERNEL)) {
-		dev_err(&hdev->dev,
+		dev_dbg(&hdev->dev,
 			"%s:failed allocating notif_fifo\n", __func__);
 		kfree(djrcv_dev);
 		return -ENOMEM;
@@ -1035,7 +1035,7 @@ static int logi_dj_probe(struct hid_device *hdev,
 	 * for interface 2 of the receiver */
 	retval = hid_parse(hdev);
 	if (retval) {
-		dev_err(&hdev->dev,
+		dev_dbg(&hdev->dev,
 			"%s:parse of interface 2 failed\n", __func__);
 		goto hid_parse_fail;
 	}
@@ -1050,14 +1050,14 @@ static int logi_dj_probe(struct hid_device *hdev,
 	 * hidraw */
 	retval = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
 	if (retval) {
-		dev_err(&hdev->dev,
+		dev_dbg(&hdev->dev,
 			"%s:hid_hw_start returned error\n", __func__);
 		goto hid_hw_start_fail;
 	}
 
 	retval = logi_dj_recv_switch_to_dj_mode(djrcv_dev, 0);
 	if (retval < 0) {
-		dev_err(&hdev->dev,
+		dev_dbg(&hdev->dev,
 			"%s:logi_dj_recv_switch_to_dj_mode returned error:%d\n",
 			__func__, retval);
 		goto switch_to_dj_mode_fail;
@@ -1066,7 +1066,7 @@ static int logi_dj_probe(struct hid_device *hdev,
 	/* This is enabling the polling urb on the IN endpoint */
 	retval = hid_hw_open(hdev);
 	if (retval < 0) {
-		dev_err(&hdev->dev, "%s:hid_hw_open returned error:%d\n",
+		dev_dbg(&hdev->dev, "%s:hid_hw_open returned error:%d\n",
 			__func__, retval);
 		goto llopen_failed;
 	}
@@ -1076,7 +1076,7 @@ static int logi_dj_probe(struct hid_device *hdev,
 
 	retval = logi_dj_recv_query_paired_devices(djrcv_dev);
 	if (retval < 0) {
-		dev_err(&hdev->dev, "%s:logi_dj_recv_query_paired_devices "
+		dev_dbg(&hdev->dev, "%s:logi_dj_recv_query_paired_devices "
 			"error:%d\n", __func__, retval);
 		goto logi_dj_recv_query_paired_devices_failed;
 	}
@@ -1107,7 +1107,7 @@ static int logi_dj_reset_resume(struct hid_device *hdev)
 
 	retval = logi_dj_recv_switch_to_dj_mode(djrcv_dev, 0);
 	if (retval < 0) {
-		dev_err(&hdev->dev,
+		dev_dbg(&hdev->dev,
 			"%s:logi_dj_recv_switch_to_dj_mode returned error:%d\n",
 			__func__, retval);
 	}

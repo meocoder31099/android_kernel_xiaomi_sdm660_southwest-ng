@@ -196,7 +196,7 @@ static int gpiochip_find_base(int ngpio)
 		pr_debug("%s: found new base at %d\n", __func__, base);
 		return base;
 	} else {
-		pr_err("%s: cannot find free range\n", __func__);
+		pr_debug("%s: cannot find free range\n", __func__);
 		return -ENOSPC;
 	}
 }
@@ -287,7 +287,7 @@ static int gpiodev_add_to_list(struct gpio_device *gdev)
 		}
 	}
 
-	dev_err(&gdev->dev, "GPIO integer space overlap, cannot add chip\n");
+	dev_dbg(&gdev->dev, "GPIO integer space overlap, cannot add chip\n");
 	return -EBUSY;
 }
 
@@ -342,7 +342,7 @@ static int gpiochip_set_desc_names(struct gpio_chip *gc)
 
 		gpio = gpio_name_to_desc(gc->names[i]);
 		if (gpio)
-			dev_warn(&gdev->dev,
+			dev_dbg(&gdev->dev,
 				 "Detected name collision for GPIO name '%s'\n",
 				 gc->names[i]);
 	}
@@ -1219,7 +1219,7 @@ static void gpiochip_machine_hog(struct gpio_chip *chip, struct gpiod_hog *hog)
 
 	desc = gpiochip_get_desc(chip, hog->chip_hwnum);
 	if (IS_ERR(desc)) {
-		pr_err("%s: unable to get GPIO desc: %ld\n",
+		pr_debug("%s: unable to get GPIO desc: %ld\n",
 		       __func__, PTR_ERR(desc));
 		return;
 	}
@@ -1229,7 +1229,7 @@ static void gpiochip_machine_hog(struct gpio_chip *chip, struct gpiod_hog *hog)
 
 	rv = gpiod_hog(desc, hog->line_name, hog->lflags, hog->dflags);
 	if (rv)
-		pr_err("%s: unable to hog GPIO line (%s:%u): %d\n",
+		pr_debug("%s: unable to hog GPIO line (%s:%u): %d\n",
 		       __func__, chip->label, hog->chip_hwnum, rv);
 }
 
@@ -1255,7 +1255,7 @@ static void gpiochip_setup_devs(void)
 	list_for_each_entry(gdev, &gpio_devices, list) {
 		err = gpiochip_setup_dev(gdev);
 		if (err)
-			pr_err("%s: Failed to initialize gpio device (%d)\n",
+			pr_debug("%s: Failed to initialize gpio device (%d)\n",
 			       dev_name(&gdev->dev), err);
 	}
 }
@@ -1444,7 +1444,7 @@ err_free_ida:
 	ida_simple_remove(&gpio_ida, gdev->id);
 err_free_gdev:
 	/* failures here can mean systems won't boot... */
-	pr_err("%s: GPIOs %d..%d (%s) failed to register, %d\n", __func__,
+	pr_debug("%s: GPIOs %d..%d (%s) failed to register, %d\n", __func__,
 	       gdev->base, gdev->base + gdev->ngpio - 1,
 	       chip->label ? : "generic", status);
 	kfree(gdev);
@@ -1504,7 +1504,7 @@ void gpiochip_remove(struct gpio_chip *chip)
 	spin_unlock_irqrestore(&gpio_lock, flags);
 
 	if (requested)
-		dev_crit(&gdev->dev,
+		dev_dbg(&gdev->dev,
 			 "REMOVING GPIOCHIP WITH GPIOS STILL REQUESTED\n");
 
 	/*
@@ -2054,7 +2054,7 @@ int gpiochip_irqchip_add_key(struct gpio_chip *gpiochip,
 		return -EINVAL;
 
 	if (!gpiochip->parent) {
-		pr_err("missing gpiochip .dev parent pointer\n");
+		pr_debug("missing gpiochip .dev parent pointer\n");
 		return -EINVAL;
 	}
 	gpiochip->irq.threaded = threaded;
@@ -2369,15 +2369,15 @@ static int validate_desc(const struct gpio_desc *desc, const char *func)
 	if (!desc)
 		return 0;
 	if (IS_ERR(desc)) {
-		pr_warn("%s: invalid GPIO (errorpointer)\n", func);
+		pr_debug("%s: invalid GPIO (errorpointer)\n", func);
 		return PTR_ERR(desc);
 	}
 	if (!desc->gdev) {
-		pr_warn("%s: invalid GPIO (no device)\n", func);
+		pr_debug("%s: invalid GPIO (no device)\n", func);
 		return -EINVAL;
 	}
 	if (!desc->gdev->chip) {
-		dev_warn(&desc->gdev->dev,
+		dev_dbg(&desc->gdev->dev,
 			 "%s: backing chip is gone\n", func);
 		return 0;
 	}
@@ -3764,13 +3764,13 @@ static struct gpio_desc *gpiod_find(struct device *dev, const char *con_id,
 			 * consumer be probed again or let the Deferred
 			 * Probe infrastructure handle the error.
 			 */
-			dev_warn(dev, "cannot find GPIO chip %s, deferring\n",
+			dev_dbg(dev, "cannot find GPIO chip %s, deferring\n",
 				 p->chip_label);
 			return ERR_PTR(-EPROBE_DEFER);
 		}
 
 		if (chip->ngpio <= p->chip_hwnum) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"requested GPIO %u (%u) is out of range [0..%u] for chip %s\n",
 				idx, p->chip_hwnum, chip->ngpio - 1,
 				chip->label);
@@ -4203,14 +4203,14 @@ int gpiod_hog(struct gpio_desc *desc, const char *name,
 	local_desc = gpiochip_request_own_desc(chip, hwnum, name);
 	if (IS_ERR(local_desc)) {
 		status = PTR_ERR(local_desc);
-		pr_err("requesting hog GPIO %s (chip %s, offset %d) failed, %d\n",
+		pr_debug("requesting hog GPIO %s (chip %s, offset %d) failed, %d\n",
 		       name, chip->label, hwnum, status);
 		return status;
 	}
 
 	status = gpiod_configure_flags(desc, name, lflags, dflags);
 	if (status < 0) {
-		pr_err("setup of hog GPIO %s (chip %s, offset %d) failed, %d\n",
+		pr_debug("setup of hog GPIO %s (chip %s, offset %d) failed, %d\n",
 		       name, chip->label, hwnum, status);
 		gpiochip_free_own_desc(desc);
 		return status;
@@ -4219,7 +4219,7 @@ int gpiod_hog(struct gpio_desc *desc, const char *name,
 	/* Mark GPIO as hogged so it can be identified and removed later */
 	set_bit(FLAG_IS_HOGGED, &desc->flags);
 
-	pr_info("GPIO line %d (%s) hogged as %s%s\n",
+	pr_debug("GPIO line %d (%s) hogged as %s%s\n",
 		desc_to_gpio(desc), name,
 		(dflags&GPIOD_FLAGS_BIT_DIR_OUT) ? "output" : "input",
 		(dflags&GPIOD_FLAGS_BIT_DIR_OUT) ?
@@ -4343,13 +4343,13 @@ static int __init gpiolib_dev_init(void)
 	/* Register GPIO sysfs bus */
 	ret = bus_register(&gpio_bus_type);
 	if (ret < 0) {
-		pr_err("gpiolib: could not register GPIO bus type\n");
+		pr_debug("gpiolib: could not register GPIO bus type\n");
 		return ret;
 	}
 
 	ret = alloc_chrdev_region(&gpio_devt, 0, GPIO_DEV_MAX, "gpiochip");
 	if (ret < 0) {
-		pr_err("gpiolib: failed to allocate char dev region\n");
+		pr_debug("gpiolib: failed to allocate char dev region\n");
 		bus_unregister(&gpio_bus_type);
 	} else {
 		gpiolib_initialized = true;

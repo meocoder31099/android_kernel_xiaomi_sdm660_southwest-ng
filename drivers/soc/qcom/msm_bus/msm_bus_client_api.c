@@ -32,7 +32,7 @@ uint32_t msm_bus_scale_register_client(struct msm_bus_scale_pdata *pdata)
 {
 	if (arb_ops.register_client)
 		return arb_ops.register_client(pdata);
-	pr_err("%s: Bus driver not ready.\n",
+	pr_debug("%s: Bus driver not ready.\n",
 			__func__);
 	return 0;
 }
@@ -50,7 +50,7 @@ int msm_bus_scale_client_update_request(uint32_t cl, unsigned int index)
 {
 	if (arb_ops.update_request)
 		return arb_ops.update_request(cl, index);
-	pr_err("%s: Bus driver not ready.\n",
+	pr_debug("%s: Bus driver not ready.\n",
 			__func__);
 	return -EPROBE_DEFER;
 }
@@ -81,7 +81,7 @@ void msm_bus_scale_unregister_client(uint32_t cl)
 	if (arb_ops.unregister_client)
 		arb_ops.unregister_client(cl);
 	else {
-		pr_err("%s: Bus driver not ready.\n",
+		pr_debug("%s: Bus driver not ready.\n",
 				__func__);
 	}
 }
@@ -106,7 +106,7 @@ msm_bus_scale_register(uint32_t mas, uint32_t slv, char *name, bool active_only)
 {
 	if (arb_ops.register_cl)
 		return arb_ops.register_cl(mas, slv, name, active_only);
-	pr_err("%s: Bus driver not ready.\n",
+	pr_debug("%s: Bus driver not ready.\n",
 			__func__);
 	return ERR_PTR(-EPROBE_DEFER);
 }
@@ -124,7 +124,7 @@ int msm_bus_scale_update_bw(struct msm_bus_client_handle *cl, u64 ab, u64 ib)
 {
 	if (arb_ops.update_request)
 		return arb_ops.update_bw(cl, ab, ib);
-	pr_err("%s: Bus driver not ready.\n", __func__);
+	pr_debug("%s: Bus driver not ready.\n", __func__);
 	return -EPROBE_DEFER;
 }
 EXPORT_SYMBOL(msm_bus_scale_update_bw);
@@ -162,7 +162,7 @@ void msm_bus_scale_unregister(struct msm_bus_client_handle *cl)
 	if (arb_ops.unregister)
 		arb_ops.unregister(cl);
 	else
-		pr_err("%s: Bus driver not ready.\n",
+		pr_debug("%s: Bus driver not ready.\n",
 				__func__);
 }
 EXPORT_SYMBOL(msm_bus_scale_unregister);
@@ -181,7 +181,7 @@ int msm_bus_scale_query_tcs_cmd(struct msm_bus_tcs_usecase *tcs_usecase,
 {
 	if (arb_ops.query_usecase)
 		return arb_ops.query_usecase(tcs_usecase, cl, index);
-	pr_err("%s: Bus driver not ready.\n",
+	pr_debug("%s: Bus driver not ready.\n",
 			__func__);
 	return -EPROBE_DEFER;
 }
@@ -200,7 +200,7 @@ int msm_bus_scale_query_tcs_cmd_all(struct msm_bus_tcs_handle *tcs_handle,
 {
 	if (arb_ops.query_usecase)
 		return arb_ops.query_usecase_all(tcs_handle, cl);
-	pr_err("%s: Bus driver not ready.\n",
+	pr_debug("%s: Bus driver not ready.\n",
 			__func__);
 	return -EPROBE_DEFER;
 }

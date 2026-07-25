@@ -2108,7 +2108,7 @@ int uvc_ctrl_restore_values(struct uvc_device *dev)
 			    (ctrl->info.flags & UVC_CTRL_FLAG_RESTORE) == 0)
 				continue;
 
-			printk(KERN_INFO "restoring control %pUl/%u/%u\n",
+			no_printk(KERN_INFO "restoring control %pUl/%u/%u\n",
 				ctrl->info.entity, ctrl->info.index,
 				ctrl->info.selector);
 			ctrl->dirty = 1;

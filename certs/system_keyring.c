@@ -95,7 +95,7 @@ static __init struct key_restriction *get_builtin_and_secondary_restriction(void
  */
 static __init int system_trusted_keyring_init(void)
 {
-	pr_notice("Initialise system trusted keyrings\n");
+	pr_debug("Initialise system trusted keyrings\n");
 
 	builtin_trusted_keys =
 		keyring_alloc(".builtin_trusted_keys",
@@ -141,7 +141,7 @@ static __init int load_system_certificate_list(void)
 	const u8 *p, *end;
 	size_t plen;
 
-	pr_notice("Loading compiled-in X.509 certificates\n");
+	pr_debug("Loading compiled-in X.509 certificates\n");
 
 	p = system_certificate_list;
 	end = p + system_certificate_list_size;
@@ -170,10 +170,10 @@ static __init int load_system_certificate_list(void)
 					   KEY_ALLOC_BUILT_IN |
 					   KEY_ALLOC_BYPASS_RESTRICTION);
 		if (IS_ERR(key)) {
-			pr_err("Problem loading in-kernel X.509 certificate (%ld)\n",
+			pr_debug("Problem loading in-kernel X.509 certificate (%ld)\n",
 			       PTR_ERR(key));
 		} else {
-			pr_notice("Loaded X.509 cert '%s'\n",
+			pr_debug("Loaded X.509 cert '%s'\n",
 				  key_ref_to_ptr(key)->description);
 			key_ref_put(key);
 		}
@@ -183,7 +183,7 @@ static __init int load_system_certificate_list(void)
 	return 0;
 
 dodgy_cert:
-	pr_err("Problem parsing in-kernel X.509 certificate list\n");
+	pr_debug("Problem parsing in-kernel X.509 certificate list\n");
 	return 0;
 }
 late_initcall(load_system_certificate_list);
@@ -220,7 +220,7 @@ int verify_pkcs7_signature(const void *data, size_t len,
 
 	/* The data should be detached - so we need to supply it. */
 	if (data && pkcs7_supply_detached_data(pkcs7, data, len) < 0) {
-		pr_err("PKCS#7 signature with non-detached data\n");
+		pr_debug("PKCS#7 signature with non-detached data\n");
 		ret = -EBADMSG;
 		goto error;
 	}
@@ -241,7 +241,7 @@ int verify_pkcs7_signature(const void *data, size_t len,
 	ret = pkcs7_validate_trust(pkcs7, trusted_keys);
 	if (ret < 0) {
 		if (ret == -ENOKEY)
-			pr_err("PKCS#7 signature not signed with a trusted key\n");
+			pr_debug("PKCS#7 signature not signed with a trusted key\n");
 		goto error;
 	}
 
@@ -295,7 +295,7 @@ int verify_signature_one(const struct public_key_signature *sig,
 	ref = keyring_search(make_key_ref(trusted_keys, 1),
 				&key_type_asymmetric, keyid);
 	if (IS_ERR(ref)) {
-		pr_err("Asymmetric key (%s) not found in keyring(%s)\n",
+		pr_debug("Asymmetric key (%s) not found in keyring(%s)\n",
 				keyid, trusted_keys->description);
 		return -ENOKEY;
 	}

@@ -45,7 +45,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		pr_debug("%s:session id %d: default buf alloc[%d]\n", __func__,
 				audio->ac->session, audio->buf_alloc);
 		if (audio->enabled == 1) {
-			pr_info("%s:AUDIO_START already over\n", __func__);
+			pr_debug("%s:AUDIO_START already over\n", __func__);
 			rc = 0;
 			break;
 		}
@@ -53,7 +53,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		if (audio->opened) {
 			rc = audio_in_buf_alloc(audio);
 			if (rc < 0) {
-				pr_err("%s:session id %d: buffer allocation failed\n",
+				pr_debug("%s:session id %d: buffer allocation failed\n",
 					 __func__, audio->ac->session);
 				break;
 			}
@@ -64,7 +64,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 				rc = q6asm_open_read_write(audio->ac,
 					FORMAT_MPEG4_AAC, FORMAT_LINEAR_PCM);
 				if (rc < 0) {
-					pr_err("%s:open read write failed\n",
+					pr_debug("%s:open read write failed\n",
 						__func__);
 					break;
 				}
@@ -76,7 +76,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 							FORMAT_MPEG4_AAC);
 
 				if (rc < 0) {
-					pr_err("%s:open read failed\n",
+					pr_debug("%s:open read failed\n",
 							__func__);
 					break;
 				}
@@ -101,7 +101,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 					aac_mode,
 					enc_cfg->stream_format);
 		if (rc < 0) {
-			pr_err("%s:session id %d: cmd media format block failed\n",
+			pr_debug("%s:session id %d: cmd media format block failed\n",
 				__func__, audio->ac->session);
 			break;
 		}
@@ -110,7 +110,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 						audio->pcm_cfg.sample_rate,
 						audio->pcm_cfg.channel_count);
 			if (rc < 0) {
-				pr_err("%s:session id %d: media format block failed\n",
+				pr_debug("%s:session id %d: media format block failed\n",
 				__func__, audio->ac->session);
 				break;
 			}
@@ -120,7 +120,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("%s:session id %d: Audio Start procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Start procedure failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			break;
 		}
@@ -135,7 +135,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 				audio->ac->session);
 		rc = audio_in_disable(audio);
 		if (rc  < 0) {
-			pr_err("%s:session id %d: Audio Stop procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Stop procedure failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			break;
 		}
@@ -147,7 +147,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 
 		cfg = (struct msm_audio_aac_enc_config *)arg;
 		if (cfg == NULL) {
-			pr_err("%s: NULL config pointer for %s\n",
+			pr_debug("%s: NULL config pointer for %s\n",
 			__func__, "AUDIO_GET_AAC_CONFIG");
 			rc = -EINVAL;
 			break;
@@ -187,7 +187,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 
 		cfg = (struct msm_audio_aac_enc_config *)arg;
 		if (cfg == NULL) {
-			pr_err("%s: NULL config pointer for %s\n",
+			pr_debug("%s: NULL config pointer for %s\n",
 			"AUDIO_SET_AAC_ENC_CONFIG", __func__);
 			rc = -EINVAL;
 			break;
@@ -210,7 +210,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 			enc_cfg->stream_format = 0x03;
 			break;
 		default:
-			pr_err("%s:session id %d: unsupported AAC format %d\n",
+			pr_debug("%s:session id %d: unsupported AAC format %d\n",
 				__func__, audio->ac->session,
 				cfg->stream_format);
 			rc = -EINVAL;
@@ -227,7 +227,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		}
 
 		if (cfg->sample_rate > MAX_SAMPLE_RATE_384K) {
-			pr_err("%s: ERROR: invalid sample rate = %u",
+			pr_debug("%s: ERROR: invalid sample rate = %u",
 				__func__, cfg->sample_rate);
 			rc = -EINVAL;
 			break;
@@ -246,9 +246,9 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 			max_bitrate = 192000;
 		if ((cfg->bit_rate < min_bitrate) ||
 			(cfg->bit_rate > max_bitrate)) {
-			pr_err("%s: bitrate permissible: max=%d, min=%d\n",
+			pr_debug("%s: bitrate permissible: max=%d, min=%d\n",
 				__func__, max_bitrate, min_bitrate);
-			pr_err("%s: ERROR in setting bitrate = %d\n",
+			pr_debug("%s: ERROR in setting bitrate = %d\n",
 				__func__, cfg->bit_rate);
 			rc = -EINVAL;
 			break;
@@ -272,7 +272,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		aac_cfg = (struct msm_audio_aac_config *)arg;
 
 		if (aac_cfg == NULL) {
-			pr_err("%s: NULL config pointer %s\n",
+			pr_debug("%s: NULL config pointer %s\n",
 				__func__, "AUDIO_SET_AAC_CONFIG");
 			rc = -EINVAL;
 			break;
@@ -285,7 +285,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		if ((audio_aac_cfg->sbr_on_flag == 1) ||
 			 (audio_aac_cfg->sbr_ps_on_flag == 1)) {
 			if (enc_cfg->sample_rate < 24000) {
-				pr_err("%s: ERROR in setting samplerate = %d\n",
+				pr_debug("%s: ERROR in setting samplerate = %d\n",
 					__func__, enc_cfg->sample_rate);
 				rc = -EINVAL;
 				break;
@@ -294,7 +294,7 @@ static long aac_in_ioctl_shared(struct file *file, unsigned int cmd, void *arg)
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -316,12 +316,12 @@ static long aac_in_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 		rc = aac_in_ioctl_shared(file, cmd, &cfg);
 		if (rc) {
-			pr_err("%s:AUDIO_GET_AAC_ENC_CONFIG failed. rc=%d\n",
+			pr_debug("%s:AUDIO_GET_AAC_ENC_CONFIG failed. rc=%d\n",
 				__func__, rc);
 			break;
 		}
 		if (copy_to_user((void *)arg, &cfg, sizeof(cfg))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AAC_ENC_CONFIG failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AAC_ENC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -331,21 +331,21 @@ static long aac_in_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		struct msm_audio_aac_enc_config cfg;
 
 		if (copy_from_user(&cfg, (void *)arg, sizeof(cfg))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_AAC_ENC_CONFIG failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_AAC_ENC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
 		}
 		rc = aac_in_ioctl_shared(file, cmd, &cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AAC_ENC_CONFIG failed. rc=%d\n",
+			pr_debug("%s:AUDIO_SET_AAC_ENC_CONFIG failed. rc=%d\n",
 				__func__, rc);
 		break;
 	}
 	case AUDIO_GET_AAC_CONFIG: {
 		if (copy_to_user((void *)arg, &audio->codec_cfg,
 				 sizeof(struct msm_audio_aac_config))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AAC_CONFIG failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AAC_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -357,19 +357,19 @@ static long aac_in_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 		if (copy_from_user(&aac_cfg, (void *)arg,
 				 sizeof(struct msm_audio_aac_config))) {
-			pr_err("%s: copy_to_user for AUDIO_SET_CONFIG failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_SET_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
 		}
 		rc = aac_in_ioctl_shared(file, cmd, &aac_cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AAC_CONFIG failed. rc=%d\n",
+			pr_debug("%s:AUDIO_SET_AAC_CONFIG failed. rc=%d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd=%d\n", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd=%d\n", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -429,7 +429,7 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 		cmd = AUDIO_GET_AAC_ENC_CONFIG;
 		rc = aac_in_ioctl_shared(file, cmd, &cfg);
 		if (rc) {
-			pr_err("%s:AUDIO_GET_AAC_ENC_CONFIG_32 failed. Rc= %d\n",
+			pr_debug("%s:AUDIO_GET_AAC_ENC_CONFIG_32 failed. Rc= %d\n",
 				__func__, rc);
 			break;
 		}
@@ -438,7 +438,7 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 		cfg_32.bit_rate = cfg.bit_rate;
 		cfg_32.stream_format = cfg.stream_format;
 		if (copy_to_user((void *)arg, &cfg_32, sizeof(cfg_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AAC_ENC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AAC_ENC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -449,7 +449,7 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 		struct msm_audio_aac_enc_config32 cfg_32;
 
 		if (copy_from_user(&cfg_32, (void *)arg, sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_GET_AAC_ENC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_GET_AAC_ENC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -465,7 +465,7 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 		cmd = AUDIO_SET_AAC_ENC_CONFIG;
 		rc = aac_in_ioctl_shared(file, cmd, &cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AAC_ENC_CONFIG_32 failed. rc=%d\n",
+			pr_debug("%s:AUDIO_SET_AAC_ENC_CONFIG_32 failed. rc=%d\n",
 				__func__, rc);
 		break;
 	}
@@ -492,7 +492,7 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_to_user((void *)arg, &aac_config_32,
 				 sizeof(aac_config_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_AAC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_AAC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -505,7 +505,7 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_from_user(&aac_cfg_32, (void *)arg,
 					sizeof(aac_cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_AAC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_AAC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -529,12 +529,12 @@ static long aac_in_compat_ioctl(struct file *file, unsigned int cmd,
 		cmd = AUDIO_SET_AAC_CONFIG;
 		rc = aac_in_ioctl_shared(file, cmd, &aac_cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_AAC_CONFIG failed. Rc= %d\n",
+			pr_debug("%s:AUDIO_SET_AAC_CONFIG failed. Rc= %d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d\n", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d\n", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -605,7 +605,7 @@ static int aac_in_open(struct inode *inode, struct file *file)
 							(void *)audio);
 
 	if (!audio->ac) {
-		pr_err("%s: Could not allocate memory for audio client\n",
+		pr_debug("%s: Could not allocate memory for audio client\n",
 			__func__);
 		kfree(audio->enc_cfg);
 		kfree(audio->codec_cfg);
@@ -622,13 +622,13 @@ static int aac_in_open(struct inode *inode, struct file *file)
 						FORMAT_LINEAR_PCM);
 
 		if (rc < 0) {
-			pr_err("%s:session id %d: NT Open failed rc=%d\n",
+			pr_debug("%s:session id %d: NT Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->buf_cfg.meta_info_enable = 0x01;
-		pr_info("%s:session id %d: NT mode encoder success\n", __func__,
+		pr_debug("%s:session id %d: NT mode encoder success\n", __func__,
 				audio->ac->session);
 	} else if (!(file->f_mode & FMODE_WRITE) &&
 				(file->f_mode & FMODE_READ)) {
@@ -636,7 +636,7 @@ static int aac_in_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read(audio->ac, FORMAT_MPEG4_AAC);
 
 		if (rc < 0) {
-			pr_err("%s:session id %d: Tunnel Open failed rc=%d\n",
+			pr_debug("%s:session id %d: Tunnel Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
@@ -644,17 +644,17 @@ static int aac_in_open(struct inode *inode, struct file *file)
 		/* register for tx overflow (valid for tunnel mode only) */
 		rc = q6asm_reg_tx_overflow(audio->ac, 0x01);
 		if (rc < 0) {
-			pr_err("%s:session id %d: TX Overflow registration failed rc=%d\n",
+			pr_debug("%s:session id %d: TX Overflow registration failed rc=%d\n",
 				__func__,
 				audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->buf_cfg.meta_info_enable = 0x00;
-		pr_info("%s:session id %d: T mode encoder success\n", __func__,
+		pr_debug("%s:session id %d: T mode encoder success\n", __func__,
 			audio->ac->session);
 	} else {
-		pr_err("%s:session id %d: Unexpected mode\n", __func__,
+		pr_debug("%s:session id %d: Unexpected mode\n", __func__,
 				audio->ac->session);
 		rc = -EACCES;
 		goto fail;
@@ -667,7 +667,7 @@ static int aac_in_open(struct inode *inode, struct file *file)
 	audio->enc_ioctl = aac_in_ioctl;
 	file->private_data = audio;
 
-	pr_info("%s:session id %d: success\n", __func__, audio->ac->session);
+	pr_debug("%s:session id %d: success\n", __func__, audio->ac->session);
 	return 0;
 fail:
 	q6asm_audio_client_free(audio->ac);

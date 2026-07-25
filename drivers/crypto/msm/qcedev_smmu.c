@@ -17,7 +17,7 @@ static int qcedev_setup_context_bank(struct context_bank_info *cb,
 				struct device *dev)
 {
 	if (!dev || !cb) {
-		pr_err("%s err: invalid input params\n", __func__);
+		pr_debug("%s err: invalid input params\n", __func__);
 		return -EINVAL;
 	}
 	cb->dev = dev;
@@ -42,11 +42,11 @@ int qcedev_parse_context_bank(struct platform_device *pdev)
 	int rc = 0;
 
 	if (!pdev) {
-		pr_err("%s err: invalid platform devices\n", __func__);
+		pr_debug("%s err: invalid platform devices\n", __func__);
 		return -EINVAL;
 	}
 	if (!pdev->dev.parent) {
-		pr_err("%s err: failed to find a parent for %s\n",
+		pr_debug("%s err: failed to find a parent for %s\n",
 			__func__, dev_name(&pdev->dev));
 		return -EINVAL;
 	}
@@ -55,7 +55,7 @@ int qcedev_parse_context_bank(struct platform_device *pdev)
 	np = pdev->dev.of_node;
 	cb = devm_kzalloc(&pdev->dev, sizeof(*cb), GFP_KERNEL);
 	if (!cb) {
-		pr_err("%s ERROR = Failed to allocate cb\n", __func__);
+		pr_debug("%s ERROR = Failed to allocate cb\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -70,7 +70,7 @@ int qcedev_parse_context_bank(struct platform_device *pdev)
 
 	rc = qcedev_setup_context_bank(cb, &pdev->dev);
 	if (rc) {
-		pr_err("%s err: cannot setup context bank %d\n", __func__, rc);
+		pr_debug("%s err: cannot setup context bank %d\n", __func__, rc);
 		goto err_setup_cb;
 	}
 
@@ -87,7 +87,7 @@ struct qcedev_mem_client *qcedev_mem_new_client(enum qcedev_mem_type mtype)
 	struct qcedev_mem_client *mem_client = NULL;
 
 	if (mtype != MEM_ION) {
-		pr_err("%s: err: Mem type not supported\n", __func__);
+		pr_debug("%s: err: Mem type not supported\n", __func__);
 		goto err;
 	}
 
@@ -143,14 +143,14 @@ static int ion_map_buffer(struct qcedev_handle *qce_hndl,
 
 	rc = dma_buf_get_flags(buf, &ion_flags);
 	if (rc) {
-		pr_err("%s: err: failed to get ion flags: %d\n", __func__, rc);
+		pr_debug("%s: err: failed to get ion flags: %d\n", __func__, rc);
 		goto map_err;
 	}
 
 	if (is_iommu_present(qce_hndl)) {
 		cb = get_context_bank(qce_hndl, ion_flags & ION_FLAG_SECURE);
 		if (!cb) {
-			pr_err("%s: err: failed to get context bank info\n",
+			pr_debug("%s: err: failed to get context bank info\n",
 				__func__);
 			rc = -EIO;
 			goto map_err;
@@ -160,7 +160,7 @@ static int ion_map_buffer(struct qcedev_handle *qce_hndl,
 		attach = dma_buf_attach(buf, cb->dev);
 		if (IS_ERR_OR_NULL(attach)) {
 			rc = PTR_ERR(attach) ?: -ENOMEM;
-			pr_err("%s: err: failed to attach dmabuf\n", __func__);
+			pr_debug("%s: err: failed to attach dmabuf\n", __func__);
 			goto map_err;
 		}
 
@@ -169,7 +169,7 @@ static int ion_map_buffer(struct qcedev_handle *qce_hndl,
 		table = dma_buf_map_attachment(attach, DMA_BIDIRECTIONAL);
 		if (IS_ERR_OR_NULL(table)) {
 			rc = PTR_ERR(table) ?: -ENOMEM;
-			pr_err("%s: err: failed to map table\n", __func__);
+			pr_debug("%s: err: failed to map table\n", __func__);
 			goto map_table_err;
 		}
 
@@ -177,13 +177,13 @@ static int ion_map_buffer(struct qcedev_handle *qce_hndl,
 			binfo->ion_buf.iova = sg_dma_address(table->sgl);
 			binfo->ion_buf.mapped_buf_size = sg_dma_len(table->sgl);
 			if (binfo->ion_buf.mapped_buf_size < fd_size) {
-				pr_err("%s: err: mapping failed, size mismatch\n",
+				pr_debug("%s: err: mapping failed, size mismatch\n",
 						__func__);
 				rc = -ENOMEM;
 				goto map_sg_err;
 			}
 		} else {
-			pr_err("%s: err: sg list is NULL\n", __func__);
+			pr_debug("%s: err: sg list is NULL\n", __func__);
 			rc = -ENOMEM;
 			goto map_sg_err;
 		}
@@ -195,7 +195,7 @@ static int ion_map_buffer(struct qcedev_handle *qce_hndl,
 		binfo->ion_buf.mapping_info.buf = buf;
 		binfo->ion_buf.ion_fd = fd;
 	} else {
-		pr_err("%s: err: smmu not enabled\n", __func__);
+		pr_debug("%s: err: smmu not enabled\n", __func__);
 		rc = -EIO;
 		goto map_err;
 	}
@@ -237,12 +237,12 @@ static int qcedev_map_buffer(struct qcedev_handle *qce_hndl,
 		rc = ion_map_buffer(qce_hndl, mem_client, fd, fd_size, binfo);
 		break;
 	default:
-		pr_err("%s: err: Mem type not supported\n", __func__);
+		pr_debug("%s: err: Mem type not supported\n", __func__);
 		break;
 	}
 
 	if (rc)
-		pr_err("%s: err: failed to map buffer\n", __func__);
+		pr_debug("%s: err: failed to map buffer\n", __func__);
 
 	return rc;
 }
@@ -258,12 +258,12 @@ static int qcedev_unmap_buffer(struct qcedev_handle *qce_hndl,
 		rc = ion_unmap_buffer(qce_hndl, binfo);
 		break;
 	default:
-		pr_err("%s: err: Mem type not supported\n", __func__);
+		pr_debug("%s: err: Mem type not supported\n", __func__);
 		break;
 	}
 
 	if (rc)
-		pr_err("%s: err: failed to unmap buffer\n", __func__);
+		pr_debug("%s: err: failed to unmap buffer\n", __func__);
 
 	return rc;
 }
@@ -280,12 +280,12 @@ int qcedev_check_and_map_buffer(void *handle,
 	unsigned long mapped_size = 0;
 
 	if (!handle || !vaddr || fd < 0 || offset >= fd_size) {
-		pr_err("%s: err: invalid input arguments\n", __func__);
+		pr_debug("%s: err: invalid input arguments\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qce_hndl->cntl || !qce_hndl->cntl->mem_client) {
-		pr_err("%s: err: invalid qcedev handle\n", __func__);
+		pr_debug("%s: err: invalid qcedev handle\n", __func__);
 		return -EINVAL;
 	}
 	mem_client = qce_hndl->cntl->mem_client;
@@ -312,7 +312,7 @@ int qcedev_check_and_map_buffer(void *handle,
 			__func__);
 		binfo = kzalloc(sizeof(*binfo), GFP_KERNEL);
 		if (!binfo) {
-			pr_err("%s: err: failed to allocate binfo\n",
+			pr_debug("%s: err: failed to allocate binfo\n",
 				__func__);
 			rc = -ENOMEM;
 			goto error;
@@ -320,7 +320,7 @@ int qcedev_check_and_map_buffer(void *handle,
 		rc = qcedev_map_buffer(qce_hndl, mem_client, fd,
 							fd_size, binfo);
 		if (rc) {
-			pr_err("%s: err: failed to map fd (%d) error = %d\n",
+			pr_debug("%s: err: failed to map fd (%d) error = %d\n",
 				__func__, fd, rc);
 			goto error;
 		}
@@ -337,7 +337,7 @@ int qcedev_check_and_map_buffer(void *handle,
 
 	/* Make sure the offset is within the mapped range */
 	if (offset >= mapped_size) {
-		pr_err(
+		pr_debug(
 			"%s: err: Offset (%u) exceeds mapped size(%lu) for fd: %d\n",
 			__func__, offset, mapped_size, fd);
 		rc = -ERANGE;
@@ -370,12 +370,12 @@ int qcedev_check_and_unmap_buffer(void *handle, int fd)
 	bool found = false;
 
 	if (!handle || fd < 0) {
-		pr_err("%s: err: invalid input arguments\n", __func__);
+		pr_debug("%s: err: invalid input arguments\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qce_hndl->cntl || !qce_hndl->cntl->mem_client) {
-		pr_err("%s: err: invalid qcedev handle\n", __func__);
+		pr_debug("%s: err: invalid qcedev handle\n", __func__);
 		return -EINVAL;
 	}
 	mem_client = qce_hndl->cntl->mem_client;
@@ -404,7 +404,7 @@ int qcedev_check_and_unmap_buffer(void *handle, int fd)
 	mutex_unlock(&qce_hndl->registeredbufs.lock);
 
 	if (!found) {
-		pr_err("%s: err: calling unmap on unknown fd %d\n",
+		pr_debug("%s: err: calling unmap on unknown fd %d\n",
 			__func__, fd);
 		return -EINVAL;
 	}
@@ -420,12 +420,12 @@ int qcedev_unmap_all_buffers(void *handle)
 	struct list_head *pos;
 
 	if (!handle) {
-		pr_err("%s: err: invalid input arguments\n", __func__);
+		pr_debug("%s: err: invalid input arguments\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qce_hndl->cntl || !qce_hndl->cntl->mem_client) {
-		pr_err("%s: err: invalid qcedev handle\n", __func__);
+		pr_debug("%s: err: invalid qcedev handle\n", __func__);
 		return -EINVAL;
 	}
 	mem_client = qce_hndl->cntl->mem_client;

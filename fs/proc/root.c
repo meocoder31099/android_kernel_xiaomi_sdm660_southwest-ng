@@ -78,13 +78,13 @@ static int proc_parse_options(char *options, struct pid_namespace *pid)
 				return 0;
 			if (option < HIDEPID_OFF ||
 			    option > HIDEPID_INVISIBLE) {
-				pr_err("proc: hidepid value must be between 0 and 2.\n");
+				pr_debug("proc: hidepid value must be between 0 and 2.\n");
 				return 0;
 			}
 			pid->hide_pid = option;
 			break;
 		default:
-			pr_err("proc: unrecognized mount option \"%s\" "
+			pr_debug("proc: unrecognized mount option \"%s\" "
 			       "or missing value\n", p);
 			return 0;
 		}

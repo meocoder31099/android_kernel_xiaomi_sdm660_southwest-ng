@@ -181,7 +181,7 @@ struct clk_hw *clk_hw_register_gpio_mux(struct device *dev, const char *name,
 		unsigned long flags)
 {
 	if (num_parents != 2) {
-		pr_err("mux-clock %s must have 2 parents\n", name);
+		pr_debug("mux-clock %s must have 2 parents\n", name);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -236,7 +236,7 @@ static int gpio_clk_driver_probe(struct platform_device *pdev)
 			pr_debug("%s: %s: GPIOs not yet available, retry later\n",
 					node->name, __func__);
 		else
-			pr_err("%s: %s: Can't get '%s' named GPIO property\n",
+			pr_debug("%s: %s: Can't get '%s' named GPIO property\n",
 					node->name, __func__,
 					gpio_name);
 		return ret;

@@ -1325,7 +1325,7 @@ EXPORT_SYMBOL_GPL(bd_unlink_disk_holder);
 static void flush_disk(struct block_device *bdev, bool kill_dirty)
 {
 	if (__invalidate_device(bdev, kill_dirty)) {
-		printk(KERN_WARNING "VFS: busy inodes on changed media or "
+		no_printk(KERN_WARNING "VFS: busy inodes on changed media or "
 		       "resized disk %s\n",
 		       bdev->bd_disk ? bdev->bd_disk->disk_name : "");
 	}
@@ -1351,7 +1351,7 @@ void check_disk_size_change(struct gendisk *disk, struct block_device *bdev,
 	bdev_size = i_size_read(bdev->bd_inode);
 	if (disk_size != bdev_size) {
 		if (verbose) {
-			printk(KERN_INFO
+			no_printk(KERN_INFO
 			       "%s: detected capacity change from %lld to %lld\n",
 			       disk->disk_name, bdev_size, disk_size);
 		}

@@ -73,7 +73,7 @@ static void register_emulation_hooks(struct insn_emulation_ops *ops)
 	for (hook = ops->hooks; hook->instr_mask; hook++)
 		register_undef_hook(hook);
 
-	pr_notice("Registered %s emulation handler\n", ops->name);
+	pr_debug("Registered %s emulation handler\n", ops->name);
 }
 
 static void remove_emulation_hooks(struct insn_emulation_ops *ops)
@@ -85,7 +85,7 @@ static void remove_emulation_hooks(struct insn_emulation_ops *ops)
 	for (hook = ops->hooks; hook->instr_mask; hook++)
 		unregister_undef_hook(hook);
 
-	pr_notice("Removed %s emulation handler\n", ops->name);
+	pr_debug("Removed %s emulation handler\n", ops->name);
 }
 
 static void enable_insn_hw_mode(void *data)
@@ -130,7 +130,7 @@ static int run_all_insn_set_hw_mode(unsigned int cpu)
 	list_for_each_entry(insn, &insn_emulation, node) {
 		bool enable = (insn->current_mode == INSN_HW);
 		if (insn->ops->set_hw_mode && insn->ops->set_hw_mode(enable)) {
-			pr_warn("CPU[%u] cannot support the emulation of %s",
+			pr_debug("CPU[%u] cannot support the emulation of %s",
 				cpu, insn->ops->name);
 			rc = -EINVAL;
 		}
@@ -152,7 +152,7 @@ static int update_insn_emulation_mode(struct insn_emulation *insn,
 		break;
 	case INSN_HW:
 		if (!run_all_cpu_set_hw_mode(insn, false))
-			pr_notice("Disabled %s support\n", insn->ops->name);
+			pr_debug("Disabled %s support\n", insn->ops->name);
 		break;
 	}
 
@@ -165,7 +165,7 @@ static int update_insn_emulation_mode(struct insn_emulation *insn,
 	case INSN_HW:
 		ret = run_all_cpu_set_hw_mode(insn, true);
 		if (!ret)
-			pr_notice("Enabled %s support\n", insn->ops->name);
+			pr_debug("Enabled %s support\n", insn->ops->name);
 		break;
 	}
 
@@ -638,7 +638,7 @@ static int __init armv8_deprecated_init(void)
 		if(system_supports_mixed_endian_el0())
 			register_insn_emulation(&setend_ops);
 		else
-			pr_info("setend instruction emulation is not supported on this system\n");
+			pr_debug("setend instruction emulation is not supported on this system\n");
 	}
 
 	cpuhp_setup_state_nocalls(CPUHP_AP_ARM64_ISNDEP_STARTING,

@@ -80,7 +80,7 @@ static int mmc_pwrseq_emmc_probe(struct platform_device *pdev)
 		pwrseq->reset_nb.priority = 255;
 		register_restart_handler(&pwrseq->reset_nb);
 	} else {
-		dev_notice(dev, "EMMC reset pin tied to a sleepy GPIO driver; reset on emergency-reboot disabled\n");
+		dev_dbg(dev, "EMMC reset pin tied to a sleepy GPIO driver; reset on emergency-reboot disabled\n");
 	}
 
 	pwrseq->pwrseq.ops = &mmc_pwrseq_emmc_ops;

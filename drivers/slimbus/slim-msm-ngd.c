@@ -200,14 +200,14 @@ static int ngd_slim_qmi_svc_event_init(struct msm_slim_qmi *qmi)
 	ret = qmi_handle_init(&qmi->svc_event_hdl, 0,
 				&ngd_slim_qmi_svc_event_ops, NULL);
 	if (ret < 0) {
-		pr_err("%s: qmi_handle_init failed: %d\n", __func__, ret);
+		pr_debug("%s: qmi_handle_init failed: %d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = qmi_add_lookup(&qmi->svc_event_hdl, SLIMBUS_QMI_SVC_ID,
 				SLIMBUS_QMI_SVC_V1, SLIMBUS_QMI_INS_ID);
 	if (ret < 0) {
-		pr_err("%s: qmi_add_lookup failed: %d\n", __func__, ret);
+		pr_debug("%s: qmi_add_lookup failed: %d\n", __func__, ret);
 		qmi_handle_release(&qmi->svc_event_hdl);
 	}
 	return ret;
@@ -233,7 +233,7 @@ static void ngd_reg_ssr(struct msm_slim_ctrl *dev)
 	dev->dsp.domr = subsys_notif_register_notifier(subsys_name,
 							&dev->dsp.nb);
 	if (IS_ERR_OR_NULL(dev->dsp.domr)) {
-		dev_err(dev->dev,
+		dev_dbg(dev->dev,
 			"subsys_notif_register_notifier failed %ld\n",
 			PTR_ERR(dev->dsp.domr));
 		return;
@@ -428,7 +428,7 @@ static int ngd_get_tid(struct slim_controller *ctrl, struct slim_msg_txn *txn,
 				break;
 		}
 		if (i >= SLIM_MAX_TXNS) {
-			dev_err(&ctrl->dev, "out of TID\n");
+			dev_dbg(&ctrl->dev, "out of TID\n");
 			spin_unlock_irqrestore(&ctrl->txn_lock, flags);
 			return -ENOMEM;
 		}
@@ -1664,7 +1664,7 @@ static int ngd_notify_slaves(void *data)
 
 	ret = ngd_slim_qmi_svc_event_init(&dev->qmi);
 	if (ret) {
-		pr_err("Slimbus QMI service registration failed:%d\n", ret);
+		pr_debug("Slimbus QMI service registration failed:%d\n", ret);
 		pm_relax(dev->dev);
 		return ret;
 	}
@@ -1786,19 +1786,19 @@ static int ngd_slim_iommu_probe(struct device *dev)
 	struct msm_slim_ctrl *ctrl_dev;
 
 	if (unlikely(!dev->parent)) {
-		dev_err(dev, "%s no parent for this device\n", __func__);
+		dev_dbg(dev, "%s no parent for this device\n", __func__);
 		return -EINVAL;
 	}
 
 	pdev = to_platform_device(dev->parent);
 	if (!pdev) {
-		dev_err(dev, "%s Parent platform device not found\n", __func__);
+		dev_dbg(dev, "%s Parent platform device not found\n", __func__);
 		return -EINVAL;
 	}
 
 	ctrl_dev = platform_get_drvdata(pdev);
 	if (!ctrl_dev) {
-		dev_err(dev, "%s NULL controller device\n", __func__);
+		dev_dbg(dev, "%s NULL controller device\n", __func__);
 		return -EINVAL;
 
 	}
@@ -1829,31 +1829,31 @@ static int ngd_slim_probe(struct platform_device *pdev)
 	slim_mem = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						"slimbus_physical");
 	if (!slim_mem) {
-		dev_err(&pdev->dev, "no slimbus physical memory resource\n");
+		dev_dbg(&pdev->dev, "no slimbus physical memory resource\n");
 		return -ENODEV;
 	}
 	bam_mem = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						"slimbus_bam_physical");
 	if (!bam_mem) {
-		dev_err(&pdev->dev, "no slimbus BAM memory resource\n");
+		dev_dbg(&pdev->dev, "no slimbus BAM memory resource\n");
 		return -ENODEV;
 	}
 	irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ,
 						"slimbus_irq");
 	if (!irq) {
-		dev_err(&pdev->dev, "no slimbus IRQ resource\n");
+		dev_dbg(&pdev->dev, "no slimbus IRQ resource\n");
 		return -ENODEV;
 	}
 	bam_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ,
 						"slimbus_bam_irq");
 	if (!bam_irq) {
-		dev_err(&pdev->dev, "no slimbus BAM IRQ resource\n");
+		dev_dbg(&pdev->dev, "no slimbus BAM IRQ resource\n");
 		return -ENODEV;
 	}
 
 	dev = kzalloc(sizeof(struct msm_slim_ctrl), GFP_KERNEL);
 	if (IS_ERR_OR_NULL(dev)) {
-		dev_err(&pdev->dev, "no memory for MSM slimbus controller\n");
+		dev_dbg(&pdev->dev, "no memory for MSM slimbus controller\n");
 		return PTR_ERR(dev);
 	}
 
@@ -1875,9 +1875,9 @@ static int ngd_slim_probe(struct platform_device *pdev)
 
 	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
 	if (ret) {
-		dev_err(&pdev->dev, "could not set 64 bit DMA mask,trying 32\n");
+		dev_dbg(&pdev->dev, "could not set 64 bit DMA mask,trying 32\n");
 		if (dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32))) {
-			dev_err(&pdev->dev, "could not set 32 bit DMA mask\n");
+			dev_dbg(&pdev->dev, "could not set 32 bit DMA mask\n");
 			goto err_nobulk;
 		}
 	}
@@ -1899,7 +1899,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 	dev->ipc_slimbus_log = ipc_log_context_create(IPC_SLIMBUS_LOG_PAGES,
 						dev_name(dev->dev), 0);
 	if (!dev->ipc_slimbus_log)
-		dev_err(&pdev->dev, "error creating ipc_logging context\n");
+		dev_dbg(&pdev->dev, "error creating ipc_logging context\n");
 	else {
 		/* Initialize the log mask */
 		dev->ipc_log_mask = INFO_LEV;
@@ -1916,7 +1916,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		ipc_log_context_create(IPC_SLIMBUS_LOG_PAGES,
 						ipc_err_log_name, 0);
 	if (!dev->ipc_slimbus_log_err)
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"error creating ipc_error_logging context\n");
 	else
 		SLIM_INFO(dev, "start error logging for slim dev %s\n",
@@ -1925,7 +1925,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 
 	ret = sysfs_create_file(&dev->dev->kobj, &dev_attr_debug_mask.attr);
 	if (ret) {
-		dev_err(&pdev->dev, "Failed to create dev. attr\n");
+		dev_dbg(&pdev->dev, "Failed to create dev. attr\n");
 		dev->sysfs_created = false;
 	} else
 		dev->sysfs_created = true;
@@ -1933,14 +1933,14 @@ static int ngd_slim_probe(struct platform_device *pdev)
 	dev->base = devm_ioremap(&pdev->dev, slim_mem->start,
 					resource_size(slim_mem));
 	if (!dev->base) {
-		dev_err(&pdev->dev, "IOremap failed\n");
+		dev_dbg(&pdev->dev, "IOremap failed\n");
 		ret = -ENOMEM;
 		goto err_ioremap_failed;
 	}
 	dev->bam.base = devm_ioremap(&pdev->dev, bam_mem->start,
 					resource_size(bam_mem));
 	if (!dev->bam.base) {
-		dev_err(&pdev->dev, "BAM IOremap failed\n");
+		dev_dbg(&pdev->dev, "BAM IOremap failed\n");
 		ret = -ENOMEM;
 		goto err_ioremap_failed;
 	}
@@ -1949,7 +1949,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		dev->lpass.base = devm_ioremap(&pdev->dev, lpass_mem->start,
 					resource_size(lpass_mem));
 		if (!dev->lpass.base) {
-			dev_err(&pdev->dev, "LPASS IOremap failed\n");
+			dev_dbg(&pdev->dev, "LPASS IOremap failed\n");
 			ret = -ENOMEM;
 			goto err_ioremap_failed;
 		}
@@ -1961,7 +1961,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		ret = of_property_read_u32(pdev->dev.of_node, "cell-index",
 					&dev->ctrl.nr);
 		if (ret) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Cell index not specified:%d\n", ret);
 			goto err_ioremap_failed;
 		}
@@ -1982,7 +1982,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		ret = of_platform_populate(pdev->dev.of_node, ngd_slim_dt_match,
 					   NULL, &pdev->dev);
 		if (ret) {
-			dev_err(dev->dev, "%s: Failed to of_platform_populate %d\n",
+			dev_dbg(dev->dev, "%s: Failed to of_platform_populate %d\n",
 				__func__, ret);
 			goto err_ioremap_failed;
 		}
@@ -2042,7 +2042,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 	/* Register with framework */
 	ret = slim_add_numbered_controller(&dev->ctrl);
 	if (ret) {
-		dev_err(dev->dev, "error adding controller\n");
+		dev_dbg(dev->dev, "error adding controller\n");
 		goto err_ioremap_failed;
 	}
 
@@ -2064,7 +2064,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 			"ngd_slim_irq", dev);
 
 	if (ret) {
-		dev_err(&pdev->dev, "request IRQ failed\n");
+		dev_dbg(&pdev->dev, "request IRQ failed\n");
 		goto err_ioremap_failed;
 	}
 
@@ -2080,7 +2080,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 		dev->ext_mdm.domr = subsys_notif_register_notifier(ext_modem_id,
 							&dev->ext_mdm.nb);
 		if (IS_ERR_OR_NULL(dev->ext_mdm.domr))
-			dev_err(dev->dev,
+			dev_dbg(dev->dev,
 				"subsys_notif_register_notifier failed %p\n",
 				dev->ext_mdm.domr);
 	}
@@ -2093,7 +2093,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 					"ngd_rx_thread%d", dev->ctrl.nr);
 	if (IS_ERR(dev->rx_msgq_thread)) {
 		ret = PTR_ERR(dev->rx_msgq_thread);
-		dev_err(dev->dev, "Failed to start Rx thread:%d\n", ret);
+		dev_dbg(dev->dev, "Failed to start Rx thread:%d\n", ret);
 		goto err_rx_thread_create_failed;
 	}
 
@@ -2102,7 +2102,7 @@ static int ngd_slim_probe(struct platform_device *pdev)
 					"ngd_notify_sl%d", dev->ctrl.nr);
 	if (IS_ERR(dev->qmi.slave_thread)) {
 		ret = PTR_ERR(dev->qmi.slave_thread);
-		dev_err(dev->dev, "Failed to start notifier thread:%d\n", ret);
+		dev_dbg(dev->dev, "Failed to start notifier thread:%d\n", ret);
 		goto err_notify_thread_create_failed;
 	}
 	SLIM_INFO(dev, "NGD SB controller is up!\n");

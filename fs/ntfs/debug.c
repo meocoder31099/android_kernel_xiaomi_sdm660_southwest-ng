@@ -57,10 +57,10 @@ void __ntfs_warning(const char *function, const struct super_block *sb,
 	vaf.fmt = fmt;
 	vaf.va = &args;
 	if (sb)
-		pr_warn("(device %s): %s(): %pV\n",
+		pr_debug("(device %s): %s(): %pV\n",
 			sb->s_id, flen ? function : "", &vaf);
 	else
-		pr_warn("%s(): %pV\n", flen ? function : "", &vaf);
+		pr_debug("%s(): %pV\n", flen ? function : "", &vaf);
 	va_end(args);
 }
 
@@ -100,10 +100,10 @@ void __ntfs_error(const char *function, const struct super_block *sb,
 	vaf.fmt = fmt;
 	vaf.va = &args;
 	if (sb)
-		pr_err("(device %s): %s(): %pV\n",
+		pr_debug("(device %s): %s(): %pV\n",
 		       sb->s_id, flen ? function : "", &vaf);
 	else
-		pr_err("%s(): %pV\n", flen ? function : "", &vaf);
+		pr_debug("%s(): %pV\n", flen ? function : "", &vaf);
 	va_end(args);
 }
 

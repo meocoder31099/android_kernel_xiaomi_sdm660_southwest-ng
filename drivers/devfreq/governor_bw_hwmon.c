@@ -524,7 +524,7 @@ int update_bw_hwmon(struct bw_hwmon *hwmon)
 	mutex_lock(&df->lock);
 	ret = update_devfreq(df);
 	if (ret)
-		dev_err(df->dev.parent,
+		dev_dbg(df->dev.parent,
 			"Unable to update freq on request!\n");
 	mutex_unlock(&df->lock);
 
@@ -565,7 +565,7 @@ static int start_monitor(struct devfreq *df, bool init)
 	}
 
 	if (ret) {
-		dev_err(dev, "Unable to start HW monitor! (%d)\n", ret);
+		dev_dbg(dev, "Unable to start HW monitor! (%d)\n", ret);
 		return ret;
 	}
 
@@ -609,7 +609,7 @@ static int gov_start(struct devfreq *df)
 
 	node = find_hwmon_node(df);
 	if (!node) {
-		dev_err(dev, "Unable to find HW monitor!\n");
+		dev_dbg(dev, "Unable to find HW monitor!\n");
 		return -ENODEV;
 	}
 	hw = node->hw;
@@ -618,7 +618,7 @@ static int gov_start(struct devfreq *df)
 	if (df->profile->get_dev_status)
 		ret = df->profile->get_dev_status(df->dev.parent, &stat);
 	if (ret || !stat.private_data)
-		dev_warn(dev, "Device doesn't take AB votes!\n");
+		dev_dbg(dev, "Device doesn't take AB votes!\n");
 	else
 		node->dev_ab = stat.private_data;
 
@@ -677,7 +677,7 @@ static int gov_suspend(struct devfreq *df)
 		return -EPERM;
 
 	if (node->resume_freq) {
-		dev_warn(df->dev.parent, "Governor already suspended!\n");
+		dev_dbg(df->dev.parent, "Governor already suspended!\n");
 		return -EBUSY;
 	}
 
@@ -903,7 +903,7 @@ static int devfreq_bw_hwmon_ev_handler(struct devfreq *df,
 		devfreq_interval_update(df, &sample_ms);
 		ret = hw->resume_hwmon(hw);
 		if (ret) {
-			dev_err(df->dev.parent,
+			dev_dbg(df->dev.parent,
 				"Unable to resume HW monitor (%d)\n", ret);
 			goto out;
 		}
@@ -915,7 +915,7 @@ static int devfreq_bw_hwmon_ev_handler(struct devfreq *df,
 	case DEVFREQ_GOV_SUSPEND:
 		ret = gov_suspend(df);
 		if (ret) {
-			dev_err(df->dev.parent,
+			dev_dbg(df->dev.parent,
 				"Unable to suspend BW HW mon governor (%d)\n",
 				ret);
 			goto out;
@@ -927,7 +927,7 @@ static int devfreq_bw_hwmon_ev_handler(struct devfreq *df,
 	case DEVFREQ_GOV_RESUME:
 		ret = gov_resume(df);
 		if (ret) {
-			dev_err(df->dev.parent,
+			dev_dbg(df->dev.parent,
 				"Unable to resume BW HW mon governor (%d)\n",
 				ret);
 			goto out;
@@ -1013,9 +1013,9 @@ int register_bw_hwmon(struct device *dev, struct bw_hwmon *hwmon)
 	}
 
 	if (!ret)
-		dev_info(dev, "BW HWmon governor registered.\n");
+		dev_dbg(dev, "BW HWmon governor registered.\n");
 	else
-		dev_err(dev, "BW HWmon governor registration failed!\n");
+		dev_dbg(dev, "BW HWmon governor registration failed!\n");
 
 	return ret;
 }

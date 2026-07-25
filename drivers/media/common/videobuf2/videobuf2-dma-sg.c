@@ -28,7 +28,7 @@ module_param(debug, int, 0644);
 #define dprintk(level, fmt, arg...)					\
 	do {								\
 		if (debug >= level)					\
-			printk(KERN_DEBUG "vb2-dma-sg: " fmt, ## arg);	\
+			no_printk(KERN_DEBUG "vb2-dma-sg: " fmt, ## arg);	\
 	} while (0)
 
 struct vb2_dma_sg_buf {
@@ -333,7 +333,7 @@ static int vb2_dma_sg_mmap(void *buf_priv, struct vm_area_struct *vma)
 	int i = 0;
 
 	if (!buf) {
-		printk(KERN_ERR "No memory to map\n");
+		no_printk(KERN_ERR "No memory to map\n");
 		return -EINVAL;
 	}
 
@@ -342,7 +342,7 @@ static int vb2_dma_sg_mmap(void *buf_priv, struct vm_area_struct *vma)
 
 		ret = vm_insert_page(vma, uaddr, buf->pages[i++]);
 		if (ret) {
-			printk(KERN_ERR "Remapping memory, error: %d\n", ret);
+			no_printk(KERN_ERR "Remapping memory, error: %d\n", ret);
 			return ret;
 		}
 
@@ -457,7 +457,7 @@ static struct sg_table *vb2_dma_sg_dmabuf_ops_map(
 	sgt->nents = dma_map_sg(db_attach->dev, sgt->sgl, sgt->orig_nents,
 				dma_dir);
 	if (!sgt->nents) {
-		pr_err("failed to map scatterlist\n");
+		pr_debug("failed to map scatterlist\n");
 		mutex_unlock(lock);
 		return ERR_PTR(-EIO);
 	}
@@ -546,19 +546,19 @@ static int vb2_dma_sg_map_dmabuf(void *mem_priv)
 	struct sg_table *sgt;
 
 	if (WARN_ON(!buf->db_attach)) {
-		pr_err("trying to pin a non attached buffer\n");
+		pr_debug("trying to pin a non attached buffer\n");
 		return -EINVAL;
 	}
 
 	if (WARN_ON(buf->dma_sgt)) {
-		pr_err("dmabuf buffer is already pinned\n");
+		pr_debug("dmabuf buffer is already pinned\n");
 		return 0;
 	}
 
 	/* get the associated scatterlist for this buffer */
 	sgt = dma_buf_map_attachment(buf->db_attach, buf->dma_dir);
 	if (IS_ERR(sgt)) {
-		pr_err("Error getting dmabuf scatterlist\n");
+		pr_debug("Error getting dmabuf scatterlist\n");
 		return -EINVAL;
 	}
 
@@ -574,12 +574,12 @@ static void vb2_dma_sg_unmap_dmabuf(void *mem_priv)
 	struct sg_table *sgt = buf->dma_sgt;
 
 	if (WARN_ON(!buf->db_attach)) {
-		pr_err("trying to unpin a not attached buffer\n");
+		pr_debug("trying to unpin a not attached buffer\n");
 		return;
 	}
 
 	if (WARN_ON(!sgt)) {
-		pr_err("dmabuf buffer is already unpinned\n");
+		pr_debug("dmabuf buffer is already unpinned\n");
 		return;
 	}
 
@@ -625,7 +625,7 @@ static void *vb2_dma_sg_attach_dmabuf(struct device *dev, struct dma_buf *dbuf,
 	/* create attachment for the dmabuf with the user device */
 	dba = dma_buf_attach(dbuf, buf->dev);
 	if (IS_ERR(dba)) {
-		pr_err("failed to attach dmabuf\n");
+		pr_debug("failed to attach dmabuf\n");
 		kfree(buf);
 		return dba;
 	}

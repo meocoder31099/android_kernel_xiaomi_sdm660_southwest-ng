@@ -64,7 +64,7 @@ int show_unhandled_signals = 0;
 
 static void dump_backtrace_entry(unsigned long where)
 {
-	printk(" %pS\n", (void *)where);
+	no_printk(" %pS\n", (void *)where);
 }
 
 static void __dump_instr(const char *lvl, struct pt_regs *regs)
@@ -85,7 +85,7 @@ static void __dump_instr(const char *lvl, struct pt_regs *regs)
 			break;
 		}
 	}
-	printk("%sCode: %s\n", lvl, str);
+	no_printk("%sCode: %s\n", lvl, str);
 }
 
 static void dump_instr(const char *lvl, struct pt_regs *regs)
@@ -139,7 +139,7 @@ void dump_backtrace(struct pt_regs *regs, struct task_struct *tsk)
 	frame.graph = tsk->curr_ret_stack;
 #endif
 
-	printk("Call trace:\n");
+	no_printk("Call trace:\n");
 	do {
 		if (tsk != current && (cur_state != tsk->state
 			/*
@@ -154,7 +154,7 @@ void dump_backtrace(struct pt_regs *regs, struct task_struct *tsk)
 			 */
 			|| cur_sp != thread_saved_sp(tsk)
 			|| cur_fp != thread_saved_fp(tsk))) {
-			printk("The task:%s had been rescheduled!\n",
+			no_printk("The task:%s had been rescheduled!\n",
 				tsk->comm);
 			break;
 		}
@@ -196,7 +196,7 @@ static int __die(const char *str, int err, struct pt_regs *regs)
 	static int die_counter;
 	int ret;
 
-	pr_emerg("Internal error: %s: %x [#%d]" S_PREEMPT S_SMP "\n",
+	pr_debug("Internal error: %s: %x [#%d]" S_PREEMPT S_SMP "\n",
 		 str, err, ++die_counter);
 
 	/* trap and error numbers are mostly meaningless on ARM */
@@ -205,7 +205,7 @@ static int __die(const char *str, int err, struct pt_regs *regs)
 		return ret;
 
 	print_modules();
-	pr_emerg("Process %.*s (pid: %d, stack limit = 0x%p)\n",
+	pr_debug("Process %.*s (pid: %d, stack limit = 0x%p)\n",
 		 TASK_COMM_LEN, tsk->comm, task_pid_nr(tsk),
 		 end_of_stack(tsk));
 	show_regs(regs);
@@ -271,13 +271,13 @@ void arm64_force_sig_info(struct siginfo *info, const char *str,
 	if (!show_unhandled_signals_ratelimited())
 		goto send_sig;
 
-	pr_info("%s[%d]: unhandled exception: ", tsk->comm, task_pid_nr(tsk));
+	pr_debug("%s[%d]: unhandled exception: ", tsk->comm, task_pid_nr(tsk));
 	if (esr)
-		pr_cont("%s, ESR 0x%08x, ", esr_get_class_string(esr), esr);
+		pr_debug("%s, ESR 0x%08x, ", esr_get_class_string(esr), esr);
 
-	pr_cont("%s", str);
+	pr_debug("%s", str);
 	print_vma_addr(KERN_CONT " in ", regs->pc);
-	pr_cont("\n");
+	pr_debug("\n");
 	__show_regs(regs);
 
 send_sig:
@@ -797,7 +797,7 @@ asmlinkage void bad_mode(struct pt_regs *regs, int reason, unsigned int esr)
 {
 	console_verbose();
 
-	pr_crit("Bad mode in %s handler detected on CPU%d, code 0x%08x -- %s\n",
+	pr_debug("Bad mode in %s handler detected on CPU%d, code 0x%08x -- %s\n",
 		handler[reason], smp_processor_id(), esr,
 		esr_get_class_string(esr));
 
@@ -840,16 +840,16 @@ asmlinkage void handle_bad_stack(struct pt_regs *regs)
 	unsigned long far = read_sysreg(far_el1);
 
 	console_verbose();
-	pr_emerg("Insufficient stack space to handle exception!");
+	pr_debug("Insufficient stack space to handle exception!");
 
-	pr_emerg("ESR: 0x%08x -- %s\n", esr, esr_get_class_string(esr));
-	pr_emerg("FAR: 0x%016lx\n", far);
+	pr_debug("ESR: 0x%08x -- %s\n", esr, esr_get_class_string(esr));
+	pr_debug("FAR: 0x%016lx\n", far);
 
-	pr_emerg("Task stack:     [0x%016lx..0x%016lx]\n",
+	pr_debug("Task stack:     [0x%016lx..0x%016lx]\n",
 		 tsk_stk, tsk_stk + THREAD_SIZE);
-	pr_emerg("IRQ stack:      [0x%016lx..0x%016lx]\n",
+	pr_debug("IRQ stack:      [0x%016lx..0x%016lx]\n",
 		 irq_stk, irq_stk + THREAD_SIZE);
-	pr_emerg("Overflow stack: [0x%016lx..0x%016lx]\n",
+	pr_debug("Overflow stack: [0x%016lx..0x%016lx]\n",
 		 ovf_stk, ovf_stk + OVERFLOW_STACK_SIZE);
 
 	__show_regs(regs);
@@ -867,7 +867,7 @@ void __noreturn arm64_serror_panic(struct pt_regs *regs, u32 esr)
 {
 	console_verbose();
 
-	pr_crit("SError Interrupt on CPU%d, code 0x%08x -- %s\n",
+	pr_debug("SError Interrupt on CPU%d, code 0x%08x -- %s\n",
 		smp_processor_id(), esr, esr_get_class_string(esr));
 	if (regs)
 		__show_regs(regs);
@@ -919,22 +919,22 @@ asmlinkage void do_serror(struct pt_regs *regs, unsigned int esr)
 
 void __pte_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pte %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pte %016lx.\n", file, line, val);
 }
 
 void __pmd_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pmd %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pmd %016lx.\n", file, line, val);
 }
 
 void __pud_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pud %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pud %016lx.\n", file, line, val);
 }
 
 void __pgd_error(const char *file, int line, unsigned long val)
 {
-	pr_err("%s:%d: bad pgd %016lx.\n", file, line, val);
+	pr_debug("%s:%d: bad pgd %016lx.\n", file, line, val);
 }
 
 /* GENERIC_BUG traps */

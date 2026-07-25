@@ -112,7 +112,7 @@ int msm_sdw_set_spkr_gain_offset(struct snd_soc_component *component,
 	struct msm_sdw_priv *priv;
 
 	if (!component) {
-		pr_err("%s: NULL component pointer!\n", __func__);
+		pr_debug("%s: NULL component pointer!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -142,7 +142,7 @@ int msm_sdw_set_spkr_mode(struct snd_soc_component *component, int mode)
 	int size;
 
 	if (!component) {
-		pr_err("%s: NULL codec pointer!\n", __func__);
+		pr_debug("%s: NULL codec pointer!\n", __func__);
 		return -EINVAL;
 	}
 
@@ -183,7 +183,7 @@ static int msm_enable_sdw_npl_clk(struct msm_sdw_priv *msm_sdw, int enable)
 				AFE_PORT_ID_INT4_MI2S_RX,
 				&msm_sdw->sdw_npl_clk);
 			if (ret < 0) {
-				dev_err(msm_sdw->dev,
+				dev_dbg(msm_sdw->dev,
 					"%s: failed to enable SDW NPL CLK\n",
 					__func__);
 				mutex_unlock(&msm_sdw->sdw_npl_clk_mutex);
@@ -199,7 +199,7 @@ static int msm_enable_sdw_npl_clk(struct msm_sdw_priv *msm_sdw, int enable)
 				AFE_PORT_ID_INT4_MI2S_RX,
 				&msm_sdw->sdw_npl_clk);
 			if (ret < 0)
-				dev_err(msm_sdw->dev,
+				dev_dbg(msm_sdw->dev,
 					"%s: failed to disable SDW NPL CLK\n",
 					__func__);
 			msm_sdw->sdw_npl_clk_enabled = false;
@@ -227,7 +227,7 @@ static int msm_int_enable_sdw_cdc_clk(struct msm_sdw_priv *msm_sdw,
 					AFE_PORT_ID_INT4_MI2S_RX,
 					&msm_sdw->sdw_cdc_core_clk);
 				if (ret < 0) {
-					dev_err(msm_sdw->dev,
+					dev_dbg(msm_sdw->dev,
 						"%s: failed to enable SDW MCLK\n",
 						__func__);
 					goto rtn;
@@ -253,7 +253,7 @@ static int msm_int_enable_sdw_cdc_clk(struct msm_sdw_priv *msm_sdw,
 				AFE_PORT_ID_INT4_MI2S_RX,
 				&msm_sdw->sdw_cdc_core_clk);
 			if (ret < 0)
-				dev_err(msm_sdw->dev,
+				dev_dbg(msm_sdw->dev,
 					"%s: failed to disable SDW MCLK\n",
 					__func__);
 			msm_sdw->int_mclk1_enabled = false;
@@ -286,7 +286,7 @@ static void msm_disable_int_mclk1(struct work_struct *work)
 			AFE_PORT_ID_INT4_MI2S_RX,
 			&msm_sdw->sdw_cdc_core_clk);
 		if (ret < 0)
-			dev_err(msm_sdw->dev,
+			dev_dbg(msm_sdw->dev,
 				"%s failed to disable the MCLK1\n",
 				__func__);
 		msm_sdw->int_mclk1_enabled = false;
@@ -316,7 +316,7 @@ static int msm_int_mclk1_event(struct snd_soc_dapm_widget *w,
 		msm_int_enable_sdw_cdc_clk(msm_sdw, 0, true);
 		break;
 	default:
-		dev_err(msm_sdw->dev,
+		dev_dbg(msm_sdw->dev,
 			"%s: invalid DAPM event %d\n", __func__, event);
 		ret = -EINVAL;
 	}
@@ -368,7 +368,7 @@ static int __msm_sdw_reg_read(struct msm_sdw_priv *msm_sdw, unsigned short reg,
 					AFE_PORT_ID_INT4_MI2S_RX,
 					&msm_sdw->sdw_cdc_core_clk);
 		if (ret < 0) {
-			dev_err(msm_sdw->dev,
+			dev_dbg(msm_sdw->dev,
 				"%s:failed to enable the INT_MCLK1\n",
 				__func__);
 			goto unlock_exit;
@@ -413,7 +413,7 @@ static int __msm_sdw_reg_write(struct msm_sdw_priv *msm_sdw, unsigned short reg,
 		ret = afe_set_lpass_clock_v2(AFE_PORT_ID_INT4_MI2S_RX,
 					     &msm_sdw->sdw_cdc_core_clk);
 		if (ret < 0) {
-			dev_err(msm_sdw->dev,
+			dev_dbg(msm_sdw->dev,
 				"%s: failed to enable the INT_MCLK1\n",
 				__func__);
 			ret = 0;
@@ -447,7 +447,7 @@ static int msm_sdw_codec_enable_vi_feedback(struct snd_soc_dapm_widget *w,
 	int ret = 0;
 
 	if (!w) {
-		pr_err("%s invalid params\n", __func__);
+		pr_debug("%s invalid params\n", __func__);
 		return -EINVAL;
 	}
 	component = snd_soc_dapm_to_component(w->dapm);
@@ -459,7 +459,7 @@ static int msm_sdw_codec_enable_vi_feedback(struct snd_soc_dapm_widget *w,
 	dev_dbg(component->dev, "%s(): w->name %s event %d w->shift %d\n",
 		__func__, w->name, event, w->shift);
 	if (w->shift != AIF1_SDW_VIFEED) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s:Error in enabling the vi feedback path\n",
 			__func__);
 		ret = -EINVAL;
@@ -570,7 +570,7 @@ static int msm_sdwm_handle_irq(void *handle,
 	int ret = 0;
 
 	if (!handle) {
-		pr_err("%s: null handle received\n", __func__);
+		pr_debug("%s: null handle received\n", __func__);
 		return -EINVAL;
 	}
 	msm_sdw = (struct msm_sdw_priv *) handle;
@@ -584,7 +584,7 @@ static int msm_sdwm_handle_irq(void *handle,
 					   IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
 					   "swr_master_irq", swrm_handle);
 		if (ret)
-			dev_err(msm_sdw->dev, "%s: Failed to request irq %d\n",
+			dev_dbg(msm_sdw->dev, "%s: Failed to request irq %d\n",
 				__func__, ret);
 	} else
 		free_irq(msm_sdw->sdw_irq, swrm_handle);
@@ -698,7 +698,7 @@ static int msm_sdw_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 		reg = MSM_SDW_RX8_RX_PATH_CTL;
 		gain_reg = MSM_SDW_RX8_RX_VOL_CTL;
 	} else {
-		dev_err(component->dev, "%s: Interpolator reg not found\n",
+		dev_dbg(component->dev, "%s: Interpolator reg not found\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -844,7 +844,7 @@ static int msm_sdw_codec_spk_boost_event(struct snd_soc_dapm_widget *w,
 		boost_path_cfg1 = MSM_SDW_RX8_RX_PATH_CFG1;
 		reg = MSM_SDW_RX8_RX_PATH_CTL;
 	} else {
-		dev_err(component->dev, "%s: boost reg not found\n",
+		dev_dbg(component->dev, "%s: boost reg not found\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -1143,7 +1143,7 @@ static int msm_sdw_swrm_read(void *handle, int reg)
 	int val, ret;
 
 	if (!handle) {
-		pr_err("%s: NULL handle\n", __func__);
+		pr_debug("%s: NULL handle\n", __func__);
 		return -EINVAL;
 	}
 	msm_sdw = (struct msm_sdw_priv *)handle;
@@ -1163,7 +1163,7 @@ static int msm_sdw_swrm_read(void *handle, int reg)
 	ret = regmap_bulk_write(msm_sdw->regmap, sdw_rd_addr_base,
 				(u8 *)&reg, 4);
 	if (ret < 0) {
-		dev_err(msm_sdw->dev, "%s: RD Addr Failure\n", __func__);
+		dev_dbg(msm_sdw->dev, "%s: RD Addr Failure\n", __func__);
 		goto err;
 	}
 	/* Add sleep for SWR register read value to get updated. */
@@ -1172,7 +1172,7 @@ static int msm_sdw_swrm_read(void *handle, int reg)
 	ret = regmap_bulk_read(msm_sdw->regmap, sdw_rd_data_base,
 			       (u8 *)&val, 4);
 	if (ret < 0) {
-		dev_err(msm_sdw->dev, "%s: RD Data Failure\n", __func__);
+		dev_dbg(msm_sdw->dev, "%s: RD Data Failure\n", __func__);
 		goto err;
 	}
 	ret = val;
@@ -1203,7 +1203,7 @@ static int msm_sdw_bulk_write(struct msm_sdw_priv *msm_sdw,
 		ret = regmap_bulk_write(msm_sdw->regmap,
 			sdw_wr_data_base, bulk_reg[i].buf, 4);
 		if (ret < 0) {
-			dev_err(msm_sdw->dev, "%s: WR Data Failure\n",
+			dev_dbg(msm_sdw->dev, "%s: WR Data Failure\n",
 				__func__);
 			break;
 		}
@@ -1211,7 +1211,7 @@ static int msm_sdw_bulk_write(struct msm_sdw_priv *msm_sdw,
 		ret = regmap_bulk_write(msm_sdw->regmap,
 			sdw_wr_addr_base, bulk_reg[i+1].buf, 4);
 		if (ret < 0) {
-			dev_err(msm_sdw->dev,
+			dev_dbg(msm_sdw->dev,
 				"%s: WR Addr Failure: 0x%x\n",
 				__func__, (u32)(bulk_reg[i+1].buf[0]));
 			break;
@@ -1229,13 +1229,13 @@ static int msm_sdw_swrm_bulk_write(void *handle, u32 *reg, u32 *val, size_t len)
 	int i, j, ret;
 
 	if (!handle) {
-		pr_err("%s: NULL handle\n", __func__);
+		pr_debug("%s: NULL handle\n", __func__);
 		return -EINVAL;
 	}
 
 	msm_sdw = (struct msm_sdw_priv *)handle;
 	if (len <= 0) {
-		dev_err(msm_sdw->dev,
+		dev_dbg(msm_sdw->dev,
 			"%s: Invalid size: %zu\n", __func__, len);
 		return -EINVAL;
 	}
@@ -1260,7 +1260,7 @@ static int msm_sdw_swrm_bulk_write(void *handle, u32 *reg, u32 *val, size_t len)
 
 	ret = msm_sdw_bulk_write(msm_sdw, bulk_reg, (len * 2));
 	if (ret)
-		dev_err(msm_sdw->dev, "%s: swrm bulk write failed, ret: %d\n",
+		dev_dbg(msm_sdw->dev, "%s: swrm bulk write failed, ret: %d\n",
 			__func__, ret);
 
 	mutex_unlock(&msm_sdw->sdw_write_lock);
@@ -1278,7 +1278,7 @@ static int msm_sdw_swrm_write(void *handle, int reg, int val)
 	int ret;
 
 	if (!handle) {
-		pr_err("%s: NULL handle\n", __func__);
+		pr_debug("%s: NULL handle\n", __func__);
 		return -EINVAL;
 	}
 	msm_sdw = (struct msm_sdw_priv *)handle;
@@ -1298,7 +1298,7 @@ static int msm_sdw_swrm_write(void *handle, int reg, int val)
 
 	ret = msm_sdw_bulk_write(msm_sdw, bulk_reg, 2);
 	if (ret < 0)
-		dev_err(msm_sdw->dev, "%s: WR Data Failure\n", __func__);
+		dev_dbg(msm_sdw->dev, "%s: WR Data Failure\n", __func__);
 
 	mutex_unlock(&msm_sdw->sdw_write_lock);
 	return ret;
@@ -1309,7 +1309,7 @@ static int msm_sdw_swrm_clock(void *handle, bool enable)
 	struct msm_sdw_priv *msm_sdw;
 
 	if (!handle) {
-		pr_err("%s: NULL handle\n", __func__);
+		pr_debug("%s: NULL handle\n", __func__);
 		return -EINVAL;
 	}
 	msm_sdw = (struct msm_sdw_priv *)handle;
@@ -1393,7 +1393,7 @@ static int msm_sdw_hw_params(struct snd_pcm_substream *substream,
 		fs_rate = 0x06;
 		break;
 	default:
-		dev_err(dai->component->dev,
+		dev_dbg(dai->component->dev,
 			"%s: Invalid sampling rate %d\n", __func__,
 			params_rate(params));
 		return -EINVAL;
@@ -1434,7 +1434,7 @@ static int msm_sdw_hw_params(struct snd_pcm_substream *substream,
 					MSM_SDW_TOP_RX_I2S_CTL, 0x20, 0x00);
 		break;
 	default:
-		dev_err(dai->component->dev, "%s: wrong format selected\n",
+		dev_dbg(dai->component->dev, "%s: wrong format selected\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -1462,7 +1462,7 @@ static ssize_t msm_sdw_codec_version_read(struct snd_info_entry *entry,
 
 	msm_sdw = (struct msm_sdw_priv *) entry->private_data;
 	if (!msm_sdw) {
-		pr_err("%s: msm_sdw priv is null\n", __func__);
+		pr_debug("%s: msm_sdw priv is null\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1511,7 +1511,7 @@ int msm_sdw_codec_info_create_codec_entry(struct snd_info_entry *codec_root,
 						(const char *)name,
 						codec_root);
 	if (!msm_sdw->entry) {
-		dev_err(component->dev, "%s: failed to create msm_sdw entry\n",
+		dev_dbg(component->dev, "%s: failed to create msm_sdw entry\n",
 			__func__);
 		return -ENOMEM;
 	}
@@ -1520,7 +1520,7 @@ int msm_sdw_codec_info_create_codec_entry(struct snd_info_entry *codec_root,
 						   "version",
 						   msm_sdw->entry);
 	if (!version_entry) {
-		dev_err(component->dev, "%s: failed to create msm_sdw version entry\n",
+		dev_dbg(component->dev, "%s: failed to create msm_sdw version entry\n",
 			__func__);
 		return -ENOMEM;
 	}
@@ -1865,7 +1865,7 @@ static int msm_sdw_codec_probe(struct snd_soc_component *component)
 
 	msm_sdw = snd_soc_component_get_drvdata(component);
 	if (!msm_sdw) {
-		pr_err("%s:SDW priv data null\n", __func__);
+		pr_debug("%s:SDW priv data null\n", __func__);
 		return -EINVAL;
 	}
 	msm_sdw->component = component;
@@ -1881,7 +1881,7 @@ static int msm_sdw_codec_probe(struct snd_soc_component *component)
 				AUDIO_NOTIFIER_ADSP_DOMAIN,
 				&msm_sdw->service_nb);
 	if (ret < 0)
-		dev_err(msm_sdw->dev,
+		dev_dbg(msm_sdw->dev,
 			"%s: Audio notifier register failed ret = %d\n",
 			__func__, ret);
 	return 0;
@@ -1916,12 +1916,12 @@ static void msm_sdw_add_child_devices(struct work_struct *work)
 	msm_sdw = container_of(work, struct msm_sdw_priv,
 			     msm_sdw_add_child_devices_work);
 	if (!msm_sdw) {
-		pr_err("%s: Memory for msm_sdw does not exist\n",
+		pr_debug("%s: Memory for msm_sdw does not exist\n",
 			__func__);
 		return;
 	}
 	if (!msm_sdw->dev->of_node) {
-		dev_err(msm_sdw->dev,
+		dev_dbg(msm_sdw->dev,
 			"%s: DT node for msm_sdw does not exist\n", __func__);
 		return;
 	}
@@ -1941,7 +1941,7 @@ static void msm_sdw_add_child_devices(struct work_struct *work)
 
 		pdev = platform_device_alloc(plat_dev_name, -1);
 		if (!pdev) {
-			dev_err(msm_sdw->dev, "%s: pdev memory alloc failed\n",
+			dev_dbg(msm_sdw->dev, "%s: pdev memory alloc failed\n",
 				__func__);
 			ret = -ENOMEM;
 			goto err;
@@ -1953,7 +1953,7 @@ static void msm_sdw_add_child_devices(struct work_struct *work)
 			ret = platform_device_add_data(pdev, platdata,
 						       sizeof(*platdata));
 			if (ret) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"%s: cannot add plat data ctrl:%d\n",
 					__func__, ctrl_num);
 				goto fail_pdev_add;
@@ -1962,7 +1962,7 @@ static void msm_sdw_add_child_devices(struct work_struct *work)
 
 		ret = platform_device_add(pdev);
 		if (ret) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"%s: Cannot add platform device\n",
 				__func__);
 			goto fail_pdev_add;
@@ -1974,7 +1974,7 @@ static void msm_sdw_add_child_devices(struct work_struct *work)
 					struct msm_sdw_ctrl_data),
 					GFP_KERNEL);
 			if (!temp) {
-				dev_err(&pdev->dev, "out of memory\n");
+				dev_dbg(&pdev->dev, "out of memory\n");
 				ret = -ENOMEM;
 				goto err;
 			}
@@ -2006,7 +2006,7 @@ static int msm_sdw_probe(struct platform_device *pdev)
 	adsp_state = apr_get_subsys_state();
 	if (adsp_state != APR_SUBSYS_LOADED ||
 		!q6core_is_adsp_ready()) {
-		dev_err(&pdev->dev, "Adsp is not loaded yet %d\n",
+		dev_dbg(&pdev->dev, "Adsp is not loaded yet %d\n",
 				adsp_state);
 		return -EPROBE_DEFER;
 	}
@@ -2030,7 +2030,7 @@ static int msm_sdw_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(pdev->dev.of_node, "reg",
 				   &msm_sdw->sdw_base_addr);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: could not find %s entry in dt\n",
+		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
 			__func__, "reg");
 		goto err_sdw_cdc;
 	}
@@ -2046,7 +2046,7 @@ static int msm_sdw_probe(struct platform_device *pdev)
 					      &msm_sdw_regmap_config);
 	msm_sdw->sdw_irq = platform_get_irq_byname(pdev, "swr_master_irq");
 	if (msm_sdw->sdw_irq < 0) {
-		dev_err(msm_sdw->dev, "%s() error getting irq handle: %d\n",
+		dev_dbg(msm_sdw->dev, "%s() error getting irq handle: %d\n",
 				__func__, msm_sdw->sdw_irq);
 		ret = -ENODEV;
 		goto err_sdw_cdc;
@@ -2054,7 +2054,7 @@ static int msm_sdw_probe(struct platform_device *pdev)
 	ret = snd_soc_register_component(&pdev->dev, &soc_codec_dev_msm_sdw,
 				     msm_sdw_dai, ARRAY_SIZE(msm_sdw_dai));
 	if (ret) {
-		dev_err(&pdev->dev, "%s: Codec registration failed, ret = %d\n",
+		dev_dbg(&pdev->dev, "%s: Codec registration failed, ret = %d\n",
 			__func__, ret);
 		goto err_sdw_cdc;
 	}

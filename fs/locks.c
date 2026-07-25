@@ -241,7 +241,7 @@ locks_dump_ctx_list(struct list_head *list, char *list_type)
 	struct file_lock *fl;
 
 	list_for_each_entry(fl, list, fl_list) {
-		pr_warn("%s: fl_owner=%p fl_flags=0x%x fl_type=0x%x fl_pid=%u\n", list_type, fl->fl_owner, fl->fl_flags, fl->fl_type, fl->fl_pid);
+		pr_debug("%s: fl_owner=%p fl_flags=0x%x fl_type=0x%x fl_pid=%u\n", list_type, fl->fl_owner, fl->fl_flags, fl->fl_type, fl->fl_pid);
 	}
 }
 
@@ -253,7 +253,7 @@ locks_check_ctx_lists(struct inode *inode)
 	if (unlikely(!list_empty(&ctx->flc_flock) ||
 		     !list_empty(&ctx->flc_posix) ||
 		     !list_empty(&ctx->flc_lease))) {
-		pr_warn("Leaked locks on dev=0x%x:0x%x ino=0x%lx:\n",
+		pr_debug("Leaked locks on dev=0x%x:0x%x ino=0x%lx:\n",
 			MAJOR(inode->i_sb->s_dev), MINOR(inode->i_sb->s_dev),
 			inode->i_ino);
 		locks_dump_ctx_list(&ctx->flc_flock, "FLOCK");
@@ -271,7 +271,7 @@ locks_check_ctx_file_list(struct file *filp, struct list_head *list,
 
 	list_for_each_entry(fl, list, fl_list)
 		if (fl->fl_file == filp)
-			pr_warn("Leaked %s lock on dev=0x%x:0x%x ino=0x%lx "
+			pr_debug("Leaked %s lock on dev=0x%x:0x%x ino=0x%lx "
 				" fl_owner=%p fl_flags=0x%x fl_type=0x%x fl_pid=%u\n",
 				list_type, MAJOR(inode->i_sb->s_dev),
 				MINOR(inode->i_sb->s_dev), inode->i_ino,
@@ -1371,7 +1371,7 @@ int lease_modify(struct file_lock *fl, int arg, struct list_head *dispose)
 		filp->f_owner.signum = 0;
 		fasync_helper(0, fl->fl_file, 0, &fl->fl_fasync);
 		if (fl->fl_fasync != NULL) {
-			printk(KERN_ERR "locks_delete_lock: fasync == %p\n", fl->fl_fasync);
+			no_printk(KERN_ERR "locks_delete_lock: fasync == %p\n", fl->fl_fasync);
 			fl->fl_fasync = NULL;
 		}
 		locks_delete_lock_ctx(fl, dispose);

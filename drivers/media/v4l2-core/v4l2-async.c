@@ -132,9 +132,9 @@ static bool match_fwnode(struct v4l2_async_notifier *notifier,
 
 	if (dev && dev->driver) {
 		if (sd_fwnode_is_ep)
-			dev_warn(dev, "Driver %s uses device fwnode, incorrect match may occur\n",
+			dev_dbg(dev, "Driver %s uses device fwnode, incorrect match may occur\n",
 				 dev->driver->name);
-		dev_notice(dev, "Consider updating driver %s to match on endpoints\n",
+		dev_dbg(dev, "Consider updating driver %s to match on endpoints\n",
 			   dev->driver->name);
 	}
 
@@ -463,14 +463,14 @@ static int __v4l2_async_notifier_register(struct v4l2_async_notifier *notifier)
 		case V4L2_ASYNC_MATCH_FWNODE:
 			if (v4l2_async_notifier_fwnode_has_async_subdev(
 				    notifier, asd->match.fwnode, i)) {
-				dev_err(dev,
+				dev_dbg(dev,
 					"fwnode has already been registered or in notifier's subdev list\n");
 				ret = -EEXIST;
 				goto err_unlock;
 			}
 			break;
 		default:
-			dev_err(dev, "Invalid match type %u on %p\n",
+			dev_dbg(dev, "Invalid match type %u on %p\n",
 				asd->match_type, asd);
 			ret = -EINVAL;
 			goto err_unlock;

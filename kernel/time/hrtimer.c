@@ -744,7 +744,7 @@ static void hrtimer_switch_to_hres(void)
 	struct hrtimer_cpu_base *base = this_cpu_ptr(&hrtimer_bases);
 
 	if (tick_init_highres()) {
-		pr_warn("Could not switch to high resolution mode on CPU %u\n",
+		pr_debug("Could not switch to high resolution mode on CPU %u\n",
 			base->cpu);
 		return;
 	}

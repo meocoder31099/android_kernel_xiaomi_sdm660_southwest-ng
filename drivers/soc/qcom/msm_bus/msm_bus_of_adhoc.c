@@ -40,7 +40,7 @@ static int get_qos_mode(struct platform_device *pdev,
 			break;
 	}
 	if (i == ARRAY_SIZE(qos_names))
-		dev_err(&pdev->dev, "Cannot match mode qos %s using Bypass\n",
+		dev_dbg(&pdev->dev, "Cannot match mode qos %s using Bypass\n",
 				qos_mode);
 	else
 		ret = i;
@@ -70,7 +70,7 @@ static int *get_arr(struct platform_device *pdev,
 
 	ret = of_property_read_u32_array(node, prop, (u32 *)arr, *nports);
 	if (ret) {
-		dev_err(&pdev->dev, "Error in reading property: %s\n", prop);
+		dev_dbg(&pdev->dev, "Error in reading property: %s\n", prop);
 		goto arr_err;
 	}
 
@@ -97,13 +97,13 @@ static struct msm_bus_fab_device_type *get_fab_device_info(
 
 	ret = of_property_read_string(dev_node, "qcom,base-name", &base_name);
 	if (ret) {
-		dev_err(&pdev->dev, "Error: Unable to get base address name\n");
+		dev_dbg(&pdev->dev, "Error: Unable to get base address name\n");
 		goto fab_dev_err;
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, base_name);
 	if (!res) {
-		dev_err(&pdev->dev, "Error getting qos base addr %s\n",
+		dev_dbg(&pdev->dev, "Error getting qos base addr %s\n",
 								base_name);
 		goto fab_dev_err;
 	}
@@ -126,7 +126,7 @@ static struct msm_bus_fab_device_type *get_fab_device_info(
 	ret = of_property_read_u32(dev_node, "qcom,bus-type",
 						&fab_dev->bus_type);
 	if (ret) {
-		dev_warn(&pdev->dev, "Bus type is missing\n");
+		dev_dbg(&pdev->dev, "Bus type is missing\n");
 		goto fab_dev_err;
 	}
 
@@ -220,7 +220,7 @@ static int msm_bus_of_parse_clk_array(struct device_node *dev_node,
 
 	clks = of_property_count_strings(dev_node, "clock-names");
 	if (clks < 0) {
-		dev_err(&pdev->dev, "No qos clks node %d\n", id);
+		dev_dbg(&pdev->dev, "No qos clks node %d\n", id);
 		ret = clks;
 		goto exit_of_parse_clk_array;
 	}
@@ -241,7 +241,7 @@ static int msm_bus_of_parse_clk_array(struct device_node *dev_node,
 		(*clk_arr)[idx].clk = of_clk_get_by_name(dev_node, clk_name);
 
 		if (IS_ERR_OR_NULL((*clk_arr)[idx].clk)) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Failed to get clk %s for bus%d\n", clk_name,
 									id);
 			continue;
@@ -379,19 +379,19 @@ static struct msm_bus_node_info_type *get_node_info_data(
 			sizeof(struct msm_bus_node_info_type),
 			GFP_KERNEL);
 	if (!node_info) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Error: Unable to allocate memory for node_info\n");
 		return NULL;
 	}
 
 	ret = of_property_read_u32(dev_node, "cell-id", &node_info->id);
 	if (ret) {
-		dev_warn(&pdev->dev, "Bus node is missing cell-id\n");
+		dev_dbg(&pdev->dev, "Bus node is missing cell-id\n");
 		goto node_info_err;
 	}
 	ret = of_property_read_string(dev_node, "label", &node_info->name);
 	if (ret) {
-		dev_warn(&pdev->dev, "Bus node is missing name\n");
+		dev_dbg(&pdev->dev, "Bus node is missing name\n");
 		goto node_info_err;
 	}
 	node_info->qport = get_arr(pdev, dev_node, "qcom,qport",
@@ -441,7 +441,7 @@ static struct msm_bus_node_info_type *get_node_info_data(
 	if (!IS_ERR_OR_NULL(bus_dev)) {
 		if (of_property_read_u32(bus_dev, "cell-id",
 			&node_info->bus_device_id)) {
-			dev_err(&pdev->dev, "Can't find bus device. Node %d\n",
+			dev_dbg(&pdev->dev, "Can't find bus device. Node %d\n",
 					node_info->id);
 			goto node_info_err;
 		}
@@ -492,7 +492,7 @@ static int get_bus_node_device_data(
 
 	node_device->node_info = get_node_info_data(dev_node, pdev);
 	if (IS_ERR_OR_NULL(node_device->node_info)) {
-		dev_err(&pdev->dev, "Error: Node info missing\n");
+		dev_dbg(&pdev->dev, "Error: Node info missing\n");
 		return -ENODATA;
 	}
 	node_device->ap_owned = of_property_read_bool(dev_node,
@@ -505,7 +505,7 @@ static int get_bus_node_device_data(
 			node_device->fabdev =
 				get_fab_device_info(dev_node, pdev);
 			if (IS_ERR_OR_NULL(node_device->fabdev)) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"Error: Fabric device info missing\n");
 				devm_kfree(&pdev->dev, node_device->node_info);
 				return -ENODATA;
@@ -536,7 +536,7 @@ static int get_bus_node_device_data(
 		if (IS_ERR_OR_NULL(node_device->clk[DUAL_CTX].clk)) {
 			int ret;
 
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"%s:Failed to get bus clk for bus%d ctx%d\n",
 				__func__, node_device->node_info->id,
 								DUAL_CTX);
@@ -557,7 +557,7 @@ static int get_bus_node_device_data(
 		if (IS_ERR_OR_NULL(node_device->clk[ACTIVE_CTX].clk)) {
 			int ret;
 
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Failed to get bus clk for bus%d ctx%d\n",
 				 node_device->node_info->id, ACTIVE_CTX);
 			ret = (IS_ERR(node_device->clk[DUAL_CTX].clk) ?
@@ -600,7 +600,7 @@ static int get_bus_node_device_data(
 						&node_device->node_qos_clks,
 						&node_device->num_node_qos_clks,
 						node_device->node_info->id)) {
-				dev_info(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"Bypass QoS programming\n");
 				node_device->fabdev->bypass_qos_prg = true;
 			}
@@ -650,7 +650,7 @@ static int get_bus_node_device_data(
 						&node_device->node_qos_clks,
 						&node_device->num_node_qos_clks,
 						node_device->node_info->id)) {
-				dev_info(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"Bypass QoS programming\n");
 				node_device->fabdev->bypass_qos_prg = true;
 			}
@@ -695,7 +695,7 @@ struct msm_bus_device_node_registration
 	unsigned int ret;
 
 	if (!pdev) {
-		pr_err("Error: Null platform device\n");
+		pr_debug("Error: Null platform device\n");
 		return NULL;
 	}
 
@@ -721,7 +721,7 @@ struct msm_bus_device_node_registration
 		ret = get_bus_node_device_data(child_node, pdev,
 				&pdata->info[i]);
 		if (ret) {
-			dev_err(&pdev->dev, "Error: unable to initialize bus nodes\n");
+			dev_dbg(&pdev->dev, "Error: unable to initialize bus nodes\n");
 			goto node_reg_err_1;
 		}
 		pdata->info[i].of_node = child_node;
@@ -775,7 +775,7 @@ static int msm_bus_of_get_ids(struct platform_device *pdev,
 		*num_ids = size / sizeof(int);
 		ids = devm_kzalloc(&pdev->dev, size, GFP_KERNEL);
 	} else {
-		dev_err(&pdev->dev, "No rule nodes, skipping node\n");
+		dev_dbg(&pdev->dev, "No rule nodes, skipping node\n");
 		ret = -ENXIO;
 		goto exit_get_ids;
 	}
@@ -784,14 +784,14 @@ static int msm_bus_of_get_ids(struct platform_device *pdev,
 	for (i = 0; i < *num_ids; i++) {
 		rule_node = of_parse_phandle(dev_node, prop_name, i);
 		if (IS_ERR_OR_NULL(rule_node)) {
-			dev_err(&pdev->dev, "Can't get rule node id\n");
+			dev_dbg(&pdev->dev, "Can't get rule node id\n");
 			ret = -ENXIO;
 			goto err_get_ids;
 		}
 
 		if (of_property_read_u32(rule_node, "cell-id",
 				&ids[i])) {
-			dev_err(&pdev->dev, "Can't get rule node id\n");
+			dev_dbg(&pdev->dev, "Can't get rule node id\n");
 			ret = -ENXIO;
 			goto err_get_ids;
 		}
@@ -843,7 +843,7 @@ int msm_bus_of_get_static_rules(struct platform_device *pdev,
 		ret = of_property_read_u32(child_node, "qcom,src-field",
 				&local_rule[rule_idx].src_field);
 		if (ret) {
-			dev_err(&pdev->dev, "src-field missing\n");
+			dev_dbg(&pdev->dev, "src-field missing\n");
 			ret = -ENXIO;
 			goto err_static_rules;
 		}
@@ -851,7 +851,7 @@ int msm_bus_of_get_static_rules(struct platform_device *pdev,
 		ret = of_property_read_u32(child_node, "qcom,src-op",
 				&local_rule[rule_idx].op);
 		if (ret) {
-			dev_err(&pdev->dev, "src-op missing\n");
+			dev_dbg(&pdev->dev, "src-op missing\n");
 			ret = -ENXIO;
 			goto err_static_rules;
 		}
@@ -859,14 +859,14 @@ int msm_bus_of_get_static_rules(struct platform_device *pdev,
 		ret = of_property_read_u32(child_node, "qcom,mode",
 				&local_rule[rule_idx].mode);
 		if (ret) {
-			dev_err(&pdev->dev, "mode missing\n");
+			dev_dbg(&pdev->dev, "mode missing\n");
 			ret = -ENXIO;
 			goto err_static_rules;
 		}
 
 		ret = of_property_read_u32(child_node, "qcom,thresh", &bw_fld);
 		if (ret) {
-			dev_err(&pdev->dev, "thresh missing\n");
+			dev_dbg(&pdev->dev, "thresh missing\n");
 			ret = -ENXIO;
 			goto err_static_rules;
 		} else

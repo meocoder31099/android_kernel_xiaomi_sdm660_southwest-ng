@@ -113,7 +113,7 @@ static int wcd9335_bring_up(struct wcd9xxx *wcd9xxx)
 		return -EINVAL;
 
 	if (!wcd9xxx->regmap) {
-		dev_err(wcd9xxx->dev, "%s: wcd9xxx regmap is null!\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9xxx regmap is null!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -123,12 +123,12 @@ static int wcd9335_bring_up(struct wcd9xxx *wcd9xxx)
 	regmap_read(wcd_regmap, WCD9335_CHIP_TIER_CTRL_CHIP_ID_BYTE0, &byte0);
 
 	if ((val < 0) || (byte0 < 0)) {
-		dev_err(wcd9xxx->dev, "%s: tasha codec version detection fail!\n",
+		dev_dbg(wcd9xxx->dev, "%s: tasha codec version detection fail!\n",
 			__func__);
 		return -EINVAL;
 	}
 	if ((val & 0x80) && (byte0 == 0x0)) {
-		dev_info(wcd9xxx->dev, "%s: wcd9335 codec version is v1.1\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9335 codec version is v1.1\n",
 			 __func__);
 		regmap_write(wcd_regmap, WCD9335_CODEC_RPM_RST_CTL, 0x01);
 		regmap_write(wcd_regmap, WCD9335_SIDO_SIDO_CCL_2, 0xFC);
@@ -141,7 +141,7 @@ static int wcd9335_bring_up(struct wcd9xxx *wcd9xxx)
 			     0x3);
 		regmap_write(wcd_regmap, WCD9335_CODEC_RPM_RST_CTL, 0x3);
 	} else if (byte0 == 0x1) {
-		dev_info(wcd9xxx->dev, "%s: wcd9335 codec version is v2.0\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9335 codec version is v2.0\n",
 			 __func__);
 		regmap_write(wcd_regmap, WCD9335_CODEC_RPM_RST_CTL, 0x01);
 		regmap_write(wcd_regmap, WCD9335_SIDO_SIDO_TEST_2, 0x00);
@@ -155,7 +155,7 @@ static int wcd9335_bring_up(struct wcd9xxx *wcd9xxx)
 			     0x3);
 		regmap_write(wcd_regmap, WCD9335_CODEC_RPM_RST_CTL, 0x3);
 	} else if ((byte0 == 0) && (!(val & 0x80))) {
-		dev_info(wcd9xxx->dev, "%s: wcd9335 codec version is v1.0\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9335 codec version is v1.0\n",
 			 __func__);
 		regmap_write(wcd_regmap, WCD9335_CODEC_RPM_RST_CTL, 0x01);
 		regmap_write(wcd_regmap, WCD9335_SIDO_SIDO_CCL_2, 0xFC);
@@ -164,7 +164,7 @@ static int wcd9335_bring_up(struct wcd9xxx *wcd9xxx)
 			     0x3);
 		regmap_write(wcd_regmap, WCD9335_CODEC_RPM_RST_CTL, 0x3);
 	} else {
-		dev_err(wcd9xxx->dev, "%s: tasha codec version unknown\n",
+		dev_dbg(wcd9xxx->dev, "%s: tasha codec version unknown\n",
 			__func__);
 		ret = -EINVAL;
 	}
@@ -191,7 +191,7 @@ static int wcd9335_get_cdc_info(struct wcd9xxx *wcd9xxx,
 		return -EINVAL;
 
 	if (!wcd9xxx->regmap) {
-		dev_err(wcd9xxx->dev, "%s: wcd9xxx regmap is null!\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9xxx regmap is null!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -207,7 +207,7 @@ static int wcd9335_get_cdc_info(struct wcd9xxx *wcd9xxx,
 	if (rc)
 		return -EINVAL;
 
-	dev_info(wcd9xxx->dev, "%s: wcd9xxx chip id major 0x%x, minor 0x%x\n",
+	dev_dbg(wcd9xxx->dev, "%s: wcd9xxx chip id major 0x%x, minor 0x%x\n",
 		 __func__, id_major, id_minor);
 
 	/* Version detection */
@@ -218,7 +218,7 @@ static int wcd9335_get_cdc_info(struct wcd9xxx *wcd9xxx,
 	} else if (id_major == TASHA2P0_MAJOR)
 		version = 2;
 	else
-		dev_err(wcd9xxx->dev, "%s: wcd9335 version unknown (major 0x%x, minor 0x%x)\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9335 version unknown (major 0x%x, minor 0x%x)\n",
 			__func__, id_major, id_minor);
 
 	/* Fill codec type info */
@@ -278,7 +278,7 @@ static int wcd934x_bring_up(struct wcd9xxx *wcd9xxx)
 		return -EINVAL;
 
 	if (!wcd9xxx->regmap) {
-		dev_err(wcd9xxx->dev, "%s: wcd9xxx regmap is null!\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd9xxx regmap is null!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -317,7 +317,7 @@ static int wcd934x_get_cdc_info(struct wcd9xxx *wcd9xxx,
 		return -EINVAL;
 
 	if (!wcd9xxx->regmap) {
-		dev_err(wcd9xxx->dev, "%s: wcd9xxx regmap is null\n", __func__);
+		dev_dbg(wcd9xxx->dev, "%s: wcd9xxx regmap is null\n", __func__);
 		return -EINVAL;
 	}
 	wcd_regmap = wcd9xxx->regmap;
@@ -332,7 +332,7 @@ static int wcd934x_get_cdc_info(struct wcd9xxx *wcd9xxx,
 	if (rc)
 		return -EINVAL;
 
-	dev_info(wcd9xxx->dev, "%s: wcd9xxx chip id major 0x%x, minor 0x%x\n",
+	dev_dbg(wcd9xxx->dev, "%s: wcd9xxx chip id major 0x%x, minor 0x%x\n",
 		 __func__, id_major, id_minor);
 
 	if (id_major != TAVIL_MAJOR)
@@ -349,7 +349,7 @@ static int wcd934x_get_cdc_info(struct wcd9xxx *wcd9xxx,
 
 version_unknown:
 	if (version < 0)
-		dev_err(wcd9xxx->dev, "%s: wcd934x version unknown\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd934x version unknown\n",
 			__func__);
 
 	/* Fill codec type info */

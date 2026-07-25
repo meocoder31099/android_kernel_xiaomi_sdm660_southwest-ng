@@ -364,7 +364,7 @@ static irqreturn_t cx_ipeak_irq_soft_handler(int irq, void *data)
 					victim_list[i].freq_limit);
 
 			if (ret) {
-				dev_err(&device_ipeak.pdev->dev,
+				dev_dbg(&device_ipeak.pdev->dev,
 					"Unable to throttle client:%d freq:%d\n",
 					victim_list[i].client_id,
 					victim_list[i].freq_limit);
@@ -388,7 +388,7 @@ static irqreturn_t cx_ipeak_irq_soft_handler(int irq, void *data)
 			ret = victim_cb(victim_list[i].data, 0);
 
 			if (ret)
-				dev_err(&device_ipeak.pdev->dev, "Unable to remove freq limit client:%d\n",
+				dev_dbg(&device_ipeak.pdev->dev, "Unable to remove freq limit client:%d\n",
 						victim_list[i].client_id);
 
 			writel_relaxed(0, (device_ipeak.tcsr_vptr +
@@ -415,7 +415,7 @@ int cx_ipeak_request_irq(struct platform_device *pdev, const  char *name,
 			IRQF_ONESHOT | IRQF_TRIGGER_RISING, name, data);
 
 	if (ret)
-		dev_err(&pdev->dev, "Unable to get interrupt %s: %d\n",
+		dev_dbg(&pdev->dev, "Unable to get interrupt %s: %d\n",
 				name, ret);
 
 	return ret ? ret : num;

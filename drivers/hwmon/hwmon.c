@@ -573,7 +573,7 @@ __hwmon_device_register(struct device *dev, const char *name, void *drvdata,
 
 	/* Complain about invalid characters in hwmon name attribute */
 	if (name && (!strlen(name) || strpbrk(name, "-* \t\n")))
-		dev_warn(dev,
+		dev_dbg(dev,
 			 "hwmon: '%s' is not a valid name attribute, please fix\n",
 			 name);
 
@@ -736,7 +736,7 @@ EXPORT_SYMBOL_GPL(hwmon_device_register_with_info);
  */
 struct device *hwmon_device_register(struct device *dev)
 {
-	dev_warn(dev,
+	dev_dbg(dev,
 		 "hwmon_device_register() is deprecated. Please convert the driver to use hwmon_device_register_with_info().\n");
 
 	return __hwmon_device_register(dev, NULL, NULL, NULL, NULL);
@@ -882,7 +882,7 @@ static void __init hwmon_pci_quirks(void)
 			pci_read_config_word(sb, 0x64, &base);
 
 			if (base == 0 && !(enable & BIT(2))) {
-				dev_info(&sb->dev,
+				dev_dbg(&sb->dev,
 					 "Opening wide generic port at 0x295\n");
 				pci_write_config_word(sb, 0x64, 0x295);
 				pci_write_config_byte(sb, 0x48,
@@ -902,7 +902,7 @@ static int __init hwmon_init(void)
 
 	err = class_register(&hwmon_class);
 	if (err) {
-		pr_err("couldn't register hwmon sysfs class\n");
+		pr_debug("couldn't register hwmon sysfs class\n");
 		return err;
 	}
 	return 0;

@@ -130,9 +130,9 @@ void epping_hex_dump(void *data, int buf_len, const char *str)
 	char *buf = (char *)data;
 	int i;
 
-	printk("%s: E, %s\n", __func__, str);
+	no_printk("%s: E, %s\n", __func__, str);
 	for (i = 0; (i + 7) < buf_len; i += 8) {
-		printk("%02x %02x %02x %02x %02x %02x %02x %02x\n",
+		no_printk("%02x %02x %02x %02x %02x %02x %02x %02x\n",
 		       buf[i],
 		       buf[i + 1],
 		       buf[i + 2],
@@ -142,9 +142,9 @@ void epping_hex_dump(void *data, int buf_len, const char *str)
 
 	/* Dump the bytes in the last line */
 	for (; i < buf_len; i++) {
-		printk("%02x ", buf[i]);
+		no_printk("%02x ", buf[i]);
 	}
-	printk("\n%s: X %s\n", __func__, str);
+	no_printk("\n%s: X %s\n", __func__, str);
 }
 
 void *epping_get_qdf_ctx(void)

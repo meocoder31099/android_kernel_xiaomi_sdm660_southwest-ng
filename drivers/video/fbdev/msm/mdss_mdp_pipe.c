@@ -495,7 +495,7 @@ u32 mdss_mdp_smp_calc_num_blocks(struct mdss_mdp_pipe *pipe)
 
 	rc = mdss_mdp_calc_stride(pipe, &ps);
 	if (rc) {
-		pr_err("wrong stride calc\n");
+		pr_debug("wrong stride calc\n");
 		return 0;
 	}
 
@@ -947,13 +947,13 @@ int mdss_mdp_smp_handoff(struct mdss_data_type *mdata)
 			}
 
 			if (!pipe) {
-				pr_warn("Invalid client id %d for SMP MMB %d\n",
+				pr_debug("Invalid client id %d for SMP MMB %d\n",
 					client_id, i);
 				continue;
 			}
 
 			if (!pipe->is_handed_off) {
-				pr_warn("SMP MMB %d assigned to a pipe not marked for handoff (client id %d)\n"
+				pr_debug("SMP MMB %d assigned to a pipe not marked for handoff (client id %d)\n"
 					, i, client_id);
 				continue;
 			}
@@ -1128,7 +1128,7 @@ static int mdss_mdp_pipe_init_config(struct mdss_mdp_pipe *pipe,
 	if (pipe && pipe->unhalted) {
 		rc = mdss_mdp_pipe_fetch_halt(pipe, false);
 		if (rc) {
-			pr_err("%d failed because pipe is in bad state\n",
+			pr_debug("%d failed because pipe is in bad state\n",
 				pipe->num);
 			goto end;
 		}
@@ -1200,7 +1200,7 @@ static struct mdss_mdp_pipe *mdss_mdp_pipe_init(struct mdss_mdp_mixer *mixer,
 
 	default:
 		npipes = 0;
-		pr_err("invalid pipe type %d\n", type);
+		pr_debug("invalid pipe type %d\n", type);
 		break;
 	}
 
@@ -1210,7 +1210,7 @@ static struct mdss_mdp_pipe *mdss_mdp_pipe_init(struct mdss_mdp_mixer *mixer,
 
 		off += left_blend_pipe->priority - pool_head->priority + 1;
 		if (off >= npipes) {
-			pr_warn("priority limitation. l_pipe:%d. no low priority %d pipe type available.\n",
+			pr_debug("priority limitation. l_pipe:%d. no low priority %d pipe type available.\n",
 				left_blend_pipe->num, type);
 			pipe = ERR_PTR(-EBADSLT);
 			return pipe;
@@ -1238,7 +1238,7 @@ static struct mdss_mdp_pipe *mdss_mdp_pipe_init(struct mdss_mdp_mixer *mixer,
 		return ERR_PTR(-EINVAL);
 cursor_done:
 	if (!pipe)
-		pr_err("no %d type pipes available\n", type);
+		pr_debug("no %d type pipes available\n", type);
 
 	return pipe;
 }
@@ -1292,7 +1292,7 @@ struct mdss_mdp_pipe *mdss_mdp_pipe_assign(struct mdss_data_type *mdata,
 	mutex_lock(&mdss_mdp_sspp_lock);
 	pipe = mdss_mdp_pipe_search(mdata, ndx, rect_num);
 	if (!pipe) {
-		pr_err("pipe search failed\n");
+		pr_debug("pipe search failed\n");
 		pipe = ERR_PTR(-EINVAL);
 		goto error;
 	}
@@ -1304,7 +1304,7 @@ struct mdss_mdp_pipe *mdss_mdp_pipe_assign(struct mdss_data_type *mdata,
 				!refcount_read(&pipe->kref.refcount),
 				usecs_to_jiffies(PIPE_CLEANUP_TIMEOUT_US));
 			if (rc == 0 || retry_count == 5) {
-				pr_err("pipe ndx:%d free wait failed, mfd ndx:%d rc=%d\n",
+				pr_debug("pipe ndx:%d free wait failed, mfd ndx:%d rc=%d\n",
 					pipe->ndx,
 					pipe->mfd ? pipe->mfd->index : -1, rc);
 				pipe = ERR_PTR(-EBUSY);
@@ -1426,7 +1426,7 @@ static void mdss_mdp_pipe_check_stage(struct mdss_mdp_pipe *pipe,
 	if (pipe->is_right_blend)
 		index++;
 	if (index < MAX_PIPES_PER_LM && pipe == mixer->stage_pipe[index]) {
-		pr_err("pipe%d mixer:%d pipe->mixer_stage=%d src_split:%d right blend:%d\n",
+		pr_debug("pipe%d mixer:%d pipe->mixer_stage=%d src_split:%d right blend:%d\n",
 			pipe->num, mixer->num, pipe->mixer_stage,
 			pipe->src_split_req, pipe->is_right_blend);
 		MDSS_XLOG_TOUT_HANDLER("mdp", "dbg_bus", "panic");
@@ -1506,7 +1506,7 @@ static bool mdss_mdp_check_pipe_in_use(struct mdss_mdp_pipe *pipe)
 
 		if (mdss_mdp_mixer_reg_has_pipe(mixer, pipe)) {
 			in_use = true;
-			pr_err("IN USE: pipe=%d mixer=%d\n",
+			pr_debug("IN USE: pipe=%d mixer=%d\n",
 					pipe->num, mixer->num);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "vbif", "vbif_nrt",
 				"dbg_bus", "vbif_dbg_bus", "panic");
@@ -1515,7 +1515,7 @@ static bool mdss_mdp_check_pipe_in_use(struct mdss_mdp_pipe *pipe)
 		mixer = ctl->mixer_right;
 		if (mixer && mdss_mdp_mixer_reg_has_pipe(mixer, pipe)) {
 			in_use = true;
-			pr_err("IN USE: pipe=%d mixer=%d\n",
+			pr_debug("IN USE: pipe=%d mixer=%d\n",
 					pipe->num, mixer->num);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "vbif", "vbif_nrt",
 				"dbg_bus", "vbif_dbg_bus", "panic");
@@ -1642,7 +1642,7 @@ int mdss_mdp_pipe_fetch_halt(struct mdss_mdp_pipe *pipe, bool is_recovery)
 
 	if (!is_idle && !in_use) {
 
-		pr_err("%pS: pipe%d is not idle. xin_id=%d\n",
+		pr_debug("%pS: pipe%d is not idle. xin_id=%d\n",
 			__builtin_return_address(0), pipe->num, pipe->xin_id);
 
 		mutex_lock(&mdata->reg_lock);
@@ -1707,7 +1707,7 @@ int mdss_mdp_pipe_destroy(struct mdss_mdp_pipe *pipe)
 {
 	if (!kref_put_mutex(&pipe->kref, mdss_mdp_pipe_free,
 			&mdss_mdp_sspp_lock)) {
-		pr_err("unable to free pipe %d while still in use\n",
+		pr_debug("unable to free pipe %d while still in use\n",
 				pipe->num);
 		return -EBUSY;
 	}
@@ -1762,13 +1762,13 @@ int mdss_mdp_pipe_handoff(struct mdss_mdp_pipe *pipe)
 		src_fmt = MDP_RGB_565;
 		break;
 	default:
-		pr_err("Invalid bpp=%d found\n", bpp);
+		pr_debug("Invalid bpp=%d found\n", bpp);
 		rc = -EINVAL;
 		goto error;
 	}
 	pipe->src_fmt = mdss_mdp_get_format_params(src_fmt);
 	if (!pipe->src_fmt) {
-		pr_err("%s: failed to retrieve format parameters\n",
+		pr_debug("%s: failed to retrieve format parameters\n",
 			__func__);
 		rc = -EINVAL;
 		goto error;
@@ -1980,7 +1980,7 @@ static int mdss_mdp_image_setup(struct mdss_mdp_pipe *pipe,
 			main_ctl = mdss_mdp_get_main_ctl(pipe->mixer_left->ctl);
 
 		if (!main_ctl) {
-			pr_err("Error: couldn't find main_ctl for pipe%d\n",
+			pr_debug("Error: couldn't find main_ctl for pipe%d\n",
 				pipe->num);
 			return -EINVAL;
 		}
@@ -2199,7 +2199,7 @@ int mdss_mdp_pipe_addr_setup(struct mdss_data_type *mdata,
 	u32 i, j;
 
 	if (!head || !mdata) {
-		pr_err("unable to setup pipe type=%d: invalid input\n", type);
+		pr_debug("unable to setup pipe type=%d: invalid input\n", type);
 		return -EINVAL;
 	}
 
@@ -2321,7 +2321,7 @@ static int mdss_mdp_pipe_solidfill_setup(struct mdss_mdp_pipe *pipe)
 
 	ret = mdss_mdp_image_setup(pipe, NULL);
 	if (ret) {
-		pr_err("image setup error for pnum=%d\n", pipe->num);
+		pr_debug("image setup error for pnum=%d\n", pipe->num);
 		return ret;
 	}
 
@@ -2450,7 +2450,7 @@ static u32 __get_ts_count(struct mdss_mdp_pipe *pipe,
 
 	if (mdss_mdp_get_panel_params(pipe, mixer, &fps, &v_total,
 			&h_total, &xres)) {
-		pr_err(" error retreiving the panel params!\n");
+		pr_debug(" error retreiving the panel params!\n");
 		return -EINVAL;
 	}
 
@@ -2515,7 +2515,7 @@ static u32 __get_ts_bytes(struct mdss_mdp_pipe *pipe,
 
 	if (mdss_mdp_get_panel_params(pipe, mixer, &fps, &v_total,
 			&h_total, &xres)) {
-		pr_err(" error retreiving the panel params!\n");
+		pr_debug(" error retreiving the panel params!\n");
 		return -EINVAL;
 	}
 
@@ -2570,7 +2570,7 @@ static u32 __get_ts_bytes(struct mdss_mdp_pipe *pipe,
 			ts_bytes = DIV_ROUND_UP_ULL(high_pipe_bw, TS_CLK);
 		break;
 	default:
-		pr_err("unknown multirect mode!\n");
+		pr_debug("unknown multirect mode!\n");
 		goto exit;
 	break;
 	}
@@ -2603,7 +2603,7 @@ static int mdss_mdp_set_ts_pipe(struct mdss_mdp_pipe *pipe)
 
 	if (!mdata->prefill_data.ts_threshold ||
 	    (mdata->prefill_data.ts_threshold < mdata->prefill_data.ts_end)) {
-		pr_err("invalid ts data!\n");
+		pr_debug("invalid ts data!\n");
 		return -EINVAL;
 	}
 
@@ -2649,18 +2649,18 @@ int mdss_mdp_pipe_queue_data(struct mdss_mdp_pipe *pipe,
 	bool delayed_programming;
 
 	if (!pipe) {
-		pr_err("pipe not setup properly for queue\n");
+		pr_debug("pipe not setup properly for queue\n");
 		return -ENODEV;
 	}
 
 	if (!pipe->mixer_left || !pipe->mixer_left->ctl) {
 		if (src_data)
-			pr_err("pipe%d mixer not setup properly\n", pipe->num);
+			pr_debug("pipe%d mixer not setup properly\n", pipe->num);
 		return -ENODEV;
 	}
 
 	if (pipe->src_split_req && !mdata->has_src_split) {
-		pr_err("src split can't be requested on mdp:0x%x\n",
+		pr_debug("src split can't be requested on mdp:0x%x\n",
 			mdata->mdp_rev);
 		return -EINVAL;
 	}
@@ -2713,7 +2713,7 @@ int mdss_mdp_pipe_queue_data(struct mdss_mdp_pipe *pipe,
 
 		ret = mdss_mdp_pipe_pp_setup(pipe, &opmode);
 		if (ret) {
-			pr_err("pipe pp setup error for pnum=%d\n", pipe->num);
+			pr_debug("pipe pp setup error for pnum=%d\n", pipe->num);
 
 			MDSS_XLOG(pipe->num, pipe->multirect.num,
 				pipe->mixer_left->num, pipe->play_cnt, 0xbad);
@@ -2738,13 +2738,13 @@ int mdss_mdp_pipe_queue_data(struct mdss_mdp_pipe *pipe,
 
 		ret = mdss_mdp_image_setup(pipe, src_data);
 		if (ret) {
-			pr_err("image setup error for pnum=%d\n", pipe->num);
+			pr_debug("image setup error for pnum=%d\n", pipe->num);
 			goto done;
 		}
 
 		ret = mdss_mdp_format_setup(pipe);
 		if (ret) {
-			pr_err("format %d setup error pnum=%d\n",
+			pr_debug("format %d setup error pnum=%d\n",
 			       pipe->src_fmt->format, pipe->num);
 			goto done;
 		}
@@ -2784,7 +2784,7 @@ int mdss_mdp_pipe_queue_data(struct mdss_mdp_pipe *pipe,
 
 	ret = mdss_mdp_src_addr_setup(pipe, src_data);
 	if (ret) {
-		pr_err("addr setup error for pnum=%d\n", pipe->num);
+		pr_debug("addr setup error for pnum=%d\n", pipe->num);
 		goto done;
 	}
 

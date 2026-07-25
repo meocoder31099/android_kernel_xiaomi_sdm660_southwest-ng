@@ -164,10 +164,10 @@ void __jbd2_log_wait_for_space(journal_t *journal)
 				write_lock(&journal->j_state_lock);
 				continue;
 			} else {
-				printk(KERN_ERR "%s: needed %d blocks and "
+				no_printk(KERN_ERR "%s: needed %d blocks and "
 				       "only had %d space available\n",
 				       __func__, nblocks, space_left);
-				printk(KERN_ERR "%s: no way to get more "
+				no_printk(KERN_ERR "%s: no way to get more "
 				       "journal space in %s\n", __func__,
 				       journal->j_devname);
 				WARN_ON(1);
@@ -278,7 +278,7 @@ restart:
 				 * to finish will cause us to wait for
 				 * a _very_ long time.
 				 */
-				printk(KERN_ERR
+				no_printk(KERN_ERR
 		"JBD2: %s: Waiting for Godot: block %llu\n",
 		journal->j_devname, (unsigned long long) bh->b_blocknr);
 

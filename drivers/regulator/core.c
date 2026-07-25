@@ -42,13 +42,13 @@
 #include "internal.h"
 
 #define rdev_crit(rdev, fmt, ...)					\
-	pr_crit("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+	pr_debug("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
 #define rdev_err(rdev, fmt, ...)					\
-	pr_err("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+	pr_debug("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
 #define rdev_warn(rdev, fmt, ...)					\
-	pr_warn("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+	pr_debug("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
 #define rdev_info(rdev, fmt, ...)					\
-	pr_info("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
+	pr_debug("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
 #define rdev_dbg(rdev, fmt, ...)					\
 	pr_debug("%s: " fmt, rdev_get_name(rdev), ##__VA_ARGS__)
 
@@ -1700,7 +1700,7 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 			r = dummy_regulator_rdev;
 			get_device(&r->dev);
 		} else {
-			dev_err(dev, "Failed to resolve %s-supply for %s\n",
+			dev_dbg(dev, "Failed to resolve %s-supply for %s\n",
 				rdev->supply_name, rdev->desc->name);
 			ret = -EPROBE_DEFER;
 			goto out;
@@ -1708,7 +1708,7 @@ static int regulator_resolve_supply(struct regulator_dev *rdev)
 	}
 
 	if (r == rdev) {
-		dev_err(dev, "Supply for %s (%s) resolved to itself\n",
+		dev_dbg(dev, "Supply for %s (%s) resolved to itself\n",
 			rdev->desc->name, rdev->supply_name);
 		if (!have_full_constraints()) {
 			ret = -EINVAL;
@@ -1790,12 +1790,12 @@ struct regulator *_regulator_get(struct device *dev, const char *id,
 	int ret;
 
 	if (get_type >= MAX_GET_TYPE) {
-		dev_err(dev, "invalid type %d in %s\n", get_type, __func__);
+		dev_dbg(dev, "invalid type %d in %s\n", get_type, __func__);
 		return ERR_PTR(-EINVAL);
 	}
 
 	if (id == NULL) {
-		pr_err("get() with no identifier\n");
+		pr_debug("get() with no identifier\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -1811,7 +1811,7 @@ struct regulator *_regulator_get(struct device *dev, const char *id,
 			return ERR_PTR(ret);
 
 		if (!have_full_constraints()) {
-			dev_warn(dev,
+			dev_dbg(dev,
 				 "incomplete constraints, dummy supplies not allowed\n");
 			return ERR_PTR(-ENODEV);
 		}
@@ -1823,7 +1823,7 @@ struct regulator *_regulator_get(struct device *dev, const char *id,
 			 * enabled, even if it isn't hooked up, and just
 			 * provide a dummy.
 			 */
-			dev_warn(dev,
+			dev_dbg(dev,
 				 "%s supply %s not found, using dummy regulator\n",
 				 devname, id);
 			rdev = dummy_regulator_rdev;
@@ -1831,7 +1831,7 @@ struct regulator *_regulator_get(struct device *dev, const char *id,
 			break;
 
 		case EXCLUSIVE_GET:
-			dev_warn(dev,
+			dev_dbg(dev,
 				 "dummy supplies not allowed for exclusive requests\n");
 			/* fall through */
 
@@ -2057,7 +2057,7 @@ int regulator_register_supply_alias(struct device *dev, const char *id,
 	new_map->alias_supply = alias_id;
 	list_add(&new_map->list, &regulator_supply_alias_list);
 	mutex_unlock(&regulator_list_mutex);
-	pr_info("Adding alias for supply %s,%s -> %s,%s\n",
+	pr_debug("Adding alias for supply %s,%s -> %s,%s\n",
 		id, dev_name(dev), alias_id, dev_name(alias_dev));
 
 	return 0;
@@ -2122,7 +2122,7 @@ int regulator_bulk_register_supply_alias(struct device *dev,
 	return 0;
 
 err:
-	dev_err(dev,
+	dev_dbg(dev,
 		"Failed to create supply alias %s,%s -> %s,%s\n",
 		id[i], dev_name(dev), alias_id[i], dev_name(alias_dev));
 
@@ -3274,7 +3274,7 @@ static int regulator_set_voltage_unlocked(struct regulator *regulator,
 		ret = regulator_set_voltage_unlocked(rdev->supply,
 				best_supply_uV, INT_MAX, state);
 		if (ret) {
-			dev_err(&rdev->dev, "Failed to increase supply voltage: %d\n",
+			dev_dbg(&rdev->dev, "Failed to increase supply voltage: %d\n",
 					ret);
 			goto out2;
 		}
@@ -3292,7 +3292,7 @@ static int regulator_set_voltage_unlocked(struct regulator *regulator,
 		ret = regulator_set_voltage_unlocked(rdev->supply,
 				best_supply_uV, INT_MAX, state);
 		if (ret)
-			dev_warn(&rdev->dev, "Failed to decrease supply voltage: %d\n",
+			dev_dbg(&rdev->dev, "Failed to decrease supply voltage: %d\n",
 					ret);
 		/* No need to fail here */
 		ret = 0;
@@ -3967,7 +3967,7 @@ int regulator_bulk_get(struct device *dev, int num_consumers,
 						      consumers[i].supply);
 		if (IS_ERR(consumers[i].consumer)) {
 			ret = PTR_ERR(consumers[i].consumer);
-			dev_err(dev, "Failed to get supply '%s': %d\n",
+			dev_dbg(dev, "Failed to get supply '%s': %d\n",
 				consumers[i].supply, ret);
 			consumers[i].consumer = NULL;
 			goto err;
@@ -4033,7 +4033,7 @@ int regulator_bulk_enable(int num_consumers,
 err:
 	for (i = 0; i < num_consumers; i++) {
 		if (consumers[i].ret < 0)
-			pr_err("Failed to enable %s: %d\n", consumers[i].supply,
+			pr_debug("Failed to enable %s: %d\n", consumers[i].supply,
 			       consumers[i].ret);
 		else
 			regulator_disable(consumers[i].consumer);
@@ -4070,11 +4070,11 @@ int regulator_bulk_disable(int num_consumers,
 	return 0;
 
 err:
-	pr_err("Failed to disable %s: %d\n", consumers[i].supply, ret);
+	pr_debug("Failed to disable %s: %d\n", consumers[i].supply, ret);
 	for (++i; i < num_consumers; ++i) {
 		r = regulator_enable(consumers[i].consumer);
 		if (r != 0)
-			pr_err("Failed to re-enable %s: %d\n",
+			pr_debug("Failed to re-enable %s: %d\n",
 			       consumers[i].supply, r);
 	}
 
@@ -4915,7 +4915,7 @@ regulator_register(const struct regulator_desc *regulator_desc,
 				init_data->consumer_supplies[i].dev_name,
 				init_data->consumer_supplies[i].supply);
 			if (ret < 0) {
-				dev_err(dev, "Failed to set supply %s\n",
+				dev_dbg(dev, "Failed to set supply %s\n",
 					init_data->consumer_supplies[i].supply);
 				goto unset_supplies;
 			}
@@ -5317,20 +5317,20 @@ static int _regulator_debug_print_enabled(struct device *dev, void *data)
 		mode = rdev->desc->ops->get_mode(rdev);
 
 	if (uV != -EPERM && mode != -EPERM)
-		pr_info("%s[%u] %d uV, mode=%d\n",
+		pr_debug("%s[%u] %d uV, mode=%d\n",
 			rdev_get_name(rdev), rdev->use_count, uV, mode);
 	else if (uV != -EPERM)
-		pr_info("%s[%u] %d uV\n",
+		pr_debug("%s[%u] %d uV\n",
 			rdev_get_name(rdev), rdev->use_count, uV);
 	else if (mode != -EPERM)
-		pr_info("%s[%u], mode=%d\n",
+		pr_debug("%s[%u], mode=%d\n",
 			rdev_get_name(rdev), rdev->use_count, mode);
 	else
-		pr_info("%s[%u]\n", rdev_get_name(rdev), rdev->use_count);
+		pr_debug("%s[%u]\n", rdev_get_name(rdev), rdev->use_count);
 
 	/* Print a header if there are consumers. */
 	if (rdev->open_count)
-		pr_info("  %-32s EN    Min_uV   Max_uV  load_uA\n",
+		pr_debug("  %-32s EN    Min_uV   Max_uV  load_uA\n",
 			"Device-Supply");
 
 	list_for_each_entry(reg, &rdev->consumer_list, list) {
@@ -5339,7 +5339,7 @@ static int _regulator_debug_print_enabled(struct device *dev, void *data)
 		else
 			supply_name = "(null)-(null)";
 
-		pr_info("  %-32s %d   %8d %8d %8d\n", supply_name, reg->enabled,
+		pr_debug("  %-32s %d   %8d %8d %8d\n", supply_name, reg->enabled,
 			reg->voltage[PM_SUSPEND_ON].min_uV,
 			reg->voltage[PM_SUSPEND_ON].max_uV,
 			reg->uA_load);
@@ -5359,7 +5359,7 @@ void regulator_debug_print_enabled(void)
 	if (likely(!debug_suspend))
 		return;
 
-	pr_info("Enabled regulators:\n");
+	pr_debug("Enabled regulators:\n");
 	class_for_each_device(&regulator_class, NULL, NULL,
 			     _regulator_debug_print_enabled);
 }
@@ -5373,7 +5373,7 @@ static int __init regulator_init(void)
 
 	debugfs_root = debugfs_create_dir("regulator", NULL);
 	if (IS_ERR(debugfs_root))
-		pr_warn("regulator: Failed to create debugfs directory\n");
+		pr_debug("regulator: Failed to create debugfs directory\n");
 
 	debugfs_create_file("supply_map", 0444, debugfs_root, NULL,
 			    &supply_map_fops);

@@ -3430,7 +3430,7 @@ static void set_schedstats(bool enabled)
 void force_schedstat_enabled(void)
 {
 	if (!schedstat_enabled()) {
-		pr_info("kernel profiling enabled schedstats, disable via kernel.sched_schedstats.\n");
+		pr_debug("kernel profiling enabled schedstats, disable via kernel.sched_schedstats.\n");
 		static_branch_enable(&sched_schedstats);
 	}
 }
@@ -3455,7 +3455,7 @@ static int __init setup_schedstats(char *str)
 	}
 out:
 	if (!ret)
-		pr_warn("Unable to parse schedstats=\n");
+		pr_debug("Unable to parse schedstats=\n");
 
 	return ret;
 }
@@ -4550,13 +4550,13 @@ static inline unsigned long get_preempt_disable_ip(struct task_struct *p)
  */
 static noinline void __schedule_bug(struct task_struct *prev)
 {
-	/* Save this before calling printk(), since that will clobber it */
+	/* Save this before calling no_printk(), since that will clobber it */
 	unsigned long preempt_disable_ip = get_preempt_disable_ip(current);
 
 	if (oops_in_progress)
 		return;
 
-	printk(KERN_ERR "BUG: scheduling while atomic: %s/%d/0x%08x\n",
+	no_printk(KERN_ERR "BUG: scheduling while atomic: %s/%d/0x%08x\n",
 		prev->comm, prev->pid, preempt_count());
 
 	debug_show_held_locks(prev);
@@ -4565,9 +4565,9 @@ static noinline void __schedule_bug(struct task_struct *prev)
 		print_irqtrace_events(prev);
 	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)
 	    && in_atomic_preempt_off()) {
-		pr_err("Preemption disabled at:");
+		pr_debug("Preemption disabled at:");
 		print_ip_sym(preempt_disable_ip);
-		pr_cont("\n");
+		pr_debug("\n");
 	}
 	panic("scheduling while atomic\n");
 }
@@ -6825,10 +6825,10 @@ void sched_show_task(struct task_struct *p)
 	if (!try_get_task_stack(p))
 		return;
 
-	printk(KERN_INFO "%-15.15s %c", p->comm, task_state_to_char(p));
+	no_printk(KERN_INFO "%-15.15s %c", p->comm, task_state_to_char(p));
 
 	if (p->state == TASK_RUNNING)
-		printk(KERN_CONT "  running task    ");
+		no_printk(KERN_CONT "  running task    ");
 #ifdef CONFIG_DEBUG_STACK_USAGE
 	free = stack_not_used(p);
 #endif
@@ -6837,7 +6837,7 @@ void sched_show_task(struct task_struct *p)
 	if (pid_alive(p))
 		ppid = task_pid_nr(rcu_dereference(p->real_parent));
 	rcu_read_unlock();
-	printk(KERN_CONT "%5lu %5d %6d 0x%08lx\n", free,
+	no_printk(KERN_CONT "%5lu %5d %6d 0x%08lx\n", free,
 		task_pid_nr(p), ppid,
 		(unsigned long)task_thread_info(p)->flags);
 
@@ -6874,10 +6874,10 @@ void show_state_filter(unsigned long state_filter)
 	struct task_struct *g, *p;
 
 #if BITS_PER_LONG == 32
-	printk(KERN_INFO
+	no_printk(KERN_INFO
 		"  task                PC stack   pid father\n");
 #else
-	printk(KERN_INFO
+	no_printk(KERN_INFO
 		"  task                        PC stack   pid father\n");
 #endif
 	rcu_read_lock();
@@ -7772,7 +7772,7 @@ void __init sched_init(void)
 
 #ifdef CONFIG_SCHED_BORE
 	sched_init_bore();
-	printk(KERN_INFO "BORE (Burst-Oriented Response Enhancer) CPU Scheduler modification 5.1.0 by Masahito Suzuki");
+	no_printk(KERN_INFO "BORE (Burst-Oriented Response Enhancer) CPU Scheduler modification 5.1.0 by Masahito Suzuki");
 #endif // CONFIG_SCHED_BORE
 
 	wait_bit_init();
@@ -7993,28 +7993,28 @@ void ___might_sleep(const char *file, int line, int preempt_offset)
 		return;
 	prev_jiffy = jiffies;
 
-	/* Save this before calling printk(), since that will clobber it: */
+	/* Save this before calling no_printk(), since that will clobber it: */
 	preempt_disable_ip = get_preempt_disable_ip(current);
 
-	printk(KERN_ERR
+	no_printk(KERN_ERR
 		"BUG: sleeping function called from invalid context at %s:%d\n",
 			file, line);
-	printk(KERN_ERR
+	no_printk(KERN_ERR
 		"in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
 			in_atomic(), irqs_disabled(),
 			current->pid, current->comm);
 
 	if (task_stack_end_corrupted(current))
-		printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
+		no_printk(KERN_EMERG "Thread overran stack, or stack corrupted\n");
 
 	debug_show_held_locks(current);
 	if (irqs_disabled())
 		print_irqtrace_events(current);
 	if (IS_ENABLED(CONFIG_DEBUG_PREEMPT)
 	    && !preempt_count_equals(preempt_offset)) {
-		pr_err("Preemption disabled at:");
+		pr_debug("Preemption disabled at:");
 		print_ip_sym(preempt_disable_ip);
-		pr_cont("\n");
+		pr_debug("\n");
 	}
 #ifdef CONFIG_PANIC_ON_SCHED_BUG
 	BUG();
@@ -8041,8 +8041,8 @@ void __cant_sleep(const char *file, int line, int preempt_offset)
 		return;
 	prev_jiffy = jiffies;
 
-	printk(KERN_ERR "BUG: assuming atomic context at %s:%d\n", file, line);
-	printk(KERN_ERR "in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
+	no_printk(KERN_ERR "BUG: assuming atomic context at %s:%d\n", file, line);
+	no_printk(KERN_ERR "in_atomic(): %d, irqs_disabled(): %d, pid: %d, name: %s\n",
 			in_atomic(), irqs_disabled(),
 			current->pid, current->comm);
 
@@ -9180,7 +9180,7 @@ struct cgroup_subsys cpu_cgrp_subsys = {
 
 void dump_cpu_task(int cpu)
 {
-	pr_info("Task dump for CPU %d:\n", cpu);
+	pr_debug("Task dump for CPU %d:\n", cpu);
 	sched_show_task(cpu_curr(cpu));
 }
 

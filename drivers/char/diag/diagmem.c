@@ -137,7 +137,7 @@ struct diag_mempool_t diag_mempools[NUM_MEMORY_POOLS] = {
 void diagmem_setsize(int pool_idx, int itemsize, int poolsize)
 {
 	if (pool_idx < 0 || pool_idx >= NUM_MEMORY_POOLS) {
-		pr_err("diag: Invalid pool index %d in %s\n", pool_idx,
+		pr_debug("diag: Invalid pool index %d in %s\n", pool_idx,
 		       __func__);
 		return;
 	}
@@ -236,7 +236,7 @@ void diagmem_init(struct diagchar_dev *driver, int index)
 		return;
 
 	if (index < 0 || index >= NUM_MEMORY_POOLS) {
-		pr_err("diag: In %s, Invalid index %d\n", __func__, index);
+		pr_debug("diag: In %s, Invalid index %d\n", __func__, index);
 		return;
 	}
 
@@ -247,7 +247,7 @@ void diagmem_init(struct diagchar_dev *driver, int index)
 		return;
 	}
 	if (mempool->itemsize <= 0 || mempool->poolsize <= 0) {
-		pr_err("diag: Unable to initialize %s mempool, itemsize: %d poolsize: %d\n",
+		pr_debug("diag: Unable to initialize %s mempool, itemsize: %d poolsize: %d\n",
 		       mempool->name, mempool->itemsize,
 		       mempool->poolsize);
 		return;
@@ -256,7 +256,7 @@ void diagmem_init(struct diagchar_dev *driver, int index)
 	mempool->pool = mempool_create_kmalloc_pool(mempool->poolsize,
 						    mempool->itemsize);
 	if (!mempool->pool)
-		pr_err("diag: cannot allocate %s mempool\n", mempool->name);
+		pr_debug("diag: cannot allocate %s mempool\n", mempool->name);
 	else
 		kmemleak_not_leak(mempool->pool);
 
@@ -272,7 +272,7 @@ void diagmem_exit(struct diagchar_dev *driver, int index)
 		return;
 
 	if (index < 0 || index >= NUM_MEMORY_POOLS) {
-		pr_err("diag: In %s, Invalid index %d\n", __func__, index);
+		pr_debug("diag: In %s, Invalid index %d\n", __func__, index);
 		return;
 	}
 
@@ -282,7 +282,7 @@ void diagmem_exit(struct diagchar_dev *driver, int index)
 		mempool_destroy(mempool->pool);
 		mempool->pool = NULL;
 	} else {
-		pr_err("diag: Unable to destroy %s pool, count: %d\n",
+		pr_debug("diag: Unable to destroy %s pool, count: %d\n",
 		       mempool->name, mempool->count);
 	}
 	spin_unlock_irqrestore(&mempool->lock, flags);

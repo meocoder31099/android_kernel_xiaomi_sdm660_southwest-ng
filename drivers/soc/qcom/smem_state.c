@@ -107,7 +107,7 @@ struct qcom_smem_state *qcom_smem_state_get(struct device *dev,
 						 "qcom,smem-state-names",
 						 con_id);
 		if (index < 0) {
-			dev_err(dev, "missing qcom,smem-state-names\n");
+			dev_dbg(dev, "missing qcom,smem-state-names\n");
 			return ERR_PTR(index);
 		}
 	}
@@ -118,12 +118,12 @@ struct qcom_smem_state *qcom_smem_state_get(struct device *dev,
 					 index,
 					 &args);
 	if (ret) {
-		dev_err(dev, "failed to parse qcom,smem-states property\n");
+		dev_dbg(dev, "failed to parse qcom,smem-states property\n");
 		return ERR_PTR(ret);
 	}
 
 	if (args.args_count != 1) {
-		dev_err(dev, "invalid #qcom,smem-state-cells\n");
+		dev_dbg(dev, "invalid #qcom,smem-state-cells\n");
 		state = ERR_PTR(-EINVAL);
 		goto put;
 	}

@@ -386,14 +386,14 @@ static int msm_config_group_set(struct pinctrl_dev *pctldev,
 			arg = 0;
 			break;
 		default:
-			dev_err(pctrl->dev, "Unsupported config parameter: %x\n",
+			dev_dbg(pctrl->dev, "Unsupported config parameter: %x\n",
 				param);
 			return -EINVAL;
 		}
 
 		/* Range-check user-supplied value */
 		if (arg & ~mask) {
-			dev_err(pctrl->dev, "config %x: %x is invalid\n", param, arg);
+			dev_dbg(pctrl->dev, "config %x: %x is invalid\n", param, arg);
 			return -EINVAL;
 		}
 
@@ -630,7 +630,7 @@ static void msm_gpio_update_dual_edge_pos(struct msm_pinctrl *pctrl,
 		if (intstat || (val == val2))
 			return;
 	} while (loop_limit-- > 0);
-	dev_err(pctrl->dev, "dual-edge irq failed to stabilize, %#08x != %#08x\n",
+	dev_dbg(pctrl->dev, "dual-edge irq failed to stabilize, %#08x != %#08x\n",
 		val, val2);
 }
 
@@ -936,7 +936,7 @@ static int select_dir_conn_mux(struct irq_data *d, irq_hw_number_t *irq,
 		}
 	}
 
-	pr_err("%s: No direct connects selected for interrupt %lu\n",
+	pr_debug("%s: No direct connects selected for interrupt %lu\n",
 				__func__, d->hwirq);
 	return -EBUSY;
 }
@@ -1193,7 +1193,7 @@ static int msm_gpio_init_valid_mask(struct gpio_chip *chip,
 		bitmap_fill(chip->valid_mask, max_gpios);
 		for (i = 0; reserved[i] >= 0; i++) {
 			if (i >= max_gpios || reserved[i] >= max_gpios) {
-				dev_err(pctrl->dev, "invalid list of reserved"
+				dev_dbg(pctrl->dev, "invalid list of reserved"
 						"GPIOs\n");
 				return -EINVAL;
 			}
@@ -1216,7 +1216,7 @@ static int msm_gpio_init_valid_mask(struct gpio_chip *chip,
 
 	ret = device_property_read_u16_array(pctrl->dev, "gpios", tmp, len);
 	if (ret < 0) {
-		dev_err(pctrl->dev, "could not read list of GPIOs\n");
+		dev_dbg(pctrl->dev, "could not read list of GPIOs\n");
 		goto out;
 	}
 
@@ -1370,13 +1370,13 @@ static int msm_gpio_init(struct msm_pinctrl *pctrl)
 
 	ret = gpiochip_add_data(&pctrl->chip, pctrl);
 	if (ret) {
-		dev_err(pctrl->dev, "Failed register gpiochip\n");
+		dev_dbg(pctrl->dev, "Failed register gpiochip\n");
 		return ret;
 	}
 
 	ret = msm_gpio_init_valid_mask(chip, pctrl);
 	if (ret) {
-		dev_err(pctrl->dev, "Failed to setup irq valid bits\n");
+		dev_dbg(pctrl->dev, "Failed to setup irq valid bits\n");
 		goto fail;
 	}
 
@@ -1394,7 +1394,7 @@ static int msm_gpio_init(struct msm_pinctrl *pctrl)
 		ret = gpiochip_add_pin_range(&pctrl->chip,
 			dev_name(pctrl->dev), 0, 0, chip->ngpio);
 		if (ret) {
-			dev_err(pctrl->dev, "Failed to add pin range\n");
+			dev_dbg(pctrl->dev, "Failed to add pin range\n");
 			goto fail;
 		}
 	}
@@ -1435,7 +1435,7 @@ static void msm_pinctrl_setup_pm_reset(struct msm_pinctrl *pctrl)
 			pctrl->restart_nb.notifier_call = msm_ps_hold_restart;
 			pctrl->restart_nb.priority = 128;
 			if (register_restart_handler(&pctrl->restart_nb))
-				dev_err(pctrl->dev,
+				dev_dbg(pctrl->dev,
 					"failed to setup restart handler.\n");
 			poweroff_pctrl = pctrl;
 			pm_power_off = msm_ps_hold_poweroff;
@@ -1474,7 +1474,7 @@ static void msm_pinctrl_resume(void)
 			else if (desc->action && desc->action->name)
 				name = desc->action->name;
 
-			pr_warn("%s: %d triggered %s\n", __func__, irq, name);
+			pr_debug("%s: %d triggered %s\n", __func__, irq, name);
 		}
 	}
 	raw_spin_unlock_irqrestore(&pctrl->lock, flags);
@@ -1564,7 +1564,7 @@ int msm_pinctrl_probe(struct platform_device *pdev,
 	msm_pinctrl_data = pctrl = devm_kzalloc(&pdev->dev,
 				sizeof(*pctrl), GFP_KERNEL);
 	if (!pctrl) {
-		dev_err(&pdev->dev, "Can't allocate msm_pinctrl\n");
+		dev_dbg(&pdev->dev, "Can't allocate msm_pinctrl\n");
 		return -ENOMEM;
 	}
 	pctrl->dev = &pdev->dev;
@@ -1582,7 +1582,7 @@ int msm_pinctrl_probe(struct platform_device *pdev,
 
 	pctrl->irq = platform_get_irq(pdev, 0);
 	if (pctrl->irq < 0) {
-		dev_err(&pdev->dev, "No interrupt defined for msmgpio\n");
+		dev_dbg(&pdev->dev, "No interrupt defined for msmgpio\n");
 		return pctrl->irq;
 	}
 
@@ -1596,7 +1596,7 @@ int msm_pinctrl_probe(struct platform_device *pdev,
 
 	pctrl->pctrl = devm_pinctrl_register(&pdev->dev, &pctrl->desc, pctrl);
 	if (IS_ERR(pctrl->pctrl)) {
-		dev_err(&pdev->dev, "Couldn't register pinctrl driver\n");
+		dev_dbg(&pdev->dev, "Couldn't register pinctrl driver\n");
 		return PTR_ERR(pctrl->pctrl);
 	}
 

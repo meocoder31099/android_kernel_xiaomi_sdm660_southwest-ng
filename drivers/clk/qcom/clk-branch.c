@@ -214,7 +214,7 @@ static int clk_branch2_set_rate(struct clk_hw *hw, unsigned long rate,
 	if (new_rate != curr_rate) {
 		ret = clk_set_rate(parent->clk, new_rate);
 		if (ret) {
-			pr_err("Failed to scale %s to %lu\n",
+			pr_debug("Failed to scale %s to %lu\n",
 				clk_hw_get_name(parent), new_rate);
 			goto err;
 		}
@@ -241,7 +241,7 @@ static long clk_branch2_round_rate(struct clk_hw *hw, unsigned long rate,
 	if (rrate > 0)
 		*parent_rate = rrate;
 	else
-		pr_warn("Failed to get the parent's (%s) rounded rate\n",
+		pr_debug("Failed to get the parent's (%s) rounded rate\n",
 					clk_hw_get_name(parent));
 
 	return rrate;
@@ -291,7 +291,7 @@ static int clk_branch2_prepare(struct clk_hw *hw)
 		if (branch->rate > curr_rate) {
 			ret = clk_set_rate(parent->clk, branch->rate);
 			if (ret) {
-				pr_err("Failed to scale %s to %lu\n",
+				pr_debug("Failed to scale %s to %lu\n",
 					clk_hw_get_name(parent), branch->rate);
 				goto exit;
 			}
@@ -327,7 +327,7 @@ static void clk_branch2_unprepare(struct clk_hw *hw)
 		curr_rate = max(new_rate, branch->rate);
 		if (new_rate < curr_rate)
 			if (clk_set_rate(parent->clk, new_rate))
-				pr_err("Failed to scale %s to %lu\n",
+				pr_debug("Failed to scale %s to %lu\n",
 					clk_hw_get_name(parent), new_rate);
 	}
 }
@@ -390,7 +390,7 @@ static int clk_branch2_hw_ctl_set_rate(struct clk_hw *hw, unsigned long rate,
 		unsigned long parent_rate)
 {
 	if (!(hw->init->flags & CLK_SET_RATE_PARENT)) {
-		pr_err("SET_RATE_PARENT flag needs to be set for %s\n",
+		pr_debug("SET_RATE_PARENT flag needs to be set for %s\n",
 					clk_hw_get_name(hw));
 		return -EINVAL;
 	}

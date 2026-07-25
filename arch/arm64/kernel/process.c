@@ -180,7 +180,7 @@ void machine_restart(char *cmd)
 	/*
 	 * Whoops - the architecture was unable to reboot.
 	 */
-	printk("Reboot failed -- System halted\n");
+	no_printk("Reboot failed -- System halted\n");
 	while (1);
 }
 
@@ -189,7 +189,7 @@ static void print_pstate(struct pt_regs *regs)
 	u64 pstate = regs->pstate;
 
 	if (compat_user_mode(regs)) {
-		printk("pstate: %08llx (%c%c%c%c %c %s %s %c%c%c)\n",
+		no_printk("pstate: %08llx (%c%c%c%c %c %s %s %c%c%c)\n",
 			pstate,
 			pstate & PSR_AA32_N_BIT ? 'N' : 'n',
 			pstate & PSR_AA32_Z_BIT ? 'Z' : 'z',
@@ -202,7 +202,7 @@ static void print_pstate(struct pt_regs *regs)
 			pstate & PSR_AA32_I_BIT ? 'I' : 'i',
 			pstate & PSR_AA32_F_BIT ? 'F' : 'f');
 	} else {
-		printk("pstate: %08llx (%c%c%c%c %c%c%c%c %cPAN %cUAO)\n",
+		no_printk("pstate: %08llx (%c%c%c%c %c%c%c%c %cPAN %cUAO)\n",
 			pstate,
 			pstate & PSR_N_BIT ? 'N' : 'n',
 			pstate & PSR_Z_BIT ? 'Z' : 'z',
@@ -233,7 +233,7 @@ static void show_data(unsigned long addr, int nbytes, const char *name)
 	if (addr < PAGE_OFFSET || addr > -256UL)
 		return;
 
-	printk(KERN_DEBUG "\n%s: %#lx:\n", name, addr);
+	no_printk(KERN_DEBUG "\n%s: %#lx:\n", name, addr);
 
 	/*
 	 * round address down to a 32 bit boundary
@@ -249,17 +249,17 @@ static void show_data(unsigned long addr, int nbytes, const char *name)
 		 * just display low 16 bits of address to keep
 		 * each line of the dump < 80 characters
 		 */
-		printk(KERN_DEBUG "%04lx ", (unsigned long)p & 0xffff);
+		no_printk(KERN_DEBUG "%04lx ", (unsigned long)p & 0xffff);
 		for (j = 0; j < 8; j++) {
 			u32	data;
 
 			if (get_kernel_nofault(data, p))
-				pr_cont(" ********");
+				pr_debug(" ********");
 			else
-				pr_cont(" %08x", data);
+				pr_debug(" %08x", data);
 			++p;
 		}
-		pr_cont("\n");
+		pr_debug("\n");
 	}
 }
 
@@ -294,27 +294,27 @@ void __show_regs(struct pt_regs *regs)
 	print_pstate(regs);
 
 	if (!user_mode(regs)) {
-		printk("pc : %pS\n", (void *)regs->pc);
-		printk("lr : %pS\n", (void *)lr);
+		no_printk("pc : %pS\n", (void *)regs->pc);
+		no_printk("lr : %pS\n", (void *)lr);
 	} else {
-		printk("pc : %016llx\n", regs->pc);
-		printk("lr : %016llx\n", lr);
+		no_printk("pc : %016llx\n", regs->pc);
+		no_printk("lr : %016llx\n", lr);
 	}
 
-	printk("sp : %016llx\n", sp);
+	no_printk("sp : %016llx\n", sp);
 
 	i = top_reg;
 
 	while (i >= 0) {
-		printk("x%-2d: %016llx ", i, regs->regs[i]);
+		no_printk("x%-2d: %016llx ", i, regs->regs[i]);
 		i--;
 
 		if (i % 2 == 0) {
-			pr_cont("x%-2d: %016llx ", i, regs->regs[i]);
+			pr_debug("x%-2d: %016llx ", i, regs->regs[i]);
 			i--;
 		}
 
-		pr_cont("\n");
+		pr_debug("\n");
 	}
 
 	if (!user_mode(regs))

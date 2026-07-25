@@ -266,7 +266,7 @@ static ssize_t swrm_reg_show(char __user *ubuf, size_t count,
 		reg_val = dbgswrm->read(dbgswrm->handle, i);
 		len = snprintf(tmp_buf, 25, "0x%.3x: 0x%.2x\n", i, reg_val);
 		if (len < 0) {
-			pr_err("%s: fail to fill the buffer\n", __func__);
+			pr_debug("%s: fail to fill the buffer\n", __func__);
 			total = -EFAULT;
 			goto copy_err;
 		}
@@ -274,7 +274,7 @@ static ssize_t swrm_reg_show(char __user *ubuf, size_t count,
 		if ((total + len) >= count - 1)
 			break;
 		if (copy_to_user((ubuf + total), tmp_buf, len)) {
-			pr_err("%s: fail to copy reg dump\n", __func__);
+			pr_debug("%s: fail to copy reg dump\n", __func__);
 			total = -EFAULT;
 			goto copy_err;
 		}
@@ -307,7 +307,7 @@ static ssize_t swrm_debug_read(struct file *file, char __user *ubuf,
 	} else if (!strcmp(access_str, "swrm_reg_dump")) {
 		ret_cnt = swrm_reg_show(ubuf, count, ppos);
 	} else {
-		pr_err("%s: %s not permitted to read\n", __func__, access_str);
+		pr_debug("%s: %s not permitted to read\n", __func__, access_str);
 		ret_cnt = -EPERM;
 	}
 	return ret_cnt;
@@ -354,7 +354,7 @@ static ssize_t swrm_debug_write(struct file *filp,
 	if (rc == 0)
 		rc = cnt;
 	else
-		pr_err("%s: rc = %d\n", __func__, rc);
+		pr_debug("%s: rc = %d\n", __func__, rc);
 
 	return rc;
 }
@@ -404,7 +404,7 @@ static int swrm_clk_request(struct swr_mstr_ctrl *swrm, bool enable)
 		swrm->clk(swrm->handle, false);
 		swrm->state = SWR_MSTR_DOWN;
 	} else if (swrm->clk_ref_count < 0) {
-		pr_err("%s: swrm clk count mismatch\n", __func__);
+		pr_debug("%s: swrm clk count mismatch\n", __func__);
 		swrm->clk_ref_count = 0;
 	}
 	return 0;
@@ -434,7 +434,7 @@ static int swrm_get_port_config(struct swr_master *master)
 	}
 
 	if (i >= ARRAY_SIZE(uc)) {
-		dev_err(&master->dev,
+		dev_dbg(&master->dev,
 			"%s: usecase port:%d, num_ch:%d, chrate:%d not found\n",
 			__func__, master->num_port, num_ch, ch_rate);
 		return -EINVAL;
@@ -490,7 +490,7 @@ static int swrm_cmd_fifo_rd_cmd(struct swr_mstr_ctrl *swrm, int *cmd_data,
 	val = swrm_get_packed_reg_val(&swrm->rcmd_id, len, dev_addr, reg_addr);
 	ret = swrm->write(swrm->handle, SWRM_CMD_FIFO_RD_CMD, val);
 	if (ret < 0) {
-		dev_err(swrm->dev, "%s: reg 0x%x write failed, err:%d\n",
+		dev_dbg(swrm->dev, "%s: reg 0x%x write failed, err:%d\n",
 			__func__, val, ret);
 		goto err;
 	}
@@ -520,7 +520,7 @@ static int swrm_cmd_fifo_wr_cmd(struct swr_mstr_ctrl *swrm, u8 cmd_data,
 		__func__, reg_addr, cmd_id, dev_addr, cmd_data);
 	ret = swrm->write(swrm->handle, SWRM_CMD_FIFO_WR_CMD, val);
 	if (ret < 0) {
-		dev_err(swrm->dev, "%s: reg 0x%x write failed, err:%d\n",
+		dev_dbg(swrm->dev, "%s: reg 0x%x write failed, err:%d\n",
 			__func__, val, ret);
 		goto err;
 	}
@@ -548,7 +548,7 @@ static int swrm_read(struct swr_master *master, u8 dev_num, u16 reg_addr,
 	u8 *reg_val = (u8 *)buf;
 
 	if (!swrm) {
-		dev_err(&master->dev, "%s: swrm is NULL\n", __func__);
+		dev_dbg(&master->dev, "%s: swrm is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -574,7 +574,7 @@ static int swrm_write(struct swr_master *master, u8 dev_num, u16 reg_addr,
 	u8 reg_val = *(u8 *)buf;
 
 	if (!swrm) {
-		dev_err(&master->dev, "%s: swrm is NULL\n", __func__);
+		dev_dbg(&master->dev, "%s: swrm is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -598,7 +598,7 @@ static int swrm_bulk_write(struct swr_master *master, u8 dev_num, void *reg,
 	u32 *swr_fifo_reg;
 
 	if (!swrm || !swrm->handle) {
-		dev_err(&master->dev, "%s: swrm is NULL\n", __func__);
+		dev_dbg(&master->dev, "%s: swrm is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (len <= 0)
@@ -625,12 +625,12 @@ static int swrm_bulk_write(struct swr_master *master, u8 dev_num, void *reg,
 		}
 		ret = swrm->bulk_write(swrm->handle, swr_fifo_reg, val, len);
 		if (ret) {
-			dev_err(&master->dev, "%s: bulk write failed\n",
+			dev_dbg(&master->dev, "%s: bulk write failed\n",
 				__func__);
 			ret = -EINVAL;
 		}
 	} else {
-		dev_err(&master->dev,
+		dev_dbg(&master->dev,
 			"%s: No support of Bulk write for master regs\n",
 			__func__);
 		ret = -EINVAL;
@@ -750,7 +750,7 @@ static void swrm_cleanup_disabled_data_ports(struct swr_master *master,
 	struct swr_mstr_ctrl *swrm = swr_get_ctrl_data(master);
 
 	if (!swrm) {
-		pr_err("%s: swrm is null\n", __func__);
+		pr_debug("%s: swrm is null\n", __func__);
 		return;
 	}
 
@@ -761,7 +761,7 @@ static void swrm_cleanup_disabled_data_ports(struct swr_master *master,
 					struct swrm_mports,
 					list);
 	if (!mport) {
-		dev_err(swrm->dev, "%s: list is empty\n", __func__);
+		dev_dbg(swrm->dev, "%s: list is empty\n", __func__);
 		return;
 	}
 
@@ -797,7 +797,7 @@ inc_loop:
 			kfree(mport);
 		}
 		if (!mport_next) {
-			dev_err(swrm->dev, "%s: end of list\n", __func__);
+			dev_dbg(swrm->dev, "%s: end of list\n", __func__);
 			break;
 		}
 		mport = mport_next;
@@ -820,7 +820,7 @@ static int swrm_slvdev_datapath_control(struct swr_master *master,
 	u8 inactive_bank;
 
 	if (!swrm) {
-		pr_err("%s: swrm is null\n", __func__);
+		pr_debug("%s: swrm is null\n", __func__);
 		return 0;
 	}
 
@@ -886,7 +886,7 @@ static void swrm_apply_port_config(struct swr_master *master)
 	struct swr_mstr_ctrl *swrm = swr_get_ctrl_data(master);
 
 	if (!swrm) {
-		pr_err("%s: Invalid handle to swr controller\n",
+		pr_debug("%s: Invalid handle to swr controller\n",
 			__func__);
 		return;
 	}
@@ -911,7 +911,7 @@ static void swrm_copy_data_port_config(struct swr_master *master, u8 bank)
 	struct swr_mstr_ctrl *swrm = swr_get_ctrl_data(master);
 
 	if (!swrm) {
-		pr_err("%s: swrm is null\n", __func__);
+		pr_debug("%s: swrm is null\n", __func__);
 		return;
 	}
 
@@ -922,7 +922,7 @@ static void swrm_copy_data_port_config(struct swr_master *master, u8 bank)
 					struct swrm_mports,
 					list);
 	if (!mport) {
-		dev_err(swrm->dev, "%s: list is empty\n", __func__);
+		dev_dbg(swrm->dev, "%s: list is empty\n", __func__);
 		return;
 	}
 	for (i = 0; i < master->num_port; i++) {
@@ -974,7 +974,7 @@ static void swrm_copy_data_port_config(struct swr_master *master, u8 bank)
 		}
 		mport = list_next_entry(mport, list);
 		if (!mport) {
-			dev_err(swrm->dev, "%s: end of list\n", __func__);
+			dev_dbg(swrm->dev, "%s: end of list\n", __func__);
 			break;
 		}
 	}
@@ -996,7 +996,7 @@ static int swrm_connect_port(struct swr_master *master,
 		return -EINVAL;
 
 	if (!swrm) {
-		dev_err(&master->dev,
+		dev_dbg(&master->dev,
 			"%s: Invalid handle to swr controller\n",
 			__func__);
 		return -EINVAL;
@@ -1015,14 +1015,14 @@ static int swrm_connect_port(struct swr_master *master,
 		ret = swrm_get_master_port(&mport->id,
 						portinfo->port_id[i]);
 		if (ret < 0) {
-			dev_err(&master->dev,
+			dev_dbg(&master->dev,
 				"%s: mstr portid for slv port %d not found\n",
 				__func__, portinfo->port_id[i]);
 			goto port_fail;
 		}
 		port = swrm_get_avail_port(master);
 		if (!port) {
-			dev_err(&master->dev,
+			dev_dbg(&master->dev,
 				"%s: avail ports not found!\n", __func__);
 			goto port_fail;
 		}
@@ -1090,14 +1090,14 @@ static int swrm_disconnect_port(struct swr_master *master,
 	struct swr_mstr_ctrl *swrm = swr_get_ctrl_data(master);
 
 	if (!swrm) {
-		dev_err(&master->dev,
+		dev_dbg(&master->dev,
 			"%s: Invalid handle to swr controller\n",
 			__func__);
 		return -EINVAL;
 	}
 
 	if (!portinfo) {
-		dev_err(&master->dev, "%s: portinfo is NULL\n", __func__);
+		dev_dbg(&master->dev, "%s: portinfo is NULL\n", __func__);
 		return -EINVAL;
 	}
 	mutex_lock(&swrm->mlock);
@@ -1106,7 +1106,7 @@ static int swrm_disconnect_port(struct swr_master *master,
 		ret = swrm_get_master_port(&mport_id,
 						portinfo->port_id[i]);
 		if (ret < 0) {
-			dev_err(&master->dev,
+			dev_dbg(&master->dev,
 				"%s: mstr portid for slv port %d not found\n",
 				__func__, portinfo->port_id[i]);
 			mutex_unlock(&swrm->mlock);
@@ -1295,7 +1295,7 @@ static int swrm_get_logical_dev_num(struct swr_master *mstr, u64 dev_id,
 	u32 num_dev = 0;
 
 	if (!swrm) {
-		pr_err("%s: Invalid handle to swr controller\n",
+		pr_debug("%s: Invalid handle to swr controller\n",
 			__func__);
 		return ret;
 	}
@@ -1331,7 +1331,7 @@ static int swrm_get_logical_dev_num(struct swr_master *mstr, u64 dev_id,
 		}
 	}
 	if (ret)
-		dev_err(swrm->dev, "%s: device 0x%llx is not ready\n",
+		dev_dbg(swrm->dev, "%s: device 0x%llx is not ready\n",
 			__func__, dev_id);
 
 	pm_runtime_mark_last_busy(&swrm->pdev->dev);
@@ -1399,11 +1399,11 @@ static int swrm_event_notify(struct notifier_block *self,
 	struct swr_mstr_ctrl *swrm = container_of(self, struct swr_mstr_ctrl,
 							event_notifier);
 	if (!swrm || !swrm->pdev) {
-		pr_err("%s: swrm or pdev is NULL\n", __func__);
+		pr_debug("%s: swrm or pdev is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (action != MSM_AUD_DC_EVENT) {
-		dev_err(&swrm->pdev->dev, "%s: invalid event type: %lu\n", __func__, action);
+		dev_dbg(&swrm->pdev->dev, "%s: invalid event type: %lu\n", __func__, action);
 		return -EINVAL;
 	}
 
@@ -1437,49 +1437,49 @@ static int swrm_probe(struct platform_device *pdev)
 	swr_set_ctrl_data(&swrm->master, swrm);
 	pdata = dev_get_platdata(&pdev->dev);
 	if (!pdata) {
-		dev_err(&pdev->dev, "%s: pdata from parent is NULL\n",
+		dev_dbg(&pdev->dev, "%s: pdata from parent is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
 	}
 	swrm->handle = (void *)pdata->handle;
 	if (!swrm->handle) {
-		dev_err(&pdev->dev, "%s: swrm->handle is NULL\n",
+		dev_dbg(&pdev->dev, "%s: swrm->handle is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
 	}
 	swrm->read = pdata->read;
 	if (!swrm->read) {
-		dev_err(&pdev->dev, "%s: swrm->read is NULL\n",
+		dev_dbg(&pdev->dev, "%s: swrm->read is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
 	}
 	swrm->write = pdata->write;
 	if (!swrm->write) {
-		dev_err(&pdev->dev, "%s: swrm->write is NULL\n",
+		dev_dbg(&pdev->dev, "%s: swrm->write is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
 	}
 	swrm->bulk_write = pdata->bulk_write;
 	if (!swrm->bulk_write) {
-		dev_err(&pdev->dev, "%s: swrm->bulk_write is NULL\n",
+		dev_dbg(&pdev->dev, "%s: swrm->bulk_write is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
 	}
 	swrm->clk = pdata->clk;
 	if (!swrm->clk) {
-		dev_err(&pdev->dev, "%s: swrm->clk is NULL\n",
+		dev_dbg(&pdev->dev, "%s: swrm->clk is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
 	}
 	swrm->reg_irq = pdata->reg_irq;
 	if (!swrm->reg_irq) {
-		dev_err(&pdev->dev, "%s: swrm->reg_irq is NULL\n",
+		dev_dbg(&pdev->dev, "%s: swrm->reg_irq is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_pdata_fail;
@@ -1516,7 +1516,7 @@ static int swrm_probe(struct platform_device *pdev)
 			__func__, "qcom,swr-num-dev");
 	else {
 		if (swrm->num_dev > SWR_MAX_SLAVE_DEVICES) {
-			dev_err(&pdev->dev, "%s: num_dev %d > max limit %d\n",
+			dev_dbg(&pdev->dev, "%s: num_dev %d > max limit %d\n",
 				__func__, swrm->num_dev, SWR_MAX_SLAVE_DEVICES);
 			ret = -EINVAL;
 			goto err_pdata_fail;
@@ -1525,14 +1525,14 @@ static int swrm_probe(struct platform_device *pdev)
 	ret = swrm->reg_irq(swrm->handle, swr_mstr_interrupt, swrm,
 			    SWR_IRQ_REGISTER);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: IRQ register failed ret %d\n",
+		dev_dbg(&pdev->dev, "%s: IRQ register failed ret %d\n",
 			__func__, ret);
 		goto err_irq_fail;
 	}
 
 	ret = swr_register_master(&swrm->master);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: error adding swr master\n", __func__);
+		dev_dbg(&pdev->dev, "%s: error adding swr master\n", __func__);
 		goto err_mstr_fail;
 	}
 
@@ -1544,7 +1544,7 @@ static int swrm_probe(struct platform_device *pdev)
 	swrm_clk_request(swrm, true);
 	ret = swrm_master_init(swrm);
 	if (ret < 0) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Error in master Initializaiton, err %d\n",
 			__func__, ret);
 		mutex_unlock(&swrm->mlock);
@@ -1656,7 +1656,7 @@ static int swrm_runtime_resume(struct device *dev)
 		list_for_each_entry(swr_dev, &mstr->devices, dev_list) {
 			ret = swr_device_up(swr_dev);
 			if (ret) {
-				dev_err(dev,
+				dev_dbg(dev,
 					"%s: failed to wakeup swr dev %d\n",
 					__func__, swr_dev->dev_num);
 				swrm_clk_request(swrm, false);
@@ -1703,7 +1703,7 @@ static int swrm_runtime_suspend(struct device *dev)
 		list_for_each_entry(swr_dev, &mstr->devices, dev_list) {
 			ret = swr_device_down(swr_dev);
 			if (ret) {
-				dev_err(dev,
+				dev_dbg(dev,
 					"%s: failed to shutdown swr dev %d\n",
 					__func__, swr_dev->dev_num);
 				goto exit;
@@ -1750,12 +1750,12 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 	struct swr_device *swr_dev;
 
 	if (!pdev) {
-		pr_err("%s: pdev is NULL\n", __func__);
+		pr_debug("%s: pdev is NULL\n", __func__);
 		return -EINVAL;
 	}
 	swrm = platform_get_drvdata(pdev);
 	if (!swrm) {
-		dev_err(&pdev->dev, "%s: swrm is NULL\n", __func__);
+		dev_dbg(&pdev->dev, "%s: swrm is NULL\n", __func__);
 		return -EINVAL;
 	}
 	mstr = &swrm->master;
@@ -1763,7 +1763,7 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 	switch (id) {
 	case SWR_CH_MAP:
 		if (!data) {
-			dev_err(swrm->dev, "%s: data is NULL\n", __func__);
+			dev_dbg(swrm->dev, "%s: data is NULL\n", __func__);
 			ret = -EINVAL;
 		} else {
 			ret = swrm_set_ch_map(swrm, data);
@@ -1798,7 +1798,7 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 			list_for_each_entry(swr_dev, &mstr->devices, dev_list) {
 				ret = swr_reset_device(swr_dev);
 				if (ret) {
-					dev_err(swrm->dev,
+					dev_dbg(swrm->dev,
 						"%s: failed to reset swr device %d\n",
 						__func__, swr_dev->dev_num);
 					swrm_clk_request(swrm, false);
@@ -1812,7 +1812,7 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 		break;
 	case SWR_SET_NUM_RX_CH:
 		if (!data) {
-			dev_err(swrm->dev, "%s: data is NULL\n", __func__);
+			dev_dbg(swrm->dev, "%s: data is NULL\n", __func__);
 			ret = -EINVAL;
 		} else {
 			mutex_lock(&swrm->mlock);
@@ -1823,7 +1823,7 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 					ret = swr_set_device_group(swr_dev,
 								SWR_BROADCAST);
 					if (ret)
-						dev_err(swrm->dev,
+						dev_dbg(swrm->dev,
 							"%s: set num ch failed\n",
 							__func__);
 				}
@@ -1833,7 +1833,7 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 					ret = swr_set_device_group(swr_dev,
 								SWR_GROUP_NONE);
 					if (ret)
-						dev_err(swrm->dev,
+						dev_dbg(swrm->dev,
 							"%s: set num ch failed\n",
 							__func__);
 				}
@@ -1842,7 +1842,7 @@ int swrm_wcd_notify(struct platform_device *pdev, u32 id, void *data)
 		}
 		break;
 	default:
-		dev_err(swrm->dev, "%s: swr master unknown id %d\n",
+		dev_dbg(swrm->dev, "%s: swr master unknown id %d\n",
 			__func__, id);
 		break;
 	}

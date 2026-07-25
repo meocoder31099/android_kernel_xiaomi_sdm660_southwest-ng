@@ -244,7 +244,7 @@ void ext4_free_inode(handle_t *handle, struct inode *inode)
 	struct ext4_group_info *grp;
 
 	if (!sb) {
-		printk(KERN_ERR "EXT4-fs: %s:%d: inode on "
+		no_printk(KERN_ERR "EXT4-fs: %s:%d: inode on "
 		       "nonexistent device\n", __func__, __LINE__);
 		return;
 	}
@@ -1263,16 +1263,16 @@ struct inode *ext4_orphan_get(struct super_block *sb, unsigned long ino)
 bad_orphan:
 	ext4_error(sb, "bad orphan inode %lu", ino);
 	if (bitmap_bh)
-		printk(KERN_ERR "ext4_test_bit(bit=%d, block=%llu) = %d\n",
+		no_printk(KERN_ERR "ext4_test_bit(bit=%d, block=%llu) = %d\n",
 		       bit, (unsigned long long)bitmap_bh->b_blocknr,
 		       ext4_test_bit(bit, bitmap_bh->b_data));
 	if (inode) {
-		printk(KERN_ERR "is_bad_inode(inode)=%d\n",
+		no_printk(KERN_ERR "is_bad_inode(inode)=%d\n",
 		       is_bad_inode(inode));
-		printk(KERN_ERR "NEXT_ORPHAN(inode)=%u\n",
+		no_printk(KERN_ERR "NEXT_ORPHAN(inode)=%u\n",
 		       NEXT_ORPHAN(inode));
-		printk(KERN_ERR "max_ino=%lu\n", max_ino);
-		printk(KERN_ERR "i_nlink=%u\n", inode->i_nlink);
+		no_printk(KERN_ERR "max_ino=%lu\n", max_ino);
+		no_printk(KERN_ERR "i_nlink=%u\n", inode->i_nlink);
 		/* Avoid freeing blocks if we got a bad deleted inode */
 		if (inode->i_nlink == 0)
 			inode->i_blocks = 0;
@@ -1310,12 +1310,12 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
 
 		x = ext4_count_free(bitmap_bh->b_data,
 				    EXT4_INODES_PER_GROUP(sb) / 8);
-		printk(KERN_DEBUG "group %lu: stored = %d, counted = %lu\n",
+		no_printk(KERN_DEBUG "group %lu: stored = %d, counted = %lu\n",
 			(unsigned long) i, ext4_free_inodes_count(sb, gdp), x);
 		bitmap_count += x;
 	}
 	brelse(bitmap_bh);
-	printk(KERN_DEBUG "ext4_count_free_inodes: "
+	no_printk(KERN_DEBUG "ext4_count_free_inodes: "
 	       "stored = %u, computed = %lu, %lu\n",
 	       le32_to_cpu(es->s_free_inodes_count), desc_count, bitmap_count);
 	return desc_count;

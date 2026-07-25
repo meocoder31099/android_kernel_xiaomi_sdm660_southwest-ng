@@ -41,7 +41,7 @@
 	} while (0)
 #define GPI_ERR(gpi_dev, fmt, ...) do { \
 	if (gpi_dev->klog_lvl >= LOG_LVL_ERROR) \
-		dev_err(gpi_dev->dev, "%s: " fmt, __func__, ##__VA_ARGS__); \
+		dev_dbg(gpi_dev->dev, "%s: " fmt, __func__, ##__VA_ARGS__); \
 	if (gpi_dev->ilctxt && gpi_dev->ipc_log_lvl >= LOG_LVL_ERROR) \
 		ipc_log_string(gpi_dev->ilctxt, \
 			"%s: " fmt, __func__, ##__VA_ARGS__); \
@@ -50,7 +50,7 @@
 /* gpii specific logging macros */
 #define GPII_INFO(gpii, ch, fmt, ...) do { \
 	if (gpii->klog_lvl >= LOG_LVL_INFO) \
-		pr_info("%s:%u:%s: " fmt, gpii->label, ch, \
+		pr_debug("%s:%u:%s: " fmt, gpii->label, ch, \
 			__func__, ##__VA_ARGS__); \
 	if (gpii->ilctxt && gpii->ipc_log_lvl >= LOG_LVL_INFO) \
 		ipc_log_string(gpii->ilctxt, \
@@ -59,7 +59,7 @@
 	} while (0)
 #define GPII_ERR(gpii, ch, fmt, ...) do { \
 	if (gpii->klog_lvl >= LOG_LVL_ERROR) \
-		pr_err("%s:%u:%s: " fmt, gpii->label, ch, \
+		pr_debug("%s:%u:%s: " fmt, gpii->label, ch, \
 		       __func__, ##__VA_ARGS__); \
 	if (gpii->ilctxt && gpii->ipc_log_lvl >= LOG_LVL_ERROR) \
 		ipc_log_string(gpii->ilctxt, \
@@ -68,7 +68,7 @@
 	} while (0)
 #define GPII_CRITIC(gpii, ch, fmt, ...) do { \
 	if (gpii->klog_lvl >= LOG_LVL_CRITICAL) \
-		pr_err("%s:%u:%s: " fmt, gpii->label, ch, \
+		pr_debug("%s:%u:%s: " fmt, gpii->label, ch, \
 		       __func__, ##__VA_ARGS__); \
 	if (gpii->ilctxt && gpii->ipc_log_lvl >= LOG_LVL_CRITICAL) \
 		ipc_log_string(gpii->ilctxt, \
@@ -99,7 +99,7 @@ enum EV_PRIORITY {
 #define CMD_TIMEOUT_MS (1000)
 #define GPII_REG(gpii, ch, fmt, ...) do { \
 	if (gpii->klog_lvl >= LOG_LVL_REG_ACCESS) \
-		pr_info("%s:%u:%s: " fmt, gpii->label, \
+		pr_debug("%s:%u:%s: " fmt, gpii->label, \
 			ch, __func__, ##__VA_ARGS__); \
 	if (gpii->ilctxt && gpii->ipc_log_lvl >= LOG_LVL_REG_ACCESS) \
 		ipc_log_string(gpii->ilctxt, \
@@ -108,7 +108,7 @@ enum EV_PRIORITY {
 	} while (0)
 #define GPII_VERB(gpii, ch, fmt, ...) do { \
 	if (gpii->klog_lvl >= LOG_LVL_VERBOSE) \
-		pr_info("%s:%u:%s: " fmt, gpii->label, \
+		pr_debug("%s:%u:%s: " fmt, gpii->label, \
 			ch, __func__, ##__VA_ARGS__); \
 	if (gpii->ilctxt && gpii->ipc_log_lvl >= LOG_LVL_VERBOSE) \
 		ipc_log_string(gpii->ilctxt, \

@@ -536,7 +536,7 @@ int syna_tcm_add_module(struct syna_tcm_module_cb *mod_cb, bool insert)
 	if (insert) {
 		mod_handler = kzalloc(sizeof(*mod_handler), GFP_KERNEL);
 		if (!mod_handler) {
-			pr_err("%s: Failed to allocate memory for mod_handler\n",
+			pr_debug("%s: Failed to allocate memory for mod_handler\n",
 					__func__);
 			mutex_unlock(&mod_pool.mutex);
 			return -ENOMEM;
@@ -3263,7 +3263,7 @@ static int syna_tcm_probe(struct platform_device *pdev)
 #ifdef CONFIG_TOUCHSCREEN_COMMON
     retval = tp_common_set_double_tap_ops(&double_tap_ops);
     if (retval < 0) {
-        dev_err(&pdev->dev,
+        dev_dbg(&pdev->dev,
                 "%s: Failed to create double_tap node err=%d\n",
                 __func__, retval);
     }

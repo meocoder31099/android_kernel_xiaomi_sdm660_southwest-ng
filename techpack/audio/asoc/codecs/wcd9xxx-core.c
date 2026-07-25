@@ -127,7 +127,7 @@ int wcd9xxx_vote_ondemand_regulator(struct wcd9xxx *wcd9xxx,
 	}
 
 	if (index < 0) {
-		pr_err("%s: no matching regulator found\n", __func__);
+		pr_debug("%s: no matching regulator found\n", __func__);
 		return -EINVAL;
 	}
 
@@ -136,14 +136,14 @@ int wcd9xxx_vote_ondemand_regulator(struct wcd9xxx *wcd9xxx,
 					   pdata->regulator[index].min_uV,
 					   pdata->regulator[index].max_uV);
 		if (rc) {
-			pr_err("%s: set regulator voltage failed for %s, err:%d\n",
+			pr_debug("%s: set regulator voltage failed for %s, err:%d\n",
 				__func__, supply_name, rc);
 			return rc;
 		}
 		rc = regulator_set_load(wcd9xxx->supplies[index].consumer,
 					pdata->regulator[index].optimum_uA);
 		if (rc < 0) {
-			pr_err("%s: set regulator optimum mode failed for %s, err:%d\n",
+			pr_debug("%s: set regulator optimum mode failed for %s, err:%d\n",
 				__func__, supply_name, rc);
 			return rc;
 		}
@@ -173,7 +173,7 @@ static int wcd9xxx_slim_multi_reg_write(struct wcd9xxx *wcd9xxx,
 
 	dev = wcd9xxx->dev;
 	if (!data) {
-		dev_err(dev, "%s: data is NULL\n", __func__);
+		dev_dbg(dev, "%s: data is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (num_regs == 0)
@@ -205,7 +205,7 @@ static int wcd9xxx_slim_multi_reg_write(struct wcd9xxx *wcd9xxx,
 	ret = wcd9xxx_slim_bulk_write(wcd9xxx, bulk_reg,
 				      i, false);
 	if (ret)
-		dev_err(dev, "%s: error writing bulk regs\n",
+		dev_dbg(dev, "%s: error writing bulk regs\n",
 			__func__);
 
 	kfree(bulk_reg);
@@ -229,7 +229,7 @@ int wcd9xxx_interface_reg_read(struct wcd9xxx *wcd9xxx, unsigned short reg)
 	ret = wcd9xxx->read_dev(wcd9xxx, reg, 1, (void *)&val,
 				true);
 	if (ret < 0)
-		dev_err(wcd9xxx->dev, "%s: Codec read 0x%x failed\n",
+		dev_dbg(wcd9xxx->dev, "%s: Codec read 0x%x failed\n",
 			__func__, reg);
 	else
 		dev_dbg(wcd9xxx->dev, "%s: Read 0x%02x from 0x%x\n",
@@ -298,7 +298,7 @@ static int wcd9xxx_slim_read_device(struct wcd9xxx *wcd9xxx, unsigned short reg,
 	}
 
 	if (ret)
-		dev_err(wcd9xxx->dev, "%s: Error, Codec read failed (%d)\n",
+		dev_dbg(wcd9xxx->dev, "%s: Error, Codec read failed (%d)\n",
 			__func__, ret);
 
 	return ret;
@@ -338,7 +338,7 @@ static int wcd9xxx_slim_write_device(struct wcd9xxx *wcd9xxx,
 	}
 
 	if (ret)
-		pr_err("%s: Error, Codec write failed (%d)\n", __func__, ret);
+		pr_debug("%s: Error, Codec write failed (%d)\n", __func__, ret);
 
 	return ret;
 }
@@ -390,7 +390,7 @@ int wcd9xxx_slim_write_repeat(struct wcd9xxx *wcd9xxx, unsigned short reg,
 	slim_msg.comp = NULL;
 
 	if (unlikely(bytes > SLIM_REPEAT_WRITE_MAX_SLICE)) {
-		dev_err(wcd9xxx->dev, "%s: size %d not supported\n",
+		dev_dbg(wcd9xxx->dev, "%s: size %d not supported\n",
 			__func__, bytes);
 		ret = -EINVAL;
 		goto done;
@@ -417,7 +417,7 @@ int wcd9xxx_slim_write_repeat(struct wcd9xxx *wcd9xxx, unsigned short reg,
 		mutex_unlock(&wcd9xxx->xfer_lock);
 
 		if (ret) {
-			dev_err(wcd9xxx->dev, "%s: failed, ret = %d\n",
+			dev_dbg(wcd9xxx->dev, "%s: failed, ret = %d\n",
 				__func__, ret);
 			break;
 		}
@@ -444,7 +444,7 @@ int wcd9xxx_slim_reserve_bw(struct wcd9xxx *wcd9xxx,
 		u32 bw_ops, bool commit)
 {
 	if (!wcd9xxx || !wcd9xxx->slim) {
-		pr_err("%s: Invalid handle to %s\n",
+		pr_debug("%s: Invalid handle to %s\n",
 			__func__,
 			(!wcd9xxx) ? "wcd9xxx" : "slim_device");
 		return -EINVAL;
@@ -473,7 +473,7 @@ int wcd9xxx_slim_bulk_write(struct wcd9xxx *wcd9xxx,
 	unsigned short reg;
 
 	if (!bulk_reg || !size || !wcd9xxx) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return -EINVAL;
 	}
 
@@ -501,7 +501,7 @@ int wcd9xxx_slim_bulk_write(struct wcd9xxx *wcd9xxx,
 	}
 	ret = wcd9xxx_page_write(wcd9xxx, &reg);
 	if (ret) {
-		pr_err("%s: Page write error for reg: 0x%x\n",
+		pr_debug("%s: Page write error for reg: 0x%x\n",
 			__func__, reg);
 		goto err;
 	}
@@ -512,7 +512,7 @@ int wcd9xxx_slim_bulk_write(struct wcd9xxx *wcd9xxx,
 				  SLIM_MSG_MC_CHANGE_VALUE, msgs, size,
 				  NULL, NULL);
 	if (ret)
-		pr_err("%s: Error, Codec bulk write failed (%d)\n",
+		pr_debug("%s: Error, Codec bulk write failed (%d)\n",
 			__func__, ret);
 	/* 100 usec sleep is needed as per HW requirement */
 	usleep_range(100, 110);
@@ -537,13 +537,13 @@ static int wcd9xxx_regmap_init_cache(struct wcd9xxx *wcd9xxx)
 
 	regmap_config = wcd9xxx_get_regmap_config(wcd9xxx->type);
 	if (!regmap_config) {
-		dev_err(wcd9xxx->dev, "regmap config is not defined\n");
+		dev_dbg(wcd9xxx->dev, "regmap config is not defined\n");
 		return -EINVAL;
 	}
 
 	rc = regmap_reinit_cache(wcd9xxx->regmap, regmap_config);
 	if (rc != 0) {
-		dev_err(wcd9xxx->dev, "%s:Failed to reinit register cache: %d\n",
+		dev_dbg(wcd9xxx->dev, "%s:Failed to reinit register cache: %d\n",
 			__func__, rc);
 	}
 
@@ -608,20 +608,20 @@ static int wcd9xxx_device_init(struct wcd9xxx *wcd9xxx)
 		ret = regmap_apply_patch(wcd9xxx->regmap,
 				wcd9xxx->version);
 		if (ret)
-			dev_err(wcd9xxx->dev,
+			dev_dbg(wcd9xxx->dev,
 					"Failed to register patch: %d\n", ret);
 	}
 
 	ret = mfd_add_devices(wcd9xxx->dev, -1, wcd9xxx->codec_type->dev,
 			      wcd9xxx->codec_type->size, NULL, 0, NULL);
 	if (ret != 0) {
-		dev_err(wcd9xxx->dev, "Failed to add children: %d\n", ret);
+		dev_dbg(wcd9xxx->dev, "Failed to add children: %d\n", ret);
 		goto err_irq;
 	}
 
 	ret = device_init_wakeup(wcd9xxx->dev, true);
 	if (ret) {
-		dev_err(wcd9xxx->dev, "Device wakeup init failed: %d\n", ret);
+		dev_dbg(wcd9xxx->dev, "Device wakeup init failed: %d\n", ret);
 		goto err_irq;
 	}
 
@@ -710,7 +710,7 @@ static ssize_t wcd9xxx_slimslave_reg_show(char __user *ubuf, size_t count,
 		len = snprintf(tmp_buf, sizeof(tmp_buf),
 			"0x%.3x: 0x%.2x\n", i, reg_val);
 		if (len < 0) {
-			pr_err("%s: fail to fill the buffer\n", __func__);
+			pr_debug("%s: fail to fill the buffer\n", __func__);
 			total = -EFAULT;
 			goto copy_err;
 		}
@@ -718,7 +718,7 @@ static ssize_t wcd9xxx_slimslave_reg_show(char __user *ubuf, size_t count,
 		if ((total + len) >= count - 1)
 			break;
 		if (copy_to_user((ubuf + total), tmp_buf, len)) {
-			pr_err("%s: fail to copy reg dump\n", __func__);
+			pr_debug("%s: fail to copy reg dump\n", __func__);
 			total = -EFAULT;
 			goto copy_err;
 		}
@@ -747,7 +747,7 @@ static ssize_t codec_debug_read(struct file *file, char __user *ubuf,
 	} else if (!strcmp(access_str, "slimslave_reg_dump")) {
 		ret_cnt = wcd9xxx_slimslave_reg_show(ubuf, count, ppos);
 	} else {
-		pr_err("%s: %s not permitted to read\n", __func__, access_str);
+		pr_debug("%s: %s not permitted to read\n", __func__, access_str);
 		ret_cnt = -EPERM;
 	}
 
@@ -780,7 +780,7 @@ static int codec_debug_process_cdc_power(char *lbuf)
 	struct wcd9xxx_pdata *pdata;
 
 	if (wcd9xxx_get_intf_type() != WCD9XXX_INTERFACE_TYPE_SLIMBUS) {
-		pr_err("%s: CODEC is not in SLIMBUS mode\n", __func__);
+		pr_debug("%s: CODEC is not in SLIMBUS mode\n", __func__);
 		rc = -EPERM;
 		goto error_intf;
 	}
@@ -808,7 +808,7 @@ static int codec_debug_process_cdc_power(char *lbuf)
 			usleep_range(1000, 2000);
 			wcd9xxx_slim_device_up(debugCodec->slim);
 		} else {
-			pr_err("%s: invalid command %ld\n", __func__, param);
+			pr_debug("%s: invalid command %ld\n", __func__, param);
 		}
 	}
 
@@ -857,7 +857,7 @@ static ssize_t codec_debug_write(struct file *filp,
 	if (rc == 0)
 		rc = cnt;
 	else
-		pr_err("%s: rc = %d\n", __func__, rc);
+		pr_debug("%s: rc = %d\n", __func__, rc);
 
 	return rc;
 }
@@ -913,7 +913,7 @@ static int wcd9xxx_i2c_write_device(struct wcd9xxx *wcd9xxx, u16 reg, u8 *value,
 
 	wcd9xxx_i2c = wcd9xxx_i2c_get_device_info(wcd9xxx, reg);
 	if (wcd9xxx_i2c == NULL || wcd9xxx_i2c->client == NULL) {
-		pr_err("failed to get device info\n");
+		pr_debug("failed to get device info\n");
 		return -ENODEV;
 	}
 
@@ -936,7 +936,7 @@ static int wcd9xxx_i2c_write_device(struct wcd9xxx *wcd9xxx, u16 reg, u8 *value,
 		ret = i2c_transfer(wcd9xxx_i2c->client->adapter,
 						wcd9xxx_i2c->xfer_msg, 1);
 		if (ret != 1) {
-			pr_err("failed to write the device\n");
+			pr_debug("failed to write the device\n");
 			goto fail;
 		}
 	}
@@ -958,7 +958,7 @@ static int wcd9xxx_i2c_read_device(struct wcd9xxx *wcd9xxx, unsigned short reg,
 
 	wcd9xxx_i2c = wcd9xxx_i2c_get_device_info(wcd9xxx, reg);
 	if (wcd9xxx_i2c == NULL || wcd9xxx_i2c->client == NULL) {
-		pr_err("failed to get device info\n");
+		pr_debug("failed to get device info\n");
 		return -ENODEV;
 	}
 	for (i = 0; i < bytes; i++) {
@@ -982,7 +982,7 @@ static int wcd9xxx_i2c_read_device(struct wcd9xxx *wcd9xxx, unsigned short reg,
 			ret = i2c_transfer(wcd9xxx_i2c->client->adapter,
 					   wcd9xxx_i2c->xfer_msg, 2);
 			if (ret != 2) {
-				pr_err("failed to read wcd9xxx register\n");
+				pr_debug("failed to read wcd9xxx register\n");
 				return ret;
 			}
 		}
@@ -1049,10 +1049,10 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 	} else if (intf_type == WCD9XXX_INTERFACE_TYPE_I2C) {
 		ret = wcd9xxx_i2c_get_client_index(client, &wcd9xx_index);
 		if (ret != 0)
-			dev_err(&client->dev, "%s: I2C set codec I2C\n"
+			dev_dbg(&client->dev, "%s: I2C set codec I2C\n"
 				"client failed\n", __func__);
 		else {
-			dev_err(&client->dev, "%s:probe for other slaves\n"
+			dev_dbg(&client->dev, "%s:probe for other slaves\n"
 				"devices of codec I2C slave Addr = %x\n",
 				__func__, client->addr);
 			wcd9xxx_modules[wcd9xx_index].client = client;
@@ -1065,7 +1065,7 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 				"from device tree\n", __func__);
 			pdata = wcd9xxx_populate_dt_data(&client->dev);
 			if (!pdata) {
-				dev_err(&client->dev,
+				dev_dbg(&client->dev,
 					"%s: Fail to obtain pdata from device tree\n",
 					__func__);
 				ret = -EINVAL;
@@ -1094,11 +1094,11 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 			of_id = of_match_device(wcd9xxx_of_match, &client->dev);
 			if (of_id) {
 				wcd9xxx->type = *((int *)of_id->data);
-				dev_info(&client->dev, "%s: codec type is %d\n",
+				dev_dbg(&client->dev, "%s: codec type is %d\n",
 					 __func__, wcd9xxx->type);
 			}
 		} else {
-			dev_info(&client->dev, "%s: dev.of_node is NULL, default to WCD9XXX\n",
+			dev_dbg(&client->dev, "%s: dev.of_node is NULL, default to WCD9XXX\n",
 				 __func__);
 			wcd9xxx->type = WCD9XXX;
 		}
@@ -1106,7 +1106,7 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 				&wcd9xxx_i2c_base_regmap_config);
 		if (IS_ERR(wcd9xxx->regmap)) {
 			ret = PTR_ERR(wcd9xxx->regmap);
-			dev_err(&client->dev, "%s: Failed to allocate register map: %d\n",
+			dev_dbg(&client->dev, "%s: Failed to allocate register map: %d\n",
 					__func__, ret);
 			goto err_codec;
 		}
@@ -1115,7 +1115,7 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 
 		if (!wcd9xxx->wcd_rst_np) {
 			pdata->use_pinctrl = false;
-			dev_err(&client->dev, "%s: pinctrl not used for rst_n\n",
+			dev_dbg(&client->dev, "%s: pinctrl not used for rst_n\n",
 				__func__);
 			goto err_codec;
 		}
@@ -1138,7 +1138,7 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 					       pdata->num_supplies,
 					       pdata->vote_regulator_on_demand);
 		if (!wcd9xxx->supplies) {
-			dev_err(wcd9xxx->dev, "%s: Cannot init wcd supplies\n",
+			dev_dbg(wcd9xxx->dev, "%s: Cannot init wcd supplies\n",
 				__func__);
 			goto err_codec;
 		}
@@ -1147,7 +1147,7 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 						     pdata->regulator,
 						     pdata->num_supplies);
 		if (ret) {
-			dev_err(wcd9xxx->dev, "%s: wcd static supply enable failed!\n",
+			dev_dbg(wcd9xxx->dev, "%s: wcd static supply enable failed!\n",
 				__func__);
 			goto err_codec;
 		}
@@ -1162,13 +1162,13 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 
 		ret = wcd9xxx_reset(wcd9xxx->dev);
 		if (ret) {
-			pr_err("%s: Resetting Codec failed\n", __func__);
+			pr_debug("%s: Resetting Codec failed\n", __func__);
 			goto err_supplies;
 		}
 
 		ret = wcd9xxx_i2c_get_client_index(client, &wcd9xx_index);
 		if (ret != 0) {
-			pr_err("%s:Set codec I2C client failed\n", __func__);
+			pr_debug("%s:Set codec I2C client failed\n", __func__);
 			goto err_supplies;
 		}
 
@@ -1181,7 +1181,7 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 
 		ret = wcd9xxx_device_init(wcd9xxx);
 		if (ret) {
-			pr_err("%s: error, initializing device failed (%d)\n",
+			pr_debug("%s: error, initializing device failed (%d)\n",
 			       __func__, ret);
 			goto err_device_init;
 		}
@@ -1189,17 +1189,17 @@ static int wcd9xxx_i2c_probe(struct i2c_client *client,
 		ret = wcd9xxx_i2c_read(wcd9xxx, WCD9XXX_A_CHIP_STATUS, 1,
 				       &val, 0);
 		if (ret < 0)
-			pr_err("%s: failed to read the wcd9xxx status (%d)\n",
+			pr_debug("%s: failed to read the wcd9xxx status (%d)\n",
 			       __func__, ret);
 		if (val != wcd9xxx->codec_type->i2c_chip_status)
-			pr_err("%s: unknown chip status 0x%x\n", __func__, val);
+			pr_debug("%s: unknown chip status 0x%x\n", __func__, val);
 
 		wcd9xxx_set_intf_type(WCD9XXX_INTERFACE_TYPE_I2C);
 
 		return ret;
 	} else {
 		ret = -EINVAL;
-		pr_err("%s: I2C probe in wrong state, ret %d\n", __func__, ret);
+		pr_debug("%s: I2C probe in wrong state, ret %d\n", __func__, ret);
 		goto fail;
 	}
 
@@ -1243,19 +1243,19 @@ static int wcd9xxx_dt_parse_slim_interface_dev_info(struct device *dev,
 	ret = of_property_read_string(dev->of_node, "qcom,cdc-slim-ifd",
 				      &slim_ifd->name);
 	if (ret) {
-		dev_err(dev, "Looking up %s property in node %s failed",
+		dev_dbg(dev, "Looking up %s property in node %s failed",
 			"qcom,cdc-slim-ifd-dev", dev->of_node->full_name);
 		return -ENODEV;
 	}
 	prop = of_find_property(dev->of_node,
 			"qcom,cdc-slim-ifd-elemental-addr", NULL);
 	if (!prop) {
-		dev_err(dev, "Looking up %s property in node %s failed",
+		dev_dbg(dev, "Looking up %s property in node %s failed",
 			"qcom,cdc-slim-ifd-elemental-addr",
 			dev->of_node->full_name);
 		return -ENODEV;
 	} else if (prop->length != 6) {
-		dev_err(dev, "invalid codec slim ifd addr. addr length = %d\n",
+		dev_dbg(dev, "invalid codec slim ifd addr. addr length = %d\n",
 			      prop->length);
 		return -ENODEV;
 	}
@@ -1312,7 +1312,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 		dev_dbg(&slim->dev, "Platform data from device tree\n");
 		pdata = wcd9xxx_populate_dt_data(&slim->dev);
 		if (!pdata) {
-			dev_err(&slim->dev,
+			dev_dbg(&slim->dev,
 				"%s: Fail to obtain pdata from device tree\n",
 				__func__);
 			ret = -EINVAL;
@@ -1322,7 +1322,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 		ret = wcd9xxx_dt_parse_slim_interface_dev_info(&slim->dev,
 				&pdata->slimbus_slave_device);
 		if (ret) {
-			dev_err(&slim->dev, "Error, parsing slim interface\n");
+			dev_dbg(&slim->dev, "Error, parsing slim interface\n");
 			devm_kfree(&slim->dev, pdata);
 			ret = -EINVAL;
 			goto err;
@@ -1330,18 +1330,18 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 		slim->dev.platform_data = pdata;
 
 	} else {
-		dev_info(&slim->dev, "Platform data from board file\n");
+		dev_dbg(&slim->dev, "Platform data from board file\n");
 		pdata = slim->dev.platform_data;
 	}
 
 	if (!pdata) {
-		dev_err(&slim->dev, "Error, no platform data\n");
+		dev_dbg(&slim->dev, "Error, no platform data\n");
 		ret = -EINVAL;
 		goto err;
 	}
 
 	if (!slim->ctrl) {
-		dev_err(&slim->dev, "%s: Error, no SLIMBUS control data\n",
+		dev_dbg(&slim->dev, "%s: Error, no SLIMBUS control data\n",
 			__func__);
 		ret = -EINVAL;
 		goto err_codec;
@@ -1355,13 +1355,13 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 
 	device_id = slim_get_device_id(slim);
 	if (!device_id) {
-		dev_err(&slim->dev, "%s: Error, no device id\n", __func__);
+		dev_dbg(&slim->dev, "%s: Error, no device id\n", __func__);
 		ret = -EINVAL;
 		goto err;
 	}
 
 	wcd9xxx->type = device_id->driver_data;
-	dev_info(&slim->dev, "%s: probing for wcd type: %d, name: %s\n",
+	dev_dbg(&slim->dev, "%s: probing for wcd type: %d, name: %s\n",
 		 __func__, wcd9xxx->type, device_id->name);
 
 	/* wcd9xxx members init */
@@ -1378,14 +1378,14 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 					      &wcd9xxx_base_regmap_config);
 	if (IS_ERR(wcd9xxx->regmap)) {
 		ret = PTR_ERR(wcd9xxx->regmap);
-		dev_err(&slim->dev, "%s: Failed to allocate register map: %d\n",
+		dev_dbg(&slim->dev, "%s: Failed to allocate register map: %d\n",
 			__func__, ret);
 		goto err_codec;
 	}
 
 	if (!wcd9xxx->wcd_rst_np) {
 		pdata->use_pinctrl = false;
-		dev_err(&slim->dev, "%s: pinctrl not used for rst_n\n",
+		dev_dbg(&slim->dev, "%s: pinctrl not used for rst_n\n",
 			__func__);
 		goto err_codec;
 	}
@@ -1396,7 +1396,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 				       pdata->num_supplies,
 				       pdata->vote_regulator_on_demand);
 	if (!wcd9xxx->supplies) {
-		dev_err(wcd9xxx->dev, "%s: Cannot init wcd supplies\n",
+		dev_dbg(wcd9xxx->dev, "%s: Cannot init wcd supplies\n",
 			__func__);
 		goto err_codec;
 	}
@@ -1405,7 +1405,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 					     pdata->regulator,
 					     pdata->num_supplies);
 	if (ret) {
-		dev_err(wcd9xxx->dev, "%s: wcd static supply enable failed!\n",
+		dev_dbg(wcd9xxx->dev, "%s: wcd static supply enable failed!\n",
 			__func__);
 		goto err_codec;
 	}
@@ -1422,7 +1422,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 
 	ret = wcd9xxx_reset(&slim->dev);
 	if (ret) {
-		dev_err(&slim->dev, "%s: Resetting Codec failed\n", __func__);
+		dev_dbg(&slim->dev, "%s: Resetting Codec failed\n", __func__);
 		goto err_supplies;
 	}
 
@@ -1430,7 +1430,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 				     ARRAY_SIZE(wcd9xxx->slim->e_addr),
 				     &wcd9xxx->slim->laddr);
 	if (ret) {
-		dev_err(&slim->dev, "%s: failed to get slimbus %s logical address: %d\n",
+		dev_dbg(&slim->dev, "%s: failed to get slimbus %s logical address: %d\n",
 		       __func__, wcd9xxx->slim->name, ret);
 		goto err_reset;
 	}
@@ -1444,7 +1444,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 
 	ret = slim_add_device(slim->ctrl, wcd9xxx->slim_slave);
 	if (ret) {
-		dev_err(&slim->dev, "%s: error, adding SLIMBUS device failed\n",
+		dev_dbg(&slim->dev, "%s: error, adding SLIMBUS device failed\n",
 			__func__);
 		goto err_reset;
 	}
@@ -1454,7 +1454,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 				     ARRAY_SIZE(wcd9xxx->slim_slave->e_addr),
 				     &wcd9xxx->slim_slave->laddr);
 	if (ret) {
-		dev_err(&slim->dev, "%s: failed to get slimbus %s logical address: %d\n",
+		dev_dbg(&slim->dev, "%s: failed to get slimbus %s logical address: %d\n",
 		       __func__, wcd9xxx->slim->name, ret);
 		goto err_slim_add;
 	}
@@ -1463,7 +1463,7 @@ static int wcd9xxx_slim_probe(struct slim_device *slim)
 
 	ret = wcd9xxx_device_init(wcd9xxx);
 	if (ret) {
-		dev_err(&slim->dev, "%s: error, initializing device failed (%d)\n",
+		dev_dbg(&slim->dev, "%s: error, initializing device failed (%d)\n",
 			__func__, ret);
 		goto err_slim_add;
 	}
@@ -1531,11 +1531,11 @@ static int wcd9xxx_device_up(struct wcd9xxx *wcd9xxx)
 	int ret = 0;
 	struct wcd9xxx_core_resource *wcd9xxx_res = &wcd9xxx->core_res;
 
-	dev_info(wcd9xxx->dev, "%s: codec bring up\n", __func__);
+	dev_dbg(wcd9xxx->dev, "%s: codec bring up\n", __func__);
 	wcd9xxx_bringup(wcd9xxx->dev);
 	ret = wcd9xxx_irq_init(wcd9xxx_res);
 	if (ret) {
-		pr_err("%s: wcd9xx_irq_init failed : %d\n", __func__, ret);
+		pr_debug("%s: wcd9xx_irq_init failed : %d\n", __func__, ret);
 	} else {
 		if (wcd9xxx->post_reset)
 			ret = wcd9xxx->post_reset(wcd9xxx);
@@ -1549,11 +1549,11 @@ static int wcd9xxx_slim_device_reset(struct slim_device *sldev)
 	struct wcd9xxx *wcd9xxx = slim_get_devicedata(sldev);
 
 	if (!wcd9xxx) {
-		pr_err("%s: wcd9xxx is NULL\n", __func__);
+		pr_debug("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
 
-	dev_info(wcd9xxx->dev, "%s: device reset, dev_up = %d\n",
+	dev_dbg(wcd9xxx->dev, "%s: device reset, dev_up = %d\n",
 		__func__, wcd9xxx->dev_up);
 	if (wcd9xxx->dev_up)
 		return 0;
@@ -1561,7 +1561,7 @@ static int wcd9xxx_slim_device_reset(struct slim_device *sldev)
 	mutex_lock(&wcd9xxx->reset_lock);
 	ret = wcd9xxx_reset(wcd9xxx->dev);
 	if (ret)
-		dev_err(wcd9xxx->dev, "%s: Resetting Codec failed\n", __func__);
+		dev_dbg(wcd9xxx->dev, "%s: Resetting Codec failed\n", __func__);
 	mutex_unlock(&wcd9xxx->reset_lock);
 
 	return ret;
@@ -1573,10 +1573,10 @@ static int wcd9xxx_slim_device_up(struct slim_device *sldev)
 	int ret = 0;
 
 	if (!wcd9xxx) {
-		pr_err("%s: wcd9xxx is NULL\n", __func__);
+		pr_debug("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
-	dev_info(wcd9xxx->dev, "%s: slim device up, dev_up = %d\n",
+	dev_dbg(wcd9xxx->dev, "%s: slim device up, dev_up = %d\n",
 		__func__, wcd9xxx->dev_up);
 	if (wcd9xxx->dev_up)
 		return 0;
@@ -1595,11 +1595,11 @@ static int wcd9xxx_slim_device_down(struct slim_device *sldev)
 	struct wcd9xxx *wcd9xxx = slim_get_devicedata(sldev);
 
 	if (!wcd9xxx) {
-		pr_err("%s: wcd9xxx is NULL\n", __func__);
+		pr_debug("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
 
-	dev_info(wcd9xxx->dev, "%s: device down, dev_up = %d\n",
+	dev_dbg(wcd9xxx->dev, "%s: device down, dev_up = %d\n",
 		__func__, wcd9xxx->dev_up);
 	if (!wcd9xxx->dev_up)
 		return 0;
@@ -1764,27 +1764,27 @@ int wcd9xxx_init(void)
 
 	ret[0] = i2c_add_driver(&tabla_i2c_driver);
 	if (ret[0])
-		pr_err("%s: Failed to add the tabla2x I2C driver: %d\n",
+		pr_debug("%s: Failed to add the tabla2x I2C driver: %d\n",
 			__func__, ret[0]);
 
 	ret[1] = i2c_add_driver(&wcd9xxx_i2c_driver);
 	if (ret[1])
-		pr_err("%s: Failed to add the wcd9xxx I2C driver: %d\n",
+		pr_debug("%s: Failed to add the wcd9xxx I2C driver: %d\n",
 			__func__, ret[1]);
 
 	ret[2] = i2c_add_driver(&wcd9335_i2c_driver);
 	if (ret[2])
-		pr_err("%s: Failed to add the wcd9335 I2C driver: %d\n",
+		pr_debug("%s: Failed to add the wcd9335 I2C driver: %d\n",
 			__func__, ret[2]);
 
 	ret[3] = slim_driver_register(&wcd_slim_driver);
 	if (ret[3])
-		pr_err("%s: Failed to register wcd SB driver: %d\n",
+		pr_debug("%s: Failed to register wcd SB driver: %d\n",
 			__func__, ret[3]);
 
 	ret[4] = i2c_add_driver(&wcd934x_i2c_driver);
 	if (ret[4])
-		pr_err("%s: Failed to add the wcd934x I2C driver: %d\n",
+		pr_debug("%s: Failed to add the wcd934x I2C driver: %d\n",
 			__func__, ret[4]);
 
 	for (i = 0; i < NUM_WCD9XXX_REG_RET; i++) {

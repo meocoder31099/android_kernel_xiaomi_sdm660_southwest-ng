@@ -314,7 +314,7 @@ static int parse_mount_options(char *data, int op, struct pts_mount_opts *opts)
 			opts->max = option;
 			break;
 		default:
-			pr_err("called with bogus options\n");
+			pr_debug("called with bogus options\n");
 			return -EINVAL;
 		}
 	}
@@ -344,7 +344,7 @@ static int mknod_ptmx(struct super_block *sb)
 
 	dentry = d_alloc_name(root, "ptmx");
 	if (!dentry) {
-		pr_err("Unable to alloc dentry for ptmx node\n");
+		pr_debug("Unable to alloc dentry for ptmx node\n");
 		goto out;
 	}
 
@@ -353,7 +353,7 @@ static int mknod_ptmx(struct super_block *sb)
 	 */
 	inode = new_inode(sb);
 	if (!inode) {
-		pr_err("Unable to alloc inode for ptmx node\n");
+		pr_debug("Unable to alloc inode for ptmx node\n");
 		dput(dentry);
 		goto out;
 	}
@@ -480,7 +480,7 @@ devpts_fill_super(struct super_block *s, void *data, int silent)
 
 	s->s_root = d_make_root(inode);
 	if (!s->s_root) {
-		pr_err("get root dentry failed\n");
+		pr_debug("get root dentry failed\n");
 		goto fail;
 	}
 

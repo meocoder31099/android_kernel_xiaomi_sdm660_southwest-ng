@@ -81,7 +81,7 @@ static void end_swap_bio_read(struct bio *bio)
 	if (bio->bi_status) {
 		SetPageError(page);
 		ClearPageUptodate(page);
-		pr_alert("Read-error on swap-device (%u:%u:%llu)\n",
+		pr_debug("Read-error on swap-device (%u:%u:%llu)\n",
 			 MAJOR(bio_dev(bio)), MINOR(bio_dev(bio)),
 			 (unsigned long long)bio->bi_iter.bi_sector);
 		goto out;
@@ -188,7 +188,7 @@ reprobe:
 out:
 	return ret;
 bad_bmap:
-	pr_err("swapon: swapfile has holes\n");
+	pr_debug("swapon: swapfile has holes\n");
 	ret = -EINVAL;
 	goto out;
 }

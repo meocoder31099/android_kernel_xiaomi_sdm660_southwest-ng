@@ -324,7 +324,7 @@ static int __init devfreq_boost_init(void)
 						      "devfreq_boostd/%d", i);
 		if (IS_ERR(thread[i])) {
 			ret = PTR_ERR(thread[i]);
-			pr_err("Failed to create kthread, err: %d\n", ret);
+			pr_debug("Failed to create kthread, err: %d\n", ret);
 			goto stop_kthreads;
 		}
 	}
@@ -333,7 +333,7 @@ static int __init devfreq_boost_init(void)
 	devfreq_boost_input_handler.private = d;
 	ret = input_register_handler(&devfreq_boost_input_handler);
 	if (ret) {
-		pr_err("Failed to register input handler, err: %d\n", ret);
+		pr_debug("Failed to register input handler, err: %d\n", ret);
 		goto stop_kthreads;
 	}
 
@@ -341,7 +341,7 @@ static int __init devfreq_boost_init(void)
 	d->fb_notif.priority = INT_MAX;
 	ret = fb_register_client(&d->fb_notif);
 	if (ret) {
-		pr_err("Failed to register fb notifier, err: %d\n", ret);
+		pr_debug("Failed to register fb notifier, err: %d\n", ret);
 		goto unregister_handler;
 	}
 

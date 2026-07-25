@@ -84,7 +84,7 @@ static int qpnp_tri_led_read(struct qpnp_tri_led_chip *chip, u16 addr, u8 *val)
 	mutex_lock(&chip->bus_lock);
 	rc = regmap_read(chip->regmap, chip->reg_base + addr, &tmp);
 	if (rc < 0)
-		dev_err(chip->dev, "Read addr 0x%x failed, rc=%d\n", addr, rc);
+		dev_dbg(chip->dev, "Read addr 0x%x failed, rc=%d\n", addr, rc);
 	else
 		*val = (u8)tmp;
 	mutex_unlock(&chip->bus_lock);
@@ -100,7 +100,7 @@ static int qpnp_tri_led_masked_write(struct qpnp_tri_led_chip *chip,
 	mutex_lock(&chip->bus_lock);
 	rc = regmap_update_bits(chip->regmap, chip->reg_base + addr, mask, val);
 	if (rc < 0)
-		dev_err(chip->dev, "Update addr 0x%x to val 0x%x with mask 0x%x failed, rc=%d\n",
+		dev_dbg(chip->dev, "Update addr 0x%x to val 0x%x with mask 0x%x failed, rc=%d\n",
 					addr, val, mask, rc);
 	mutex_unlock(&chip->bus_lock);
 
@@ -124,7 +124,7 @@ static int __tri_led_config_pwm(struct qpnp_led_dev *led,
 	rc = pwm_apply_state(led->pwm_dev, &pstate);
 
 	if (rc < 0)
-		dev_err(led->chip->dev, "Apply PWM state for %s led failed, rc=%d\n",
+		dev_dbg(led->chip->dev, "Apply PWM state for %s led failed, rc=%d\n",
 					led->cdev.name, rc);
 
 	return rc;
@@ -143,7 +143,7 @@ static int __tri_led_set(struct qpnp_led_dev *led)
 
 	rc = __tri_led_config_pwm(led, &led->pwm_setting);
 	if (rc < 0) {
-		dev_err(led->chip->dev, "Configure PWM for %s led failed, rc=%d\n",
+		dev_dbg(led->chip->dev, "Configure PWM for %s led failed, rc=%d\n",
 					led->cdev.name, rc);
 		return rc;
 	}
@@ -175,7 +175,7 @@ static int __tri_led_set(struct qpnp_led_dev *led)
 			rc = nvmem_device_write(led->chip->pbs_nvmem, PBS_ARG,
 				1, &pbs_val);
 			if (rc < 0) {
-				dev_err(led->chip->dev, "Couldn't set PBS_ARG, rc=%d\n",
+				dev_dbg(led->chip->dev, "Couldn't set PBS_ARG, rc=%d\n",
 					rc);
 				return rc;
 			}
@@ -184,7 +184,7 @@ static int __tri_led_set(struct qpnp_led_dev *led)
 			rc = nvmem_device_write(led->chip->pbs_nvmem,
 				PBS_TRIG_CLR, 1, &pbs_val);
 			if (rc < 0) {
-				dev_err(led->chip->dev, "Couldn't set PBS_TRIG_CLR, rc=%d\n",
+				dev_dbg(led->chip->dev, "Couldn't set PBS_TRIG_CLR, rc=%d\n",
 					rc);
 				return rc;
 			}
@@ -193,7 +193,7 @@ static int __tri_led_set(struct qpnp_led_dev *led)
 			rc = nvmem_device_write(led->chip->pbs_nvmem,
 				PBS_TRIG_SET, 1, &pbs_val);
 			if (rc < 0) {
-				dev_err(led->chip->dev, "Couldn't set PBS_TRIG_SET, rc=%d\n",
+				dev_dbg(led->chip->dev, "Couldn't set PBS_TRIG_SET, rc=%d\n",
 					rc);
 				return rc;
 			}
@@ -203,7 +203,7 @@ static int __tri_led_set(struct qpnp_led_dev *led)
 	rc = qpnp_tri_led_masked_write(led->chip, TRILED_REG_EN_CTL,
 							mask, val);
 	if (rc < 0)
-		dev_err(led->chip->dev, "Update addr 0x%x failed, rc=%d\n",
+		dev_dbg(led->chip->dev, "Update addr 0x%x failed, rc=%d\n",
 					TRILED_REG_EN_CTL, rc);
 
 	return rc;
@@ -245,7 +245,7 @@ static int qpnp_tri_led_set(struct qpnp_led_dev *led)
 
 	rc = __tri_led_set(led);
 	if (rc < 0) {
-		dev_err(led->chip->dev, "__tri_led_set %s failed, rc=%d\n",
+		dev_dbg(led->chip->dev, "__tri_led_set %s failed, rc=%d\n",
 				led->cdev.name, rc);
 		return rc;
 	}
@@ -294,7 +294,7 @@ static int qpnp_tri_led_set_brightness(struct led_classdev *led_cdev,
 
 	rc = qpnp_tri_led_set(led);
 	if (rc)
-		dev_err(led->chip->dev, "Set led failed for %s, rc=%d\n",
+		dev_dbg(led->chip->dev, "Set led failed for %s, rc=%d\n",
 				led->label, rc);
 
 	mutex_unlock(&led->lock);
@@ -341,7 +341,7 @@ static int qpnp_tri_led_set_blink(struct led_classdev *led_cdev,
 
 	rc = qpnp_tri_led_set(led);
 	if (rc)
-		dev_err(led->chip->dev, "Set led failed for %s, rc=%d\n",
+		dev_dbg(led->chip->dev, "Set led failed for %s, rc=%d\n",
 				led->label, rc);
 
 	mutex_unlock(&led->lock);
@@ -382,7 +382,7 @@ static ssize_t breath_store(struct device *dev, struct device_attribute *attr,
 	led->led_setting.brightness = breath ? LED_FULL : LED_OFF;
 	rc = qpnp_tri_led_set(led);
 	if (rc < 0)
-		dev_err(led->chip->dev, "Set led failed for %s, rc=%d\n",
+		dev_dbg(led->chip->dev, "Set led failed for %s, rc=%d\n",
 				led->label, rc);
 
 unlock:
@@ -414,7 +414,7 @@ static int qpnp_tri_led_register(struct qpnp_tri_led_chip *chip)
 
 		rc = devm_led_classdev_register(chip->dev, &led->cdev);
 		if (rc < 0) {
-			dev_err(chip->dev, "%s led class device registering failed, rc=%d\n",
+			dev_dbg(chip->dev, "%s led class device registering failed, rc=%d\n",
 							led->label, rc);
 			goto err_out;
 		}
@@ -424,7 +424,7 @@ static int qpnp_tri_led_register(struct qpnp_tri_led_chip *chip)
 			rc = sysfs_create_files(&led->cdev.dev->kobj,
 					breath_attrs);
 			if (rc < 0) {
-				dev_err(chip->dev, "Create breath file for %s led failed, rc=%d\n",
+				dev_dbg(chip->dev, "Create breath file for %s led failed, rc=%d\n",
 						led->label, rc);
 				goto err_out;
 			}
@@ -450,18 +450,18 @@ static int qpnp_tri_led_hw_init(struct qpnp_tri_led_chip *chip)
 
 	rc = qpnp_tri_led_read(chip, TRILED_REG_TYPE, &val);
 	if (rc < 0) {
-		dev_err(chip->dev, "Read REG_TYPE failed, rc=%d\n", rc);
+		dev_dbg(chip->dev, "Read REG_TYPE failed, rc=%d\n", rc);
 		return rc;
 	}
 
 	if (val != TRILED_TYPE) {
-		dev_err(chip->dev, "invalid subtype(%d)\n", val);
+		dev_dbg(chip->dev, "invalid subtype(%d)\n", val);
 		return -ENODEV;
 	}
 
 	rc = qpnp_tri_led_read(chip, TRILED_REG_SUBTYPE, &val);
 	if (rc < 0) {
-		dev_err(chip->dev, "Read REG_SUBTYPE failed, rc=%d\n", rc);
+		dev_dbg(chip->dev, "Read REG_SUBTYPE failed, rc=%d\n", rc);
 		return rc;
 	}
 
@@ -480,19 +480,19 @@ static int qpnp_tri_led_parse_dt(struct qpnp_tri_led_chip *chip)
 
 	addr = of_get_address(chip->dev->of_node, 0, NULL, NULL);
 	if (!addr) {
-		dev_err(chip->dev, "Getting address failed\n");
+		dev_dbg(chip->dev, "Getting address failed\n");
 		return -EINVAL;
 	}
 	chip->reg_base = be32_to_cpu(addr[0]);
 
 	chip->num_leds = of_get_available_child_count(node);
 	if (chip->num_leds == 0) {
-		dev_err(chip->dev, "No led child node defined\n");
+		dev_dbg(chip->dev, "No led child node defined\n");
 		return -ENODEV;
 	}
 
 	if (chip->num_leds > TRILED_NUM_MAX) {
-		dev_err(chip->dev, "can't support %d leds(max %d)\n",
+		dev_dbg(chip->dev, "can't support %d leds(max %d)\n",
 				chip->num_leds, TRILED_NUM_MAX);
 		return -EINVAL;
 	}
@@ -502,7 +502,7 @@ static int qpnp_tri_led_parse_dt(struct qpnp_tri_led_chip *chip)
 		if (IS_ERR_OR_NULL(chip->pbs_nvmem)) {
 			rc = PTR_ERR(chip->pbs_nvmem);
 			if (rc != -EPROBE_DEFER) {
-				dev_err(chip->dev, "Couldn't get nvmem device, rc=%d\n",
+				dev_dbg(chip->dev, "Couldn't get nvmem device, rc=%d\n",
 					rc);
 				return -ENODEV;
 			}
@@ -519,13 +519,13 @@ static int qpnp_tri_led_parse_dt(struct qpnp_tri_led_chip *chip)
 	for_each_available_child_of_node(node, child_node) {
 		rc = of_property_read_u32(child_node, "led-sources", &id);
 		if (rc) {
-			dev_err(chip->dev, "Get led-sources failed, rc=%d\n",
+			dev_dbg(chip->dev, "Get led-sources failed, rc=%d\n",
 							rc);
 			return rc;
 		}
 
 		if (id >= TRILED_NUM_MAX) {
-			dev_err(chip->dev, "only support 0~%d current source\n",
+			dev_dbg(chip->dev, "only support 0~%d current source\n",
 					TRILED_NUM_MAX - 1);
 			return -EINVAL;
 		}
@@ -542,7 +542,7 @@ static int qpnp_tri_led_parse_dt(struct qpnp_tri_led_chip *chip)
 		if (IS_ERR(led->pwm_dev)) {
 			rc = PTR_ERR(led->pwm_dev);
 			if (rc != -EPROBE_DEFER)
-				dev_err(chip->dev, "Get pwm device for %s led failed, rc=%d\n",
+				dev_dbg(chip->dev, "Get pwm device for %s led failed, rc=%d\n",
 							led->label, rc);
 			return rc;
 		}
@@ -572,13 +572,13 @@ static int qpnp_tri_led_probe(struct platform_device *pdev)
 	chip->dev = &pdev->dev;
 	chip->regmap = dev_get_regmap(chip->dev->parent, NULL);
 	if (!chip->regmap) {
-		dev_err(chip->dev, "Getting regmap failed\n");
+		dev_dbg(chip->dev, "Getting regmap failed\n");
 		return -EINVAL;
 	}
 
 	rc = qpnp_tri_led_parse_dt(chip);
 	if (rc < 0) {
-		dev_err(chip->dev, "Devicetree properties parsing failed, rc=%d\n",
+		dev_dbg(chip->dev, "Devicetree properties parsing failed, rc=%d\n",
 								rc);
 		return rc;
 	}
@@ -587,14 +587,14 @@ static int qpnp_tri_led_probe(struct platform_device *pdev)
 
 	rc = qpnp_tri_led_hw_init(chip);
 	if (rc) {
-		dev_err(chip->dev, "HW initialization failed, rc=%d\n", rc);
+		dev_dbg(chip->dev, "HW initialization failed, rc=%d\n", rc);
 		goto destroy;
 	}
 
 	dev_set_drvdata(chip->dev, chip);
 	rc = qpnp_tri_led_register(chip);
 	if (rc < 0) {
-		dev_err(chip->dev, "Registering LED class devices failed, rc=%d\n",
+		dev_dbg(chip->dev, "Registering LED class devices failed, rc=%d\n",
 								rc);
 		goto destroy;
 	}

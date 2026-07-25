@@ -4035,7 +4035,7 @@ void __iomem *devm_pci_remap_cfg_resource(struct device *dev,
 	BUG_ON(!dev);
 
 	if (!res || resource_type(res) != IORESOURCE_MEM) {
-		dev_err(dev, "invalid resource\n");
+		dev_dbg(dev, "invalid resource\n");
 		return IOMEM_ERR_PTR(-EINVAL);
 	}
 
@@ -4043,13 +4043,13 @@ void __iomem *devm_pci_remap_cfg_resource(struct device *dev,
 	name = res->name ?: dev_name(dev);
 
 	if (!devm_request_mem_region(dev, res->start, size, name)) {
-		dev_err(dev, "can't request region for resource %pR\n", res);
+		dev_dbg(dev, "can't request region for resource %pR\n", res);
 		return IOMEM_ERR_PTR(-EBUSY);
 	}
 
 	dest_ptr = devm_pci_remap_cfgspace(dev, res->start, size);
 	if (!dest_ptr) {
-		dev_err(dev, "ioremap failed for resource %pR\n", res);
+		dev_dbg(dev, "ioremap failed for resource %pR\n", res);
 		devm_release_mem_region(dev, res->start, size);
 		dest_ptr = IOMEM_ERR_PTR(-ENOMEM);
 	}
@@ -5913,7 +5913,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
 		    p[count] == '@') {
 			p += count + 1;
 			if (align_order > 63) {
-				pr_err("PCI: Invalid requested alignment (order %d)\n",
+				pr_debug("PCI: Invalid requested alignment (order %d)\n",
 				       align_order);
 				align_order = PAGE_SHIFT;
 			}
@@ -5927,7 +5927,7 @@ static resource_size_t pci_specified_resource_alignment(struct pci_dev *dev,
 			align = 1ULL << align_order;
 			break;
 		} else if (ret < 0) {
-			pr_err("PCI: Can't parse resource_alignment parameter: %s\n",
+			pr_debug("PCI: Can't parse resource_alignment parameter: %s\n",
 			       p);
 			break;
 		}
@@ -6162,8 +6162,8 @@ static int of_pci_bus_find_domain_nr(struct device *parent)
 		domain = pci_get_new_domain_nr();
 	} else {
 		if (parent)
-			pr_err("Node %pOF has ", parent->of_node);
-		pr_err("Inconsistent \"linux,pci-domain\" property in DT\n");
+			pr_debug("Node %pOF has ", parent->of_node);
+		pr_debug("Inconsistent \"linux,pci-domain\" property in DT\n");
 		domain = -1;
 	}
 
@@ -6204,7 +6204,7 @@ static int __init pci_setup(char *str)
 			if (!strcmp(str, "nomsi")) {
 				pci_no_msi();
 			} else if (!strncmp(str, "noats", 5)) {
-				pr_info("PCIe: ATS is disabled\n");
+				pr_debug("PCIe: ATS is disabled\n");
 				pcie_ats_disabled = true;
 			} else if (!strcmp(str, "noaer")) {
 				pci_no_aer();
@@ -6249,7 +6249,7 @@ static int __init pci_setup(char *str)
 			} else if (!strncmp(str, "disable_acs_redir=", 18)) {
 				disable_acs_redir_param = str + 18;
 			} else {
-				printk(KERN_ERR "PCI: Unknown option `%s'\n",
+				no_printk(KERN_ERR "PCI: Unknown option `%s'\n",
 						str);
 			}
 		}

@@ -468,7 +468,7 @@ static int __ftrace_event_enable_disable(struct trace_event_file *file,
 					tracing_stop_cmdline_record();
 				if (tgid)
 					tracing_stop_tgid_record();
-				pr_info("event trace: Could not enable event "
+				pr_debug("event trace: Could not enable event "
 					"%s\n", trace_event_name(call));
 				break;
 			}
@@ -1924,7 +1924,7 @@ event_subsystem_dir(struct trace_array *tr, const char *name,
 
 	dir->entry = tracefs_create_dir(name, parent);
 	if (!dir->entry) {
-		pr_warn("Failed to create system directory %s\n", name);
+		pr_debug("Failed to create system directory %s\n", name);
 		__put_system(system);
 		goto out_free;
 	}
@@ -1940,7 +1940,7 @@ event_subsystem_dir(struct trace_array *tr, const char *name,
 	if (!entry) {
 		kfree(system->filter);
 		system->filter = NULL;
-		pr_warn("Could not create tracefs '%s/filter' entry\n", name);
+		pr_debug("Could not create tracefs '%s/filter' entry\n", name);
 	}
 
 	trace_create_file("enable", 0644, dir->entry, dir,
@@ -1955,7 +1955,7 @@ event_subsystem_dir(struct trace_array *tr, const char *name,
  out_fail:
 	/* Only print this message if failed on memory allocation */
 	if (!dir || !system)
-		pr_warn("No memory to create event subsystem %s\n", name);
+		pr_debug("No memory to create event subsystem %s\n", name);
 	return NULL;
 }
 
@@ -1983,7 +1983,7 @@ event_create_dir(struct dentry *parent, struct trace_event_file *file)
 	name = trace_event_name(call);
 	file->dir = tracefs_create_dir(name, d_events);
 	if (!file->dir) {
-		pr_warn("Could not create tracefs '%s' directory\n", name);
+		pr_debug("Could not create tracefs '%s' directory\n", name);
 		return -1;
 	}
 
@@ -2006,7 +2006,7 @@ event_create_dir(struct dentry *parent, struct trace_event_file *file)
 	if (list_empty(head)) {
 		ret = call->class->define_fields(call);
 		if (ret < 0) {
-			pr_warn("Could not initialize trace point events/%s\n",
+			pr_debug("Could not initialize trace point events/%s\n",
 				name);
 			return -1;
 		}
@@ -2094,7 +2094,7 @@ static int event_init(struct trace_event_call *call)
 	if (call->class->raw_init) {
 		ret = call->class->raw_init(call);
 		if (ret < 0 && ret != -ENOSYS)
-			pr_warn("Could not initialize trace events/%s\n", name);
+			pr_debug("Could not initialize trace events/%s\n", name);
 	}
 
 	return ret;
@@ -2412,7 +2412,7 @@ static void trace_module_add_events(struct module *mod)
 
 	/* Don't add infrastructure for mods without tracepoints */
 	if (trace_module_has_bad_taint(mod)) {
-		pr_err("%s: module has bad taint, not creating trace events\n",
+		pr_debug("%s: module has bad taint, not creating trace events\n",
 		       mod->name);
 		return;
 	}
@@ -2487,7 +2487,7 @@ __trace_add_event_dirs(struct trace_array *tr)
 	list_for_each_entry(call, &ftrace_events, list) {
 		ret = __trace_add_new_event(call, tr);
 		if (ret < 0)
-			pr_warn("Could not create directory for event %s\n",
+			pr_debug("Could not create directory for event %s\n",
 				trace_event_name(call));
 	}
 }
@@ -2864,7 +2864,7 @@ __trace_early_add_event_dirs(struct trace_array *tr)
 	list_for_each_entry(file, &tr->events, list) {
 		ret = event_create_dir(tr->event_dir, file);
 		if (ret < 0)
-			pr_warn("Could not create directory for event %s\n",
+			pr_debug("Could not create directory for event %s\n",
 				trace_event_name(file->event_call));
 	}
 }
@@ -2888,7 +2888,7 @@ __trace_early_add_events(struct trace_array *tr)
 
 		ret = __trace_early_add_new_event(call, tr);
 		if (ret < 0)
-			pr_warn("Could not create early event %s\n",
+			pr_debug("Could not create early event %s\n",
 				trace_event_name(call));
 	}
 }
@@ -2936,20 +2936,20 @@ create_event_toplevel_files(struct dentry *parent, struct trace_array *tr)
 	entry = tracefs_create_file("set_event", 0644, parent,
 				    tr, &ftrace_set_event_fops);
 	if (!entry) {
-		pr_warn("Could not create tracefs 'set_event' entry\n");
+		pr_debug("Could not create tracefs 'set_event' entry\n");
 		return -ENOMEM;
 	}
 
 	d_events = tracefs_create_dir("events", parent);
 	if (!d_events) {
-		pr_warn("Could not create tracefs 'events' directory\n");
+		pr_debug("Could not create tracefs 'events' directory\n");
 		return -ENOMEM;
 	}
 
 	entry = trace_create_file("enable", 0644, d_events,
 				  tr, &ftrace_tr_enable_fops);
 	if (!entry) {
-		pr_warn("Could not create tracefs 'enable' entry\n");
+		pr_debug("Could not create tracefs 'enable' entry\n");
 		return -ENOMEM;
 	}
 
@@ -2958,20 +2958,20 @@ create_event_toplevel_files(struct dentry *parent, struct trace_array *tr)
 	entry = tracefs_create_file("set_event_pid", 0644, parent,
 				    tr, &ftrace_set_event_pid_fops);
 	if (!entry)
-		pr_warn("Could not create tracefs 'set_event_pid' entry\n");
+		pr_debug("Could not create tracefs 'set_event_pid' entry\n");
 
 	/* ring buffer internal formats */
 	entry = trace_create_file("header_page", 0444, d_events,
 				  ring_buffer_print_page_header,
 				  &ftrace_show_header_fops);
 	if (!entry)
-		pr_warn("Could not create tracefs 'header_page' entry\n");
+		pr_debug("Could not create tracefs 'header_page' entry\n");
 
 	entry = trace_create_file("header_event", 0444, d_events,
 				  ring_buffer_print_entry_header,
 				  &ftrace_show_header_fops);
 	if (!entry)
-		pr_warn("Could not create tracefs 'header_event' entry\n");
+		pr_debug("Could not create tracefs 'header_event' entry\n");
 
 	tr->event_dir = d_events;
 
@@ -3081,7 +3081,7 @@ static __init void __early_set_events(struct trace_array *tr, bool enable)
 		if (*token) {
 			if (enable) {
 				if (ftrace_set_clr_event(tr, token, 1))
-					pr_warn("Failed to enable trace event: %s\n", token);
+					pr_debug("Failed to enable trace event: %s\n", token);
 			} else {
 				ftrace_set_clr_event(tr, token, 0);
 			}
@@ -3197,13 +3197,13 @@ __init int event_trace_init(void)
 	entry = tracefs_create_file("available_events", 0444, d_tracer,
 				    tr, &ftrace_avail_fops);
 	if (!entry)
-		pr_warn("Could not create tracefs 'available_events' entry\n");
+		pr_debug("Could not create tracefs 'available_events' entry\n");
 
 	if (trace_define_generic_fields())
-		pr_warn("tracing: Failed to allocated generic fields");
+		pr_debug("tracing: Failed to allocated generic fields");
 
 	if (trace_define_common_fields())
-		pr_warn("tracing: Failed to allocate common fields");
+		pr_debug("tracing: Failed to allocate common fields");
 
 	ret = early_event_add_tracer(d_tracer, tr);
 	if (ret)
@@ -3212,7 +3212,7 @@ __init int event_trace_init(void)
 #ifdef CONFIG_MODULES
 	ret = register_module_notifier(&trace_module_nb);
 	if (ret)
-		pr_warn("Failed to register trace events module notifier\n");
+		pr_debug("Failed to register trace events module notifier\n");
 #endif
 	return 0;
 }
@@ -3249,7 +3249,7 @@ static __init int event_test_thread(void *unused)
 
 	test_malloc = kmalloc(1234, GFP_KERNEL);
 	if (!test_malloc)
-		pr_info("failed to kmalloc\n");
+		pr_debug("failed to kmalloc\n");
 
 	schedule_on_each_cpu(test_work);
 
@@ -3294,7 +3294,7 @@ static __init void event_trace_self_tests(void)
 	if (!tr)
 		return;
 
-	pr_info("Running tests on trace events:\n");
+	pr_debug("Running tests on trace events:\n");
 
 	list_for_each_entry(file, &tr->events, list) {
 
@@ -3316,14 +3316,14 @@ static __init void event_trace_self_tests(void)
 			continue;
 #endif
 
-		pr_info("Testing event %s: ", trace_event_name(call));
+		pr_debug("Testing event %s: ", trace_event_name(call));
 
 		/*
 		 * If an event is already enabled, someone is using
 		 * it and the self test should not be on.
 		 */
 		if (file->flags & EVENT_FILE_FL_ENABLED) {
-			pr_warn("Enabled event during self test!\n");
+			pr_debug("Enabled event during self test!\n");
 			WARN_ON_ONCE(1);
 			continue;
 		}
@@ -3332,12 +3332,12 @@ static __init void event_trace_self_tests(void)
 		event_test_stuff();
 		ftrace_event_enable_disable(file, 0);
 
-		pr_cont("OK\n");
+		pr_debug("OK\n");
 	}
 
 	/* Now test at the sub system level */
 
-	pr_info("Running tests on trace event systems:\n");
+	pr_debug("Running tests on trace event systems:\n");
 
 	list_for_each_entry(dir, &tr->systems, list) {
 
@@ -3347,11 +3347,11 @@ static __init void event_trace_self_tests(void)
 		if (strcmp(system->name, "ftrace") == 0)
 			continue;
 
-		pr_info("Testing event system %s: ", system->name);
+		pr_debug("Testing event system %s: ", system->name);
 
 		ret = __ftrace_set_clr_event(tr, NULL, system->name, NULL, 1);
 		if (WARN_ON_ONCE(ret)) {
-			pr_warn("error enabling system %s\n",
+			pr_debug("error enabling system %s\n",
 				system->name);
 			continue;
 		}
@@ -3360,22 +3360,22 @@ static __init void event_trace_self_tests(void)
 
 		ret = __ftrace_set_clr_event(tr, NULL, system->name, NULL, 0);
 		if (WARN_ON_ONCE(ret)) {
-			pr_warn("error disabling system %s\n",
+			pr_debug("error disabling system %s\n",
 				system->name);
 			continue;
 		}
 
-		pr_cont("OK\n");
+		pr_debug("OK\n");
 	}
 
 	/* Test with all events enabled */
 
-	pr_info("Running tests on all trace events:\n");
-	pr_info("Testing all events: ");
+	pr_debug("Running tests on all trace events:\n");
+	pr_debug("Testing all events: ");
 
 	ret = __ftrace_set_clr_event(tr, NULL, NULL, NULL, 1);
 	if (WARN_ON_ONCE(ret)) {
-		pr_warn("error enabling all events\n");
+		pr_debug("error enabling all events\n");
 		return;
 	}
 
@@ -3384,11 +3384,11 @@ static __init void event_trace_self_tests(void)
 	/* reset sysname */
 	ret = __ftrace_set_clr_event(tr, NULL, NULL, NULL, 0);
 	if (WARN_ON_ONCE(ret)) {
-		pr_warn("error disabling all events\n");
+		pr_debug("error disabling all events\n");
 		return;
 	}
 
-	pr_cont("OK\n");
+	pr_debug("OK\n");
 }
 
 #ifdef CONFIG_FUNCTION_TRACER
@@ -3451,10 +3451,10 @@ static __init void event_trace_self_test_with_function(void)
 
 	ret = register_ftrace_function(&trace_ops);
 	if (WARN_ON(ret < 0)) {
-		pr_info("Failed to enable function tracer for event tests\n");
+		pr_debug("Failed to enable function tracer for event tests\n");
 		return;
 	}
-	pr_info("Running tests again, along with the function tracer\n");
+	pr_debug("Running tests again, along with the function tracer\n");
 	event_trace_self_tests();
 	unregister_ftrace_function(&trace_ops);
 }

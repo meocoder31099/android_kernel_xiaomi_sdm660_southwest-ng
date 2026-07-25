@@ -1897,7 +1897,7 @@ get_ctx_vol_failed:
 	vol->minor_ver = vi->minor_ver;
 	ntfs_attr_put_search_ctx(ctx);
 	unmap_mft_record(NTFS_I(vol->vol_ino));
-	pr_info("volume version %i.%i.\n", vol->major_ver,
+	pr_debug("volume version %i.%i.\n", vol->major_ver,
 			vol->minor_ver);
 	if (vol->major_ver < 3 && NVolSparseEnabled(vol)) {
 		ntfs_warning(vol->sb, "Disabling sparse support due to NTFS "
@@ -3087,7 +3087,7 @@ static int __init init_ntfs_fs(void)
 	int err = 0;
 
 	/* This may be ugly but it results in pretty output so who cares. (-8 */
-	pr_info("driver " NTFS_VERSION " [Flags: R/"
+	pr_debug("driver " NTFS_VERSION " [Flags: R/"
 #ifdef NTFS_RW
 			"W"
 #else
@@ -3107,14 +3107,14 @@ static int __init init_ntfs_fs(void)
 			sizeof(ntfs_index_context), 0 /* offset */,
 			SLAB_HWCACHE_ALIGN, NULL /* ctor */);
 	if (!ntfs_index_ctx_cache) {
-		pr_crit("Failed to create %s!\n", ntfs_index_ctx_cache_name);
+		pr_debug("Failed to create %s!\n", ntfs_index_ctx_cache_name);
 		goto ictx_err_out;
 	}
 	ntfs_attr_ctx_cache = kmem_cache_create(ntfs_attr_ctx_cache_name,
 			sizeof(ntfs_attr_search_ctx), 0 /* offset */,
 			SLAB_HWCACHE_ALIGN, NULL /* ctor */);
 	if (!ntfs_attr_ctx_cache) {
-		pr_crit("NTFS: Failed to create %s!\n",
+		pr_debug("NTFS: Failed to create %s!\n",
 			ntfs_attr_ctx_cache_name);
 		goto actx_err_out;
 	}
@@ -3123,7 +3123,7 @@ static int __init init_ntfs_fs(void)
 			(NTFS_MAX_NAME_LEN+1) * sizeof(ntfschar), 0,
 			SLAB_HWCACHE_ALIGN, NULL);
 	if (!ntfs_name_cache) {
-		pr_crit("Failed to create %s!\n", ntfs_name_cache_name);
+		pr_debug("Failed to create %s!\n", ntfs_name_cache_name);
 		goto name_err_out;
 	}
 
@@ -3131,7 +3131,7 @@ static int __init init_ntfs_fs(void)
 			sizeof(ntfs_inode), 0,
 			SLAB_RECLAIM_ACCOUNT|SLAB_MEM_SPREAD, NULL);
 	if (!ntfs_inode_cache) {
-		pr_crit("Failed to create %s!\n", ntfs_inode_cache_name);
+		pr_debug("Failed to create %s!\n", ntfs_inode_cache_name);
 		goto inode_err_out;
 	}
 
@@ -3140,14 +3140,14 @@ static int __init init_ntfs_fs(void)
 			SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|SLAB_MEM_SPREAD|
 			SLAB_ACCOUNT, ntfs_big_inode_init_once);
 	if (!ntfs_big_inode_cache) {
-		pr_crit("Failed to create %s!\n", ntfs_big_inode_cache_name);
+		pr_debug("Failed to create %s!\n", ntfs_big_inode_cache_name);
 		goto big_inode_err_out;
 	}
 
 	/* Register the ntfs sysctls. */
 	err = ntfs_sysctl(1);
 	if (err) {
-		pr_crit("Failed to register NTFS sysctls!\n");
+		pr_debug("Failed to register NTFS sysctls!\n");
 		goto sysctl_err_out;
 	}
 
@@ -3156,7 +3156,7 @@ static int __init init_ntfs_fs(void)
 		ntfs_debug("NTFS driver registered successfully.");
 		return 0; /* Success! */
 	}
-	pr_crit("Failed to register NTFS filesystem driver!\n");
+	pr_debug("Failed to register NTFS filesystem driver!\n");
 
 	/* Unregister the ntfs sysctls. */
 	ntfs_sysctl(0);
@@ -3172,7 +3172,7 @@ actx_err_out:
 	kmem_cache_destroy(ntfs_index_ctx_cache);
 ictx_err_out:
 	if (!err) {
-		pr_crit("Aborting NTFS filesystem driver registration...\n");
+		pr_debug("Aborting NTFS filesystem driver registration...\n");
 		err = -ENOMEM;
 	}
 	return err;

@@ -37,7 +37,7 @@
 
 DEFINE_RATELIMIT_STATE(net_ratelimit_state, 5 * HZ, 10);
 /*
- * All net warning printk()s should be guarded by this function.
+ * All net warning no_printk()s should be guarded by this function.
  */
 int net_ratelimit(void)
 {
@@ -396,7 +396,7 @@ int inet_pton_with_scope(struct net *net, __kernel_sa_family_t af,
 			ret = inet6_pton(net, src, port_num, addr);
 		break;
 	default:
-		pr_err("unexpected address family %d\n", af);
+		pr_debug("unexpected address family %d\n", af);
 	}
 
 	return ret;
@@ -419,7 +419,7 @@ bool inet_addr_is_any(struct sockaddr *addr)
 		if (in->sin_addr.s_addr == htonl(INADDR_ANY))
 			return true;
 	} else {
-		pr_warn("unexpected address family %u\n", addr->sa_family);
+		pr_debug("unexpected address family %u\n", addr->sa_family);
 	}
 
 	return false;

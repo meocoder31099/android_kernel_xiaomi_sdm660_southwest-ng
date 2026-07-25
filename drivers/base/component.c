@@ -236,7 +236,7 @@ static int try_to_bring_up_master(struct master *master,
 	if (ret < 0) {
 		devres_release_group(master->dev, NULL);
 		if (ret != -EPROBE_DEFER)
-			dev_info(master->dev, "master bind failed: %d\n", ret);
+			dev_dbg(master->dev, "master bind failed: %d\n", ret);
 		return ret;
 	}
 
@@ -501,14 +501,14 @@ static int component_bind(struct component *component, struct master *master,
 		devres_close_group(component->dev, NULL);
 		devres_remove_group(master->dev, NULL);
 
-		dev_info(master->dev, "bound %s (ops %ps)\n",
+		dev_dbg(master->dev, "bound %s (ops %ps)\n",
 			 dev_name(component->dev), component->ops);
 	} else {
 		devres_release_group(component->dev, NULL);
 		devres_release_group(master->dev, NULL);
 
 		if (ret != -EPROBE_DEFER)
-			dev_err(master->dev, "failed to bind %s (ops %ps): %d\n",
+			dev_dbg(master->dev, "failed to bind %s (ops %ps): %d\n",
 				dev_name(component->dev), component->ops, ret);
 	}
 

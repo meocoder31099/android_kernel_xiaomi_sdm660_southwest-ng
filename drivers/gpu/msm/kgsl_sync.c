@@ -48,7 +48,7 @@ static struct kgsl_sync_fence *kgsl_sync_fence_create(
 
 	if (kfence->sync_file == NULL) {
 		kgsl_sync_timeline_put(ktimeline);
-		dev_err(context->device->dev, "Create sync_file failed\n");
+		dev_dbg(context->device->dev, "Create sync_file failed\n");
 		kfree(kfence);
 		return NULL;
 	}
@@ -669,7 +669,7 @@ long kgsl_ioctl_syncsource_create_fence(struct kgsl_device_private *dev_priv,
 	sync_file = sync_file_create(&sfence->fence);
 
 	if (sync_file == NULL) {
-		dev_err(dev_priv->device->dev,
+		dev_dbg(dev_priv->device->dev,
 			     "Create sync_file failed\n");
 		ret = -ENOMEM;
 		goto out;

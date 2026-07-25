@@ -981,7 +981,7 @@ static void client_drop_item(struct config_item *parent_item,
 #ifdef DEBUG
 static void configfs_dump_one(struct configfs_dirent *sd, int level)
 {
-	pr_info("%*s\"%s\":\n", level, " ", configfs_get_name(sd));
+	pr_debug("%*s\"%s\":\n", level, " ", configfs_get_name(sd));
 
 #define type_print(_type) if (sd->s_type & _type) pr_info("%*s %s\n", level, " ", #_type);
 	type_print(CONFIGFS_ROOT);
@@ -1991,7 +1991,7 @@ void configfs_unregister_subsystem(struct configfs_subsystem *subsys)
 	struct configfs_fragment *frag = sd->s_frag;
 
 	if (dentry->d_parent != root) {
-		pr_err("Tried to unregister non-subsystem!\n");
+		pr_debug("Tried to unregister non-subsystem!\n");
 		return;
 	}
 
@@ -2005,7 +2005,7 @@ void configfs_unregister_subsystem(struct configfs_subsystem *subsys)
 	mutex_lock(&configfs_symlink_mutex);
 	spin_lock(&configfs_dirent_lock);
 	if (configfs_detach_prep(dentry, NULL)) {
-		pr_err("Tried to unregister non-empty subsystem!\n");
+		pr_debug("Tried to unregister non-empty subsystem!\n");
 	}
 	spin_unlock(&configfs_dirent_lock);
 	mutex_unlock(&configfs_symlink_mutex);

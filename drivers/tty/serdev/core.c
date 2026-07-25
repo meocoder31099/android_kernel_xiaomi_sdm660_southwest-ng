@@ -129,14 +129,14 @@ int serdev_device_add(struct serdev_device *serdev)
 
 	/* Only a single slave device is currently supported. */
 	if (ctrl->serdev) {
-		dev_err(&serdev->dev, "controller busy\n");
+		dev_dbg(&serdev->dev, "controller busy\n");
 		return -EBUSY;
 	}
 	ctrl->serdev = serdev;
 
 	err = device_add(&serdev->dev);
 	if (err < 0) {
-		dev_err(&serdev->dev, "Can't add %s, status %d\n",
+		dev_dbg(&serdev->dev, "Can't add %s, status %d\n",
 			dev_name(&serdev->dev), err);
 		goto err_clear_serdev;
 	}
@@ -455,7 +455,7 @@ struct serdev_controller *serdev_controller_alloc(struct device *parent,
 
 	id = ida_simple_get(&ctrl_ida, 0, 0, GFP_KERNEL);
 	if (id < 0) {
-		dev_err(parent,
+		dev_dbg(parent,
 			"unable to allocate serdev controller identifier.\n");
 		goto err_free;
 	}
@@ -505,7 +505,7 @@ static int of_serdev_register_devices(struct serdev_controller *ctrl)
 
 		err = serdev_device_add(serdev);
 		if (err) {
-			dev_err(&serdev->dev,
+			dev_dbg(&serdev->dev,
 				"failure adding device. status %d\n", err);
 			serdev_device_put(serdev);
 		} else
@@ -530,7 +530,7 @@ static acpi_status acpi_serdev_register_device(struct serdev_controller *ctrl,
 
 	serdev = serdev_device_alloc(ctrl);
 	if (!serdev) {
-		dev_err(&ctrl->dev, "failed to allocate serdev device for %s\n",
+		dev_dbg(&ctrl->dev, "failed to allocate serdev device for %s\n",
 			dev_name(&adev->dev));
 		return AE_NO_MEMORY;
 	}
@@ -540,7 +540,7 @@ static acpi_status acpi_serdev_register_device(struct serdev_controller *ctrl,
 
 	err = serdev_device_add(serdev);
 	if (err) {
-		dev_err(&serdev->dev,
+		dev_dbg(&serdev->dev,
 			"failure adding ACPI serdev device. status %d\n", err);
 		serdev_device_put(serdev);
 	}
@@ -606,7 +606,7 @@ static int platform_serdev_register_devices(struct serdev_controller *ctrl)
 
 	serdev = serdev_device_alloc(ctrl);
 	if (!serdev) {
-		dev_err(&ctrl->dev, "failed to allocate serdev device for %s\n",
+		dev_dbg(&ctrl->dev, "failed to allocate serdev device for %s\n",
 				    dev_name(ctrl->dev.parent));
 		return -ENOMEM;
 	}
@@ -615,7 +615,7 @@ static int platform_serdev_register_devices(struct serdev_controller *ctrl)
 
 	err = serdev_device_add(serdev);
 	if (err) {
-		dev_err(&serdev->dev,
+		dev_dbg(&serdev->dev,
 			"failure adding device. status %d\n", err);
 		serdev_device_put(serdev);
 	}

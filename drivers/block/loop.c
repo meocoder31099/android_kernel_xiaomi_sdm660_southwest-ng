@@ -657,7 +657,7 @@ static void loop_reread_partitions(struct loop_device *lo,
 
 	rc = blkdev_reread_part(bdev);
 	if (rc)
-		pr_warn("%s: partition scan of loop%d (%s) failed (rc=%d)\n",
+		pr_debug("%s: partition scan of loop%d (%s) failed (rc=%d)\n",
 			__func__, lo->lo_number, lo->lo_file_name, rc);
 }
 
@@ -1245,7 +1245,7 @@ out_unlock:
 		else
 			err = blkdev_reread_part(bdev);
 		if (err)
-			pr_warn("%s: partition scan of loop%d failed (rc=%d)\n",
+			pr_debug("%s: partition scan of loop%d failed (rc=%d)\n",
 				__func__, lo_number, err);
 		/* Device is gone, no point in returning error */
 		err = 0;
@@ -1347,7 +1347,7 @@ loop_set_status(struct loop_device *lo, const struct loop_info64 *info)
 	if (size_changed && lo->lo_device->bd_inode->i_mapping->nrpages) {
 		/* If any pages were dirtied after kill_bdev(), try again */
 		err = -EAGAIN;
-		pr_warn("%s: loop%d (%s) has still dirty pages (nrpages=%lu)\n",
+		pr_debug("%s: loop%d (%s) has still dirty pages (nrpages=%lu)\n",
 			__func__, lo->lo_number, lo->lo_file_name,
 			lo->lo_device->bd_inode->i_mapping->nrpages);
 		goto out_unfreeze;
@@ -1597,7 +1597,7 @@ static int loop_set_block_size(struct loop_device *lo, unsigned long arg)
 	/* invalidate_bdev should have truncated all the pages */
 	if (lo->lo_device->bd_inode->i_mapping->nrpages) {
 		err = -EAGAIN;
-		pr_warn("%s: loop%d (%s) has still dirty pages (nrpages=%lu)\n",
+		pr_debug("%s: loop%d (%s) has still dirty pages (nrpages=%lu)\n",
 			__func__, lo->lo_number, lo->lo_file_name,
 			lo->lo_device->bd_inode->i_mapping->nrpages);
 		goto out_unfreeze;
@@ -2352,7 +2352,7 @@ static int __init loop_init(void)
 		loop_add(&lo, i);
 	mutex_unlock(&loop_ctl_mutex);
 
-	printk(KERN_INFO "loop: module loaded\n");
+	no_printk(KERN_INFO "loop: module loaded\n");
 	return 0;
 
 misc_out:

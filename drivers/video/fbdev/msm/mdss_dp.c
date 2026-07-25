@@ -206,14 +206,14 @@ static int mdss_dp_parse_aux_cfg(struct platform_device *pdev,
 
 		data = of_get_property(pdev->dev.of_node, property, &len);
 		if (!data) {
-			pr_err("Unable to read %s\n", property);
+			pr_debug("Unable to read %s\n", property);
 			goto error;
 		}
 
 		config_count = len - 1;
 		if ((config_count < minimum_config_count) ||
 			(config_count > MDSS_DP_MAX_PHY_CFG_VALUE_CNT)) {
-			pr_err("Invalid config count (%d) configs for %s\n",
+			pr_debug("Invalid config count (%d) configs for %s\n",
 					config_count, property);
 			goto error;
 		}
@@ -284,7 +284,7 @@ static int mdss_dp_init_clk_power_data(struct device *dev,
 	num_clk = of_property_count_strings(dev->of_node,
 			"clock-names");
 	if (num_clk <= 0) {
-		pr_err("no clocks are defined\n");
+		pr_debug("no clocks are defined\n");
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -307,7 +307,7 @@ static int mdss_dp_init_clk_power_data(struct device *dev,
 
 	/* Initialize the CORE power module */
 	if (core_clk_count <= 0) {
-		pr_err("no core clocks are defined\n");
+		pr_debug("no core clocks are defined\n");
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -322,7 +322,7 @@ static int mdss_dp_init_clk_power_data(struct device *dev,
 
 	/* Initialize the CTRL power module */
 	if (ctrl_clk_count <= 0) {
-		pr_err("no ctrl clocks are defined\n");
+		pr_debug("no ctrl clocks are defined\n");
 		rc = -EINVAL;
 		goto ctrl_clock_error;
 	}
@@ -356,14 +356,14 @@ static int mdss_dp_get_dt_clk_data(struct device *dev,
 	struct dss_module_power *ctrl_power_data = NULL;
 
 	if (!dev || !pdata) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		rc = -EINVAL;
 		goto exit;
 	}
 
 	rc =  mdss_dp_init_clk_power_data(dev, pdata);
 	if (rc) {
-		pr_err("failed to initialize power data\n");
+		pr_debug("failed to initialize power data\n");
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -415,7 +415,7 @@ static int mdss_dp_clk_init(struct mdss_dp_drv_pdata *dp_drv,
 	int rc = 0;
 
 	if (!dp_drv || !dev) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -424,7 +424,7 @@ static int mdss_dp_clk_init(struct mdss_dp_drv_pdata *dp_drv,
 	ctrl_power_data = &dp_drv->power_data[DP_CTRL_PM];
 
 	if (!core_power_data || !ctrl_power_data) {
-		pr_err("invalid power_data\n");
+		pr_debug("invalid power_data\n");
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -504,7 +504,7 @@ static int mdss_dp_clk_set_rate_enable(
 			power_data->clk_config,
 			power_data->num_clk);
 		if (ret) {
-			pr_err("failed to set clks rate.\n");
+			pr_debug("failed to set clks rate.\n");
 			goto exit;
 		}
 
@@ -512,7 +512,7 @@ static int mdss_dp_clk_set_rate_enable(
 			power_data->clk_config,
 			power_data->num_clk, 1);
 		if (ret) {
-			pr_err("failed to enable clks\n");
+			pr_debug("failed to enable clks\n");
 			goto exit;
 		}
 	} else {
@@ -520,7 +520,7 @@ static int mdss_dp_clk_set_rate_enable(
 			power_data->clk_config,
 			power_data->num_clk, 0);
 		if (ret) {
-			pr_err("failed to disable clks\n");
+			pr_debug("failed to disable clks\n");
 				goto exit;
 		}
 	}
@@ -539,7 +539,7 @@ static int mdss_dp_clk_ctrl(struct mdss_dp_drv_pdata *dp_drv,
 
 	if ((pm_type != DP_CORE_PM)
 			&& (pm_type != DP_CTRL_PM)) {
-		pr_err("unsupported power module: %s\n",
+		pr_debug("unsupported power module: %s\n",
 				__mdss_dp_pm_name(pm_type));
 		return -EINVAL;
 	}
@@ -565,7 +565,7 @@ static int mdss_dp_clk_ctrl(struct mdss_dp_drv_pdata *dp_drv,
 				&dp_drv->power_data[DP_CORE_PM],
 				enable);
 			if (ret) {
-				pr_err("failed to enable clks: %s. err=%d\n",
+				pr_debug("failed to enable clks: %s. err=%d\n",
 					__mdss_dp_pm_name(DP_CORE_PM), ret);
 				goto error;
 			} else {
@@ -578,7 +578,7 @@ static int mdss_dp_clk_ctrl(struct mdss_dp_drv_pdata *dp_drv,
 		&dp_drv->power_data[pm_type],
 		enable);
 	if (ret) {
-		pr_err("failed to '%s' clks for: %s. err=%d\n",
+		pr_debug("failed to '%s' clks for: %s. err=%d\n",
 			enable ? "enable" : "disable",
 			__mdss_dp_pm_name(pm_type), ret);
 			goto error;
@@ -615,7 +615,7 @@ static int mdss_dp_regulator_ctrl(struct mdss_dp_drv_pdata *dp_drv,
 			dp_drv->power_data[i].vreg_config,
 			dp_drv->power_data[i].num_vreg, enable);
 		if (ret) {
-			pr_err("failed to '%s' vregs for %s\n",
+			pr_debug("failed to '%s' vregs for %s\n",
 					enable ? "enable" : "disable",
 					__mdss_dp_pm_name(i));
 			if (enable) {
@@ -658,7 +658,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 	struct device_node *supply_root_node = NULL;
 
 	if (!dev || !mp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		rc = -EINVAL;
 		return rc;
 	}
@@ -667,7 +667,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 	pm_supply_name = __mdss_dp_pm_supply_node_name(module);
 	supply_root_node = of_get_child_by_name(of_node, pm_supply_name);
 	if (!supply_root_node) {
-		pr_err("no supply entry present: %s\n", pm_supply_name);
+		pr_debug("no supply entry present: %s\n", pm_supply_name);
 		goto novreg;
 	}
 
@@ -694,7 +694,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 		rc = of_property_read_string(supply_node,
 			"qcom,supply-name", &st);
 		if (rc) {
-			pr_err("error reading name. rc=%d\n",
+			pr_debug("error reading name. rc=%d\n",
 				 rc);
 			goto error;
 		}
@@ -704,7 +704,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 		rc = of_property_read_u32(supply_node,
 			"qcom,supply-min-voltage", &tmp);
 		if (rc) {
-			pr_err("error reading min volt. rc=%d\n",
+			pr_debug("error reading min volt. rc=%d\n",
 				rc);
 			goto error;
 		}
@@ -714,7 +714,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 		rc = of_property_read_u32(supply_node,
 			"qcom,supply-max-voltage", &tmp);
 		if (rc) {
-			pr_err("error reading max volt. rc=%d\n",
+			pr_debug("error reading max volt. rc=%d\n",
 				rc);
 			goto error;
 		}
@@ -724,7 +724,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 		rc = of_property_read_u32(supply_node,
 			"qcom,supply-enable-load", &tmp);
 		if (rc) {
-			pr_err("error reading enable load. rc=%d\n",
+			pr_debug("error reading enable load. rc=%d\n",
 				rc);
 			goto error;
 		}
@@ -734,7 +734,7 @@ static int mdss_dp_get_dt_vreg_data(struct device *dev,
 		rc = of_property_read_u32(supply_node,
 			"qcom,supply-disable-load", &tmp);
 		if (rc) {
-			pr_err("error reading disable load. rc=%d\n",
+			pr_debug("error reading disable load. rc=%d\n",
 				rc);
 			goto error;
 		}
@@ -765,7 +765,7 @@ static int mdss_dp_regulator_init(struct platform_device *pdev,
 	int rc = 0, i = 0, j = 0;
 
 	if (!pdev || !dp_drv) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -774,7 +774,7 @@ static int mdss_dp_regulator_init(struct platform_device *pdev,
 			dp_drv->power_data[i].vreg_config,
 			dp_drv->power_data[i].num_vreg, 1);
 		if (rc) {
-			pr_err("failed to init vregs for %s\n",
+			pr_debug("failed to init vregs for %s\n",
 				__mdss_dp_pm_name(i));
 			for (j = i-1; j >= DP_CORE_PM; j--) {
 				msm_dss_config_vreg(&pdev->dev,
@@ -803,11 +803,11 @@ static int mdss_dp_pinctrl_set_state(
 		rc = pinctrl_select_state(dp->pin_res.pinctrl,
 				pin_state);
 		if (rc)
-			pr_err("can not set %s pins\n",
+			pr_debug("can not set %s pins\n",
 			       active ? "mdss_dp_active"
 			       : "mdss_dp_sleep");
 	} else {
-		pr_err("invalid '%s' pinstate\n",
+		pr_debug("invalid '%s' pinstate\n",
 		       active ? "mdss_dp_active"
 		       : "mdss_dp_sleep");
 	}
@@ -819,7 +819,7 @@ static int mdss_dp_pinctrl_init(struct platform_device *pdev,
 {
 	dp->pin_res.pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR_OR_NULL(dp->pin_res.pinctrl)) {
-		pr_err("failed to get pinctrl\n");
+		pr_debug("failed to get pinctrl\n");
 		return PTR_ERR(dp->pin_res.pinctrl);
 	}
 
@@ -827,7 +827,7 @@ static int mdss_dp_pinctrl_init(struct platform_device *pdev,
 		= pinctrl_lookup_state(dp->pin_res.pinctrl,
 				"mdss_dp_active");
 	if (IS_ERR_OR_NULL(dp->pin_res.state_active)) {
-		pr_err("can not get dp active pinstate\n");
+		pr_debug("can not get dp active pinstate\n");
 		return PTR_ERR(dp->pin_res.state_active);
 	}
 
@@ -835,7 +835,7 @@ static int mdss_dp_pinctrl_init(struct platform_device *pdev,
 		= pinctrl_lookup_state(dp->pin_res.pinctrl,
 				"mdss_dp_sleep");
 	if (IS_ERR_OR_NULL(dp->pin_res.state_suspend)) {
-		pr_err("can not get dp sleep pinstate\n");
+		pr_debug("can not get dp sleep pinstate\n");
 		return PTR_ERR(dp->pin_res.state_suspend);
 	}
 
@@ -848,7 +848,7 @@ static int mdss_dp_request_gpios(struct mdss_dp_drv_pdata *dp)
 	struct device *dev = NULL;
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -857,7 +857,7 @@ static int mdss_dp_request_gpios(struct mdss_dp_drv_pdata *dp)
 		rc = devm_gpio_request(dev, dp->aux_en_gpio,
 						"aux_enable");
 		if (rc) {
-			pr_err("request aux_en gpio failed, rc=%d\n",
+			pr_debug("request aux_en gpio failed, rc=%d\n",
 				       rc);
 			goto aux_en_gpio_err;
 		}
@@ -865,7 +865,7 @@ static int mdss_dp_request_gpios(struct mdss_dp_drv_pdata *dp)
 	if (gpio_is_valid(dp->aux_sel_gpio)) {
 		rc = devm_gpio_request(dev, dp->aux_sel_gpio, "aux_sel");
 		if (rc) {
-			pr_err("request aux_sel gpio failed, rc=%d\n",
+			pr_debug("request aux_sel gpio failed, rc=%d\n",
 				rc);
 			goto aux_sel_gpio_err;
 		}
@@ -874,7 +874,7 @@ static int mdss_dp_request_gpios(struct mdss_dp_drv_pdata *dp)
 		rc = devm_gpio_request(dev, dp->usbplug_cc_gpio,
 						"usbplug_cc");
 		if (rc) {
-			pr_err("request usbplug_cc gpio failed, rc=%d\n",
+			pr_debug("request usbplug_cc gpio failed, rc=%d\n",
 				rc);
 			goto usbplug_cc_gpio_err;
 		}
@@ -882,7 +882,7 @@ static int mdss_dp_request_gpios(struct mdss_dp_drv_pdata *dp)
 	if (gpio_is_valid(dp->hpd_gpio)) {
 		rc = devm_gpio_request(dev, dp->hpd_gpio, "hpd");
 		if (rc) {
-			pr_err("request hpd gpio failed, rc=%d\n",
+			pr_debug("request hpd gpio failed, rc=%d\n",
 				rc);
 			goto hpd_gpio_err;
 		}
@@ -909,7 +909,7 @@ static int mdss_dp_config_gpios(struct mdss_dp_drv_pdata *dp, bool enable)
 	if (enable) {
 		rc = mdss_dp_request_gpios(dp);
 		if (rc) {
-			pr_err("gpio request failed\n");
+			pr_debug("gpio request failed\n");
 			return rc;
 		}
 
@@ -917,13 +917,13 @@ static int mdss_dp_config_gpios(struct mdss_dp_drv_pdata *dp, bool enable)
 			rc = gpio_direction_output(
 				dp->aux_en_gpio, 0);
 			if (rc)
-				pr_err("unable to set dir for aux_en gpio\n");
+				pr_debug("unable to set dir for aux_en gpio\n");
 		}
 		if (gpio_is_valid(dp->aux_sel_gpio)) {
 			rc = gpio_direction_output(
 				dp->aux_sel_gpio, dp->aux_sel_gpio_output);
 			if (rc)
-				pr_err("unable to set dir for aux_sel gpio\n");
+				pr_debug("unable to set dir for aux_sel gpio\n");
 		}
 		if (gpio_is_valid(dp->usbplug_cc_gpio)) {
 			gpio_set_value(
@@ -962,7 +962,7 @@ static int mdss_dp_parse_gpio_params(struct platform_device *pdev,
 			"qcom,aux-en-gpio", 0);
 
 	if (!gpio_is_valid(dp->aux_en_gpio)) {
-		pr_err("%d, Aux_en gpio not specified\n",
+		pr_debug("%d, Aux_en gpio not specified\n",
 					__LINE__);
 		return -EINVAL;
 	}
@@ -972,7 +972,7 @@ static int mdss_dp_parse_gpio_params(struct platform_device *pdev,
 			"qcom,aux-sel-gpio", 0);
 
 	if (!gpio_is_valid(dp->aux_sel_gpio)) {
-		pr_err("%d, Aux_sel gpio not specified\n",
+		pr_debug("%d, Aux_sel gpio not specified\n",
 					__LINE__);
 		return -EINVAL;
 	}
@@ -982,7 +982,7 @@ static int mdss_dp_parse_gpio_params(struct platform_device *pdev,
 			"qcom,usbplug-cc-gpio", 0);
 
 	if (!gpio_is_valid(dp->usbplug_cc_gpio)) {
-		pr_err("%d,usbplug_cc gpio not specified\n",
+		pr_debug("%d,usbplug_cc gpio not specified\n",
 					__LINE__);
 		return -EINVAL;
 	}
@@ -992,7 +992,7 @@ static int mdss_dp_parse_gpio_params(struct platform_device *pdev,
 			"qcom,hpd-gpio", 0);
 
 	if (!gpio_is_valid(dp->hpd_gpio)) {
-		pr_info("%d,hpd gpio not specified\n",
+		pr_debug("%d,hpd gpio not specified\n",
 					__LINE__);
 	}
 
@@ -1070,7 +1070,7 @@ static int mdss_dp_wait4video_ready(struct mdss_dp_drv_pdata *dp_drv)
 
 	ret = wait_for_completion_timeout(&dp_drv->video_comp, 30);
 	if (ret <= 0) {
-		pr_err("Link Train timedout\n");
+		pr_debug("Link Train timedout\n");
 		ret = -EINVAL;
 	} else {
 		ret = 0;
@@ -1131,7 +1131,7 @@ static int dp_audio_info_setup(struct platform_device *pdev,
 	struct mdss_dp_drv_pdata *dp_ctrl = dp_get_data(pdev);
 
 	if (!dp_ctrl || !params) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		rc = -ENODEV;
 		goto end;
 	}
@@ -1175,12 +1175,12 @@ static void dp_audio_teardown_done(struct platform_device *pdev)
 	struct mdss_dp_drv_pdata *dp = dp_get_data(pdev);
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
 	if (!dp->power_on) {
-		pr_err("DP is already power off\n");
+		pr_debug("DP is already power off\n");
 		return;
 	}
 
@@ -1197,7 +1197,7 @@ static int dp_get_intf_id(struct platform_device *pdev)
 	struct mdss_dp_drv_pdata *dp = dp_get_data(pdev);
 
 	if (!dp) {
-		pr_err("%s: invalid DP data\n", __func__);
+		pr_debug("%s: invalid DP data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1210,7 +1210,7 @@ static int dp_audio_ack_done(struct platform_device *pdev, u32 ack)
 	struct mdss_dp_drv_pdata *dp = dp_get_data(pdev);
 
 	if (!dp) {
-		pr_err("%s: invalid dp data\n", __func__);
+		pr_debug("%s: invalid dp data\n", __func__);
 		return -ENODEV;
 	}
 	pr_debug("acknowledging audio (%d)\n", ack);
@@ -1224,7 +1224,7 @@ static int dp_audio_codec_ready(struct platform_device *pdev)
 	struct mdss_dp_drv_pdata *dp = dp_get_data(pdev);
 
 	if (!dp) {
-		pr_err("%s: invalid dp data\n", __func__);
+		pr_debug("%s: invalid dp data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1240,7 +1240,7 @@ static int mdss_dp_init_ext_disp(struct mdss_dp_drv_pdata *dp)
 	const char *phandle = "qcom,msm_ext_disp";
 
 	if (!dp) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		ret = -ENODEV;
 		goto end;
 	}
@@ -1263,28 +1263,28 @@ static int mdss_dp_init_ext_disp(struct mdss_dp_drv_pdata *dp)
 	ops->ready = dp_audio_codec_ready;
 
 	if (!dp->pdev->dev.of_node) {
-		pr_err("%s cannot find dp dev.of_node\n", __func__);
+		pr_debug("%s cannot find dp dev.of_node\n", __func__);
 		ret = -ENODEV;
 		goto end;
 	}
 
 	pd_np = of_parse_phandle(dp->pdev->dev.of_node, phandle, 0);
 	if (!pd_np) {
-		pr_err("%s cannot find %s dev\n", __func__, phandle);
+		pr_debug("%s cannot find %s dev\n", __func__, phandle);
 		ret = -ENODEV;
 		goto end;
 	}
 
 	dp->ext_pdev = of_find_device_by_node(pd_np);
 	if (!dp->ext_pdev) {
-		pr_err("%s cannot find %s pdev\n", __func__, phandle);
+		pr_debug("%s cannot find %s pdev\n", __func__, phandle);
 		ret = -ENODEV;
 		goto end;
 	}
 
 	ret = msm_ext_disp_register_intf(dp->ext_pdev, ext);
 	if (ret)
-		pr_err("%s: failed to register disp\n", __func__);
+		pr_debug("%s: failed to register disp\n", __func__);
 
 end:
 	return ret;
@@ -1410,7 +1410,7 @@ static int mdss_dp_get_lane_mapping(struct mdss_dp_drv_pdata *dp,
 	pr_debug("enter: orientation = %d\n", orientation);
 
 	if (!lane_map) {
-		pr_err("invalid lane map input\n");
+		pr_debug("invalid lane map input\n");
 		ret = -EINVAL;
 		goto exit;
 	}
@@ -1480,7 +1480,7 @@ static void mdss_dp_set_clock_rate(struct mdss_dp_drv_pdata *dp,
 	if (num)
 		cfg->rate = rate;
 	else
-		pr_err("%s clock could not be set with rate %d\n", name, rate);
+		pr_debug("%s clock could not be set with rate %d\n", name, rate);
 }
 
 /**
@@ -1522,7 +1522,7 @@ static int mdss_dp_enable_mainlink_clocks(struct mdss_dp_drv_pdata *dp)
 
 	ret = mdss_dp_clk_ctrl(dp, DP_CTRL_PM, true);
 	if (ret) {
-		pr_err("Unabled to start link clocks\n");
+		pr_debug("Unabled to start link clocks\n");
 		ret = -EINVAL;
 	}
 
@@ -1585,7 +1585,7 @@ static int mdss_dp_setup_main_link(struct mdss_dp_drv_pdata *dp, bool train)
 	mdss_dp_mainlink_ctrl(&dp->ctrl_io, true);
 	ret = mdss_dp_aux_send_psm_request(dp, false);
 	if (ret) {
-		pr_err("Failed to exit low power mode, rc=%d\n", ret);
+		pr_debug("Failed to exit low power mode, rc=%d\n", ret);
 		goto end;
 	}
 
@@ -1645,7 +1645,7 @@ static int mdss_dp_on_irq(struct mdss_dp_drv_pdata *dp_drv, bool lt_needed)
 	 * If DP cable disconnected, Avoid link training or turning on DP Path
 	 */
 	if (!connected) {
-		pr_err("DP sink not connected\n");
+		pr_debug("DP sink not connected\n");
 		return -EINVAL;
 	}
 
@@ -1691,7 +1691,7 @@ static int mdss_dp_on_irq(struct mdss_dp_drv_pdata *dp_drv, bool lt_needed)
 		ret = mdss_dp_setup_main_link(dp_drv, lt_needed);
 		if (ret) {
 			if (ret == -ENODEV || ret == -EINVAL) {
-				pr_err("main link setup failed\n");
+				pr_debug("main link setup failed\n");
 				mutex_unlock(&dp_drv->train_mutex);
 				return ret;
 			}
@@ -1733,7 +1733,7 @@ static int mdss_dp_on_hpd(struct mdss_dp_drv_pdata *dp_drv)
 
 	ret = mdss_dp_clk_ctrl(dp_drv, DP_CORE_PM, true);
 	if (ret) {
-		pr_err("Unabled to start core clocks\n");
+		pr_debug("Unabled to start core clocks\n");
 		goto exit;
 	}
 	mdss_dp_hpd_configure(&dp_drv->ctrl_io, true);
@@ -1746,7 +1746,7 @@ static int mdss_dp_on_hpd(struct mdss_dp_drv_pdata *dp_drv)
 
 	dp_drv->link_rate = mdss_dp_gen_link_clk(dp_drv);
 	if (!dp_drv->link_rate) {
-		pr_err("Unable to configure required link rate\n");
+		pr_debug("Unable to configure required link rate\n");
 		mdss_dp_clk_ctrl(dp_drv, DP_CORE_PM, false);
 		ret = -EINVAL;
 		goto exit;
@@ -1792,7 +1792,7 @@ static int mdss_dp_on(struct mdss_panel_data *pdata)
 	int rc = 0;
 
 	if (!pdata) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		return -EINVAL;
 	}
 
@@ -1811,7 +1811,7 @@ static int mdss_dp_on(struct mdss_panel_data *pdata)
 	 * Avoid turning ON DP path in such cases.
 	 */
 	if (!hpd || !dp_drv->alt_mode.dp_status.hpd_high) {
-		pr_err("DP sink not connected\n");
+		pr_debug("DP sink not connected\n");
 		return -EINVAL;
 	}
 
@@ -1937,7 +1937,7 @@ static int mdss_dp_off(struct mdss_panel_data *pdata)
 	dp = container_of(pdata, struct mdss_dp_drv_pdata,
 				panel_data);
 	if (!dp) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		return -EINVAL;
 	}
 
@@ -1953,19 +1953,19 @@ static struct mdss_dp_drv_pdata *dp_get_data(struct platform_device *pdev)
 	void *audio_data;
 
 	if (!pdev) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return ERR_PTR(-ENODEV);
 	}
 
 	ext_data = platform_get_drvdata(pdev);
 	if (!ext_data) {
-		pr_err("invalid ext disp data\n");
+		pr_debug("invalid ext disp data\n");
 		return ERR_PTR(-EINVAL);
 	}
 
 	audio_data = ext_data->intf_data;
 	if (!audio_data) {
-		pr_err("invalid intf data\n");
+		pr_debug("invalid intf data\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -1980,7 +1980,7 @@ static int mdss_dp_send_audio_notification(
 	struct msm_ext_disp_init_data *ext;
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -1988,7 +1988,7 @@ static int mdss_dp_send_audio_notification(
 
 	if (!ext || !ext->intf_ops.audio_config ||
 			!ext->intf_ops.audio_notify) {
-		pr_err("invalid ext audio ops\n");
+		pr_debug("invalid ext audio ops\n");
 		return -EINVAL;
 	}
 	if (mdss_dp_sink_audio_supp(dp) || dp->audio_test_req) {
@@ -2076,7 +2076,7 @@ static int mdss_dp_edid_init(struct mdss_panel_data *pdata)
 	void *edid_data;
 
 	if (!pdata) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		return -EINVAL;
 	}
 
@@ -2109,7 +2109,7 @@ static int mdss_dp_host_init(struct mdss_panel_data *pdata)
 	int ret = 0;
 
 	if (!pdata) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		return -EINVAL;
 	}
 
@@ -2123,13 +2123,13 @@ static int mdss_dp_host_init(struct mdss_panel_data *pdata)
 
 	ret = mdss_dp_regulator_ctrl(dp_drv, true);
 	if (ret) {
-		pr_err("failed to enable regulators\n");
+		pr_debug("failed to enable regulators\n");
 		goto vreg_error;
 	}
 
 	dp_drv->orientation = usbpd_get_plug_orientation(dp_drv->pd);
 	if (dp_drv->orientation == ORIENTATION_NONE) {
-		pr_err("DP cable might be disconnected\n");
+		pr_debug("DP cable might be disconnected\n");
 		ret = -EINVAL;
 		goto orientation_error;
 	}
@@ -2146,7 +2146,7 @@ static int mdss_dp_host_init(struct mdss_panel_data *pdata)
 
 	ret = mdss_dp_clk_ctrl(dp_drv, DP_CORE_PM, true);
 	if (ret) {
-		pr_err("Unabled to start core clocks\n");
+		pr_debug("Unabled to start core clocks\n");
 		goto clk_error;
 	}
 
@@ -2190,7 +2190,7 @@ vreg_error:
 static int mdss_dp_host_deinit(struct mdss_dp_drv_pdata *dp)
 {
 	if (!dp) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		return -EINVAL;
 	}
 
@@ -2293,7 +2293,7 @@ static int mdss_dp_notify_clients(struct mdss_dp_drv_pdata *dp,
 		connect = false;
 		break;
 	default:
-		pr_err("Invalid notification status = %d\n", status);
+		pr_debug("Invalid notification status = %d\n", status);
 		ret = -EINVAL;
 		break;
 	}
@@ -2301,7 +2301,7 @@ static int mdss_dp_notify_clients(struct mdss_dp_drv_pdata *dp,
 	goto notify;
 
 invalid_request:
-	pr_err("Invalid request %s --> %s\n",
+	pr_debug("Invalid request %s --> %s\n",
 		mdss_dp_notification_status_to_string(
 			dp->hpd_notification_status),
 		mdss_dp_notification_status_to_string(status));
@@ -2324,7 +2324,7 @@ notify:
 			ret = wait_for_completion_timeout(&dp->audio_comp,
 						msecs_to_jiffies(2000));
 			if (ret <= 0)
-				pr_err("%s Wait for Audio Comp timed out\n",
+				pr_debug("%s Wait for Audio Comp timed out\n",
 							 __func__);
 		}
 		ret = mdss_dp_send_video_notification(dp, false);
@@ -2336,7 +2336,7 @@ notify:
 				dp->hpd_notification_status),
 			mdss_dp_notification_status_to_string(status));
 	} else {
-		pr_err("%s Notification failed\n",
+		pr_debug("%s Notification failed\n",
 			mdss_dp_notification_status_to_string(status));
 		atomic_set(&dp->notification_pending, 0);
 	}
@@ -2357,7 +2357,7 @@ static int mdss_dp_process_hpd_high(struct mdss_dp_drv_pdata *dp)
 	if (ret || !mdss_dp_aux_is_link_rate_valid(dp->dpcd.max_link_rate) ||
 		!mdss_dp_aux_is_lane_count_valid(dp->dpcd.max_lane_count)) {
 		if ((ret == -ENODEV) || (ret == EDP_AUX_ERR_TOUT)) {
-			pr_err("DPCD read timedout, skip connect notification\n");
+			pr_debug("DPCD read timedout, skip connect notification\n");
 			goto end;
 		}
 		/*
@@ -2365,7 +2365,7 @@ static int mdss_dp_process_hpd_high(struct mdss_dp_drv_pdata *dp)
 		 * unsupported link parameters then set the default link
 		 * parameters and continue to read EDID.
 		 */
-		pr_err("dpcd read failed, set failsafe parameters\n");
+		pr_debug("dpcd read failed, set failsafe parameters\n");
 		mdss_dp_set_default_link_parameters(dp);
 		goto read_edid;
 	}
@@ -2381,7 +2381,7 @@ static int mdss_dp_process_hpd_high(struct mdss_dp_drv_pdata *dp)
 	if (mdss_dp_is_ds_bridge_sink_count_zero(dp)) {
 		if (mdss_dp_is_ds_bridge_no_local_edid(dp))
 			pr_debug("No local EDID present on DS branch device\n");
-		pr_info("no downstream devices, skip client notification\n");
+		pr_debug("no downstream devices, skip client notification\n");
 		goto end;
 	}
 
@@ -2391,7 +2391,7 @@ read_edid:
 		if (ret == -ENODEV)
 			goto end;
 
-		pr_err("edid read error, setting default resolution\n");
+		pr_debug("edid read error, setting default resolution\n");
 		goto notify;
 	}
 
@@ -2407,14 +2407,14 @@ read_edid:
 
 	ret = hdmi_edid_parser(dp->panel_data.panel_info.edid_data);
 	if (ret) {
-		pr_err("edid parse failed, setting default resolution\n");
+		pr_debug("edid parse failed, setting default resolution\n");
 		goto notify;
 	}
 
 notify:
 	if (ret) {
 		/* set failsafe parameters */
-		pr_info("falling back to failsafe mode\n");
+		pr_debug("falling back to failsafe mode\n");
 		mdss_dp_set_default_resolution(dp);
 		mdss_dp_set_default_link_parameters(dp);
 	}
@@ -2426,9 +2426,9 @@ notify:
 	 * and mainlink with the new settings.
 	 */
 	if (mdss_dp_is_phy_test_pattern_requested(dp)) {
-		pr_info("PHY_TEST_PATTERN requested by sink\n");
+		pr_debug("PHY_TEST_PATTERN requested by sink\n");
 		mdss_dp_process_phy_test_pattern_request(dp);
-		pr_info("skip client notification\n");
+		pr_debug("skip client notification\n");
 		goto end;
 	}
 
@@ -2531,7 +2531,7 @@ static void mdss_dp_hdcp_cb_work(struct work_struct *work)
 			if (ops && ops->reauthenticate) {
 				rc = ops->reauthenticate(dp->hdcp.data);
 				if (rc)
-					pr_err("reauth failed rc=%d\n", rc);
+					pr_debug("reauth failed rc=%d\n", rc);
 			}
 		} else {
 			pr_debug("not reauthenticating, cable disconnected\n");
@@ -2548,7 +2548,7 @@ static void mdss_dp_hdcp_cb(void *ptr, enum hdcp_states status)
 	struct mdss_dp_drv_pdata *dp = ptr;
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
@@ -2566,7 +2566,7 @@ static int mdss_dp_hdcp_init(struct mdss_panel_data *pdata)
 	int rc = 0;
 
 	if (!pdata) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		goto error;
 	}
 
@@ -2576,7 +2576,7 @@ static int mdss_dp_hdcp_init(struct mdss_panel_data *pdata)
 	res = platform_get_resource_byname(dp_drv->pdev,
 		IORESOURCE_MEM, "dp_ctrl");
 	if (!res) {
-		pr_err("Error getting dp ctrl resource\n");
+		pr_debug("Error getting dp ctrl resource\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -2596,7 +2596,7 @@ static int mdss_dp_hdcp_init(struct mdss_panel_data *pdata)
 
 	dp_drv->hdcp.hdcp1 = hdcp_1x_init(&hdcp_init_data);
 	if (IS_ERR_OR_NULL(dp_drv->hdcp.hdcp1)) {
-		pr_err("Error hdcp init\n");
+		pr_debug("Error hdcp init\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -2707,7 +2707,7 @@ static int mdss_dp_psm_config(struct mdss_dp_drv_pdata *dp, bool enable)
 	int ret = 0;
 
 	if (!dp) {
-		pr_err("invalid data\n");
+		pr_debug("invalid data\n");
 		return -EINVAL;
 	}
 
@@ -2770,20 +2770,20 @@ static ssize_t psm_store(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid data\n");
+		pr_debug("invalid data\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
 	rc = kstrtoint(buf, 10, &psm);
 	if (rc) {
-		pr_err("kstrtoint failed. ret=%d\n", (int)ret);
+		pr_debug("kstrtoint failed. ret=%d\n", (int)ret);
 		goto end;
 	}
 
 	rc = mdss_dp_psm_config(dp, psm ? true : false);
 	if (rc) {
-		pr_err("failed to config Power Save Mode\n");
+		pr_debug("failed to config Power Save Mode\n");
 		goto end;
 	}
 
@@ -2798,7 +2798,7 @@ static ssize_t psm_show(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -2817,14 +2817,14 @@ static ssize_t hpd_store(struct device *dev,
 	bool cable_connected;
 
 	if (!dp) {
-		pr_err("invalid data\n");
+		pr_debug("invalid data\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
 	rc = kstrtoint(buf, 10, &hpd);
 	if (rc) {
-		pr_err("kstrtoint failed. ret=%d\n", rc);
+		pr_debug("kstrtoint failed. ret=%d\n", rc);
 		ret = rc;
 		goto end;
 	}
@@ -2857,7 +2857,7 @@ static ssize_t hpd_show(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -2879,13 +2879,13 @@ static int mdss_dp_parse_config_value(char const *buf, char const *name,
 		buf1 = buf1 + strlen(name);
 		token = strsep(&buf1, " ");
 		if (!token) {
-			pr_err("strsep failed\n");
+			pr_debug("strsep failed\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		ret = kstrtou32(token, 10, val);
 		if (ret) {
-			pr_err("kstrtoint failed. ret=%d\n", (int)ret);
+			pr_debug("kstrtoint failed. ret=%d\n", (int)ret);
 			goto end;
 		}
 		pr_debug("parsed %s(%d)\n", name, *val);
@@ -2908,7 +2908,7 @@ static ssize_t config_store(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid data\n");
+		pr_debug("invalid data\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -2921,7 +2921,7 @@ static ssize_t config_store(struct device *dev,
 
 	bit_depth = mdss_dp_bpp_to_test_bit_depth(val);
 	if (!mdss_dp_is_test_bit_depth_valid(bit_depth)) {
-		pr_err("invalid bpp = %d\n", val);
+		pr_debug("invalid bpp = %d\n", val);
 	} else {
 		dp->test_data.test_bit_depth = bit_depth;
 		if (val != 0)
@@ -2940,7 +2940,7 @@ pattern_type:
 	}
 
 	if (!mdss_dp_is_test_video_pattern_valid(val)) {
-		pr_err("invalid test video pattern = %d\n", val);
+		pr_debug("invalid test video pattern = %d\n", val);
 	} else {
 		dp->test_data.test_video_pattern = val;
 		pr_debug("test_video_pattern=%d (%s)\n",
@@ -2961,7 +2961,7 @@ static ssize_t config_show(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -2988,12 +2988,12 @@ static ssize_t frame_crc_store(struct device *dev,
 	bool ctl_crc_en, sink_crc_en;
 
 	if (!dp) {
-		pr_err("invalid data\n");
+		pr_debug("invalid data\n");
 		goto end;
 	}
 
 	if (!dp->power_on) {
-		pr_err("DP controller not powered on\n");
+		pr_debug("DP controller not powered on\n");
 		goto end;
 	}
 
@@ -3041,12 +3041,12 @@ static ssize_t frame_crc_show(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
 	if (!dp->power_on) {
-		pr_err("DP controller not powered on\n");
+		pr_debug("DP controller not powered on\n");
 		return 0;
 	}
 
@@ -3064,14 +3064,14 @@ static ssize_t hdcp_feature_store(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid data\n");
+		pr_debug("invalid data\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
 	rc = kstrtoint(buf, 10, &hdcp);
 	if (rc) {
-		pr_err("kstrtoint failed. ret=%d\n", rc);
+		pr_debug("kstrtoint failed. ret=%d\n", rc);
 		ret = rc;
 		goto end;
 	}
@@ -3089,7 +3089,7 @@ static ssize_t hdcp_feature_show(struct device *dev,
 	struct mdss_dp_drv_pdata *dp = mdss_dp_get_drvdata(dev);
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -3128,14 +3128,14 @@ static int mdss_dp_sysfs_create(struct mdss_dp_drv_pdata *dp,
 	int rc;
 
 	if (!dp || !fbi) {
-		pr_err("ivalid input\n");
+		pr_debug("ivalid input\n");
 		return -ENODEV;
 	}
 
 	rc = sysfs_create_group(&fbi->dev->kobj,
 		&mdss_dp_fs_attrs_group);
 	if (rc) {
-		pr_err("failed, rc=%d\n", rc);
+		pr_debug("failed, rc=%d\n", rc);
 		return rc;
 	}
 
@@ -3153,7 +3153,7 @@ static void mdss_dp_mainlink_push_idle(struct mdss_panel_data *pdata)
 	dp_drv = container_of(pdata, struct mdss_dp_drv_pdata,
 				panel_data);
 	if (!dp_drv) {
-		pr_err("Invalid input data\n");
+		pr_debug("Invalid input data\n");
 		return;
 	}
 	pr_debug("Entered++\n");
@@ -3162,7 +3162,7 @@ static void mdss_dp_mainlink_push_idle(struct mdss_panel_data *pdata)
 	mutex_lock(&dp_drv->train_mutex);
 
 	if (!dp_drv->power_on) {
-		pr_err("DP Controller not powered on\n");
+		pr_debug("DP Controller not powered on\n");
 		mutex_unlock(&dp_drv->train_mutex);
 		return;
 	}
@@ -3173,13 +3173,13 @@ static void mdss_dp_mainlink_push_idle(struct mdss_panel_data *pdata)
 	mutex_unlock(&dp_drv->attention_lock);
 	if (cable_connected && dp_drv->alt_mode.dp_status.hpd_high) {
 		if (mdss_dp_aux_send_psm_request(dp_drv, true))
-			pr_err("Failed to enter low power mode\n");
+			pr_debug("Failed to enter low power mode\n");
 	}
 	reinit_completion(&dp_drv->idle_comp);
 	mdss_dp_state_ctrl(&dp_drv->ctrl_io, ST_PUSH_IDLE);
 	if (!wait_for_completion_timeout(&dp_drv->idle_comp,
 			idle_pattern_completion_timeout_ms))
-		pr_warn("PUSH_IDLE pattern timedout\n");
+		pr_debug("PUSH_IDLE pattern timedout\n");
 
 	mutex_unlock(&dp_drv->train_mutex);
 	pr_debug("mainlink off done\n");
@@ -3191,7 +3191,7 @@ static void mdss_dp_update_hdcp_info(struct mdss_dp_drv_pdata *dp)
 	struct hdcp_ops *ops = NULL;
 
 	if (!dp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
@@ -3254,7 +3254,7 @@ static int mdss_dp_event_handler(struct mdss_panel_data *pdata,
 	struct mdss_dp_drv_pdata *dp = NULL;
 
 	if (!pdata) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -3269,7 +3269,7 @@ static int mdss_dp_event_handler(struct mdss_panel_data *pdata,
 		break;
 	case MDSS_EVENT_PANEL_ON:
 		if (!dp->power_on) {
-			pr_err("DP Controller not powered on\n");
+			pr_debug("DP Controller not powered on\n");
 			break;
 		}
 		mdss_dp_update_hdcp_info(dp);
@@ -3293,7 +3293,7 @@ static int mdss_dp_event_handler(struct mdss_panel_data *pdata,
 		break;
 	case MDSS_EVENT_BLANK:
 		if (!dp->power_on) {
-			pr_err("DP Controller not powered on\n");
+			pr_debug("DP Controller not powered on\n");
 			break;
 		}
 		if (!atomic_read(&dp->notification_pending)) {
@@ -3323,7 +3323,7 @@ static int mdss_dp_event_handler(struct mdss_panel_data *pdata,
 
 		rc = mdss_dp_init_ext_disp(dp);
 		if (rc)
-			pr_err("failed to initialize ext disp data, ret=%d\n",
+			pr_debug("failed to initialize ext disp data, ret=%d\n",
 					rc);
 
 		break;
@@ -3384,11 +3384,11 @@ static int mdss_dp_device_register(struct mdss_dp_drv_pdata *dp_drv)
 
 	ret = mdss_register_panel(dp_drv->pdev, &dp_drv->panel_data);
 	if (ret) {
-		dev_err(&(dp_drv->pdev->dev), "unable to register dp\n");
+		dev_dbg(&(dp_drv->pdev->dev), "unable to register dp\n");
 		return ret;
 	}
 
-	pr_info("dp initialized\n");
+	pr_debug("dp initialized\n");
 
 	return 0;
 }
@@ -3404,7 +3404,7 @@ static int mdss_retrieve_dp_ctrl_resources(struct platform_device *pdev,
 
 	rc = of_property_read_u32(pdev->dev.of_node, "cell-index", &index);
 	if (rc) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Cell-index not specified, rc=%d\n",
 						rc);
 		return rc;
@@ -3412,7 +3412,7 @@ static int mdss_retrieve_dp_ctrl_resources(struct platform_device *pdev,
 
 	rc = msm_dss_ioremap_byname(pdev, &dp_drv->ctrl_io, "dp_ctrl");
 	if (rc) {
-		pr_err("%d unable to remap dp ctrl resources\n",
+		pr_debug("%d unable to remap dp ctrl resources\n",
 				__LINE__);
 		return rc;
 	}
@@ -3421,7 +3421,7 @@ static int mdss_retrieve_dp_ctrl_resources(struct platform_device *pdev,
 
 	rc = msm_dss_ioremap_byname(pdev, &dp_drv->phy_io, "dp_phy");
 	if (rc) {
-		pr_err("%d unable to remap dp PHY resources\n",
+		pr_debug("%d unable to remap dp PHY resources\n",
 				__LINE__);
 		return rc;
 	}
@@ -3434,24 +3434,24 @@ static int mdss_retrieve_dp_ctrl_resources(struct platform_device *pdev,
 	rc = msm_dss_ioremap_byname(pdev, &dp_drv->tcsr_reg_io,
 					"tcsr_regs");
 	if (rc) {
-		pr_err("%d unable to remap dp tcsr_reg resources\n",
+		pr_debug("%d unable to remap dp tcsr_reg resources\n",
 			       __LINE__);
 		return rc;
 	}
 
 	if (msm_dss_ioremap_byname(pdev, &dp_drv->dp_cc_io, "dp_mmss_cc")) {
-		pr_err("%d unable to remap dp MMSS_CC resources\n",
+		pr_debug("%d unable to remap dp MMSS_CC resources\n",
 				__LINE__);
 		return rc;
 	}
 
 	if (msm_dss_ioremap_byname(pdev, &dp_drv->qfprom_io,
 					"qfprom_physical"))
-		pr_warn("unable to remap dp qfprom resources\n");
+		pr_debug("unable to remap dp qfprom resources\n");
 
 	if (msm_dss_ioremap_byname(pdev, &dp_drv->hdcp_io,
 					"hdcp_physical"))
-		pr_warn("unable to remap dp hdcp resources\n");
+		pr_debug("unable to remap dp hdcp resources\n");
 
 	pr_debug("DP Driver base=%pK size=%x\n",
 		dp_drv->base, dp_drv->base_size);
@@ -3569,7 +3569,7 @@ static int mdss_dp_event_thread(void *data)
 				SVDM_CMD_TYPE_INITIATOR, 0x1, &config, 0x1);
 			break;
 		default:
-			pr_err("Unknown event:%d\n", todo);
+			pr_debug("Unknown event:%d\n", todo);
 		}
 	}
 
@@ -3646,7 +3646,7 @@ irqreturn_t dp_isr(int irq, void *ptr)
 
 	if (dp_is_hdcp_enabled(dp) && dp->hdcp.ops->isr) {
 		if (dp->hdcp.ops->isr(dp->hdcp.data))
-			pr_err("dp_hdcp_isr failed\n");
+			pr_debug("dp_hdcp_isr failed\n");
 	}
 
 	return IRQ_HANDLED;
@@ -3671,13 +3671,13 @@ static int mdss_dp_event_setup(struct mdss_dp_drv_pdata *dp)
 	dp->ev_thread = kthread_run(mdss_dp_event_thread,
 		(void *)&dp->dp_event, "mdss_dp_event");
 	if (IS_ERR(dp->ev_thread)) {
-		pr_err("unable to start event thread\n");
+		pr_debug("unable to start event thread\n");
 		return PTR_ERR(dp->ev_thread);
 	}
 
 	dp->workq = create_workqueue("mdss_dp_hpd");
 	if (!dp->workq) {
-		pr_err("%s: Error creating workqueue\n", __func__);
+		pr_debug("%s: Error creating workqueue\n", __func__);
 		return -EPERM;
 	}
 
@@ -3720,7 +3720,7 @@ static void mdss_dp_reset_sw_state(struct mdss_dp_drv_pdata *dp)
 		pr_debug("waiting for the pending notitfication\n");
 		ret = wait_for_completion_timeout(&dp->notification_comp, HZ);
 		if (ret <= 0) {
-			pr_err("%s timed out\n",
+			pr_debug("%s timed out\n",
 				mdss_dp_notification_status_to_string(
 					dp->hpd_notification_status));
 		}
@@ -3738,7 +3738,7 @@ static void usbpd_connect_callback(struct usbpd_svid_handler *hdlr,
 
 	dp_drv = container_of(hdlr, struct mdss_dp_drv_pdata, svid_handler);
 	if (!dp_drv->pd) {
-		pr_err("get_usbpd phandle failed\n");
+		pr_debug("get_usbpd phandle failed\n");
 		return;
 	}
 
@@ -3756,7 +3756,7 @@ static void usbpd_disconnect_callback(struct usbpd_svid_handler *hdlr)
 
 	dp_drv = container_of(hdlr, struct mdss_dp_drv_pdata, svid_handler);
 	if (!dp_drv->pd) {
-		pr_err("get_usbpd phandle failed\n");
+		pr_debug("get_usbpd phandle failed\n");
 		return;
 	}
 
@@ -3772,7 +3772,7 @@ static void usbpd_disconnect_callback(struct usbpd_svid_handler *hdlr)
 	 * testing mode.
 	 */
 	if (mdss_dp_is_phy_test_pattern_requested(dp_drv)) {
-		pr_info("turning off DP controller for PHY testing\n");
+		pr_debug("turning off DP controller for PHY testing\n");
 		mdss_dp_mainlink_push_idle(&dp_drv->panel_data);
 		mdss_dp_off_hpd(dp_drv);
 	} else {
@@ -3807,32 +3807,32 @@ static int mdss_dp_validate_callback(u8 cmd,
 	int ret = 0;
 
 	if (cmd_type == SVDM_CMD_TYPE_RESP_NAK) {
-		pr_err("error: NACK\n");
+		pr_debug("error: NACK\n");
 		ret = -EINVAL;
 		goto end;
 	}
 
 	if (cmd_type == SVDM_CMD_TYPE_RESP_BUSY) {
-		pr_err("error: BUSY\n");
+		pr_debug("error: BUSY\n");
 		ret = -EBUSY;
 		goto end;
 	}
 
 	if (cmd == USBPD_SVDM_ATTENTION) {
 		if (cmd_type != SVDM_CMD_TYPE_INITIATOR) {
-			pr_err("error: invalid cmd type for attention\n");
+			pr_debug("error: invalid cmd type for attention\n");
 			ret = -EINVAL;
 			goto end;
 		}
 
 		if (!num_vdos) {
-			pr_err("error: no vdo provided\n");
+			pr_debug("error: no vdo provided\n");
 			ret = -EINVAL;
 			goto end;
 		}
 	} else {
 		if (cmd_type != SVDM_CMD_TYPE_RESP_ACK) {
-			pr_err("error: invalid cmd type\n");
+			pr_debug("error: invalid cmd type\n");
 			ret = -EINVAL;
 		}
 	}
@@ -3876,7 +3876,7 @@ static inline void mdss_dp_link_maintenance(struct mdss_dp_drv_pdata *dp,
 		pr_debug("waiting for the disconnect to finish\n");
 		ret = wait_for_completion_timeout(&dp->notification_comp, HZ);
 		if (ret <= 0) {
-			pr_warn("NOTIFY_DISCONNECT_IRQ_HPD timed out\n");
+			pr_debug("NOTIFY_DISCONNECT_IRQ_HPD timed out\n");
 			return;
 		}
 	}
@@ -3902,7 +3902,7 @@ static int mdss_dp_process_link_status_update(struct mdss_dp_drv_pdata *dp)
 			mdss_dp_aux_clock_recovery_done(dp)))
 		return -EINVAL;
 
-	pr_info("channel_eq_done = %d, clock_recovery_done = %d\n",
+	pr_debug("channel_eq_done = %d, clock_recovery_done = %d\n",
 			mdss_dp_aux_channel_eq_done(dp),
 			mdss_dp_aux_clock_recovery_done(dp));
 
@@ -3929,7 +3929,7 @@ static int mdss_dp_process_link_training_request(struct mdss_dp_drv_pdata *dp)
 
 	mdss_dp_send_test_response(dp);
 
-	pr_info("%s link rate = 0x%x, lane count = 0x%x\n",
+	pr_debug("%s link rate = 0x%x, lane count = 0x%x\n",
 			mdss_dp_get_test_name(TEST_LINK_TRAINING),
 			dp->test_data.test_link_rate,
 			dp->test_data.test_lane_count);
@@ -3963,7 +3963,7 @@ static int mdss_dp_process_phy_test_pattern_request(
 
 	if (!mdss_dp_aux_is_link_rate_valid(test_link_rate) ||
 		!mdss_dp_aux_is_lane_count_valid(test_lane_count)) {
-		pr_info("Invalid params: link rate = 0x%x, lane count = 0x%x\n",
+		pr_debug("Invalid params: link rate = 0x%x, lane count = 0x%x\n",
 				test_link_rate, test_lane_count);
 		return -EINVAL;
 	}
@@ -3971,7 +3971,7 @@ static int mdss_dp_process_phy_test_pattern_request(
 	pr_debug("start\n");
 
 	if (dp->power_on) {
-		pr_info("turning off DP controller for PHY testing\n");
+		pr_debug("turning off DP controller for PHY testing\n");
 		mdss_dp_mainlink_push_idle(&dp->panel_data);
 		/*
 		 * The global reset will need DP link ralated clocks to be
@@ -3988,11 +3988,11 @@ static int mdss_dp_process_phy_test_pattern_request(
 	 */
 	dp_init_panel_info(dp, HDMI_VFRMT_1920x1080p60_16_9);
 
-	pr_info("Current: link rate = 0x%x, lane count = 0x%x\n",
+	pr_debug("Current: link rate = 0x%x, lane count = 0x%x\n",
 			dp->dpcd.max_lane_count,
 			dp->link_rate);
 
-	pr_info("Requested: link rate = 0x%x, lane count = 0x%x\n",
+	pr_debug("Requested: link rate = 0x%x, lane count = 0x%x\n",
 			dp->test_data.test_link_rate,
 			dp->test_data.test_lane_count);
 
@@ -4109,7 +4109,7 @@ static int mdss_dp_process_downstream_port_status_change(
 		pr_debug("waiting for the disconnect to finish\n");
 		ret = wait_for_completion_timeout(&dp->notification_comp, HZ);
 		if (ret <= 0) {
-			pr_warn("NOTIFY_DISCONNECT_IRQ_HPD timed out\n");
+			pr_debug("NOTIFY_DISCONNECT_IRQ_HPD timed out\n");
 			return -ETIMEDOUT;
 		}
 	}
@@ -4163,7 +4163,7 @@ static int mdss_dp_process_video_pattern_request(struct mdss_dp_drv_pdata *dp)
 	if (!mdss_dp_is_video_pattern_requested(dp))
 		goto end;
 
-	pr_info("%s: bit depth=%d(%d bpp) pattern=%s\n",
+	pr_debug("%s: bit depth=%d(%d bpp) pattern=%s\n",
 		mdss_dp_get_test_name(TEST_VIDEO_PATTERN),
 		dp->test_data.test_bit_depth,
 		mdss_dp_test_bit_depth_to_bpp(dp->test_data.test_bit_depth),
@@ -4256,7 +4256,7 @@ static void usbpd_response_callback(struct usbpd_svid_handler *hdlr, u8 cmd,
 
 	dp_drv = container_of(hdlr, struct mdss_dp_drv_pdata, svid_handler);
 	if (!dp_drv->pd) {
-		pr_err("get_usbpd phandle failed\n");
+		pr_debug("get_usbpd phandle failed\n");
 		return;
 	}
 
@@ -4314,7 +4314,7 @@ static void usbpd_response_callback(struct usbpd_svid_handler *hdlr, u8 cmd,
 			mdss_dp_process_hpd_high(dp_drv);
 		break;
 	default:
-		pr_err("unknown cmd: %d\n", cmd);
+		pr_debug("unknown cmd: %d\n", cmd);
 		break;
 	}
 }
@@ -4329,7 +4329,7 @@ static void mdss_dp_process_attention(struct mdss_dp_drv_pdata *dp_drv)
 		 * hpd_irq event.
 		 */
 		if (!dp_drv->dp_initialized) {
-			pr_err("DP not initialized yet\n");
+			pr_debug("DP not initialized yet\n");
 			return;
 		}
 
@@ -4378,7 +4378,7 @@ static void mdss_dp_process_attention(struct mdss_dp_drv_pdata *dp_drv)
 		 * testing mode.
 		 */
 		if (mdss_dp_is_phy_test_pattern_requested(dp_drv)) {
-			pr_info("turning off DP controller for PHY testing\n");
+			pr_debug("turning off DP controller for PHY testing\n");
 			mdss_dp_mainlink_push_idle(&dp_drv->panel_data);
 			mdss_dp_off_hpd(dp_drv);
 		}
@@ -4478,7 +4478,7 @@ static int mdss_dp_usbpd_setup(struct mdss_dp_drv_pdata *dp_drv)
 
 	ret = usbpd_register_svid(dp_drv->pd, &dp_drv->svid_handler);
 	if (ret) {
-		pr_err("usbpd registration failed\n");
+		pr_debug("usbpd registration failed\n");
 		return -ENODEV;
 	}
 
@@ -4494,17 +4494,17 @@ static int mdss_dp_probe(struct platform_device *pdev)
 
 	util = mdss_get_util_intf();
 	if (!util) {
-		pr_err("Failed to get mdss utility functions\n");
+		pr_debug("Failed to get mdss utility functions\n");
 		return -ENODEV;
 	}
 
 	if (!util->mdp_probe_done) {
-		pr_err("MDP not probed yet!\n");
+		pr_debug("MDP not probed yet!\n");
 		return -EPROBE_DEFER;
 	}
 
 	if (!pdev || !pdev->dev.of_node) {
-		pr_err("pdev not found for DP controller\n");
+		pr_debug("pdev not found for DP controller\n");
 		return -ENODEV;
 	}
 
@@ -4553,7 +4553,7 @@ static int mdss_dp_probe(struct platform_device *pdev)
 		ret = mdss_dp_get_dt_vreg_data(&pdev->dev,
 			pdev->dev.of_node, &dp_drv->power_data[i], i);
 		if (ret) {
-			pr_err("get_dt_vreg_data failed for %s. rc=%d\n",
+			pr_debug("get_dt_vreg_data failed for %s. rc=%d\n",
 				__mdss_dp_pm_name(i), ret);
 			i--;
 			for (; i >= DP_CORE_PM; i--)
@@ -4604,14 +4604,14 @@ static int mdss_dp_probe(struct platform_device *pdev)
 
 	ret = mdss_dp_pinctrl_init(pdev, dp_drv);
 	if (ret) {
-		pr_err("pinctrl init failed, ret=%d\n",
+		pr_debug("pinctrl init failed, ret=%d\n",
 						ret);
 		goto probe_err;
 	}
 
 	ret = mdss_dp_parse_gpio_params(pdev, dp_drv);
 	if (ret) {
-		pr_err("failed to parse gpio params, ret=%d\n",
+		pr_debug("failed to parse gpio params, ret=%d\n",
 						ret);
 		goto probe_err;
 	}
@@ -4649,19 +4649,19 @@ void *mdss_dp_get_hdcp_data(struct device *dev)
 	struct fb_info *fbi = dev_get_drvdata(dev);
 
 	if (!fbi) {
-		pr_err("invalid fbi\n");
+		pr_debug("invalid fbi\n");
 		goto error;
 	}
 
 	mfd = (struct msm_fb_data_type *)fbi->par;
 	if (!mfd) {
-		pr_err("invalid mfd\n");
+		pr_debug("invalid mfd\n");
 		goto error;
 	}
 
 	pd = dev_get_platdata(&mfd->pdev->dev);
 	if (!pd) {
-		pr_err("invalid panel_data\n");
+		pr_debug("invalid panel_data\n");
 		goto error;
 	}
 
@@ -4734,7 +4734,7 @@ static int __init mdss_dp_init(void)
 
 	ret = platform_driver_register(&mdss_dp_driver);
 	if (ret) {
-		pr_err("driver register failed\n");
+		pr_debug("driver register failed\n");
 		return ret;
 	}
 

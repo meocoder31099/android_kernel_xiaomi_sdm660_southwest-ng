@@ -572,7 +572,7 @@ static int qrtr_node_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 	qrtr_log_tx_msg(node, hdr, skb);
 	rc = skb_put_padto(skb, ALIGN(len, 4) + sizeof(*hdr));
 	if (rc) {
-		pr_err("%s: failed to pad size %lu to %lu rc:%d\n", __func__,
+		pr_debug("%s: failed to pad size %lu to %lu rc:%d\n", __func__,
 		       len, ALIGN(len, 4) + sizeof(*hdr), rc);
 		return rc;
 	}
@@ -698,7 +698,7 @@ int qrtr_peek_pkt_size(const void *data)
 		size = le32_to_cpu(v2->size);
 		break;
 	default:
-		pr_err("qrtr: Invalid version %d\n", ver);
+		pr_debug("qrtr: Invalid version %d\n", ver);
 		return -EINVAL;
 	}
 
@@ -786,7 +786,7 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 	if (!skb) {
 		skb = qrtr_get_backup(len);
 		if (!skb) {
-			pr_err("qrtr: Unable to get skb with len:%lu\n", len);
+			pr_debug("qrtr: Unable to get skb with len:%lu\n", len);
 			return -ENOMEM;
 		}
 	}
@@ -834,7 +834,7 @@ int qrtr_endpoint_post(struct qrtr_endpoint *ep, const void *data, size_t len)
 		size = le32_to_cpu(v2->size);
 		break;
 	default:
-		pr_err("qrtr: Invalid version %d\n", ver);
+		pr_debug("qrtr: Invalid version %d\n", ver);
 		goto err;
 	}
 
@@ -908,7 +908,7 @@ static void qrtr_skb_align_linearize(struct sk_buff *skb)
 	rc = pskb_expand_head(skb, nhead, 0, GFP_KERNEL);
 	skb_condense(skb);
 	if (rc)
-		pr_err("%s: failed:%d to allocate linear skb size:%d\n",
+		pr_debug("%s: failed:%d to allocate linear skb size:%d\n",
 		       __func__, rc, nhead);
 }
 
@@ -1000,7 +1000,7 @@ static void qrtr_sock_queue_skb(struct qrtr_node *node, struct sk_buff *skb,
 
 	rc = sock_queue_rcv_skb(&ipc->sk, skb);
 	if (rc) {
-		pr_err("%s: qrtr pkt dropped flow[%d] rc[%d]\n",
+		pr_debug("%s: qrtr pkt dropped flow[%d] rc[%d]\n",
 		       __func__, cb->confirm_rx, rc);
 		kfree_skb(skb);
 	}
@@ -1805,7 +1805,7 @@ static int qrtr_recvmsg(struct socket *sock, struct msghdr *msg,
 
 	if (sock_flag(sk, SOCK_ZAPPED)) {
 		release_sock(sk);
-		pr_err("%s: Invalid addr error\n", __func__);
+		pr_debug("%s: Invalid addr error\n", __func__);
 		return -EADDRNOTAVAIL;
 	}
 
@@ -1825,7 +1825,7 @@ static int qrtr_recvmsg(struct socket *sock, struct msghdr *msg,
 
 	rc = skb_copy_datagram_msg(skb, 0, msg, copied);
 	if (rc < 0) {
-		pr_err("%s: Failed to copy skb rc[%d]\n", __func__, rc);
+		pr_debug("%s: Failed to copy skb rc[%d]\n", __func__, rc);
 		goto out;
 	}
 	rc = copied;

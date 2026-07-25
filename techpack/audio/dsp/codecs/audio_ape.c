@@ -41,7 +41,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 					audio->pcm_cfg.sample_rate,
 					audio->pcm_cfg.channel_count);
 			if (rc < 0) {
-				pr_err("pcm output block config failed\n");
+				pr_debug("pcm output block config failed\n");
 				break;
 			}
 		}
@@ -71,7 +71,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		rc = q6asm_media_format_block_ape(audio->ac, &ape_cfg,
 							audio->ac->stream_id);
 		if (rc < 0) {
-			pr_err("cmd media format block failed\n");
+			pr_debug("cmd media format block failed\n");
 			break;
 		}
 		rc = audio_aio_enable(audio);
@@ -81,7 +81,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("Audio Start procedure failed rc=%d\n", rc);
+			pr_debug("Audio Start procedure failed rc=%d\n", rc);
 			break;
 		}
 		pr_debug("AUDIO_START success enable[%d]\n", audio->enabled);
@@ -90,7 +90,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		break;
 	}
 	return rc;
@@ -109,7 +109,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_GET_APE_CONFIG: {
 		if (copy_to_user((void *)arg, audio->codec_cfg,
 			sizeof(struct msm_audio_ape_config))) {
-			pr_err("%s:copy_to_user for AUDIO_GET_APE_CONFIG failed\n",
+			pr_debug("%s:copy_to_user for AUDIO_GET_APE_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -119,7 +119,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_SET_APE_CONFIG: {
 		if (copy_from_user(audio->codec_cfg, (void *)arg,
 			sizeof(struct msm_audio_ape_config))) {
-			pr_err("%s:copy_from_user for AUDIO_SET_APE_CONFIG failed\n",
+			pr_debug("%s:copy_from_user for AUDIO_SET_APE_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -191,7 +191,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_to_user((void *)arg, &ape_config_32,
 			sizeof(ape_config_32))) {
-			pr_err("%s: copy_to_user for GET_APE_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for GET_APE_CONFIG_32 failed\n",
 				 __func__);
 			rc = -EFAULT;
 			break;
@@ -204,7 +204,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_from_user(&ape_config_32, (void *)arg,
 			sizeof(ape_config_32))) {
-			pr_err("%s: copy_from_user for SET_APE_CONFIG_32 failed\n"
+			pr_debug("%s: copy_from_user for SET_APE_CONFIG_32 failed\n"
 				, __func__);
 			rc = -EFAULT;
 			break;
@@ -266,7 +266,7 @@ static int audio_open(struct inode *inode, struct file *file)
 					     (void *)audio);
 
 	if (!audio->ac) {
-		pr_err("Could not allocate memory for audio client\n");
+		pr_debug("Could not allocate memory for audio client\n");
 		kfree(audio->codec_cfg);
 		kfree(audio);
 		return -ENOMEM;
@@ -282,7 +282,7 @@ static int audio_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_LINEAR_PCM,
 					   FORMAT_APE);
 		if (rc < 0) {
-			pr_err("NT mode Open failed rc=%d\n", rc);
+			pr_debug("NT mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
@@ -294,14 +294,14 @@ static int audio_open(struct inode *inode, struct file *file)
 			!(file->f_mode & FMODE_READ)) {
 		rc = q6asm_open_write(audio->ac, FORMAT_APE);
 		if (rc < 0) {
-			pr_err("T mode Open failed rc=%d\n", rc);
+			pr_debug("T mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->feedback = TUNNEL_MODE;
 		audio->buf_cfg.meta_info_enable = 0x00;
 	} else {
-		pr_err("Not supported mode\n");
+		pr_debug("Not supported mode\n");
 		rc = -EACCES;
 		goto fail;
 	}

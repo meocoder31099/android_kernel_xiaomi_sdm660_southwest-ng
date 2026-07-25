@@ -478,7 +478,7 @@ snd_pcm_chmap_elem *convert_chmap_v3(struct uac3_cluster_header_descriptor
 	}
 
 	if (channels < c)
-		pr_err("%s: channel number mismatch\n", __func__);
+		pr_debug("%s: channel number mismatch\n", __func__);
 
 	chmap->channels = channels;
 
@@ -740,14 +740,14 @@ snd_usb_get_audioformat_uac12(struct snd_usb_audio *chip,
 		struct uac_input_terminal_descriptor *iterm;
 
 		if (!as) {
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 				"%u:%d : UAC_AS_GENERAL descriptor not found\n",
 				iface_no, altno);
 			return NULL;
 		}
 
 		if (as->bLength < sizeof(*as)) {
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 				"%u:%d : invalid UAC_AS_GENERAL desc\n",
 				iface_no, altno);
 			return NULL;
@@ -770,14 +770,14 @@ snd_usb_get_audioformat_uac12(struct snd_usb_audio *chip,
 						NULL, UAC_AS_GENERAL);
 
 		if (!as) {
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 				"%u:%d : UAC_AS_GENERAL descriptor not found\n",
 				iface_no, altno);
 			return NULL;
 		}
 
 		if (as->bLength < sizeof(*as)) {
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 				"%u:%d : invalid UAC_AS_GENERAL desc\n",
 				iface_no, altno);
 			return NULL;
@@ -809,7 +809,7 @@ snd_usb_get_audioformat_uac12(struct snd_usb_audio *chip,
 			goto found_clock;
 		}
 
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : bogus bTerminalLink %d\n",
 			iface_no, altno, as->bTerminalLink);
 		return NULL;
@@ -820,7 +820,7 @@ found_clock:
 	fmt = snd_usb_find_csint_desc(alts->extra, alts->extralen,
 				      NULL, UAC_FORMAT_TYPE);
 	if (!fmt) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : no UAC_FORMAT_TYPE desc\n",
 			iface_no, altno);
 		return NULL;
@@ -828,7 +828,7 @@ found_clock:
 	if (((protocol == UAC_VERSION_1) && (fmt->bLength < 8))
 			|| ((protocol == UAC_VERSION_2) &&
 					(fmt->bLength < 6))) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : invalid UAC_FORMAT_TYPE desc\n",
 			iface_no, altno);
 		return NULL;
@@ -904,7 +904,7 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 
 		switch (maxpacksize) {
 		default:
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 				"%u:%d : incorrect wMaxPacketSize for BADD profile\n",
 				iface_no, altno);
 			return NULL;
@@ -949,14 +949,14 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 	as = snd_usb_find_csint_desc(alts->extra, alts->extralen,
 				     NULL, UAC_AS_GENERAL);
 	if (!as) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : UAC_AS_GENERAL descriptor not found\n",
 			iface_no, altno);
 		return NULL;
 	}
 
 	if (as->bLength < sizeof(*as)) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : invalid UAC_AS_GENERAL desc\n",
 			iface_no, altno);
 		return NULL;
@@ -964,7 +964,7 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 
 	cluster_id = le16_to_cpu(as->wClusterDescrID);
 	if (!cluster_id) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : no cluster descriptor\n",
 			iface_no, altno);
 		return NULL;
@@ -987,7 +987,7 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 	if (err < 0)
 		return ERR_PTR(err);
 	else if (err != sizeof(hc_header)) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : can't get High Capability descriptor\n",
 			iface_no, altno);
 		return ERR_PTR(-EIO);
@@ -1014,7 +1014,7 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 		kfree(cluster);
 		return ERR_PTR(err);
 	} else if (err != wLength) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : can't get Cluster Descriptor\n",
 			iface_no, altno);
 		kfree(cluster);
@@ -1024,7 +1024,7 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 	cluster_wLength = le16_to_cpu(cluster->wLength);
 	if (cluster_wLength < sizeof(*cluster) ||
 	    cluster_wLength > wLength) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"%u:%d : invalid Cluster Descriptor size\n",
 			iface_no, altno);
 		kfree(cluster);
@@ -1055,7 +1055,7 @@ snd_usb_get_audioformat_uac3(struct snd_usb_audio *chip,
 		goto found_clock;
 	}
 
-	dev_err(&dev->dev, "%u:%d : bogus bTerminalLink %d\n",
+	dev_dbg(&dev->dev, "%u:%d : bogus bTerminalLink %d\n",
 			iface_no, altno, as->bTerminalLink);
 	kfree(chmap);
 	return NULL;

@@ -192,7 +192,7 @@ static bool __init obsolete_checksetup(char *line)
 				if (line[n] == '\0' || line[n] == '=')
 					had_early_param = true;
 			} else if (!p->setup_func) {
-				pr_warn("Parameter %s is obsolete, ignored\n",
+				pr_debug("Parameter %s is obsolete, ignored\n",
 					p->str);
 				return true;
 			} else if (p->setup_func(line + n))
@@ -454,7 +454,7 @@ static int __init do_early_param(char *param, char *val,
 		     strcmp(p->str, "earlycon") == 0)
 		) {
 			if (p->setup_func(val) != 0)
-				pr_warn("Malformed early option '%s'\n", param);
+				pr_debug("Malformed early option '%s'\n", param);
 		}
 	}
 	/* We accept everything at this stage. */
@@ -523,11 +523,11 @@ static void __init report_meminit(void)
 	else
 		stack = "off";
 
-	pr_info("mem auto-init: stack:%s, heap alloc:%s, heap free:%s\n",
+	pr_debug("mem auto-init: stack:%s, heap alloc:%s, heap free:%s\n",
 		stack, want_init_on_alloc(GFP_KERNEL) ? "on" : "off",
 		want_init_on_free() ? "on" : "off");
 	if (want_init_on_free())
-		pr_info("mem auto-init: clearing system memory may take some time...\n");
+		pr_debug("mem auto-init: clearing system memory may take some time...\n");
 }
 
 /*
@@ -582,7 +582,7 @@ asmlinkage __visible void __init start_kernel(void)
 	 */
 	boot_cpu_init();
 	page_address_init();
-	pr_notice("%s", linux_banner);
+	pr_debug("%s", linux_banner);
 	setup_arch(&command_line);
 	mm_init_cpumask(&init_mm);
 	setup_command_line(command_line);
@@ -594,7 +594,7 @@ asmlinkage __visible void __init start_kernel(void)
 	build_all_zonelists(NULL);
 	page_alloc_init();
 
-	pr_notice("Kernel command line: %s\n", boot_command_line);
+	pr_debug("Kernel command line: %s\n", boot_command_line);
 	/* parameters may set static keys */
 	jump_label_init();
 
@@ -727,7 +727,7 @@ asmlinkage __visible void __init start_kernel(void)
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start && !initrd_below_start_ok &&
 	    page_to_pfn(virt_to_page((void *)initrd_start)) < min_low_pfn) {
-		pr_crit("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
+		pr_debug("initrd overwritten (0x%08lx < 0x%08lx) - disabling it.\n",
 		    page_to_pfn(virt_to_page((void *)initrd_start)),
 		    min_low_pfn);
 		initrd_start = 0;
@@ -855,7 +855,7 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 #else
 static int __init initcall_blacklist(char *str)
 {
-	pr_warn("initcall_blacklist requires CONFIG_KALLSYMS\n");
+	pr_debug("initcall_blacklist requires CONFIG_KALLSYMS\n");
 	return 0;
 }
 
@@ -871,7 +871,7 @@ trace_initcall_start_cb(void *data, initcall_t fn)
 {
 	ktime_t *calltime = (ktime_t *)data;
 
-	printk(KERN_DEBUG "calling  %pF @ %i\n", fn, task_pid_nr(current));
+	no_printk(KERN_DEBUG "calling  %pF @ %i\n", fn, task_pid_nr(current));
 	*calltime = ktime_get();
 }
 
@@ -885,7 +885,7 @@ trace_initcall_finish_cb(void *data, initcall_t fn, int ret)
 	rettime = ktime_get();
 	delta = ktime_sub(rettime, *calltime);
 	duration = (unsigned long long) ktime_to_ns(delta) >> 10;
-	printk(KERN_DEBUG "initcall %pF returned %d after %lld usecs\n",
+	no_printk(KERN_DEBUG "initcall %pF returned %d after %lld usecs\n",
 		 fn, ret, duration);
 }
 
@@ -1049,7 +1049,7 @@ void __init load_default_modules(void)
 static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
-	pr_info("Run %s as init process\n", init_filename);
+	pr_debug("Run %s as init process\n", init_filename);
 	return do_execve(getname_kernel(init_filename),
 		(const char __user *const __user *)argv_init,
 		(const char __user *const __user *)envp_init);
@@ -1062,7 +1062,7 @@ static int try_to_run_init_process(const char *init_filename)
 	ret = run_init_process(init_filename);
 
 	if (ret && ret != -ENOENT) {
-		pr_err("Starting init: %s exists but couldn't execute it (error %d)\n",
+		pr_debug("Starting init: %s exists but couldn't execute it (error %d)\n",
 		       init_filename, ret);
 	}
 
@@ -1076,7 +1076,7 @@ bool rodata_enabled __ro_after_init = true;
 static int __init set_debug_rodata(char *str)
 {
 	if (strtobool(str, &rodata_enabled))
-		pr_warn("Invalid option string for rodata: '%s'\n", str);
+		pr_debug("Invalid option string for rodata: '%s'\n", str);
 	return 1;
 }
 __setup("rodata=", set_debug_rodata);
@@ -1096,12 +1096,12 @@ static void mark_readonly(void)
 		mark_rodata_ro();
 		rodata_test();
 	} else
-		pr_info("Kernel memory protection disabled.\n");
+		pr_debug("Kernel memory protection disabled.\n");
 }
 #else
 static inline void mark_readonly(void)
 {
-	pr_warn("This architecture does not have kernel memory protection.\n");
+	pr_debug("This architecture does not have kernel memory protection.\n");
 }
 #endif
 
@@ -1131,7 +1131,7 @@ static int __ref kernel_init(void *unused)
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)
 			return 0;
-		pr_err("Failed to execute %s (error %d)\n",
+		pr_debug("Failed to execute %s (error %d)\n",
 		       ramdisk_execute_command, ret);
 	}
 
@@ -1195,7 +1195,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* Open the /dev/console on the rootfs, this should never fail */
 	if (ksys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
-		pr_err("Warning: unable to open an initial console.\n");
+		pr_debug("Warning: unable to open an initial console.\n");
 
 	(void) ksys_dup(0);
 	(void) ksys_dup(0);

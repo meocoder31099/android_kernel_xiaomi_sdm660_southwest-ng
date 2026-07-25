@@ -336,23 +336,23 @@ static int browse_rb(struct mm_struct *mm)
 		struct vm_area_struct *vma;
 		vma = rb_entry(nd, struct vm_area_struct, vm_rb);
 		if (vma->vm_start < prev) {
-			pr_emerg("vm_start %lx < prev %lx\n",
+			pr_debug("vm_start %lx < prev %lx\n",
 				  vma->vm_start, prev);
 			bug = 1;
 		}
 		if (vma->vm_start < pend) {
-			pr_emerg("vm_start %lx < pend %lx\n",
+			pr_debug("vm_start %lx < pend %lx\n",
 				  vma->vm_start, pend);
 			bug = 1;
 		}
 		if (vma->vm_start > vma->vm_end) {
-			pr_emerg("vm_start %lx > vm_end %lx\n",
+			pr_debug("vm_start %lx > vm_end %lx\n",
 				  vma->vm_start, vma->vm_end);
 			bug = 1;
 		}
 		spin_lock(&mm->page_table_lock);
 		if (vma->rb_subtree_gap != vma_compute_subtree_gap(vma)) {
-			pr_emerg("free gap %lx, correct %lx\n",
+			pr_debug("free gap %lx, correct %lx\n",
 			       vma->rb_subtree_gap,
 			       vma_compute_subtree_gap(vma));
 			bug = 1;
@@ -367,7 +367,7 @@ static int browse_rb(struct mm_struct *mm)
 	for (nd = pn; nd; nd = rb_prev(nd))
 		j++;
 	if (i != j) {
-		pr_emerg("backwards %d, forwards %d\n", j, i);
+		pr_debug("backwards %d, forwards %d\n", j, i);
 		bug = 1;
 	}
 	return bug ? -1 : i;
@@ -409,18 +409,18 @@ static void validate_mm(struct mm_struct *mm)
 		i++;
 	}
 	if (i != mm->map_count) {
-		pr_emerg("map_count %d vm_next %d\n", mm->map_count, i);
+		pr_debug("map_count %d vm_next %d\n", mm->map_count, i);
 		bug = 1;
 	}
 	if (highest_address != mm->highest_vm_end) {
-		pr_emerg("mm->highest_vm_end %lx, found %lx\n",
+		pr_debug("mm->highest_vm_end %lx, found %lx\n",
 			  mm->highest_vm_end, highest_address);
 		bug = 1;
 	}
 	i = browse_rb(mm);
 	if (i != mm->map_count) {
 		if (i != -1)
-			pr_emerg("map_count %d rb %d\n", mm->map_count, i);
+			pr_debug("map_count %d rb %d\n", mm->map_count, i);
 		bug = 1;
 	}
 	VM_BUG_ON_MM(bug, mm);
@@ -3840,13 +3840,13 @@ static int reserve_mem_notifier(struct notifier_block *nb,
 
 		if (sysctl_user_reserve_kbytes > free_kbytes) {
 			init_user_reserve();
-			pr_info("vm.user_reserve_kbytes reset to %lu\n",
+			pr_debug("vm.user_reserve_kbytes reset to %lu\n",
 				sysctl_user_reserve_kbytes);
 		}
 
 		if (sysctl_admin_reserve_kbytes > free_kbytes) {
 			init_admin_reserve();
-			pr_info("vm.admin_reserve_kbytes reset to %lu\n",
+			pr_debug("vm.admin_reserve_kbytes reset to %lu\n",
 				sysctl_admin_reserve_kbytes);
 		}
 		break;
@@ -3863,7 +3863,7 @@ static struct notifier_block reserve_mem_nb = {
 static int __meminit init_reserve_notifier(void)
 {
 	if (register_hotmemory_notifier(&reserve_mem_nb))
-		pr_err("Failed registering memory add/remove notifier for admin reserve\n");
+		pr_debug("Failed registering memory add/remove notifier for admin reserve\n");
 
 	return 0;
 }

@@ -35,7 +35,7 @@ static int dwc3_host_get_irq(struct dwc3 *dwc)
 		goto out;
 
 	if (irq != -EPROBE_DEFER)
-		dev_err(dwc->dev, "missing host IRQ\n");
+		dev_dbg(dwc->dev, "missing host IRQ\n");
 
 	if (!irq)
 		irq = -EINVAL;
@@ -76,7 +76,7 @@ int dwc3_host_init(struct dwc3 *dwc)
 
 	xhci = platform_device_alloc("xhci-hcd", PLATFORM_DEVID_AUTO);
 	if (!xhci) {
-		dev_err(dwc->dev, "couldn't allocate xHCI device\n");
+		dev_dbg(dwc->dev, "couldn't allocate xHCI device\n");
 		return -ENOMEM;
 	}
 
@@ -87,7 +87,7 @@ int dwc3_host_init(struct dwc3 *dwc)
 	ret = platform_device_add_resources(xhci, dwc->xhci_resources,
 						DWC3_XHCI_RESOURCES_NUM);
 	if (ret) {
-		dev_err(dwc->dev, "couldn't add resources to xHCI device\n");
+		dev_dbg(dwc->dev, "couldn't add resources to xHCI device\n");
 		goto err1;
 	}
 
@@ -132,7 +132,7 @@ int dwc3_host_init(struct dwc3 *dwc)
 	if (prop_idx) {
 		ret = platform_device_add_properties(xhci, props);
 		if (ret) {
-			dev_err(dwc->dev, "failed to add properties to xHCI\n");
+			dev_dbg(dwc->dev, "failed to add properties to xHCI\n");
 			goto err1;
 		}
 	}
@@ -144,7 +144,7 @@ int dwc3_host_init(struct dwc3 *dwc)
 
 	ret = platform_device_add(xhci);
 	if (ret) {
-		dev_err(dwc->dev, "failed to register xHCI device\n");
+		dev_dbg(dwc->dev, "failed to register xHCI device\n");
 		goto err2;
 	}
 

@@ -821,7 +821,7 @@ static int __init init_scsi(void)
 
 	scsi_netlink_init();
 
-	printk(KERN_NOTICE "SCSI subsystem initialized\n");
+	no_printk(KERN_NOTICE "SCSI subsystem initialized\n");
 	return 0;
 
 cleanup_sysctl:
@@ -834,7 +834,7 @@ cleanup_procfs:
 	scsi_exit_procfs();
 cleanup_queue:
 	scsi_exit_queue();
-	printk(KERN_ERR "SCSI subsystem failed to initialize, error = %d\n",
+	no_printk(KERN_ERR "SCSI subsystem failed to initialize, error = %d\n",
 	       -error);
 	return error;
 }

@@ -75,7 +75,7 @@ static inline void set_sys_caps_initialised(void)
 static int dump_cpu_hwcaps(struct notifier_block *self, unsigned long v, void *p)
 {
 	/* file-wide pr_fmt adds "CPU features: " prefix */
-	pr_emerg("0x%*pb\n", ARM64_NCAPS, &cpu_hwcaps);
+	pr_debug("0x%*pb\n", ARM64_NCAPS, &cpu_hwcaps);
 	return 0;
 }
 
@@ -1125,7 +1125,7 @@ static bool has_hw_dbm(const struct arm64_cpu_capabilities *cap,
 	 */
 	if (!detected && cpu_can_use_dbm(cap)) {
 		detected = true;
-		pr_info("detected: Hardware dirty bit management\n");
+		pr_debug("detected: Hardware dirty bit management\n");
 	}
 
 	return true;
@@ -1614,7 +1614,7 @@ static void __update_cpu_capabilities(const struct arm64_cpu_capabilities *caps,
 			continue;
 
 		if (!cpus_have_cap(caps->capability) && caps->desc)
-			pr_info("%s %s\n", info, caps->desc);
+			pr_debug("%s %s\n", info, caps->desc);
 		cpus_set_cap(caps->capability);
 	}
 }
@@ -1730,7 +1730,7 @@ __verify_local_cpu_caps(const struct arm64_cpu_capabilities *caps,
 	}
 
 	if (caps->matches) {
-		pr_crit("CPU%d: Detected conflict for capability %d (%s), System: %d, CPU: %d\n",
+		pr_debug("CPU%d: Detected conflict for capability %d (%s), System: %d, CPU: %d\n",
 			smp_processor_id(), caps->capability,
 			caps->desc, system_has_cap, cpu_has_cap);
 		return false;
@@ -1766,7 +1766,7 @@ verify_local_elf_hwcaps(const struct arm64_cpu_capabilities *caps)
 
 	for (; caps->matches; caps++)
 		if (cpus_have_elf_hwcap(caps) && !caps->matches(caps, SCOPE_LOCAL_CPU)) {
-			pr_crit("CPU%d: missing HWCAP: %s\n",
+			pr_debug("CPU%d: missing HWCAP: %s\n",
 					smp_processor_id(), caps->desc);
 			cpu_die_early();
 		}
@@ -1781,7 +1781,7 @@ static void verify_sve_features(void)
 	unsigned int len = zcr & ZCR_ELx_LEN_MASK;
 
 	if (len < safe_len || sve_verify_vq_map()) {
-		pr_crit("CPU%d: SVE: required vector length(s) missing\n",
+		pr_debug("CPU%d: SVE: required vector length(s) missing\n",
 			smp_processor_id());
 		cpu_die_early();
 	}
@@ -1888,7 +1888,7 @@ void __init setup_cpu_features(void)
 	}
 
 	if (system_uses_ttbr0_pan())
-		pr_info("emulated: Privileged Access Never (PAN) using TTBR0_EL1 switching\n");
+		pr_debug("emulated: Privileged Access Never (PAN) using TTBR0_EL1 switching\n");
 
 	sve_setup();
 	minsigstksz_setup();
@@ -1901,7 +1901,7 @@ void __init setup_cpu_features(void)
 	 */
 	cwg = cache_type_cwg();
 	if (!cwg)
-		pr_warn("No Cache Writeback Granule information, assuming %d\n",
+		pr_debug("No Cache Writeback Granule information, assuming %d\n",
 			ARCH_DMA_MINALIGN);
 }
 

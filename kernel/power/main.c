@@ -525,7 +525,7 @@ void __pm_pr_dbg(bool defer, const char *fmt, ...)
 	if (defer)
 		printk_deferred(KERN_DEBUG "PM: %pV", &vaf);
 	else
-		printk(KERN_DEBUG "PM: %pV", &vaf);
+		no_printk(KERN_DEBUG "PM: %pV", &vaf);
 
 	va_end(args);
 }
@@ -798,7 +798,7 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
 	if (sscanf(buf, "%d", &val) == 1) {
 		pm_trace_enabled = !!val;
 		if (pm_trace_enabled) {
-			pr_warn("PM: Enabling pm_trace changes system date and time during resume.\n"
+			pr_debug("PM: Enabling pm_trace changes system date and time during resume.\n"
 				"PM: Correct system time has to be restored manually after resume.\n");
 		}
 		return n;

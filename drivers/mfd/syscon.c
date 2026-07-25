@@ -99,7 +99,7 @@ static struct syscon *of_syscon_register(struct device_node *np)
 			/* Ignore missing hwlock, it's optional. */
 			break;
 		default:
-			pr_err("Failed to retrieve valid hwlock: %d\n", ret);
+			pr_debug("Failed to retrieve valid hwlock: %d\n", ret);
 			/* fall-through */
 		case -EPROBE_DEFER:
 			goto err_regmap;
@@ -114,7 +114,7 @@ static struct syscon *of_syscon_register(struct device_node *np)
 
 	regmap = regmap_init_mmio(NULL, base, &syscon_config);
 	if (IS_ERR(regmap)) {
-		pr_err("regmap init failed\n");
+		pr_debug("regmap init failed\n");
 		ret = PTR_ERR(regmap);
 		goto err_regmap;
 	}
@@ -245,7 +245,7 @@ static int syscon_probe(struct platform_device *pdev)
 		syscon_config.name = pdata->label;
 	syscon->regmap = devm_regmap_init_mmio(dev, base, &syscon_config);
 	if (IS_ERR(syscon->regmap)) {
-		dev_err(dev, "regmap init failed\n");
+		dev_dbg(dev, "regmap init failed\n");
 		return PTR_ERR(syscon->regmap);
 	}
 

@@ -256,7 +256,7 @@ static bool uac_clock_source_is_valid(struct snd_usb_audio *chip,
 			      &data, sizeof(data));
 
 	if (err < 0) {
-		dev_warn(&dev->dev,
+		dev_dbg(&dev->dev,
 			 "%s(): cannot get clock validity for id %d\n",
 			   __func__, source_id);
 		return false;
@@ -527,7 +527,7 @@ static int set_sample_rate_v1(struct snd_usb_audio *chip, int iface,
 			      UAC_EP_CS_ATTR_SAMPLE_RATE << 8, ep,
 			      data, sizeof(data));
 	if (err < 0) {
-		dev_err(&dev->dev, "%d:%d: cannot set freq %d to ep %#x\n",
+		dev_dbg(&dev->dev, "%d:%d: cannot set freq %d to ep %#x\n",
 			iface, fmt->altsetting, rate, ep);
 		return err;
 	}
@@ -545,7 +545,7 @@ static int set_sample_rate_v1(struct snd_usb_audio *chip, int iface,
 			      UAC_EP_CS_ATTR_SAMPLE_RATE << 8, ep,
 			      data, sizeof(data));
 	if (err < 0) {
-		dev_err(&dev->dev, "%d:%d: cannot get freq at ep %#x\n",
+		dev_dbg(&dev->dev, "%d:%d: cannot get freq at ep %#x\n",
 			iface, fmt->altsetting, ep);
 		chip->sample_rate_read_error++;
 		return 0; /* some devices don't support reading */
@@ -553,13 +553,13 @@ static int set_sample_rate_v1(struct snd_usb_audio *chip, int iface,
 
 	crate = data[0] | (data[1] << 8) | (data[2] << 16);
 	if (!crate) {
-		dev_info(&dev->dev, "failed to read current rate; disabling the check\n");
+		dev_dbg(&dev->dev, "failed to read current rate; disabling the check\n");
 		chip->sample_rate_read_error = 3; /* three strikes, see above */
 		return 0;
 	}
 
 	if (crate != rate) {
-		dev_warn(&dev->dev, "current rate %d is different from the runtime rate %d\n", crate, rate);
+		dev_dbg(&dev->dev, "current rate %d is different from the runtime rate %d\n", crate, rate);
 		// runtime->rate = crate;
 	}
 
@@ -579,7 +579,7 @@ static int get_sample_rate_v2v3(struct snd_usb_audio *chip, int iface,
 			      snd_usb_ctrl_intf(chip) | (clock << 8),
 			      &data, sizeof(data));
 	if (err < 0) {
-		dev_warn(&dev->dev, "%d:%d: cannot get freq (v2/v3): err %d\n",
+		dev_dbg(&dev->dev, "%d:%d: cannot get freq (v2/v3): err %d\n",
 			 iface, altsetting, err);
 		return 0;
 	}

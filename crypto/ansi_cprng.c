@@ -58,7 +58,7 @@ static int dbg;
 static void hexdump(char *note, unsigned char *buf, unsigned int len)
 {
 	if (dbg) {
-		printk(KERN_CRIT "%s", note);
+		no_printk(KERN_CRIT "%s", note);
 		print_hex_dump(KERN_CONT, "", DUMP_PREFIX_OFFSET,
 				16, 1,
 				buf, len, false);
@@ -67,7 +67,7 @@ static void hexdump(char *note, unsigned char *buf, unsigned int len)
 
 #define dbgprint(format, args...) do {\
 if (dbg)\
-	printk(format, ##args);\
+	no_printk(format, ##args);\
 } while (0)
 
 static void xor_vectors(unsigned char *in1, unsigned char *in2,
@@ -135,7 +135,7 @@ static int _get_more_prng_bytes(struct prng_context *ctx, int cont_test)
 						ctx);
 				}
 
-				printk(KERN_ERR
+				no_printk(KERN_ERR
 					"ctx %p Failed repetition check!\n",
 					ctx);
 

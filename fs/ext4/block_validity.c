@@ -128,16 +128,16 @@ static void debug_print_tree(struct ext4_sb_info *sbi)
 	struct ext4_system_zone *entry;
 	int first = 1;
 
-	printk(KERN_INFO "System zones: ");
+	no_printk(KERN_INFO "System zones: ");
 	node = rb_first(&sbi->system_blks->root);
 	while (node) {
 		entry = rb_entry(node, struct ext4_system_zone, node);
-		printk(KERN_CONT "%s%llu-%llu", first ? "" : ", ",
+		no_printk(KERN_CONT "%s%llu-%llu", first ? "" : ", ",
 		       entry->start_blk, entry->start_blk + entry->count - 1);
 		first = 0;
 		node = rb_next(node);
 	}
-	printk(KERN_CONT "\n");
+	no_printk(KERN_CONT "\n");
 }
 
 /*

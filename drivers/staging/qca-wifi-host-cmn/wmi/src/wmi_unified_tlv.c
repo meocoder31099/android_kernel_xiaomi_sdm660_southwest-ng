@@ -10247,7 +10247,7 @@ static uint16_t wmi_tag_fw_hang_cmd(wmi_unified_t wmi_handle)
 	uint16_t tag = 0;
 
 	if (qdf_atomic_read(&wmi_handle->is_target_suspended)) {
-		pr_err("%s: Target is already suspended, Ignore FW Hang Command",
+		pr_debug("%s: Target is already suspended, Ignore FW Hang Command",
 			__func__);
 		return tag;
 	}

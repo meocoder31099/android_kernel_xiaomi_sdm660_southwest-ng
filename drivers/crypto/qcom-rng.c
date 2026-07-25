@@ -202,7 +202,7 @@ static int qcom_rng_probe(struct platform_device *pdev)
 	qcom_rng_dev = rng;
 	ret = crypto_register_rng(&qcom_rng_alg);
 	if (ret) {
-		dev_err(&pdev->dev, "Register crypto rng failed: %d\n", ret);
+		dev_dbg(&pdev->dev, "Register crypto rng failed: %d\n", ret);
 		qcom_rng_dev = NULL;
 		return ret;
 	}
@@ -213,7 +213,7 @@ static int qcom_rng_probe(struct platform_device *pdev)
 		rng->hwrng.quality = QCOM_TRNG_QUALITY;
 		ret = devm_hwrng_register(&pdev->dev, &rng->hwrng);
 		if (ret) {
-			dev_err(&pdev->dev, "Register hwrng failed: %d\n", ret);
+			dev_dbg(&pdev->dev, "Register hwrng failed: %d\n", ret);
 			qcom_rng_dev = NULL;
 			goto fail;
 		}

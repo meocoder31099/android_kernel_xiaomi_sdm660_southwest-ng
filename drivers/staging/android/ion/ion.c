@@ -87,7 +87,7 @@ static void ion_buffer_add(struct ion_device *dev,
 		} else if (buffer > entry) {
 			p = &(*p)->rb_right;
 		} else {
-			pr_err("%s: buffer already found.", __func__);
+			pr_debug("%s: buffer already found.", __func__);
 			BUG();
 		}
 	}
@@ -472,7 +472,7 @@ static int ion_mmap(struct dma_buf *dmabuf, struct vm_area_struct *vma)
 	int ret = 0;
 
 	if (!buffer->heap->ops->map_user) {
-		pr_err("%s: this heap does not define a method for mapping to userspace\n",
+		pr_debug("%s: this heap does not define a method for mapping to userspace\n",
 		       __func__);
 		return -EINVAL;
 	}
@@ -490,7 +490,7 @@ static int ion_mmap(struct dma_buf *dmabuf, struct vm_area_struct *vma)
 	mutex_unlock(&buffer->lock);
 
 	if (ret)
-		pr_err("%s: failure mapping buffer to userspace\n",
+		pr_debug("%s: failure mapping buffer to userspace\n",
 		       __func__);
 
 	return ret;
@@ -538,7 +538,7 @@ static void *ion_dma_buf_kmap(struct dma_buf *dmabuf, unsigned long offset)
 	void *vaddr;
 
 	if (!buffer->heap->ops->map_kernel) {
-		pr_err("%s: map kernel is not implemented by this heap.\n",
+		pr_debug("%s: map kernel is not implemented by this heap.\n",
 		       __func__);
 		return ERR_PTR(-ENOTTY);
 	}
@@ -1117,7 +1117,7 @@ struct dma_buf *ion_alloc(size_t len, unsigned int heap_id_mask,
 			(enum ion_heap_type)ION_HEAP_TYPE_SYSTEM_SECURE) {
 			type_valid = true;
 		} else {
-			pr_warn("%s: heap type not supported, type:%d\n",
+			pr_debug("%s: heap type not supported, type:%d\n",
 				__func__, heap->type);
 		}
 		break;
@@ -1265,7 +1265,7 @@ void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap)
 	int ret;
 
 	if (!heap->ops->allocate || !heap->ops->free)
-		pr_err("%s: can not add heap with invalid ops struct.\n",
+		pr_debug("%s: can not add heap with invalid ops struct.\n",
 		       __func__);
 
 	spin_lock_init(&heap->free_lock);
@@ -1277,7 +1277,7 @@ void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap)
 	if ((heap->flags & ION_HEAP_FLAG_DEFER_FREE) || heap->ops->shrink) {
 		ret = ion_heap_init_shrinker(heap);
 		if (ret)
-			pr_err("%s: Failed to register shrinker\n", __func__);
+			pr_debug("%s: Failed to register shrinker\n", __func__);
 	}
 
 	heap->dev = dev;
@@ -1293,7 +1293,7 @@ void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap)
 		snprintf(debug_name, 64, "%s_stats", heap->name);
 		if (!debugfs_create_file(debug_name, 0664, dev->debug_root,
 					 heap, &debug_heap_fops))
-			pr_err("Failed to create heap debugfs at %s/%s\n",
+			pr_debug("Failed to create heap debugfs at %s/%s\n",
 			       dentry_path(dev->debug_root, buf, 256),
 			       debug_name);
 	}
@@ -1302,7 +1302,7 @@ void ion_device_add_heap(struct ion_device *dev, struct ion_heap *heap)
 		snprintf(debug_name, 64, "%s_shrink", heap->name);
 		if (!debugfs_create_file(debug_name, 0644, dev->debug_root,
 					 heap, &debug_shrink_fops))
-			pr_err("Failed to create heap debugfs at %s/%s\n",
+			pr_debug("Failed to create heap debugfs at %s/%s\n",
 			       dentry_path(dev->debug_root, buf, 256),
 			       debug_name);
 	}
@@ -1377,13 +1377,13 @@ struct ion_device *ion_device_create(void)
 	idev->dev.parent = NULL;
 	ret = misc_register(&idev->dev);
 	if (ret) {
-		pr_err("ion: failed to register misc device.\n");
+		pr_debug("ion: failed to register misc device.\n");
 		goto err_reg;
 	}
 
 	ret = ion_init_sysfs();
 	if (ret) {
-		pr_err("ion: failed to add sysfs attributes.\n");
+		pr_debug("ion: failed to add sysfs attributes.\n");
 		goto err_sysfs;
 	}
 

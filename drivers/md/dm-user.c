@@ -358,7 +358,7 @@ static inline long bio_flags_to_user_flags(struct bio *bio)
 	}
 
 	if (unlikely(opf)) {
-		pr_warn("unsupported BIO type %x\n", opf);
+		pr_debug("unsupported BIO type %x\n", opf);
 		return -EOPNOTSUPP;
 	}
 	WARN_ON(out < 0);
@@ -775,7 +775,7 @@ static ssize_t dev_write(struct kiocb *iocb, struct iov_iter *from)
 
 		processed = msg_copy_from_iov(c->cur_from_user, from);
 		if (processed <= 0) {
-			pr_warn("msg_copy_from_iov() returned %zu\n",
+			pr_debug("msg_copy_from_iov() returned %zu\n",
 				processed);
 			c->from_user_error = -EINVAL;
 			goto cleanup_unlock;
@@ -795,7 +795,7 @@ static ssize_t dev_write(struct kiocb *iocb, struct iov_iter *from)
 		mutex_lock(&c->target->lock);
 		msg = msg_get_from_user(c, c->cur_from_user->msg.seq);
 		if (msg == NULL) {
-			pr_info("user provided an invalid messag seq of %llx\n",
+			pr_debug("user provided an invalid messag seq of %llx\n",
 				old->msg.seq);
 			mutex_unlock(&c->target->lock);
 			c->from_user_error = -EINVAL;

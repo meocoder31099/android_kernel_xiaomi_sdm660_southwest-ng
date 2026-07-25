@@ -282,14 +282,14 @@ static void req_bio_endio(struct request *rq, struct bio *bio,
 
 void blk_dump_rq_flags(struct request *rq, char *msg)
 {
-	printk(KERN_INFO "%s: dev %s: flags=%llx\n", msg,
+	no_printk(KERN_INFO "%s: dev %s: flags=%llx\n", msg,
 		rq->rq_disk ? rq->rq_disk->disk_name : "?",
 		(unsigned long long) rq->cmd_flags);
 
-	printk(KERN_INFO "  sector %llu, nr/cnr %u/%u\n",
+	no_printk(KERN_INFO "  sector %llu, nr/cnr %u/%u\n",
 	       (unsigned long long)blk_rq_pos(rq),
 	       blk_rq_sectors(rq), blk_rq_cur_sectors(rq));
-	printk(KERN_INFO "  bio %p, biotail %p, len %u\n",
+	no_printk(KERN_INFO "  bio %p, biotail %p, len %u\n",
 	       rq->bio, rq->biotail, blk_rq_bytes(rq));
 }
 EXPORT_SYMBOL(blk_dump_rq_flags);
@@ -2130,7 +2130,7 @@ static inline bool bio_check_ro(struct bio *bio, struct hd_struct *part)
 
 		if (op_is_flush(bio->bi_opf) && !bio_sectors(bio))
 			return false;
-		pr_warn("Trying to write to read-only block-device %s (partno %d)\n",
+		pr_debug("Trying to write to read-only block-device %s (partno %d)\n",
 			bio_devname(bio, b), part->partno);
 		/* Older lvm-tools actually trigger this */
 		return false;
@@ -2212,7 +2212,7 @@ generic_make_request_checks(struct bio *bio)
 
 	q = bio->bi_disk->queue;
 	if (unlikely(!q)) {
-		printk(KERN_ERR
+		no_printk(KERN_ERR
 		       "generic_make_request: Trying to access "
 			"nonexistent block-device %s (%Lu)\n",
 			bio_devname(bio, b), (long long)bio->bi_iter.bi_sector);
@@ -2522,7 +2522,7 @@ blk_qc_t submit_bio(struct bio *bio)
 
 		if (unlikely(block_dump)) {
 			char b[BDEVNAME_SIZE];
-			printk(KERN_DEBUG "%s(%d): %s block %Lu on %s (%u sectors)\n",
+			no_printk(KERN_DEBUG "%s(%d): %s block %Lu on %s (%u sectors)\n",
 			current->comm, task_pid_nr(current),
 				op_is_write(bio_op(bio)) ? "WRITE" : "READ",
 				(unsigned long long)bio->bi_iter.bi_sector,
@@ -2580,7 +2580,7 @@ static int blk_cloned_rq_check_limits(struct request_queue *q,
 				      struct request *rq)
 {
 	if (blk_rq_sectors(rq) > blk_queue_get_max_sectors(q, req_op(rq))) {
-		printk(KERN_ERR "%s: over max size limit.\n", __func__);
+		no_printk(KERN_ERR "%s: over max size limit.\n", __func__);
 		return -EIO;
 	}
 
@@ -2592,7 +2592,7 @@ static int blk_cloned_rq_check_limits(struct request_queue *q,
 	 */
 	blk_recalc_rq_segments(rq);
 	if (rq->nr_phys_segments > queue_max_segments(q)) {
-		printk(KERN_ERR "%s: over max segments limit.\n", __func__);
+		no_printk(KERN_ERR "%s: over max segments limit.\n", __func__);
 		return -EIO;
 	}
 
@@ -2927,7 +2927,7 @@ struct request *blk_peek_request(struct request_queue *q)
 			__blk_end_request_all(rq, ret == BLKPREP_INVALID ?
 					BLK_STS_TARGET : BLK_STS_IOERR);
 		} else {
-			printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
+			no_printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
 			break;
 		}
 	}

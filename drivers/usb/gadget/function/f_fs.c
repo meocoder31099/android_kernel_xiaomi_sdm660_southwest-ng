@@ -803,7 +803,7 @@ static ssize_t ffs_copy_to_iter(void *data, int data_len, struct iov_iter *iter)
 	 * aio_read(2) etc. system calls.  Writing data to an IN endpoint is not
 	 * affected.
 	 */
-	pr_err("functionfs read size %d > requested size %zd, dropping excess data. "
+	pr_debug("functionfs read size %d > requested size %zd, dropping excess data. "
 	       "Align read buffer size to max packet size to avoid the problem.\n",
 	       data_len, ret);
 
@@ -923,7 +923,7 @@ static ssize_t __ffs_epfile_read_data(struct ffs_epfile *epfile,
 		return -EFAULT;
 
 	/* See ffs_copy_to_iter for more context. */
-	pr_warn("functionfs read size %d > requested size %zd, splitting request into multiple reads.",
+	pr_debug("functionfs read size %d > requested size %zd, splitting request into multiple reads.",
 		data_len, ret);
 
 	data_len -= ret;
@@ -1609,14 +1609,14 @@ static int ffs_fs_parse_opts(struct ffs_sb_fill_data *data, char *opts)
 		/* Value limit */
 		eq = strchr(opts, '=');
 		if (unlikely(!eq)) {
-			pr_err("'=' missing in %s\n", opts);
+			pr_debug("'=' missing in %s\n", opts);
 			return -EINVAL;
 		}
 		*eq = 0;
 
 		/* Parse value */
 		if (kstrtoul(eq + 1, 0, &value)) {
-			pr_err("%s: invalid value: %s\n", opts, eq + 1);
+			pr_debug("%s: invalid value: %s\n", opts, eq + 1);
 			return -EINVAL;
 		}
 
@@ -1650,13 +1650,13 @@ static int ffs_fs_parse_opts(struct ffs_sb_fill_data *data, char *opts)
 			if (!memcmp(opts, "uid", 3)) {
 				data->perms.uid = make_kuid(current_user_ns(), value);
 				if (!uid_valid(data->perms.uid)) {
-					pr_err("%s: unmapped value: %lu\n", opts, value);
+					pr_debug("%s: unmapped value: %lu\n", opts, value);
 					return -EINVAL;
 				}
 			} else if (!memcmp(opts, "gid", 3)) {
 				data->perms.gid = make_kgid(current_user_ns(), value);
 				if (!gid_valid(data->perms.gid)) {
-					pr_err("%s: unmapped value: %lu\n", opts, value);
+					pr_debug("%s: unmapped value: %lu\n", opts, value);
 					return -EINVAL;
 				}
 			} else {
@@ -1666,7 +1666,7 @@ static int ffs_fs_parse_opts(struct ffs_sb_fill_data *data, char *opts)
 
 		default:
 invalid:
-			pr_err("%s: invalid option\n", opts);
+			pr_debug("%s: invalid option\n", opts);
 			return -EINVAL;
 		}
 
@@ -1763,9 +1763,9 @@ static int functionfs_init(void)
 
 	ret = register_filesystem(&ffs_fs_type);
 	if (likely(!ret))
-		pr_info("file system registered\n");
+		pr_debug("file system registered\n");
 	else
-		pr_err("failed registering file system (%d)\n", ret);
+		pr_debug("failed registering file system (%d)\n", ret);
 
 	return ret;
 }
@@ -1774,7 +1774,7 @@ static void functionfs_cleanup(void)
 {
 	ENTER();
 
-	pr_info("unloading\n");
+	pr_debug("unloading\n");
 	unregister_filesystem(&ffs_fs_type);
 }
 
@@ -2170,7 +2170,7 @@ static int ffs_func_eps_enable(struct ffs_function *func)
 
 		ret = config_ep_by_speed(func->gadget, &func->function, ep->ep);
 		if (ret) {
-			pr_err("%s: config_ep_by_speed(%s) returned %d\n",
+			pr_debug("%s: config_ep_by_speed(%s) returned %d\n",
 					__func__, ep->ep->name, ret);
 			break;
 		}
@@ -3070,7 +3070,7 @@ static int __ffs_func_bind_do_descs(enum ffs_entity_type type, u8 *valuep,
 	ffs_ep = func->eps + idx;
 
 	if (unlikely(ffs_ep->descs[ep_desc_id])) {
-		pr_err("two %sspeed descriptors for EP %d\n",
+		pr_debug("two %sspeed descriptors for EP %d\n",
 			  speed_names[ep_desc_id],
 			  ds->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK);
 		return -EINVAL;

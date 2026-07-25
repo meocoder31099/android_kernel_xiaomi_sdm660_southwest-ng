@@ -398,10 +398,10 @@ void __init cpu_smt_disable(bool force)
 		return;
 
 	if (force) {
-		pr_info("SMT: Force disabled\n");
+		pr_debug("SMT: Force disabled\n");
 		cpu_smt_control = CPU_SMT_FORCE_DISABLED;
 	} else {
-		pr_info("SMT: disabled\n");
+		pr_debug("SMT: disabled\n");
 		cpu_smt_control = CPU_SMT_DISABLED;
 	}
 }
@@ -1295,10 +1295,10 @@ static int do_cpu_up(unsigned int cpu, enum cpuhp_state target)
 	int switch_err = 0;
 
 	if (!cpu_possible(cpu)) {
-		pr_err("can't online cpu %d because it is not configured as may-hotadd at boot time\n",
+		pr_debug("can't online cpu %d because it is not configured as may-hotadd at boot time\n",
 		       cpu);
 #if defined(CONFIG_IA64)
-		pr_err("please check additional_cpus= boot parameter\n");
+		pr_debug("please check additional_cpus= boot parameter\n");
 #endif
 		return -EINVAL;
 	}
@@ -1331,7 +1331,7 @@ out:
 	if (!switch_err) {
 		switch_err = switch_to_fair_policy();
 		if (switch_err)
-			pr_err("Hotplug policy switch err=%d Task %s pid=%d\n",
+			pr_debug("Hotplug policy switch err=%d Task %s pid=%d\n",
 				switch_err, current->comm, current->pid);
 	}
 
@@ -1378,7 +1378,7 @@ int freeze_secondary_cpus(int primary)
 		if (!error)
 			cpumask_set_cpu(cpu, frozen_cpus);
 		else {
-			pr_err("Error taking CPU%d down: %d\n", cpu, error);
+			pr_debug("Error taking CPU%d down: %d\n", cpu, error);
 			break;
 		}
 	}
@@ -1436,7 +1436,7 @@ void enable_nonboot_cpus(void)
 				kobject_uevent(&cpu_device->kobj, KOBJ_ONLINE);
 			continue;
 		}
-		pr_warn("Error taking CPU%d up: %d\n", cpu, error);
+		pr_debug("Error taking CPU%d up: %d\n", cpu, error);
 	}
 
 	arch_enable_nonboot_cpus_end();
@@ -2559,7 +2559,7 @@ static int __init mitigations_parse_cmdline(char *arg)
 	else if (!strcmp(arg, "auto,nosmt"))
 		cpu_mitigations = CPU_MITIGATIONS_AUTO_NOSMT;
 	else
-		pr_crit("Unsupported mitigations=%s, system may still be vulnerable\n",
+		pr_debug("Unsupported mitigations=%s, system may still be vulnerable\n",
 			arg);
 
 	return 0;
