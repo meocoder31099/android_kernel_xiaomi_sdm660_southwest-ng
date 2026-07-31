@@ -80,7 +80,7 @@ static int devfreq_vbif_ev_handler(struct devfreq *devfreq,
 			stat.private_data)
 			dev_ab = stat.private_data;
 		else
-			pr_warn("Device doesn't take AB votes!\n");
+			pr_debug("Device doesn't take AB votes!\n");
 
 		mutex_unlock(&df_lock);
 
@@ -89,7 +89,7 @@ static int devfreq_vbif_ev_handler(struct devfreq *devfreq,
 
 		ret = devfreq_vbif_update_bw();
 		if (ret) {
-			pr_err("Unable to update BW! Gov start failed!\n");
+			pr_debug("Unable to update BW! Gov start failed!\n");
 			return ret;
 		}
 		/*
@@ -133,7 +133,7 @@ static void __exit devfreq_vbif_exit(void)
 
 	ret = devfreq_remove_governor(&devfreq_vbif);
 	if (ret)
-		pr_err("%s: failed remove governor %d\n", __func__, ret);
+		pr_debug("%s: failed remove governor %d\n", __func__, ret);
 
 }
 module_exit(devfreq_vbif_exit);

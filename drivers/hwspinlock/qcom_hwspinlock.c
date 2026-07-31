@@ -45,18 +45,18 @@ static void qcom_hwspinlock_unlock(struct hwspinlock *lock)
 
 	ret = regmap_field_read(field, &lock_owner);
 	if (ret) {
-		pr_err("%s: unable to query spinlock owner\n", __func__);
+		pr_debug("%s: unable to query spinlock owner\n", __func__);
 		return;
 	}
 
 	if (lock_owner != QCOM_MUTEX_APPS_PROC_ID) {
-		pr_err("%s: spinlock not owned by us (actual owner is %d)\n",
+		pr_debug("%s: spinlock not owned by us (actual owner is %d)\n",
 				__func__, lock_owner);
 	}
 
 	ret = regmap_field_write(field, 0);
 	if (ret)
-		pr_err("%s: failed to unlock spinlock\n", __func__);
+		pr_debug("%s: failed to unlock spinlock\n", __func__);
 }
 
 static const struct hwspinlock_ops qcom_hwspinlock_ops = {
@@ -85,7 +85,7 @@ static int qcom_hwspinlock_probe(struct platform_device *pdev)
 
 	syscon = of_parse_phandle(pdev->dev.of_node, "syscon", 0);
 	if (!syscon) {
-		dev_err(&pdev->dev, "no syscon property\n");
+		dev_dbg(&pdev->dev, "no syscon property\n");
 		return -ENODEV;
 	}
 
@@ -96,13 +96,13 @@ static int qcom_hwspinlock_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32_index(pdev->dev.of_node, "syscon", 1, &base);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "no offset in syscon\n");
+		dev_dbg(&pdev->dev, "no offset in syscon\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32_index(pdev->dev.of_node, "syscon", 2, &stride);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "no stride syscon\n");
+		dev_dbg(&pdev->dev, "no stride syscon\n");
 		return -EINVAL;
 	}
 
@@ -139,7 +139,7 @@ static int qcom_hwspinlock_remove(struct platform_device *pdev)
 
 	ret = hwspin_lock_unregister(bank);
 	if (ret) {
-		dev_err(&pdev->dev, "%s failed: %d\n", __func__, ret);
+		dev_dbg(&pdev->dev, "%s failed: %d\n", __func__, ret);
 		return ret;
 	}
 

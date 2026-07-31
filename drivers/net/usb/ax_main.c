@@ -474,7 +474,7 @@ static int __asix_read_cmd(struct ax_device *axdev, u8 cmd, u16 value,
 		 USB_RECIP_DEVICE, value, index, data, size);
 
 	if (unlikely(ret < 0))
-		dev_warn(&axdev->intf->dev,
+		dev_dbg(&axdev->intf->dev,
 			 "Failed to read reg %04X_%04X_%04X_%04X (err %d)",
 			 cmd, value, index, size, ret);
 
@@ -496,7 +496,7 @@ static int __asix_write_cmd(struct ax_device *axdev, u8 cmd, u16 value,
 		 USB_RECIP_DEVICE, value, index, data, size);
 
 	if (unlikely(ret < 0))
-		dev_warn(&axdev->intf->dev,
+		dev_dbg(&axdev->intf->dev,
 			 "Failed to write reg %04X_%04X_%04X_%04X (err %d)",
 			 cmd, value, index, size, ret);
 
@@ -600,7 +600,7 @@ static void ax_async_write_callback(struct urb *urb)
 	struct _async_cmd_handle *asyncdata = (typeof(asyncdata))urb->context;
 
 	if (urb->status < 0)
-		dev_err(&asyncdata->axdev->intf->dev,
+		dev_dbg(&asyncdata->axdev->intf->dev,
 			"ax_async_write_callback() failed with %d",
 			urb->status);
 
@@ -1741,12 +1741,12 @@ static int ax_get_mac_address(struct ax_device *axdev)
 
 	if (ax_read_cmd(axdev, AX_ACCESS_MAC, AX_NODE_ID, ETH_ALEN,
 			ETH_ALEN, netdev->dev_addr, 0) < 0) {
-		dev_err(&axdev->intf->dev, "Failed to read MAC address");
+		dev_dbg(&axdev->intf->dev, "Failed to read MAC address");
 		return -ENODEV;
 	}
 
 	if (ax_check_ether_addr(axdev))
-		dev_warn(&axdev->intf->dev, "Found invalid MAC address value");
+		dev_dbg(&axdev->intf->dev, "Found invalid MAC address value");
 
 	ax_get_mac_pass(axdev, netdev->dev_addr);
 
@@ -1757,14 +1757,14 @@ static int ax_get_mac_address(struct ax_device *axdev)
 	netdev->dev_addr[3] = 0;
 	netdev->dev_addr[4] = 0;
 	netdev->dev_addr[5] = 1;
-	dev_warn(&axdev->intf->dev, "Forced MAC addr: 00:0E:C6:00:00:01");
+	dev_dbg(&axdev->intf->dev, "Forced MAC addr: 00:0E:C6:00:00:01");
 #endif
 
 	memcpy(netdev->perm_addr, netdev->dev_addr, ETH_ALEN);
 
 	if (ax_write_cmd(axdev, AX_ACCESS_MAC, AX_NODE_ID, ETH_ALEN,
 			 ETH_ALEN, netdev->dev_addr) < 0) {
-		dev_err(&axdev->intf->dev, "Failed to write MAC address");
+		dev_dbg(&axdev->intf->dev, "Failed to write MAC address");
 		return -ENODEV;
 	}
 
@@ -1787,12 +1787,12 @@ static int ax_probe(struct usb_interface *intf, const struct usb_device_id *id)
 
 	info = (const struct driver_info *)id->driver_info;
 	if (!info || !info->bind || !info->unbind) {
-		dev_err(&intf->dev, "Driver method not registered\n");
+		dev_dbg(&intf->dev, "Driver method not registered\n");
 		return -ENODEV;
 	}
 	netdev = alloc_etherdev(sizeof(struct ax_device));
 	if (!netdev) {
-		dev_err(&intf->dev, "Out of memory\n");
+		dev_dbg(&intf->dev, "Out of memory\n");
 		return -ENOMEM;
 	}
 
@@ -1815,13 +1815,13 @@ static int ax_probe(struct usb_interface *intf, const struct usb_device_id *id)
 
 	ret = ax_get_chip_feature(axdev);
 	if (ret) {
-		dev_err(&intf->dev, "Failed to get Device feature\n");
+		dev_dbg(&intf->dev, "Failed to get Device feature\n");
 		goto out;
 	}
 
 	ret = info->bind(axdev);
 	if (ret) {
-		dev_err(&intf->dev, "Device initialization failed\n");
+		dev_dbg(&intf->dev, "Device initialization failed\n");
 		goto out;
 	}
 

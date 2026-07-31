@@ -206,7 +206,7 @@ int update_cache_hwmon(struct cache_hwmon *hwmon)
 		mutex_lock(&df->lock);
 		ret = update_devfreq(df);
 		if (ret)
-			dev_err(df->dev.parent,
+			dev_dbg(df->dev.parent,
 				"Unable to update freq on request!\n");
 		mutex_unlock(&df->lock);
 	}
@@ -266,7 +266,7 @@ static int start_monitoring(struct devfreq *df)
 
 	node = find_hwmon_node(df);
 	if (!node) {
-		dev_err(dev, "Unable to find HW monitor!\n");
+		dev_dbg(dev, "Unable to find HW monitor!\n");
 		return -ENODEV;
 	}
 	hw = node->hw;
@@ -282,7 +282,7 @@ static int start_monitoring(struct devfreq *df)
 
 	ret = hw->start_hwmon(hw, &mrps);
 	if (ret) {
-		dev_err(dev, "Unable to start HW monitor!\n");
+		dev_dbg(dev, "Unable to start HW monitor!\n");
 		goto err_start;
 	}
 
@@ -293,7 +293,7 @@ static int start_monitoring(struct devfreq *df)
 
 	ret = sysfs_create_group(&df->dev.kobj, &dev_attr_group);
 	if (ret) {
-		dev_err(dev, "Error creating sys entries!\n");
+		dev_dbg(dev, "Error creating sys entries!\n");
 		goto sysfs_fail;
 	}
 
@@ -401,9 +401,9 @@ int register_cache_hwmon(struct device *dev, struct cache_hwmon *hwmon)
 	mutex_unlock(&register_lock);
 
 	if (!ret) {
-		dev_info(dev, "Cache HWmon governor registered.\n");
+		dev_dbg(dev, "Cache HWmon governor registered.\n");
 	} else {
-		dev_err(dev, "Failed to add Cache HWmon governor\n");
+		dev_dbg(dev, "Failed to add Cache HWmon governor\n");
 		return ret;
 	}
 

@@ -339,7 +339,7 @@ static int hdcp_1x_load_keys(struct hdcp_1x *hdcp)
 	reg_set = &hdcp->reg_set;
 
 	if (hdcp1_start(hdcp->hdcp1_handle, &aksv_msb, &aksv_lsb)) {
-		pr_err("setting hdcp SW keys failed\n");
+		pr_debug("setting hdcp SW keys failed\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -355,7 +355,7 @@ static int hdcp_1x_load_keys(struct hdcp_1x *hdcp)
 
 	/* check there are 20 ones in AKSV */
 	if (hdcp_1x_count_one(aksv, 5) != 20) {
-		pr_err("AKSV bit count failed\n");
+		pr_debug("AKSV bit count failed\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -457,14 +457,14 @@ static int hdcp_1x_read_bcaps(struct hdcp_1x *hdcp)
 	struct dss_io_data *hdcp_io  = hdcp->init_data.hdcp_io;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
 	rc = hdcp_1x_read(hdcp, &hdcp->sink_addr.bcaps,
 		&hdcp->bcaps, false);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error reading bcaps\n");
+		pr_debug("error reading bcaps\n");
 		goto error;
 	}
 
@@ -490,7 +490,7 @@ static int hdcp_1x_wait_for_hw_ready(struct hdcp_1x *hdcp)
 	struct dss_io_data *io = hdcp->init_data.core_io;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -501,7 +501,7 @@ static int hdcp_1x_wait_for_hw_ready(struct hdcp_1x *hdcp)
 				!hdcp_1x_state(HDCP_STATE_AUTHENTICATING),
 				HDCP_POLL_SLEEP_US, HDCP_POLL_TIMEOUT_US);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("hdcp keys not ready\n");
+		pr_debug("hdcp keys not ready\n");
 		goto error;
 	}
 
@@ -517,7 +517,7 @@ static int hdcp_1x_wait_for_hw_ready(struct hdcp_1x *hdcp)
 				!hdcp_1x_state(HDCP_STATE_AUTHENTICATING),
 				HDCP_POLL_SLEEP_US, HDCP_POLL_TIMEOUT_US);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("An not ready\n");
+		pr_debug("An not ready\n");
 		goto error;
 	}
 
@@ -536,7 +536,7 @@ static int hdcp_1x_send_an_aksv_to_sink(struct hdcp_1x *hdcp)
 	u8 an[8], aksv[5];
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -554,7 +554,7 @@ static int hdcp_1x_send_an_aksv_to_sink(struct hdcp_1x *hdcp)
 
 	rc = hdcp_1x_write(hdcp, &hdcp->sink_addr.an, an);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error writing An to hdcp sink\n");
+		pr_debug("error writing An to hdcp sink\n");
 		goto error;
 	}
 
@@ -570,7 +570,7 @@ static int hdcp_1x_send_an_aksv_to_sink(struct hdcp_1x *hdcp)
 
 	rc = hdcp_1x_write(hdcp, &hdcp->sink_addr.aksv, aksv);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error writing AKSV to hdcp sink\n");
+		pr_debug("error writing AKSV to hdcp sink\n");
 		goto error;
 	}
 error:
@@ -583,7 +583,7 @@ static int hdcp_1x_read_an_aksv_from_hw(struct hdcp_1x *hdcp)
 	struct hdcp_reg_set *reg_set = &hdcp->reg_set;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -608,7 +608,7 @@ static int hdcp_1x_get_bksv_from_sink(struct hdcp_1x *hdcp)
 
 	rc = hdcp_1x_read(hdcp, &hdcp->sink_addr.bksv, bksv, false);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error reading BKSV from hdcp sink\n");
+		pr_debug("error reading BKSV from hdcp sink\n");
 		goto error;
 	}
 
@@ -617,7 +617,7 @@ static int hdcp_1x_get_bksv_from_sink(struct hdcp_1x *hdcp)
 
 	/* check there are 20 ones in BKSV */
 	if (hdcp_1x_count_one(bksv, 5) != 20) {
-		pr_err("%s: BKSV doesn't have 20 1's and 20 0's\n",
+		pr_debug("%s: BKSV doesn't have 20 1's and 20 0's\n",
 			HDCP_STATE_NAME);
 		rc = -EINVAL;
 		goto error;
@@ -669,7 +669,7 @@ static int hdcp_1x_verify_r0(struct hdcp_1x *hdcp)
 	struct dss_io_data *io = hdcp->init_data.core_io;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -679,7 +679,7 @@ static int hdcp_1x_verify_r0(struct hdcp_1x *hdcp)
 				!hdcp_1x_state(HDCP_STATE_AUTHENTICATING),
 				HDCP_POLL_SLEEP_US, HDCP_POLL_TIMEOUT_US);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("R0 not ready\n");
+		pr_debug("R0 not ready\n");
 		goto error;
 	}
 
@@ -696,7 +696,7 @@ static int hdcp_1x_verify_r0(struct hdcp_1x *hdcp)
 				&hdcp->sink_r0_available, HZ / 2);
 
 			if (hdcp->reauth) {
-				pr_err("hdcp sink R0 not ready\n");
+				pr_debug("hdcp sink R0 not ready\n");
 				rc = -EINVAL;
 				goto error;
 			}
@@ -709,7 +709,7 @@ static int hdcp_1x_verify_r0(struct hdcp_1x *hdcp)
 		rc = hdcp_1x_read(hdcp, &hdcp->sink_addr.r0,
 			buf, false);
 		if (IS_ERR_VALUE((unsigned long)rc)) {
-			pr_err("error reading R0' from hdcp sink\n");
+			pr_debug("error reading R0' from hdcp sink\n");
 			goto error;
 		}
 
@@ -734,7 +734,7 @@ static int hdcp_1x_authentication_part1(struct hdcp_1x *hdcp)
 	int rc;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -766,11 +766,11 @@ static int hdcp_1x_authentication_part1(struct hdcp_1x *hdcp)
 	if (rc)
 		goto error;
 
-	pr_info("SUCCESSFUL\n");
+	pr_debug("SUCCESSFUL\n");
 
 	return 0;
 error:
-	pr_err("%s: FAILED\n", HDCP_STATE_NAME);
+	pr_debug("%s: FAILED\n", HDCP_STATE_NAME);
 
 	return rc;
 }
@@ -793,7 +793,7 @@ static int hdcp_1x_transfer_v_h(struct hdcp_1x *hdcp)
 	u32 i = 0, len = 0;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -807,7 +807,7 @@ static int hdcp_1x_transfer_v_h(struct hdcp_1x *hdcp)
 
 	rc = hdcp_1x_read(hdcp, &sink, buf, false);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error reading %s\n", sink.name);
+		pr_debug("error reading %s\n", sink.name);
 		goto end;
 	}
 
@@ -832,14 +832,14 @@ static int hdcp_1x_validate_downstream(struct hdcp_1x *hdcp)
 	struct hdcp_reg_set *reg_set = &hdcp->reg_set;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
 	rc = hdcp_1x_read(hdcp, &hdcp->sink_addr.bstatus,
 			buf, false);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error reading bstatus\n");
+		pr_debug("error reading bstatus\n");
 		goto end;
 	}
 
@@ -861,7 +861,7 @@ static int hdcp_1x_validate_downstream(struct hdcp_1x *hdcp)
 	 */
 	max_devs_exceeded = (bstatus & BIT(7)) >> 7;
 	if (max_devs_exceeded == 0x01) {
-		pr_err("no. of devs connected exceed max allowed\n");
+		pr_debug("no. of devs connected exceed max allowed\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -873,7 +873,7 @@ static int hdcp_1x_validate_downstream(struct hdcp_1x *hdcp)
 	 */
 	max_cascade_exceeded = (bstatus & BIT(11)) >> 11;
 	if (max_cascade_exceeded == 0x01) {
-		pr_err("no. of cascade connections exceed max allowed\n");
+		pr_debug("no. of cascade connections exceed max allowed\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -896,7 +896,7 @@ static int hdcp_1x_read_ksv_fifo(struct hdcp_1x *hdcp)
 	u8 *ksv_fifo = hdcp->current_tp.ksv_list;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -910,14 +910,14 @@ static int hdcp_1x_read_ksv_fifo(struct hdcp_1x *hdcp)
 		rc = hdcp_1x_read(hdcp, &hdcp->sink_addr.ksv_fifo,
 				ksv_fifo, true);
 		if (IS_ERR_VALUE((unsigned long)rc))
-			pr_err("could not read ksv fifo (%d)\n",
+			pr_debug("could not read ksv fifo (%d)\n",
 				ksv_read_retry);
 		else
 			break;
 	}
 
 	if (rc)
-		pr_err("error reading ksv_fifo\n");
+		pr_debug("error reading ksv_fifo\n");
 
 	return rc;
 }
@@ -933,7 +933,7 @@ static int hdcp_1x_write_ksv_fifo(struct hdcp_1x *hdcp)
 	u32 sha_status = 0, status;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -955,7 +955,7 @@ static int hdcp_1x_write_ksv_fifo(struct hdcp_1x *hdcp)
 				!hdcp_1x_state(HDCP_STATE_AUTHENTICATING),
 				HDCP_POLL_SLEEP_US, HDCP_POLL_TIMEOUT_US);
 			if (IS_ERR_VALUE((unsigned long)rc)) {
-				pr_err("hdcp sha block not done\n");
+				pr_debug("hdcp sha block not done\n");
 				goto error;
 			}
 		}
@@ -971,7 +971,7 @@ static int hdcp_1x_write_ksv_fifo(struct hdcp_1x *hdcp)
 				!hdcp_1x_state(HDCP_STATE_AUTHENTICATING),
 				HDCP_POLL_SLEEP_US, HDCP_POLL_TIMEOUT_US);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("V computation not done\n");
+		pr_debug("V computation not done\n");
 		goto error;
 	}
 
@@ -981,7 +981,7 @@ static int hdcp_1x_write_ksv_fifo(struct hdcp_1x *hdcp)
 				!hdcp_1x_state(HDCP_STATE_AUTHENTICATING),
 				HDCP_POLL_SLEEP_US, HDCP_POLL_TIMEOUT_US);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("V mismatch\n");
+		pr_debug("V mismatch\n");
 		rc = -EINVAL;
 	}
 error:
@@ -996,7 +996,7 @@ static int hdcp_1x_wait_for_ksv_ready(struct hdcp_1x *hdcp)
 	int rc, timeout;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return -EINVAL;
 	}
 
@@ -1007,7 +1007,7 @@ static int hdcp_1x_wait_for_ksv_ready(struct hdcp_1x *hdcp)
 	rc = hdcp_1x_read(hdcp, &hdcp->sink_addr.bcaps,
 		&hdcp->bcaps, false);
 	if (IS_ERR_VALUE((unsigned long)rc)) {
-		pr_err("error reading bcaps\n");
+		pr_debug("error reading bcaps\n");
 		goto error;
 	}
 
@@ -1056,7 +1056,7 @@ static int hdcp_1x_wait_for_ksv_ready(struct hdcp_1x *hdcp)
 
 	if (!timeout || hdcp->reauth ||
 	    !hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("DS KSV not ready\n");
+		pr_debug("DS KSV not ready\n");
 		rc = -EINVAL;
 	} else {
 		hdcp->ksv_ready = true;
@@ -1093,11 +1093,11 @@ static int hdcp_1x_authentication_part2(struct hdcp_1x *hdcp)
 	} while (--v_retry && rc);
 error:
 	if (rc) {
-		pr_err("%s: FAILED\n", HDCP_STATE_NAME);
+		pr_debug("%s: FAILED\n", HDCP_STATE_NAME);
 	} else {
 		hdcp->hdcp_state = HDCP_STATE_AUTHENTICATED;
 
-		pr_info("SUCCESSFUL\n");
+		pr_debug("SUCCESSFUL\n");
 	}
 
 	return rc;
@@ -1152,17 +1152,17 @@ static void hdcp_1x_auth_work(struct work_struct *work)
 	struct dss_io_data *io;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return;
 	}
 
 	if (!hdcp->init_data.core_io) {
-		pr_err("invalid hdcp core_io\n");
+		pr_debug("invalid hdcp core_io\n");
 		return;
 	}
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTHENTICATING)) {
-		pr_err("invalid hdcp state: %s\n", HDCP_STATE_NAME);
+		pr_debug("invalid hdcp state: %s\n", HDCP_STATE_NAME);
 		return;
 	}
 
@@ -1221,12 +1221,12 @@ int hdcp_1x_authenticate(void *input)
 	struct hdcp_1x *hdcp = (struct hdcp_1x *)input;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return -EINVAL;
 	}
 
 	if (!hdcp->init_data.core_io) {
-		pr_err("invalid hdcp core_io\n");
+		pr_debug("invalid hdcp core_io\n");
 		return -EINVAL;
 	}
 
@@ -1234,7 +1234,7 @@ int hdcp_1x_authenticate(void *input)
 
 	if (!hdcp_1x_state(HDCP_STATE_INACTIVE) &&
 		!hdcp_1x_state(HDCP_STATE_AUTH_FAIL)) {
-		pr_err("cannot authenticate, invalid hdcp state: %s\n",
+		pr_debug("cannot authenticate, invalid hdcp state: %s\n",
 				HDCP_STATE_NAME);
 		return -EINVAL;
 	}
@@ -1261,12 +1261,12 @@ int hdcp_1x_reauthenticate(void *input)
 	u32 ret = 0, reg;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return -EINVAL;
 	}
 
 	if (!hdcp->init_data.core_io) {
-		pr_err("invalid hdcp core_io\n");
+		pr_debug("invalid hdcp core_io\n");
 		return -EINVAL;
 	}
 
@@ -1275,7 +1275,7 @@ int hdcp_1x_reauthenticate(void *input)
 	isr = &hdcp->int_set;
 
 	if (!hdcp_1x_state(HDCP_STATE_AUTH_FAIL)) {
-		pr_err("cannot reauthenticate, invalid hdcp state: %s\n",
+		pr_debug("cannot reauthenticate, invalid hdcp state: %s\n",
 				HDCP_STATE_NAME);
 		return -EINVAL;
 	}
@@ -1317,12 +1317,12 @@ void hdcp_1x_off(void *input)
 	u32 reg;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return;
 	}
 
 	if (!hdcp->init_data.core_io) {
-		pr_err("invalid hdcp core_io\n");
+		pr_debug("invalid hdcp core_io\n");
 		return;
 	}
 
@@ -1331,7 +1331,7 @@ void hdcp_1x_off(void *input)
 	isr = &hdcp->int_set;
 
 	if (hdcp_1x_state(HDCP_STATE_INACTIVE)) {
-		pr_err("cannot stop hdcp, invalid hdcp state: %s\n",
+		pr_debug("cannot stop hdcp, invalid hdcp state: %s\n",
 				HDCP_STATE_NAME);
 		return;
 	}
@@ -1386,12 +1386,12 @@ int hdcp_1x_isr(void *input)
 	struct hdcp_int_set *isr;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return -EINVAL;
 	}
 
 	if (!hdcp->init_data.core_io) {
-		pr_err("invalid hdcp core_io\n");
+		pr_debug("invalid hdcp core_io\n");
 		return -EINVAL;
 	}
 
@@ -1481,25 +1481,25 @@ static struct hdcp_1x *hdcp_1x_get_ctrl(struct device *dev)
 	struct mdss_panel_info *pinfo;
 
 	if (!dev) {
-		pr_err("invalid device\n");
+		pr_debug("invalid device\n");
 		goto error;
 	}
 
 	fbi = dev_get_drvdata(dev);
 	if (!fbi) {
-		pr_err("invalid fbi\n");
+		pr_debug("invalid fbi\n");
 		goto error;
 	}
 
 	mfd = fbi->par;
 	if (!mfd) {
-		pr_err("invalid mfd\n");
+		pr_debug("invalid mfd\n");
 		goto error;
 	}
 
 	pinfo = mfd->panel_info;
 	if (!pinfo) {
-		pr_err("invalid pinfo\n");
+		pr_debug("invalid pinfo\n");
 		goto error;
 	}
 
@@ -1515,7 +1515,7 @@ static ssize_t status_show(struct device *dev,
 	struct hdcp_1x *hdcp = hdcp_1x_get_ctrl(dev);
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return -EINVAL;
 	}
 
@@ -1534,7 +1534,7 @@ static ssize_t tp_show(struct device *dev,
 	struct hdcp_1x *hdcp = hdcp_1x_get_ctrl(dev);
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return -EINVAL;
 	}
 
@@ -1568,7 +1568,7 @@ static ssize_t tp_store(struct device *dev,
 	struct hdcp_1x *hdcp = hdcp_1x_get_ctrl(dev);
 
 	if (!hdcp || !buf) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return -EINVAL;
 	}
 
@@ -1606,7 +1606,7 @@ void hdcp_1x_deinit(void *input)
 	struct hdcp_1x *hdcp = (struct hdcp_1x *)input;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return;
 	}
 
@@ -1641,7 +1641,7 @@ static bool hdcp_1x_is_cp_irq_raised(struct hdcp_1x *hdcp)
 
 	ret = hdcp_1x_read(hdcp, &sink, &buf, false);
 	if (IS_ERR_VALUE((unsigned long)ret))
-		pr_err("error reading irq_vector\n");
+		pr_debug("error reading irq_vector\n");
 
 	return buf & BIT(2) ? true : false;
 }
@@ -1654,7 +1654,7 @@ static void hdcp_1x_clear_cp_irq(struct hdcp_1x *hdcp)
 
 	ret = hdcp_1x_write(hdcp, &sink, &buf);
 	if (IS_ERR_VALUE((unsigned long)ret))
-		pr_err("error clearing irq_vector\n");
+		pr_debug("error clearing irq_vector\n");
 }
 
 static int hdcp_1x_cp_irq(void *input)
@@ -1664,7 +1664,7 @@ static int hdcp_1x_cp_irq(void *input)
 	int ret;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		goto irq_not_handled;
 	}
 
@@ -1676,12 +1676,12 @@ static int hdcp_1x_cp_irq(void *input)
 	ret = hdcp_1x_read(hdcp, &hdcp->sink_addr.cp_irq_status,
 			&buf, false);
 	if (IS_ERR_VALUE((unsigned long)ret)) {
-		pr_err("error reading cp_irq_status\n");
+		pr_debug("error reading cp_irq_status\n");
 		goto irq_not_handled;
 	}
 
 	if ((buf & BIT(2)) || (buf & BIT(3))) {
-		pr_err("%s\n",
+		pr_debug("%s\n",
 			buf & BIT(2) ? "LINK_INTEGRITY_FAILURE" :
 				"REAUTHENTICATION_REQUEST");
 
@@ -1724,17 +1724,17 @@ void *hdcp_1x_init(struct hdcp_init_data *init_data)
 	};
 
 	if (!init_data) {
-		pr_err("invalid hdcp init data\n");
+		pr_debug("invalid hdcp init data\n");
 		goto error;
 	}
 
 	if (!init_data->core_io) {
-		pr_err("invalid hdcp core_io\n");
+		pr_debug("invalid hdcp core_io\n");
 		goto error;
 	}
 
 	if (init_data->sec_access && !init_data->hdcp_io) {
-		pr_err("hdcp_io required\n");
+		pr_debug("hdcp_io required\n");
 		goto error;
 	}
 
@@ -1750,7 +1750,7 @@ void *hdcp_1x_init(struct hdcp_init_data *init_data)
 
 	hdcp->workq = create_workqueue(name);
 	if (!hdcp->workq) {
-		pr_err("failed to create hdcp_1x_%d workqueue\n",
+		pr_debug("failed to create hdcp_1x_%d workqueue\n",
 				hdcp->init_data.client_id);
 		goto error;
 	}
@@ -1759,7 +1759,7 @@ void *hdcp_1x_init(struct hdcp_init_data *init_data)
 
 	if (sysfs_create_group(init_data->sysfs_kobj,
 				&hdcp_1x_fs_attr_group)) {
-		pr_err("hdcp sysfs group creation failed\n");
+		pr_debug("hdcp sysfs group creation failed\n");
 		goto error;
 	}
 
@@ -1788,7 +1788,7 @@ void hdcp_1x_set_enc(void *input, bool enc)
 	struct hdcp_1x *hdcp = (struct hdcp_1x *)input;
 
 	if (!hdcp) {
-		pr_err("invalid hdcp data\n");
+		pr_debug("invalid hdcp data\n");
 		return;
 	}
 

@@ -1510,11 +1510,11 @@ fail:
 	trace_percpu_alloc_percpu_fail(reserved, is_atomic, size, align);
 
 	if (!is_atomic && do_warn && warn_limit) {
-		pr_warn("allocation failed, size=%zu align=%zu atomic=%d, %s\n",
+		pr_debug("allocation failed, size=%zu align=%zu atomic=%d, %s\n",
 			size, align, is_atomic, err);
 		dump_stack();
 		if (!--warn_limit)
-			pr_info("limit reached, disable warning\n");
+			pr_debug("limit reached, disable warning\n");
 	}
 	if (is_atomic) {
 		/* see the flag handling in pcpu_blance_workfn() */
@@ -1950,7 +1950,7 @@ static void pcpu_dump_alloc_info(const char *lvl,
 	width = upa * (cpu_width + 1) + group_width + 3;
 	apl = rounddown_pow_of_two(max(60 / width, 1));
 
-	printk("%spcpu-alloc: s%zu r%zu d%zu u%zu alloc=%zu*%zu",
+	no_printk("%spcpu-alloc: s%zu r%zu d%zu u%zu alloc=%zu*%zu",
 	       lvl, ai->static_size, ai->reserved_size, ai->dyn_size,
 	       ai->unit_size, ai->alloc_size / ai->atom_size, ai->atom_size);
 
@@ -1962,20 +1962,20 @@ static void pcpu_dump_alloc_info(const char *lvl,
 		for (alloc_end += gi->nr_units / upa;
 		     alloc < alloc_end; alloc++) {
 			if (!(alloc % apl)) {
-				pr_cont("\n");
-				printk("%spcpu-alloc: ", lvl);
+				pr_debug("\n");
+				no_printk("%spcpu-alloc: ", lvl);
 			}
-			pr_cont("[%0*d] ", group_width, group);
+			pr_debug("[%0*d] ", group_width, group);
 
 			for (unit_end += upa; unit < unit_end; unit++)
 				if (gi->cpu_map[unit] != NR_CPUS)
-					pr_cont("%0*d ",
+					pr_debug("%0*d ",
 						cpu_width, gi->cpu_map[unit]);
 				else
-					pr_cont("%s ", empty_str);
+					pr_debug("%s ", empty_str);
 		}
 	}
-	pr_cont("\n");
+	pr_debug("\n");
 }
 
 /**
@@ -2052,8 +2052,8 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 #define PCPU_SETUP_BUG_ON(cond)	do {					\
 	if (unlikely(cond)) {						\
-		pr_emerg("failed to initialize, %s\n", #cond);		\
-		pr_emerg("cpu_possible_mask=%*pb\n",			\
+		pr_debug("failed to initialize, %s\n", #cond);		\
+		pr_debug("cpu_possible_mask=%*pb\n",			\
 			 cpumask_pr_args(cpu_possible_mask));		\
 		pcpu_dump_alloc_info(KERN_EMERG, ai);			\
 		BUG();							\
@@ -2229,7 +2229,7 @@ static int __init percpu_alloc_setup(char *str)
 		pcpu_chosen_fc = PCPU_FC_PAGE;
 #endif
 	else
-		pr_warn("unknown allocator %s specified\n", str);
+		pr_debug("unknown allocator %s specified\n", str);
 
 	return 0;
 }
@@ -2499,7 +2499,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 
 	/* warn if maximum distance is further than 75% of vmalloc space */
 	if (max_distance > VMALLOC_TOTAL * 3 / 4) {
-		pr_warn("max_distance=0x%lx too large for vmalloc space 0x%lx\n",
+		pr_debug("max_distance=0x%lx too large for vmalloc space 0x%lx\n",
 				max_distance, VMALLOC_TOTAL);
 #ifdef CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK
 		/* and fail if we have fallback */
@@ -2534,7 +2534,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 		ai->groups[group].base_offset = areas[group] - base;
 	}
 
-	pr_info("Embedded %zu pages/cpu s%zu r%zu d%zu u%zu\n",
+	pr_debug("Embedded %zu pages/cpu s%zu r%zu d%zu u%zu\n",
 		PFN_DOWN(size_sum), ai->static_size, ai->reserved_size,
 		ai->dyn_size, ai->unit_size);
 
@@ -2615,7 +2615,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 
 			ptr = alloc_fn(cpu, PAGE_SIZE, PAGE_SIZE);
 			if (!ptr) {
-				pr_warn("failed to allocate %s page for cpu%u\n",
+				pr_debug("failed to allocate %s page for cpu%u\n",
 						psize_str, cpu);
 				goto enomem;
 			}
@@ -2656,7 +2656,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 	}
 
 	/* we're ready, commit */
-	pr_info("%d %s pages/cpu s%zu r%zu d%zu\n",
+	pr_debug("%d %s pages/cpu s%zu r%zu d%zu\n",
 		unit_pages, psize_str, ai->static_size,
 		ai->reserved_size, ai->dyn_size);
 

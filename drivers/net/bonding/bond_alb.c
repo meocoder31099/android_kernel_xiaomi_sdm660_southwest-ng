@@ -1692,7 +1692,7 @@ void bond_alb_handle_link_change(struct bonding *bond, struct slave *slave, char
 
 	if (bond_is_nondyn_tlb(bond)) {
 		if (bond_update_slave_arr(bond, NULL))
-			pr_err("Failed to build slave-array for TLB mode.\n");
+			pr_debug("Failed to build slave-array for TLB mode.\n");
 	}
 }
 

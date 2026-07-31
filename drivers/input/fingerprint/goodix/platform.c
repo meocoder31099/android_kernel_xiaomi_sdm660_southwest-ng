@@ -28,26 +28,26 @@ int gf_parse_dts(struct gf_dev *gf_dev)
 
 	gf_dev->reset_gpio = of_get_named_gpio(np, "fp-gpio-reset", 0);
 	if (gf_dev->reset_gpio < 0) {
-		pr_err("falied to get reset gpio!\n");
+		pr_debug("falied to get reset gpio!\n");
 		return gf_dev->reset_gpio;
 	}
 
 	rc = devm_gpio_request(dev, gf_dev->reset_gpio, "goodix_reset");
 	if (rc) {
-		pr_err("failed to request reset gpio, rc = %d\n", rc);
+		pr_debug("failed to request reset gpio, rc = %d\n", rc);
 		goto err_reset;
 	}
 	gpio_direction_output(gf_dev->reset_gpio, 1);
 
 	gf_dev->irq_gpio = of_get_named_gpio(np, "fp-gpio-irq", 0);
 	if (gf_dev->irq_gpio < 0) {
-		pr_err("falied to get irq gpio!\n");
+		pr_debug("falied to get irq gpio!\n");
 		return gf_dev->irq_gpio;
 	}
 
 	rc = devm_gpio_request(dev, gf_dev->irq_gpio, "goodix_irq");
 	if (rc) {
-		pr_err("failed to request irq gpio, rc = %d\n", rc);
+		pr_debug("failed to request irq gpio, rc = %d\n", rc);
 		goto err_irq;
 	}
 	gpio_direction_input(gf_dev->irq_gpio);
@@ -60,15 +60,15 @@ err_reset:
 
 void gf_cleanup(struct gf_dev *gf_dev)
 {
-	pr_info("[info] %s\n", __func__);
+	pr_debug("[info] %s\n", __func__);
 
 	if (gpio_is_valid(gf_dev->irq_gpio)) {
 		gpio_free(gf_dev->irq_gpio);
-		pr_info("remove irq_gpio success\n");
+		pr_debug("remove irq_gpio success\n");
 	}
 	if (gpio_is_valid(gf_dev->reset_gpio)) {
 		gpio_free(gf_dev->reset_gpio);
-		pr_info("remove reset_gpio success\n");
+		pr_debug("remove reset_gpio success\n");
 	}
 }
 
@@ -92,7 +92,7 @@ int gf_power_off(struct gf_dev *gf_dev)
 int gf_hw_reset(struct gf_dev *gf_dev, unsigned int delay_ms)
 {
 	if (gf_dev == NULL) {
-		pr_info("Input buff is NULL.\n");
+		pr_debug("Input buff is NULL.\n");
 		return -1;
 	}
 	gpio_direction_output(gf_dev->reset_gpio, 1);
@@ -106,7 +106,7 @@ int gf_hw_reset(struct gf_dev *gf_dev, unsigned int delay_ms)
 int gf_irq_num(struct gf_dev *gf_dev)
 {
 	if (gf_dev == NULL) {
-		pr_info("Input buff is NULL.\n");
+		pr_debug("Input buff is NULL.\n");
 		return -1;
 	} else {
 		return gpio_to_irq(gf_dev->irq_gpio);

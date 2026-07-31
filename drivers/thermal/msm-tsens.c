@@ -123,13 +123,13 @@ static int get_device_tree_data(struct platform_device *pdev,
 	u32 min_temp_id;
 
 	if (!of_match_node(tsens_table, of_node)) {
-		pr_err("Need to read SoC specific fuse map\n");
+		pr_debug("Need to read SoC specific fuse map\n");
 		return -ENODEV;
 	}
 
 	id = of_match_node(tsens_table, of_node);
 	if (id == NULL) {
-		pr_err("can not find tsens_table of_node\n");
+		pr_debug("can not find tsens_table of_node\n");
 		return -ENODEV;
 	}
 
@@ -139,7 +139,7 @@ static int get_device_tree_data(struct platform_device *pdev,
 	tmdev->pdev = pdev;
 
 	if (!tmdev->ops || !tmdev->ops->hw_init || !tmdev->ops->get_temp) {
-		pr_err("Invalid ops\n");
+		pr_debug("Invalid ops\n");
 		return -EINVAL;
 	}
 
@@ -147,14 +147,14 @@ static int get_device_tree_data(struct platform_device *pdev,
 	res_tsens_mem = platform_get_resource_byname(pdev,
 				IORESOURCE_MEM, "tsens_srot_physical");
 	if (!res_tsens_mem) {
-		pr_err("Could not get tsens physical address resource\n");
+		pr_debug("Could not get tsens physical address resource\n");
 		return -EINVAL;
 	}
 
 	tmdev->tsens_srot_addr = devm_ioremap_resource(&pdev->dev,
 							res_tsens_mem);
 	if (IS_ERR(tmdev->tsens_srot_addr)) {
-		dev_err(&pdev->dev, "Failed to IO map TSENS registers.\n");
+		dev_dbg(&pdev->dev, "Failed to IO map TSENS registers.\n");
 		return PTR_ERR(tmdev->tsens_srot_addr);
 	}
 
@@ -162,14 +162,14 @@ static int get_device_tree_data(struct platform_device *pdev,
 	res_tsens_mem = platform_get_resource_byname(pdev,
 				IORESOURCE_MEM, "tsens_tm_physical");
 	if (!res_tsens_mem) {
-		pr_err("Could not get tsens physical address resource\n");
+		pr_debug("Could not get tsens physical address resource\n");
 		return -EINVAL;
 	}
 
 	tmdev->tsens_tm_addr = devm_ioremap_resource(&pdev->dev,
 								res_tsens_mem);
 	if (IS_ERR(tmdev->tsens_tm_addr)) {
-		dev_err(&pdev->dev, "Failed to IO map TSENS TM registers.\n");
+		dev_dbg(&pdev->dev, "Failed to IO map TSENS TM registers.\n");
 		return PTR_ERR(tmdev->tsens_tm_addr);
 	}
 
@@ -184,12 +184,12 @@ static int get_device_tree_data(struct platform_device *pdev,
 		tmdev->tsens_calib_addr = devm_ioremap_resource(&pdev->dev,
 								res_tsens_mem);
 		if (IS_ERR(tmdev->tsens_calib_addr)) {
-			dev_err(&pdev->dev, "Failed to IO map TSENS EEPROM registers.\n");
+			dev_dbg(&pdev->dev, "Failed to IO map TSENS EEPROM registers.\n");
 			rc = PTR_ERR(tmdev->tsens_calib_addr);
 		}  else {
 			rc = tsens_calib(tmdev);
 			if (rc) {
-				pr_err("Error initializing TSENS controller\n");
+				pr_debug("Error initializing TSENS controller\n");
 				return rc;
 			}
 		}
@@ -228,7 +228,7 @@ static int tsens_thermal_zone_register(struct tsens_device *tmdev)
 	}
 
 	if (sensor_missing == TSENS_MAX_SENSORS) {
-		pr_err("No TSENS sensors to register?\n");
+		pr_debug("No TSENS sensors to register?\n");
 		return -ENODEV;
 	}
 
@@ -240,7 +240,7 @@ static int tsens_thermal_zone_register(struct tsens_device *tmdev)
 			&tmdev->pdev->dev, tmdev->min_temp_sensor_id,
 			&tmdev->min_temp, &tsens_tm_min_thermal_zone_ops);
 		if (IS_ERR(tmdev->min_temp.tzd))
-			pr_err("Error registering min temp sensor\n");
+			pr_debug("Error registering min temp sensor\n");
 	}
 
 	/* Register virtual thermal sensors. */
@@ -267,7 +267,7 @@ static void tsens_therm_fwk_notify(struct work_struct *work)
 		if (tmdev->ops->sensor_en(tmdev, i)) {
 			rc = tsens_get_temp(&tmdev->sensor[i], &temp);
 			if (rc) {
-				pr_err("%s: Error:%d reading temp sensor:%d\n",
+				pr_debug("%s: Error:%d reading temp sensor:%d\n",
 					__func__, rc, i);
 				continue;
 			}
@@ -279,7 +279,7 @@ static void tsens_therm_fwk_notify(struct work_struct *work)
 	if (tmdev->min_temp_sensor_id != MIN_TEMP_DEF_OFFSET) {
 		rc = tsens_get_temp(&tmdev->min_temp, &temp);
 		if (rc) {
-			pr_err("%s: Error:%d reading temp sensor:%d\n",
+			pr_debug("%s: Error:%d reading temp sensor:%d\n",
 				   __func__, rc, i);
 			return;
 		}
@@ -307,13 +307,13 @@ int tsens_tm_probe(struct platform_device *pdev)
 
 	rc = get_device_tree_data(pdev, tmdev);
 	if (rc) {
-		pr_err("Error reading TSENS DT\n");
+		pr_debug("Error reading TSENS DT\n");
 		return rc;
 	}
 
 	rc = tsens_init(tmdev);
 	if (rc) {
-		pr_err("Error initializing TSENS controller\n");
+		pr_debug("Error initializing TSENS controller\n");
 		return rc;
 	}
 
@@ -329,13 +329,13 @@ int tsens_tm_probe(struct platform_device *pdev)
 	INIT_WORK(&tmdev->therm_fwk_notify, tsens_therm_fwk_notify);
 	rc = tsens_thermal_zone_register(tmdev);
 	if (rc) {
-		pr_err("Error registering the thermal zone\n");
+		pr_debug("Error registering the thermal zone\n");
 		return rc;
 	}
 
 	rc = tsens_register_interrupts(tmdev);
 	if (rc < 0) {
-		pr_err("TSENS interrupt register failed:%d\n", rc);
+		pr_debug("TSENS interrupt register failed:%d\n", rc);
 		return rc;
 	}
 
@@ -346,7 +346,7 @@ int tsens_tm_probe(struct platform_device *pdev)
 	tmdev->ipc_log0 = ipc_log_context_create(IPC_LOGPAGES,
 							tsens_name, 0);
 	if (!tmdev->ipc_log0)
-		pr_err("%s : unable to create IPC Logging 0 for tsens %pa\n",
+		pr_debug("%s : unable to create IPC Logging 0 for tsens %pa\n",
 					__func__, &tmdev->phys_addr_tm);
 
 	snprintf(tsens_name, sizeof(tsens_name), "tsens_%pa_1",
@@ -355,7 +355,7 @@ int tsens_tm_probe(struct platform_device *pdev)
 	tmdev->ipc_log1 = ipc_log_context_create(IPC_LOGPAGES,
 							tsens_name, 0);
 	if (!tmdev->ipc_log1)
-		pr_err("%s : unable to create IPC Logging 1 for tsens %pa\n",
+		pr_debug("%s : unable to create IPC Logging 1 for tsens %pa\n",
 					__func__, &tmdev->phys_addr_tm);
 
 	snprintf(tsens_name, sizeof(tsens_name), "tsens_%pa_2",
@@ -364,7 +364,7 @@ int tsens_tm_probe(struct platform_device *pdev)
 	tmdev->ipc_log2 = ipc_log_context_create(IPC_LOGPAGES,
 							tsens_name, 0);
 	if (!tmdev->ipc_log2)
-		pr_err("%s : unable to create IPC Logging 2 for tsens %pa\n",
+		pr_debug("%s : unable to create IPC Logging 2 for tsens %pa\n",
 					__func__, &tmdev->phys_addr_tm);
 #endif
 

@@ -341,7 +341,7 @@ fw_get_filesystem_firmware(struct device *device, struct fw_priv *fw_priv)
 				dev_dbg(device, "loading %s failed with error %d\n",
 					 path, rc);
 			else
-				dev_warn(device, "loading %s failed with error %d\n",
+				dev_dbg(device, "loading %s failed with error %d\n",
 					 path, rc);
 			continue;
 		}
@@ -517,7 +517,7 @@ _request_firmware_prepare(struct firmware **firmware_p, const char *name,
 
 	*firmware_p = firmware = kzalloc(sizeof(*firmware), GFP_KERNEL);
 	if (!firmware) {
-		dev_err(device, "%s: kmalloc(struct firmware) failed\n",
+		dev_dbg(device, "%s: kmalloc(struct firmware) failed\n",
 			__func__);
 		return -ENOMEM;
 	}
@@ -611,7 +611,7 @@ _request_firmware(const struct firmware **firmware_p, const char *name,
 	}
 
 	if (name_contains_dotdot(name)) {
-		dev_warn(device,
+		dev_dbg(device,
 			 "Firmware load for '%s' refused, path contains '..' component\n",
 			 name);
 		ret = -EINVAL;

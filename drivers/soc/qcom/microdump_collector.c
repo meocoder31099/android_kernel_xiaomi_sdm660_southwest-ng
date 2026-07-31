@@ -46,7 +46,7 @@ static int microdump_modem_notifier_nb(struct notifier_block *nb,
 				, SMEM_SSR_REASON_MSS0, &size_reason);
 
 	if (IS_ERR_OR_NULL(crash_reason)) {
-		pr_info("%s: smem %d not available\n",
+		pr_debug("%s: smem %d not available\n",
 				__func__, SMEM_SSR_REASON_MSS0);
 		goto out;
 	}
@@ -58,7 +58,7 @@ static int microdump_modem_notifier_nb(struct notifier_block *nb,
 				, SMEM_SSR_DATA_MSS0, &size_data);
 
 	if (IS_ERR_OR_NULL(crash_data)) {
-		pr_info("%s: smem %d not available\n",
+		pr_debug("%s: smem %d not available\n",
 				__func__, SMEM_SSR_DATA_MSS0);
 		goto out;
 	}
@@ -68,7 +68,7 @@ static int microdump_modem_notifier_nb(struct notifier_block *nb,
 
 	ret = do_ramdump(drv->microdump_dev, segment, 2);
 	if (ret)
-		pr_info("%s: do_ramdump() failed\n", __func__);
+		pr_debug("%s: do_ramdump() failed\n", __func__);
 
 out:
 	return NOTIFY_OK;
@@ -85,7 +85,7 @@ static int microdump_modem_ssr_register_notifier(struct microdump_data *drv)
 			&drv->microdump_modem_ssr_nb);
 
 	if (IS_ERR(drv->microdump_modem_notify_handler)) {
-		pr_err("Modem register notifier failed: %ld\n",
+		pr_debug("Modem register notifier failed: %ld\n",
 			PTR_ERR(drv->microdump_modem_notify_handler));
 		ret = -EINVAL;
 	}
@@ -118,7 +118,7 @@ static int __init microdump_init(void)
 
 	drv->microdump_dev = create_ramdump_device("microdump_modem", NULL);
 	if (!drv->microdump_dev) {
-		pr_err("%s: Unable to create a microdump_modem ramdump device\n"
+		pr_debug("%s: Unable to create a microdump_modem ramdump device\n"
 			, __func__);
 		ret = -ENODEV;
 		goto out_kfree;
@@ -132,7 +132,7 @@ static int __init microdump_init(void)
 	return ret;
 
 out_kfree:
-	pr_err("%s: Failed to register microdump collector\n", __func__);
+	pr_debug("%s: Failed to register microdump collector\n", __func__);
 	kfree(drv);
 	drv = NULL;
 out:

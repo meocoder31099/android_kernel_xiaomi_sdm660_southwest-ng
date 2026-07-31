@@ -98,7 +98,7 @@ int diag_mux_register(int proc, int ctx, struct diag_mux_ops *ops)
 	usb_logger.ops[proc] = ops;
 	err = diag_usb_register(proc, ctx, ops);
 	if (err) {
-		pr_err("diag: MUX: unable to register usb operations for proc: %d, err: %d\n",
+		pr_debug("diag: MUX: unable to register usb operations for proc: %d, err: %d\n",
 		       proc, err);
 		return err;
 	}
@@ -106,7 +106,7 @@ int diag_mux_register(int proc, int ctx, struct diag_mux_ops *ops)
 	md_logger.ops[proc] = ops;
 	err = diag_md_register(proc, ctx, ops);
 	if (err) {
-		pr_err("diag: MUX: unable to register md operations for proc: %d, err: %d\n",
+		pr_debug("diag: MUX: unable to register md operations for proc: %d, err: %d\n",
 		       proc, err);
 		return err;
 	}
@@ -240,7 +240,7 @@ int diag_mux_switch_logging(int proc, int *req_mode, int *peripheral_mask)
 
 	if (*peripheral_mask <= 0 ||
 		(*peripheral_mask > (DIAG_CON_ALL | DIAG_CON_UPD_ALL))) {
-		pr_err("diag: mask %d in %s\n", *peripheral_mask, __func__);
+		pr_debug("diag: mask %d in %s\n", *peripheral_mask, __func__);
 		return -EINVAL;
 	}
 
@@ -258,7 +258,7 @@ int diag_mux_switch_logging(int proc, int *req_mode, int *peripheral_mask)
 			*req_mode = DIAG_MULTI_MODE;
 		break;
 	default:
-		pr_err("diag: Invalid mode %d in %s\n", *req_mode, __func__);
+		pr_debug("diag: Invalid mode %d in %s\n", *req_mode, __func__);
 		return -EINVAL;
 	}
 

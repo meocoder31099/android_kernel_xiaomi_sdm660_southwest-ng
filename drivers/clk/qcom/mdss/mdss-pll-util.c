@@ -22,13 +22,13 @@ int mdss_pll_util_resource_init(struct platform_device *pdev,
 	rc = msm_dss_config_vreg(&pdev->dev,
 				mp->vreg_config, mp->num_vreg, 1);
 	if (rc) {
-		pr_err("Vreg config failed rc=%d\n", rc);
+		pr_debug("Vreg config failed rc=%d\n", rc);
 		goto vreg_err;
 	}
 
 	rc = msm_dss_get_clk(&pdev->dev, mp->clk_config, mp->num_clk);
 	if (rc) {
-		pr_err("Clock get failed rc=%d\n", rc);
+		pr_debug("Clock get failed rc=%d\n", rc);
 		goto clk_err;
 	}
 
@@ -56,7 +56,7 @@ struct dss_vreg *mdss_pll_get_mp_by_reg_name(struct mdss_pll_resources *pll_res
 	int i;
 
 	if ((pll_res == NULL) || (pll_res->mp.vreg_config == NULL)) {
-		pr_err("%s Invalid PLL resource\n", __func__);
+		pr_debug("%s Invalid PLL resource\n", __func__);
 		goto error;
 	}
 
@@ -104,19 +104,19 @@ int mdss_pll_util_resource_enable(struct mdss_pll_resources *pll_res,
 	if (enable) {
 		rc = msm_dss_enable_vreg(mp->vreg_config, mp->num_vreg, enable);
 		if (rc) {
-			pr_err("Failed to enable vregs rc=%d\n", rc);
+			pr_debug("Failed to enable vregs rc=%d\n", rc);
 			goto vreg_err;
 		}
 
 		rc = msm_dss_clk_set_rate(mp->clk_config, mp->num_clk);
 		if (rc) {
-			pr_err("Failed to set clock rate rc=%d\n", rc);
+			pr_debug("Failed to set clock rate rc=%d\n", rc);
 			goto clk_err;
 		}
 
 		rc = msm_dss_enable_clk(mp->clk_config, mp->num_clk, enable);
 		if (rc) {
-			pr_err("clock enable failed rc:%d\n", rc);
+			pr_debug("clock enable failed rc:%d\n", rc);
 			goto clk_err;
 		}
 	} else {
@@ -148,7 +148,7 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 	supply_root_node = of_get_child_by_name(of_node,
 						"qcom,platform-supply-entries");
 	if (!supply_root_node) {
-		pr_err("no supply entry present\n");
+		pr_debug("no supply entry present\n");
 		return rc;
 	}
 
@@ -176,7 +176,7 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 		rc = of_property_read_string(supply_node,
 						"qcom,supply-name", &st);
 		if (rc) {
-			pr_err(":error reading name. rc=%d\n", rc);
+			pr_debug(":error reading name. rc=%d\n", rc);
 			goto error;
 		}
 
@@ -186,7 +186,7 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 		rc = of_property_read_u32(supply_node,
 					"qcom,supply-min-voltage", &tmp);
 		if (rc) {
-			pr_err(": error reading min volt. rc=%d\n", rc);
+			pr_debug(": error reading min volt. rc=%d\n", rc);
 			goto error;
 		}
 		mp->vreg_config[i].min_voltage = tmp;
@@ -194,7 +194,7 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 		rc = of_property_read_u32(supply_node,
 					"qcom,supply-max-voltage", &tmp);
 		if (rc) {
-			pr_err(": error reading max volt. rc=%d\n", rc);
+			pr_debug(": error reading max volt. rc=%d\n", rc);
 			goto error;
 		}
 		mp->vreg_config[i].max_voltage = tmp;
@@ -202,7 +202,7 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 		rc = of_property_read_u32(supply_node,
 					"qcom,supply-enable-load", &tmp);
 		if (rc) {
-			pr_err(": error reading enable load. rc=%d\n", rc);
+			pr_debug(": error reading enable load. rc=%d\n", rc);
 			goto error;
 		}
 		mp->vreg_config[i].enable_load = tmp;
@@ -210,7 +210,7 @@ static int mdss_pll_util_parse_dt_supply(struct platform_device *pdev,
 		rc = of_property_read_u32(supply_node,
 					"qcom,supply-disable-load", &tmp);
 		if (rc) {
-			pr_err(": error reading disable load. rc=%d\n", rc);
+			pr_debug(": error reading disable load. rc=%d\n", rc);
 			goto error;
 		}
 		mp->vreg_config[i].disable_load = tmp;
@@ -285,7 +285,7 @@ static int mdss_pll_util_parse_dt_clock(struct platform_device *pdev,
 	mp->num_clk = of_property_count_strings(pdev->dev.of_node,
 							"clock-names");
 	if (mp->num_clk <= 0) {
-		pr_err("clocks are not defined\n");
+		pr_debug("clocks are not defined\n");
 		goto clk_err;
 	}
 
@@ -346,7 +346,7 @@ static int mdss_pll_util_parse_dt_dfps_sub(struct platform_device *pdev,
 
 	addr = of_get_address(pnode, 0, &size, NULL);
 	if (!addr) {
-		pr_err("failed to parse the dfps memory address\n");
+		pr_debug("failed to parse the dfps memory address\n");
 		rc = -EINVAL;
 		goto pnode_err;
 	}
@@ -371,7 +371,7 @@ static int mdss_pll_util_parse_dt_dfps_sub(struct platform_device *pdev,
 	pll_res->dfps = kzalloc(sizeof(struct dfps_info), GFP_KERNEL);
 	if (IS_ERR_OR_NULL(pll_res->dfps)) {
 		rc = PTR_ERR(pll_res->dfps);
-		pr_err("couldn't allocate dfps kernel memory\n");
+		pr_debug("couldn't allocate dfps kernel memory\n");
 		goto addr_err;
 	}
 
@@ -404,13 +404,13 @@ int mdss_pll_util_resource_parse(struct platform_device *pdev,
 
 	rc = mdss_pll_util_parse_dt_supply(pdev, pll_res);
 	if (rc) {
-		pr_err("vreg parsing failed rc=%d\n", rc);
+		pr_debug("vreg parsing failed rc=%d\n", rc);
 		goto end;
 	}
 
 	rc = mdss_pll_util_parse_dt_clock(pdev, pll_res);
 	if (rc) {
-		pr_err("clock name parsing failed rc=%d\n", rc);
+		pr_debug("clock name parsing failed rc=%d\n", rc);
 		goto clk_err;
 	}
 
@@ -430,5 +430,5 @@ void mdss_pll_util_parse_dt_dfps(struct platform_device *pdev,
 
 	rc = mdss_pll_util_parse_dt_dfps_sub(pdev, pll_res);
 	if (rc)
-		pr_err("dfps not enabled!\n");
+		pr_debug("dfps not enabled!\n");
 }

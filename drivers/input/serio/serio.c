@@ -113,7 +113,7 @@ static int serio_bind_driver(struct serio *serio, struct serio_driver *drv)
 
 		error = device_bind_driver(&serio->dev);
 		if (error) {
-			dev_warn(&serio->dev,
+			dev_dbg(&serio->dev,
 				 "device_bind_driver() failed for %s (%s) and %s, error: %d\n",
 				 serio->phys, serio->name,
 				 drv->description, error);
@@ -131,7 +131,7 @@ static void serio_find_driver(struct serio *serio)
 
 	error = device_attach(&serio->dev);
 	if (error < 0 && error != -EPROBE_DEFER)
-		dev_warn(&serio->dev,
+		dev_dbg(&serio->dev,
 			 "device_attach() failed for %s (%s), error: %d\n",
 			 serio->phys, serio->name, error);
 }
@@ -275,13 +275,13 @@ static int serio_queue_event(void *object, struct module *owner,
 
 	event = kmalloc(sizeof(struct serio_event), GFP_ATOMIC);
 	if (!event) {
-		pr_err("Not enough memory to queue event %d\n", event_type);
+		pr_debug("Not enough memory to queue event %d\n", event_type);
 		retval = -ENOMEM;
 		goto out;
 	}
 
 	if (!try_module_get(owner)) {
-		pr_warn("Can't get module reference, dropping event %d\n",
+		pr_debug("Can't get module reference, dropping event %d\n",
 			event_type);
 		kfree(event);
 		retval = -EINVAL;
@@ -553,7 +553,7 @@ static void serio_add_port(struct serio *serio)
 
 	error = device_add(&serio->dev);
 	if (error)
-		dev_err(&serio->dev,
+		dev_dbg(&serio->dev,
 			"device_add() failed for %s (%s), error: %d\n",
 			serio->phys, serio->name, error);
 }
@@ -819,7 +819,7 @@ static void serio_attach_driver(struct serio_driver *drv)
 
 	error = driver_attach(&drv->driver);
 	if (error)
-		pr_warn("driver_attach() failed for %s with error %d\n",
+		pr_debug("driver_attach() failed for %s with error %d\n",
 			drv->driver.name, error);
 }
 
@@ -840,7 +840,7 @@ int __serio_register_driver(struct serio_driver *drv, struct module *owner, cons
 
 	error = driver_register(&drv->driver);
 	if (error) {
-		pr_err("driver_register() failed for %s, error: %d\n",
+		pr_debug("driver_register() failed for %s, error: %d\n",
 			drv->driver.name, error);
 		return error;
 	}
@@ -955,7 +955,7 @@ static int serio_resume(struct device *dev)
 	if (serio->drv && serio->drv->fast_reconnect) {
 		error = serio->drv->fast_reconnect(serio);
 		if (error && error != -ENOENT)
-			dev_warn(dev, "fast reconnect failed with error %d\n",
+			dev_dbg(dev, "fast reconnect failed with error %d\n",
 				 error);
 	}
 	mutex_unlock(&serio->drv_mutex);
@@ -1043,7 +1043,7 @@ static int __init serio_init(void)
 
 	error = bus_register(&serio_bus);
 	if (error) {
-		pr_err("Failed to register serio bus, error: %d\n", error);
+		pr_debug("Failed to register serio bus, error: %d\n", error);
 		return error;
 	}
 

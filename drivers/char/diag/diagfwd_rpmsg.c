@@ -820,7 +820,7 @@ static void rpmsg_late_init(struct diag_rpmsg_info *rpmsg_info)
 int diag_rpmsg_init_peripheral(uint8_t peripheral)
 {
 	if (peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__,
 			peripheral);
 		return -EINVAL;
 	}
@@ -849,7 +849,7 @@ static void __diag_rpmsg_init(struct diag_rpmsg_info *rpmsg_info)
 	strlcat(wq_name, rpmsg_info->name, sizeof(wq_name));
 	rpmsg_info->wq = create_singlethread_workqueue(wq_name);
 	if (!rpmsg_info->wq) {
-		pr_err("diag: In %s, unable to create workqueue for rpmsg ch:%s\n",
+		pr_debug("diag: In %s, unable to create workqueue for rpmsg ch:%s\n",
 			   __func__, rpmsg_info->name);
 		return;
 	}

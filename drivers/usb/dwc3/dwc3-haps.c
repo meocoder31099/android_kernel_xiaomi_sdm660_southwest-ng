@@ -43,7 +43,7 @@ static int dwc3_haps_probe(struct pci_dev *pci,
 
 	ret = pcim_enable_device(pci);
 	if (ret) {
-		dev_err(dev, "failed to enable pci device\n");
+		dev_dbg(dev, "failed to enable pci device\n");
 		return -ENODEV;
 	}
 
@@ -70,7 +70,7 @@ static int dwc3_haps_probe(struct pci_dev *pci,
 
 	ret = platform_device_add_resources(dwc->dwc3, res, ARRAY_SIZE(res));
 	if (ret) {
-		dev_err(dev, "couldn't add resources to dwc3 device\n");
+		dev_dbg(dev, "couldn't add resources to dwc3 device\n");
 		goto err;
 	}
 
@@ -83,7 +83,7 @@ static int dwc3_haps_probe(struct pci_dev *pci,
 
 	ret = platform_device_add(dwc->dwc3);
 	if (ret) {
-		dev_err(dev, "failed to register dwc3 device\n");
+		dev_dbg(dev, "failed to register dwc3 device\n");
 		goto err;
 	}
 

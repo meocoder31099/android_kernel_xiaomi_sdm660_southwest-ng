@@ -442,7 +442,7 @@ static int hwrng_fillfn(void *unused)
 		mutex_unlock(&reading_mutex);
 		put_rng(rng);
 		if (rc <= 0) {
-			pr_warn("hwrng: no data available\n");
+			pr_debug("hwrng: no data available\n");
 			msleep_interruptible(10000);
 			continue;
 		}
@@ -458,7 +458,7 @@ static void start_khwrngd(void)
 {
 	hwrng_fill = kthread_run(hwrng_fillfn, NULL, "hwrng");
 	if (IS_ERR(hwrng_fill)) {
-		pr_err("hwrng_fill thread creation failed\n");
+		pr_debug("hwrng_fill thread creation failed\n");
 		hwrng_fill = NULL;
 	}
 }

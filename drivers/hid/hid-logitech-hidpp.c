@@ -3074,7 +3074,7 @@ static int hidpp_probe(struct hid_device *hdev, const struct hid_device_id *id)
 		}
 		ret = hid_hw_open(hdev);
 		if (ret < 0) {
-			dev_err(&hdev->dev, "%s:hid_hw_open returned error:%d\n",
+			dev_dbg(&hdev->dev, "%s:hid_hw_open returned error:%d\n",
 				__func__, ret);
 			hid_hw_stop(hdev);
 			goto hid_hw_start_fail;

@@ -40,19 +40,19 @@ static struct msm_cdc_pinctrl_info *msm_cdc_pinctrl_get_gpiodata(
 	struct msm_cdc_pinctrl_info *gpio_data;
 
 	if (!np) {
-		pr_err("%s: device node is null\n", __func__);
+		pr_debug("%s: device node is null\n", __func__);
 		return NULL;
 	}
 
 	pdev = of_find_device_by_node(np);
 	if (!pdev) {
-		pr_err("%s: platform device not found!\n", __func__);
+		pr_debug("%s: platform device not found!\n", __func__);
 		return NULL;
 	}
 
 	gpio_data = dev_get_drvdata(&pdev->dev);
 	if (!gpio_data)
-		dev_err(&pdev->dev, "%s: cannot find cdc gpio info\n",
+		dev_dbg(&pdev->dev, "%s: cannot find cdc gpio info\n",
 			__func__);
 
 	return gpio_data;
@@ -95,7 +95,7 @@ int msm_cdc_pinctrl_select_sleep_state(struct device_node *np)
 		return -EINVAL;
 
 	if (!gpio_data->pinctrl_sleep) {
-		pr_err("%s: pinctrl sleep state is null\n", __func__);
+		pr_debug("%s: pinctrl sleep state is null\n", __func__);
 		return -EINVAL;
 	}
 	gpio_data->state = false;
@@ -120,7 +120,7 @@ int msm_cdc_pinctrl_select_alt_active_state(struct device_node *np)
 		return -EINVAL;
 
 	if (!gpio_data->pinctrl_alt_active) {
-		pr_err("%s: pinctrl alt_active state is null\n", __func__);
+		pr_debug("%s: pinctrl alt_active state is null\n", __func__);
 		return -EINVAL;
 	}
 	gpio_data->state = true;
@@ -145,7 +145,7 @@ int msm_cdc_pinctrl_select_active_state(struct device_node *np)
 		return -EINVAL;
 
 	if (!gpio_data->pinctrl_active) {
-		pr_err("%s: pinctrl active state is null\n", __func__);
+		pr_debug("%s: pinctrl active state is null\n", __func__);
 		return -EINVAL;
 	}
 	gpio_data->state = true;
@@ -234,7 +234,7 @@ static int msm_cdc_pinctrl_probe(struct platform_device *pdev)
 
 	gpio_data->pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR_OR_NULL(gpio_data->pinctrl)) {
-		dev_err(&pdev->dev, "%s: Cannot get cdc gpio pinctrl:%ld\n",
+		dev_dbg(&pdev->dev, "%s: Cannot get cdc gpio pinctrl:%ld\n",
 			__func__, PTR_ERR(gpio_data->pinctrl));
 		ret = PTR_ERR(gpio_data->pinctrl);
 		goto err_pctrl_get;
@@ -243,7 +243,7 @@ static int msm_cdc_pinctrl_probe(struct platform_device *pdev)
 	gpio_data->pinctrl_active = pinctrl_lookup_state(
 					gpio_data->pinctrl, "aud_active");
 	if (IS_ERR_OR_NULL(gpio_data->pinctrl_active)) {
-		dev_err(&pdev->dev, "%s: Cannot get aud_active pinctrl state:%ld\n",
+		dev_dbg(&pdev->dev, "%s: Cannot get aud_active pinctrl state:%ld\n",
 			__func__, PTR_ERR(gpio_data->pinctrl_active));
 		ret = PTR_ERR(gpio_data->pinctrl_active);
 		goto err_lookup_state;
@@ -252,7 +252,7 @@ static int msm_cdc_pinctrl_probe(struct platform_device *pdev)
 	gpio_data->pinctrl_sleep = pinctrl_lookup_state(
 					gpio_data->pinctrl, "aud_sleep");
 	if (IS_ERR_OR_NULL(gpio_data->pinctrl_sleep)) {
-		dev_err(&pdev->dev, "%s: Cannot get aud_sleep pinctrl state:%ld\n",
+		dev_dbg(&pdev->dev, "%s: Cannot get aud_sleep pinctrl state:%ld\n",
 			__func__, PTR_ERR(gpio_data->pinctrl_sleep));
 		ret = PTR_ERR(gpio_data->pinctrl_sleep);
 		goto err_lookup_state;
@@ -271,7 +271,7 @@ static int msm_cdc_pinctrl_probe(struct platform_device *pdev)
 		ret = pinctrl_select_state(gpio_data->pinctrl,
 					   gpio_data->pinctrl_sleep);
 		if (ret)
-			dev_err(&pdev->dev, "%s: set cdc gpio sleep state fail: %d\n",
+			dev_dbg(&pdev->dev, "%s: set cdc gpio sleep state fail: %d\n",
 				__func__, ret);
 	}
 
@@ -284,7 +284,7 @@ static int msm_cdc_pinctrl_probe(struct platform_device *pdev)
 		if (of_property_read_u32_array(pdev->dev.of_node,
 					   "qcom,chip-wakeup-maskbit",
 					   gpio_data->chip_wakeup_maskbit, count)) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"chip-wakeup-maskbit needed if chip-wakeup-reg is defined!\n");
 			goto cdc_tlmm_gpio;
 		}
@@ -328,7 +328,7 @@ cdc_rst:
 	if (gpio_is_valid(gpio_data->gpio)) {
 		ret = gpio_request(gpio_data->gpio, "MSM_CDC_RESET");
 		if (ret) {
-			dev_err(&pdev->dev, "%s: Failed to request gpio %d\n",
+			dev_dbg(&pdev->dev, "%s: Failed to request gpio %d\n",
 				__func__, gpio_data->gpio);
 			goto err_lookup_state;
 		}

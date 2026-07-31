@@ -380,7 +380,7 @@ struct blk_mq_tags *blk_mq_init_tags(unsigned int total_tags,
 	struct ext_blk_mq_tags *etags;
 
 	if (total_tags > BLK_MQ_TAG_MAX) {
-		pr_err("blk-mq: tag depth too large\n");
+		pr_debug("blk-mq: tag depth too large\n");
 		return NULL;
 	}
 

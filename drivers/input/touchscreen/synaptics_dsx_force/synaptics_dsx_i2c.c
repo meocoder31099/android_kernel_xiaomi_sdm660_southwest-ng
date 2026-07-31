@@ -300,13 +300,13 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 
 	retval = of_property_read_string(np, "synaptics,short-jdi-25", &bdata->short_test25);
 	if (retval && (retval != -EINVAL)) {
-		dev_err(dev, "Unable to read jdi short type 25 value\n");
+		dev_dbg(dev, "Unable to read jdi short type 25 value\n");
 		bdata->short_test25 = NULL;
 	}
 
 	retval = of_property_read_string(np, "synaptics,short-jdi-26", &bdata->short_test26);
 	if (retval && (retval != -EINVAL)) {
-		dev_err(dev, "Unable to read jdi short type 26 value\n");
+		dev_dbg(dev, "Unable to read jdi short type 26 value\n");
 		bdata->short_test26 = NULL;
 	}
 
@@ -356,7 +356,7 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 			bdata->tp_id_bytes = NULL;
 		}
 	} else {
-		dev_err(dev, "Don't know which byte of lockdown info to distinguish TP\n");
+		dev_dbg(dev, "Don't know which byte of lockdown info to distinguish TP\n");
 		bdata->tp_id_num = 0;
 		bdata->tp_id_bytes = NULL;
 	}
@@ -367,14 +367,14 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 	retval = of_property_read_u32(np, "synaptics,config-array-size",
 		&bdata->config_array_size);
 	if (retval < 0) {
-		dev_err(dev, "Cannot get config array size\n");
+		dev_dbg(dev, "Cannot get config array size\n");
 		return retval;
 	}
 
 	bdata->config_array = devm_kzalloc(dev, bdata->config_array_size *
 					sizeof(struct synaptics_dsx_config_info), GFP_KERNEL);
 	if (!bdata->config_array) {
-		dev_err(dev, "Unable to allocate memory\n");
+		dev_dbg(dev, "Unable to allocate memory\n");
 		return -ENOMEM;
 	}
 
@@ -390,7 +390,7 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 		retval = of_property_read_string(temp, "synaptics,chip-id-name",
 			&config_info->chip_id_name);
 		if (retval && (retval != -EINVAL)) {
-			dev_err(dev, "Unable to read chip id name\n");
+			dev_dbg(dev, "Unable to read chip id name\n");
 			return retval;
 		}
 
@@ -403,7 +403,7 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 			factory_param = devm_kzalloc(dev, bdata->config_array_size *
 						sizeof(struct synaptics_dsx_factory_param), GFP_KERNEL);
 			if (!factory_param) {
-				dev_err(dev, "Unable to allocate memory\n");
+				dev_dbg(dev, "Unable to allocate memory\n");
 				return -ENOMEM;
 			}
 
@@ -654,7 +654,7 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 		prop = of_find_property(temp, "synaptics,tp-id", NULL);
 		if (prop && prop->length) {
 			if (bdata->tp_id_num != prop->length / sizeof(u8)) {
-				dev_err(dev, "Invalid TP id length\n");
+				dev_dbg(dev, "Invalid TP id length\n");
 				return -EINVAL;
 			}
 			config_info->tp_ids = devm_kzalloc(dev,
@@ -667,21 +667,21 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 					config_info->tp_ids,
 					bdata->tp_id_num);
 			if (retval < 0) {
-				dev_err(dev, "Error reading TP id\n");
+				dev_dbg(dev, "Error reading TP id\n");
 				return -EINVAL;
 			}
 		} else if (bdata->tp_id_num == 0) {
 			/* No TP id indicated, skip */
 			config_info->tp_ids = NULL;
 		} else {
-			dev_err(dev, "Cannot find TP id\n");
+			dev_dbg(dev, "Cannot find TP id\n");
 			return -EINVAL;
 		}
 
 		retval = of_property_read_string(temp, "synaptics,fw-name",
 			&config_info->fw_name);
 		if (retval && (retval != -EINVAL)) {
-			dev_err(dev, "Unable to read firmware name\n");
+			dev_dbg(dev, "Unable to read firmware name\n");
 			return retval;
 		}
 #ifdef CONFIG_SYNAPTICS_TOUCH_COUNT_DUMP
@@ -689,9 +689,9 @@ static int parse_dt(struct device *dev, struct synaptics_dsx_board_data *bdata)
 			retval = of_property_read_string(temp, "synaptics,clicknum-file-name",
 				&config_info->clicknum_file_name);
 			if (retval && (retval != -EINVAL)) {
-				dev_err(dev, "Unable to read click count file name\n");
+				dev_dbg(dev, "Unable to read click count file name\n");
 			} else
-				dev_err(dev, "%s\n", config_info->clicknum_file_name);
+				dev_dbg(dev, "%s\n", config_info->clicknum_file_name);
 		}
 #endif
 		config_info++;
@@ -712,7 +712,7 @@ static int synaptics_rmi4_i2c_alloc_buf(struct synaptics_rmi4_data *rmi4_data,
 			kfree(wr_buf);
 		wr_buf = kzalloc(count, GFP_KERNEL);
 		if (!wr_buf) {
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: Failed to alloc mem for buffer\n",
 					__func__);
 			buf_size = 0;
@@ -764,7 +764,7 @@ static int synaptics_rmi4_i2c_set_page(struct synaptics_rmi4_data *rmi4_data,
 				retval = PAGE_SELECT_LEN;
 				break;
 			}
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: I2C retry %d\n",
 					__func__, retry + 1);
 
@@ -843,7 +843,7 @@ static int synaptics_rmi4_i2c_read(struct synaptics_rmi4_data *rmi4_data,
 					break;
 			}
 
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: I2C retry %d\n",
 					__func__, retry + 1);
 			msleep(20);
@@ -857,7 +857,7 @@ static int synaptics_rmi4_i2c_read(struct synaptics_rmi4_data *rmi4_data,
 		}
 
 		if (retry == SYN_I2C_RETRY_TIMES) {
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: I2C read over retry limit\n",
 					__func__);
 			retval = -EIO;
@@ -920,7 +920,7 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 		wr_buf[0] = addr & MASK_8BIT;
 		retval = secure_memcpy(&wr_buf[1], write_size, &data[index], write_size, write_size);
 		if (retval < 0) {
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: Failed to copy data\n",
 					__func__);
 			goto exit;
@@ -931,7 +931,7 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 				retval = length;
 				break;
 			}
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: I2C retry %d\n",
 					__func__, retry + 1);
 			msleep(20);
@@ -943,7 +943,7 @@ static int synaptics_rmi4_i2c_write(struct synaptics_rmi4_data *rmi4_data,
 		}
 
 		if (retry == SYN_I2C_RETRY_TIMES) {
-			dev_err(rmi4_data->pdev->dev.parent,
+			dev_dbg(rmi4_data->pdev->dev.parent,
 					"%s: I2C write over retry limit\n",
 					__func__);
 			retval = -EIO;
@@ -979,7 +979,7 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 
 	if (!i2c_check_functionality(client->adapter,
 			I2C_FUNC_SMBUS_BYTE_DATA)) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: SMBus byte data commands not supported by host\n",
 				__func__);
 		return -EIO;
@@ -989,7 +989,7 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 			sizeof(struct platform_device),
 			GFP_KERNEL);
 	if (!synaptics_dsx_i2c_device) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: Failed to allocate memory for synaptics_dsx_i2c_device\n",
 				__func__);
 		return -ENOMEM;
@@ -1001,7 +1001,7 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 				sizeof(struct synaptics_dsx_board_data),
 				GFP_KERNEL);
 		if (!hw_if.board_data) {
-			dev_err(&client->dev,
+			dev_dbg(&client->dev,
 					"%s: Failed to allocate memory for board data\n",
 					__func__);
 			return -ENOMEM;
@@ -1010,7 +1010,7 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 				sizeof(struct synaptics_dsx_button_map),
 				GFP_KERNEL);
 		if (!hw_if.board_data->cap_button_map) {
-			dev_err(&client->dev,
+			dev_dbg(&client->dev,
 					"%s: Failed to allocate memory for 0D button map\n",
 					__func__);
 			return -ENOMEM;
@@ -1019,7 +1019,7 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 				sizeof(struct synaptics_dsx_button_map),
 				GFP_KERNEL);
 		if (!hw_if.board_data->vir_button_map) {
-			dev_err(&client->dev,
+			dev_dbg(&client->dev,
 					"%s: Failed to allocate memory for virtual button map\n",
 					__func__);
 			return -ENOMEM;
@@ -1042,7 +1042,7 @@ static int synaptics_rmi4_i2c_probe(struct i2c_client *client,
 
 	retval = platform_device_register(synaptics_dsx_i2c_device);
 	if (retval) {
-		dev_err(&client->dev,
+		dev_dbg(&client->dev,
 				"%s: Failed to register platform device\n",
 				__func__);
 		return -ENODEV;

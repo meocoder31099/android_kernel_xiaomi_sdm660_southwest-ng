@@ -463,7 +463,7 @@ int extcon_sync(struct extcon_dev *edev, unsigned int id)
 		/* Unlock early before uevent */
 		spin_unlock_irqrestore(&edev->lock, flags);
 
-		dev_err(&edev->dev, "out of memory in extcon_set_state\n");
+		dev_dbg(&edev->dev, "out of memory in extcon_set_state\n");
 		kobject_uevent(&edev->dev.kobj, KOBJ_CHANGE);
 
 		return -ENOMEM;
@@ -1171,7 +1171,7 @@ int extcon_dev_register(struct extcon_dev *edev)
 
 	edev->max_supported = index;
 	if (index > SUPPORTED_CABLE_MAX) {
-		dev_err(&edev->dev,
+		dev_dbg(&edev->dev,
 			"exceed the maximum number of supported cables\n");
 		return -EINVAL;
 	}
@@ -1181,7 +1181,7 @@ int extcon_dev_register(struct extcon_dev *edev)
 
 	edev->name = dev_name(edev->dev.parent);
 	if (IS_ERR_OR_NULL(edev->name)) {
-		dev_err(&edev->dev,
+		dev_dbg(&edev->dev,
 			"extcon device name is null\n");
 		return -EINVAL;
 	}
@@ -1394,7 +1394,7 @@ void extcon_dev_unregister(struct extcon_dev *edev)
 	mutex_unlock(&extcon_dev_list_lock);
 
 	if (IS_ERR_OR_NULL(get_device(&edev->dev))) {
-		dev_err(&edev->dev, "Failed to unregister extcon_dev (%s)\n",
+		dev_dbg(&edev->dev, "Failed to unregister extcon_dev (%s)\n",
 				dev_name(&edev->dev));
 		return;
 	}

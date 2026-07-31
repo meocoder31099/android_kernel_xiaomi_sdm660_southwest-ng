@@ -66,7 +66,7 @@ static int msm_sensor_wait_for_probe_done(struct msm_sensor_init_t *s_init)
 	rc = wait_event_timeout(s_init->state_wait,
 		(s_init->module_init_status == 1), msecs_to_jiffies(tm));
 	if (rc == 0)
-		pr_err("%s:%d wait timeout\n", __func__, __LINE__);
+		pr_debug("%s:%d wait timeout\n", __func__, __LINE__);
 #endif
 #endif
 
@@ -82,7 +82,7 @@ static int32_t msm_sensor_driver_cmd(struct msm_sensor_init_t *s_init,
 
 	/* Validate input parameters */
 	if (!s_init || !cfg) {
-		pr_err("failed: s_init %pK cfg %pK\n", s_init, cfg);
+		pr_debug("failed: s_init %pK cfg %pK\n", s_init, cfg);
 		return -EINVAL;
 	}
 
@@ -109,7 +109,7 @@ static int32_t msm_sensor_driver_cmd(struct msm_sensor_init_t *s_init,
 		break;
 
 	default:
-		pr_err("default\n");
+		pr_debug("default\n");
 		break;
 	}
 
@@ -126,7 +126,7 @@ static long msm_sensor_init_subdev_ioctl(struct v4l2_subdev *sd,
 
 	/* Validate input parameters */
 	if (!s_init) {
-		pr_err("failed: s_init %pK\n", s_init);
+		pr_debug("failed: s_init %pK\n", s_init);
 		return -EINVAL;
 	}
 

@@ -27,7 +27,7 @@ void _erofs_err(struct super_block *sb, const char *function,
 	vaf.fmt = fmt;
 	vaf.va = &args;
 
-	pr_err("(device %s): %s: %pV", sb->s_id, function, &vaf);
+	pr_debug("(device %s): %s: %pV", sb->s_id, function, &vaf);
 	va_end(args);
 }
 
@@ -42,7 +42,7 @@ void _erofs_info(struct super_block *sb, const char *function,
 	vaf.fmt = fmt;
 	vaf.va = &args;
 
-	pr_info("(device %s): %pV", sb->s_id, &vaf);
+	pr_debug("(device %s): %pV", sb->s_id, &vaf);
 	va_end(args);
 }
 

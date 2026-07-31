@@ -39,7 +39,7 @@ int mdss_panel_debugfs_fbc_setup(struct mdss_panel_debugfs_info *debugfs_info,
 
 	fbc_root = debugfs_create_dir("fbc", parent);
 	if (IS_ERR_OR_NULL(fbc_root)) {
-		pr_err("Debugfs create fbc dir failed with error: %ld\n",
+		pr_debug("Debugfs create fbc dir failed with error: %ld\n",
 					PTR_ERR(fbc_root));
 		return -ENODEV;
 	}
@@ -166,7 +166,7 @@ static ssize_t panel_debugfs_array_write(struct file *file,
 	buf_size = elements*11 + 1;
 	buffer = kmalloc(buf_size, GFP_KERNEL);
 	if (!buffer) {
-		pr_err("Failed to allocate memory\n");
+		pr_debug("Failed to allocate memory\n");
 		return -ENOMEM;
 	}
 	res = simple_write_to_buffer(buffer, buf_size, ppos, p, count);
@@ -219,7 +219,7 @@ struct dentry *panel_debugfs_create_array(const char *name, umode_t mode,
 	if ((size != sizeof(u8)) &&
 	    (size != sizeof(u16)) &&
 	    (size != sizeof(u32))) {
-		pr_warn("Value size %zu bytes is not supported\n", size);
+		pr_debug("Value size %zu bytes is not supported\n", size);
 		kfree(data);
 		return NULL;
 	}
@@ -244,7 +244,7 @@ static int _create_phy_ctrl_nodes(struct mdss_panel_debugfs_info *debugfs_info,
 
 	phy_node = debugfs_create_dir("dsi_phy_ctrl", node);
 	if (IS_ERR_OR_NULL(phy_node)) {
-		pr_err("Debugfs create phy ctrl node failed with error: %ld\n",
+		pr_debug("Debugfs create phy ctrl node failed with error: %ld\n",
 					PTR_ERR(phy_node));
 		return -ENODEV;
 	}
@@ -271,19 +271,19 @@ static int _create_dsi_panel_nodes(struct mdss_panel_debugfs_info *dfs,
 
 	lcdc_root = debugfs_create_dir("lcdc", parent);
 	if (IS_ERR_OR_NULL(lcdc_root)) {
-		pr_err("Debugfs create lcdc dir failed with error: %ld\n",
+		pr_debug("Debugfs create lcdc dir failed with error: %ld\n",
 					PTR_ERR(lcdc_root));
 		return -ENODEV;
 	}
 	mipi_root = debugfs_create_dir("mipi", parent);
 	if (IS_ERR_OR_NULL(mipi_root)) {
-		pr_err("Debugfs create mipi dir failed with error: %ld\n",
+		pr_debug("Debugfs create mipi dir failed with error: %ld\n",
 					PTR_ERR(mipi_root));
 		return -ENODEV;
 	}
 	te_root = debugfs_create_dir("te", parent);
 	if (IS_ERR_OR_NULL(te_root)) {
-		pr_err("Debugfs create te check dir failed with error: %ld\n",
+		pr_debug("Debugfs create te check dir failed with error: %ld\n",
 					PTR_ERR(te_root));
 		return -ENODEV;
 	}
@@ -449,7 +449,7 @@ int mdss_panel_debugfs_setup(struct mdss_panel_info *panel_info, struct dentry
 	debugfs_info->parent = parent;
 	debugfs_info->root = debugfs_create_dir(intf_str, parent);
 	if (IS_ERR_OR_NULL(debugfs_info->root)) {
-		pr_err("Debugfs create dir failed with error: %ld\n",
+		pr_debug("Debugfs create dir failed with error: %ld\n",
 					PTR_ERR(debugfs_info->root));
 		kfree(debugfs_info);
 		return -ENODEV;
@@ -485,7 +485,7 @@ int mdss_panel_debugfs_init(struct mdss_panel_info *panel_info,
 	pdata = container_of(panel_info, struct mdss_panel_data, panel_info);
 	parent = debugfs_create_dir(panel_name, NULL);
 	if (IS_ERR_OR_NULL(parent)) {
-		pr_err("Debugfs create dir failed with error: %ld\n",
+		pr_debug("Debugfs create dir failed with error: %ld\n",
 			PTR_ERR(parent));
 		return -ENODEV;
 	}
@@ -495,7 +495,7 @@ int mdss_panel_debugfs_init(struct mdss_panel_info *panel_info,
 		rc = mdss_panel_debugfs_setup(&pdata->panel_info, parent,
 				intf_str);
 		if (rc) {
-			pr_err("error in initilizing panel debugfs\n");
+			pr_debug("error in initilizing panel debugfs\n");
 			mdss_panel_debugfs_cleanup(&pdata->panel_info);
 			return rc;
 		}
@@ -795,14 +795,14 @@ void mdss_panel_dsc_update_pic_dim(struct dsc_desc *dsc,
 	int pic_width, int pic_height)
 {
 	if (!dsc || !pic_width || !pic_height) {
-		pr_err("Error: invalid input. pic_width=%d pic_height=%d\n",
+		pr_debug("Error: invalid input. pic_width=%d pic_height=%d\n",
 			pic_width, pic_height);
 		return;
 	}
 
 	if ((pic_width % dsc->slice_width) ||
 	    (pic_height % dsc->slice_height)) {
-		pr_err("Error: pic_dim=%dx%d has to be multiple of slice_dim=%dx%d\n",
+		pr_debug("Error: pic_dim=%dx%d has to be multiple of slice_dim=%dx%d\n",
 			pic_width, pic_height,
 			dsc->slice_width, dsc->slice_height);
 		return;
@@ -820,7 +820,7 @@ void mdss_panel_dsc_initial_line_calc(struct dsc_desc *dsc, int enc_ip_width)
 	if (!dsc || !enc_ip_width || !dsc->slice_width ||
 	    (enc_ip_width < dsc->slice_width) ||
 	    (dsc->initial_xmit_delay > MAX_XMIT_DELAY)) {
-		pr_err("Error: invalid input\n");
+		pr_debug("Error: invalid input\n");
 		return;
 	}
 #undef MAX_XMIT_DELAY
@@ -841,7 +841,7 @@ void mdss_panel_dsc_pclk_param_calc(struct dsc_desc *dsc, int intf_width)
 
 	if (!dsc || !dsc->slice_width || !dsc->slice_per_pkt ||
 	    (intf_width < dsc->slice_width)) {
-		pr_err("Error: invalid input. intf_width=%d slice_width=%d\n",
+		pr_debug("Error: invalid input. intf_width=%d slice_width=%d\n",
 			intf_width,
 			dsc ? dsc->slice_width : -1);
 		return;

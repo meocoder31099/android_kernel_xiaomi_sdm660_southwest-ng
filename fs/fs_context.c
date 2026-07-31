@@ -448,7 +448,7 @@ static int legacy_parse_monolithic(struct fs_context *fc, void *data)
 	struct legacy_fs_context *ctx = fc->fs_private;
 
 	if (ctx->param_type != LEGACY_FS_UNSET_PARAMS) {
-		pr_warn("VFS: Can't mix monolithic and individual options\n");
+		pr_debug("VFS: Can't mix monolithic and individual options\n");
 		return -EINVAL;
 	}
 

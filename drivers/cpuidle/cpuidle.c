@@ -628,7 +628,7 @@ int cpuidle_register(struct cpuidle_driver *drv,
 
 	ret = cpuidle_register_driver(drv);
 	if (ret) {
-		pr_err("failed to register cpuidle driver\n");
+		pr_debug("failed to register cpuidle driver\n");
 		return ret;
 	}
 
@@ -649,7 +649,7 @@ int cpuidle_register(struct cpuidle_driver *drv,
 		if (!ret)
 			continue;
 
-		pr_err("Failed to register cpuidle device for cpu%d\n", cpu);
+		pr_debug("Failed to register cpuidle device for cpu%d\n", cpu);
 
 		cpuidle_unregister(drv);
 		break;

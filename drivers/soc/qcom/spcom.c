@@ -73,17 +73,17 @@
 	} while (0)
 
 #define spcom_pr_err(_fmt, ...) do {					\
-	pr_err(_fmt, ##__VA_ARGS__);					\
+	pr_debug(_fmt, ##__VA_ARGS__);					\
 	spcom_ipc_log_string("%s" pr_fmt(_fmt), "", ##__VA_ARGS__);	\
 	} while (0)
 
 #define spcom_pr_warn(_fmt, ...) do {					\
-	pr_warn(_fmt, ##__VA_ARGS__);					\
+	pr_debug(_fmt, ##__VA_ARGS__);					\
 	spcom_ipc_log_string("%s" pr_fmt(_fmt), "", ##__VA_ARGS__);	\
 	} while (0)
 
 #define spcom_pr_info(_fmt, ...) do {					\
-	pr_info(_fmt, ##__VA_ARGS__);					\
+	pr_debug(_fmt, ##__VA_ARGS__);					\
 	spcom_ipc_log_string("%s" pr_fmt(_fmt), "", ##__VA_ARGS__);	\
 	} while (0)
 
@@ -2167,7 +2167,7 @@ static int spcom_parse_dt(struct device_node *np)
 	ret = of_property_read_u32(np, "qcom,spcom-rmb-err-reg-addr",
 		&spcom_rmb_error_reg_addr);
 	if (ret < 0) {
-		pr_err("can't get rmb error reg addr\n");
+		pr_debug("can't get rmb error reg addr\n");
 		return ret;
 	}
 
@@ -2408,7 +2408,7 @@ static void spcom_rpdev_remove(struct rpmsg_device *rpdev)
 		return;
 	}
 
-	dev_info(&rpdev->dev, "rpmsg device %s removed\n", rpdev->id.name);
+	dev_dbg(&rpdev->dev, "rpmsg device %s removed\n", rpdev->id.name);
 	ch = dev_get_drvdata(&rpdev->dev);
 	if (!ch) {
 		spcom_pr_err("channel %s not found\n", rpdev->id.name);
@@ -2520,13 +2520,13 @@ static int spcom_probe(struct platform_device *pdev)
 	struct device_node *np;
 
 	if (!pdev) {
-		pr_err("invalid pdev\n");
+		pr_debug("invalid pdev\n");
 		return -ENODEV;
 	}
 
 	np = pdev->dev.of_node;
 	if (!np) {
-		pr_err("invalid DT node\n");
+		pr_debug("invalid DT node\n");
 		return -EINVAL;
 	}
 
@@ -2549,7 +2549,7 @@ static int spcom_probe(struct platform_device *pdev)
 
 	ret = spcom_register_chardev();
 	if (ret) {
-		pr_err("create character device failed\n");
+		pr_debug("create character device failed\n");
 		goto fail_while_chardev_reg;
 	}
 
@@ -2559,19 +2559,19 @@ static int spcom_probe(struct platform_device *pdev)
 
 	ret = spcom_create_predefined_channels_chardev();
 	if (ret < 0) {
-		pr_err("create character device failed\n");
+		pr_debug("create character device failed\n");
 		goto fail_reg_chardev;
 	}
 
 	spcom_ipc_log_context = ipc_log_context_create(SPCOM_LOG_PAGE_CNT,
 						       "spcom", 0);
 	if (!spcom_ipc_log_context)
-		pr_err("Unable to create IPC log context\n");
+		pr_debug("Unable to create IPC log context\n");
 
 	spcom_pr_dbg("Driver Initialization ok\n");
 	return 0;
 fail_reg_chardev:
-	pr_err("failed to init driver\n");
+	pr_debug("failed to init driver\n");
 	spcom_unregister_chrdev();
 fail_while_chardev_reg:
 	kfree(dev);

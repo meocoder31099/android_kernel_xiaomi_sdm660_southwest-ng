@@ -153,16 +153,16 @@ static void print_diff_canary(unsigned long address, size_t bytes_to_show,
 	end = (const u8 *)(address < meta->addr ? min(show_until_addr, meta->addr)
 						: min(show_until_addr, PAGE_ALIGN(address)));
 
-	pr_cont("[");
+	pr_debug("[");
 	for (cur = (const u8 *)address; cur < end; cur++) {
 		if (*cur == KFENCE_CANARY_PATTERN(cur))
-			pr_cont(" .");
+			pr_debug(" .");
 		else if (no_hash_pointers)
-			pr_cont(" 0x%02x", *cur);
+			pr_debug(" 0x%02x", *cur);
 		else /* Do not leak kernel memory in non-debug builds. */
-			pr_cont(" !");
+			pr_debug(" !");
 	}
-	pr_cont(" ]");
+	pr_debug(" ]");
 }
 
 static const char *get_access_type(bool is_write)
@@ -193,7 +193,7 @@ void kfence_report_error(unsigned long address, bool is_write, struct pt_regs *r
 		lockdep_assert_held(&meta->lock);
 	/*
 	 * Because we may generate reports in printk-unfriendly parts of the
-	 * kernel, such as scheduler code, the use of printk() could deadlock.
+	 * kernel, such as scheduler code, the use of no_printk() could deadlock.
 	 * Until such time that all printing code here is safe in all parts of
 	 * the kernel, accept the risk, and just get our message out (given the
 	 * system might already behave unpredictably due to the memory error).
@@ -202,41 +202,41 @@ void kfence_report_error(unsigned long address, bool is_write, struct pt_regs *r
 	 */
 	lockdep_off();
 
-	pr_err("==================================================================\n");
+	pr_debug("==================================================================\n");
 	/* Print report header. */
 	switch (type) {
 	case KFENCE_ERROR_OOB: {
 		const bool left_of_object = address < meta->addr;
 
-		pr_err("BUG: KFENCE: out-of-bounds %s in %pS\n\n", get_access_type(is_write),
+		pr_debug("BUG: KFENCE: out-of-bounds %s in %pS\n\n", get_access_type(is_write),
 		       (void *)stack_entries[skipnr]);
-		pr_err("Out-of-bounds %s at 0x%p (%luB %s of kfence-#%td):\n",
+		pr_debug("Out-of-bounds %s at 0x%p (%luB %s of kfence-#%td):\n",
 		       get_access_type(is_write), (void *)address,
 		       left_of_object ? meta->addr - address : address - meta->addr,
 		       left_of_object ? "left" : "right", object_index);
 		break;
 	}
 	case KFENCE_ERROR_UAF:
-		pr_err("BUG: KFENCE: use-after-free %s in %pS\n\n", get_access_type(is_write),
+		pr_debug("BUG: KFENCE: use-after-free %s in %pS\n\n", get_access_type(is_write),
 		       (void *)stack_entries[skipnr]);
-		pr_err("Use-after-free %s at 0x%p (in kfence-#%td):\n",
+		pr_debug("Use-after-free %s at 0x%p (in kfence-#%td):\n",
 		       get_access_type(is_write), (void *)address, object_index);
 		break;
 	case KFENCE_ERROR_CORRUPTION:
-		pr_err("BUG: KFENCE: memory corruption in %pS\n\n", (void *)stack_entries[skipnr]);
-		pr_err("Corrupted memory at 0x%p ", (void *)address);
+		pr_debug("BUG: KFENCE: memory corruption in %pS\n\n", (void *)stack_entries[skipnr]);
+		pr_debug("Corrupted memory at 0x%p ", (void *)address);
 		print_diff_canary(address, 16, meta);
-		pr_cont(" (in kfence-#%td):\n", object_index);
+		pr_debug(" (in kfence-#%td):\n", object_index);
 		break;
 	case KFENCE_ERROR_INVALID:
-		pr_err("BUG: KFENCE: invalid %s in %pS\n\n", get_access_type(is_write),
+		pr_debug("BUG: KFENCE: invalid %s in %pS\n\n", get_access_type(is_write),
 		       (void *)stack_entries[skipnr]);
-		pr_err("Invalid %s at 0x%p:\n", get_access_type(is_write),
+		pr_debug("Invalid %s at 0x%p:\n", get_access_type(is_write),
 		       (void *)address);
 		break;
 	case KFENCE_ERROR_INVALID_FREE:
-		pr_err("BUG: KFENCE: invalid free in %pS\n\n", (void *)stack_entries[skipnr]);
-		pr_err("Invalid free of 0x%p (in kfence-#%td):\n", (void *)address,
+		pr_debug("BUG: KFENCE: invalid free in %pS\n\n", (void *)stack_entries[skipnr]);
+		pr_debug("Invalid free of 0x%p (in kfence-#%td):\n", (void *)address,
 		       object_index);
 		break;
 	}
@@ -245,18 +245,18 @@ void kfence_report_error(unsigned long address, bool is_write, struct pt_regs *r
 	stack_trace_print(stack_entries + skipnr, num_stack_entries - skipnr, 0);
 
 	if (meta) {
-		pr_err("\n");
+		pr_debug("\n");
 		kfence_print_object(NULL, meta);
 	}
 
 	/* Print report footer. */
-	pr_err("\n");
+	pr_debug("\n");
 	if (no_hash_pointers && regs)
 		show_regs(regs);
 	else
 		dump_stack_print_info(KERN_ERR);
 	trace_error_report_end(ERROR_DETECTOR_KFENCE, address);
-	pr_err("==================================================================\n");
+	pr_debug("==================================================================\n");
 
 	lockdep_on();
 

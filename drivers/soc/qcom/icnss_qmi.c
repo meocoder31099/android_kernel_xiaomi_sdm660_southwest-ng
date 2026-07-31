@@ -1039,7 +1039,7 @@ static void fw_ready_ind_cb(struct qmi_handle *qmi, struct sockaddr_qrtr *sq,
 	icnss_pr_dbg("Received FW Ready Indication\n");
 
 	if (!txn) {
-		pr_err("spurious indication\n");
+		pr_debug("spurious indication\n");
 		return;
 	}
 
@@ -1059,7 +1059,7 @@ static void msa_ready_ind_cb(struct qmi_handle *qmi, struct sockaddr_qrtr *sq,
 	icnss_pr_dbg("Received MSA Ready Indication\n");
 
 	if (!txn) {
-		pr_err("spurious indication\n");
+		pr_debug("spurious indication\n");
 		return;
 	}
 
@@ -1129,7 +1129,7 @@ static void pin_connect_result_ind_cb(struct qmi_handle *qmi,
 	icnss_pr_dbg("Received Pin Connect Result Indication\n");
 
 	if (!txn) {
-		pr_err("spurious indication\n");
+		pr_debug("spurious indication\n");
 		return;
 	}
 
@@ -1155,7 +1155,7 @@ static void rejuvenate_ind_cb(struct qmi_handle *qmi, struct sockaddr_qrtr *sq,
 	icnss_pr_dbg("Received Rejuvenate Indication\n");
 
 	if (!txn) {
-		pr_err("spurious indication\n");
+		pr_debug("spurious indication\n");
 		return;
 	}
 

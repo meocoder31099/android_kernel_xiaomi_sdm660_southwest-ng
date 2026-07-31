@@ -92,7 +92,7 @@ static int hisi_pcie_init(struct pci_config_window *cfg)
 
 	ret = acpi_get_rc_resources(dev, "HISI0081", root->segment, res);
 	if (ret) {
-		dev_err(dev, "can't get rc base address\n");
+		dev_dbg(dev, "can't get rc base address\n");
 		return -ENOMEM;
 	}
 
@@ -235,11 +235,11 @@ static int hisi_add_pcie_port(struct hisi_pcie *hisi_pcie,
 	u32 port_id;
 
 	if (of_property_read_u32(dev->of_node, "port-id", &port_id)) {
-		dev_err(dev, "failed to read port-id\n");
+		dev_dbg(dev, "failed to read port-id\n");
 		return -EINVAL;
 	}
 	if (port_id > 3) {
-		dev_err(dev, "Invalid port-id: %d\n", port_id);
+		dev_dbg(dev, "Invalid port-id: %d\n", port_id);
 		return -EINVAL;
 	}
 	hisi_pcie->port_id = port_id;
@@ -248,7 +248,7 @@ static int hisi_add_pcie_port(struct hisi_pcie *hisi_pcie,
 
 	ret = dw_pcie_host_init(pp);
 	if (ret) {
-		dev_err(dev, "failed to initialize host\n");
+		dev_dbg(dev, "failed to initialize host\n");
 		return ret;
 	}
 
@@ -285,7 +285,7 @@ static int hisi_pcie_probe(struct platform_device *pdev)
 	hisi_pcie->subctrl =
 	    syscon_regmap_lookup_by_compatible("hisilicon,pcie-sas-subctrl");
 	if (IS_ERR(hisi_pcie->subctrl)) {
-		dev_err(dev, "cannot get subctrl base\n");
+		dev_dbg(dev, "cannot get subctrl base\n");
 		return PTR_ERR(hisi_pcie->subctrl);
 	}
 
@@ -350,7 +350,7 @@ static int hisi_pcie_platform_init(struct pci_config_window *cfg)
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
 	if (!res) {
-		dev_err(dev, "missing \"reg[1]\"property\n");
+		dev_dbg(dev, "missing \"reg[1]\"property\n");
 		return -EINVAL;
 	}
 

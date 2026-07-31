@@ -436,12 +436,12 @@ static bool disk_unlock_native_capacity(struct gendisk *disk)
 
 	if (bdops->unlock_native_capacity &&
 	    !(disk->flags & GENHD_FL_NATIVE_CAPACITY)) {
-		printk(KERN_CONT "enabling native capacity\n");
+		no_printk(KERN_CONT "enabling native capacity\n");
 		bdops->unlock_native_capacity(disk);
 		disk->flags |= GENHD_FL_NATIVE_CAPACITY;
 		return true;
 	} else {
-		printk(KERN_CONT "truncated\n");
+		no_printk(KERN_CONT "truncated\n");
 		return false;
 	}
 }
@@ -544,7 +544,7 @@ rescan:
 		 * after unlocking native capacity.
 		 */
 		if (PTR_ERR(state) == -ENOSPC) {
-			printk(KERN_WARNING "%s: partition table beyond EOD, ",
+			no_printk(KERN_WARNING "%s: partition table beyond EOD, ",
 			       disk->disk_name);
 			if (disk_unlock_native_capacity(disk))
 				goto rescan;
@@ -557,7 +557,7 @@ rescan:
 	 * successfully read as we could be missing some partitions.
 	 */
 	if (state->access_beyond_eod) {
-		printk(KERN_WARNING
+		no_printk(KERN_WARNING
 		       "%s: partition table partially beyond EOD, ",
 		       disk->disk_name);
 		if (disk_unlock_native_capacity(disk))
@@ -587,7 +587,7 @@ rescan:
 
 		from = state->parts[p].from;
 		if (from >= get_capacity(disk)) {
-			printk(KERN_WARNING
+			no_printk(KERN_WARNING
 			       "%s: p%d start %llu is beyond EOD, ",
 			       disk->disk_name, p, (unsigned long long) from);
 			if (disk_unlock_native_capacity(disk))
@@ -596,7 +596,7 @@ rescan:
 		}
 
 		if (from + size > get_capacity(disk)) {
-			printk(KERN_WARNING
+			no_printk(KERN_WARNING
 			       "%s: p%d size %llu extends beyond EOD, ",
 			       disk->disk_name, p, (unsigned long long) size);
 
@@ -622,7 +622,7 @@ rescan:
 		 */
 		if (bdev_is_zoned(bdev) &&
 		    !part_zone_aligned(disk, bdev, from, size)) {
-			printk(KERN_WARNING
+			no_printk(KERN_WARNING
 			       "%s: p%d start %llu+%llu is not zone aligned\n",
 			       disk->disk_name, p, (unsigned long long) from,
 			       (unsigned long long) size);
@@ -633,7 +633,7 @@ rescan:
 				     state->parts[p].flags,
 				     &state->parts[p].info);
 		if (IS_ERR(part)) {
-			printk(KERN_ERR " %s: p%d could not be added: %ld\n",
+			no_printk(KERN_ERR " %s: p%d could not be added: %ld\n",
 			       disk->disk_name, p, -PTR_ERR(part));
 			continue;
 		}

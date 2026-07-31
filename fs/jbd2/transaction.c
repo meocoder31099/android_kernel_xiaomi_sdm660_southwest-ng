@@ -43,7 +43,7 @@ int __init jbd2_journal_init_transaction_cache(void)
 					SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY,
 					NULL);
 	if (!transaction_cache) {
-		pr_emerg("JBD2: failed to create transaction cache\n");
+		pr_debug("JBD2: failed to create transaction cache\n");
 		return -ENOMEM;
 	}
 	return 0;
@@ -288,7 +288,7 @@ static int start_this_handle(journal_t *journal, handle_t *handle,
 	 */
 	if ((rsv_blocks > journal->j_max_transaction_buffers / 2) ||
 	    (rsv_blocks + blocks > journal->j_max_transaction_buffers)) {
-		printk(KERN_ERR "JBD2: %s wants too many credits "
+		no_printk(KERN_ERR "JBD2: %s wants too many credits "
 		       "credits:%d rsv_credits:%d max:%d\n",
 		       current->comm, blocks, rsv_blocks,
 		       journal->j_max_transaction_buffers);
@@ -779,7 +779,7 @@ void jbd2_journal_unlock_updates (journal_t *journal)
 
 static void warn_dirty_buffer(struct buffer_head *bh)
 {
-	printk(KERN_WARNING
+	no_printk(KERN_WARNING
 	       "JBD2: Spotted dirty metadata buffer (dev = %pg, blocknr = %llu). "
 	       "There's a risk of filesystem corruption in case of system "
 	       "crash.\n",
@@ -1379,7 +1379,7 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 			jbd_lock_bh_state(bh);
 			if (jh->b_transaction == transaction &&
 			    jh->b_jlist != BJ_Metadata)
-				pr_err("JBD2: assertion failure: h_type=%u "
+				pr_debug("JBD2: assertion failure: h_type=%u "
 				       "h_line_no=%u block_no=%llu jlist=%u\n",
 				       handle->h_type, handle->h_line_no,
 				       (unsigned long long) bh->b_blocknr,
@@ -1432,7 +1432,7 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 		JBUFFER_TRACE(jh, "fastpath");
 		if (unlikely(jh->b_transaction !=
 			     journal->j_running_transaction)) {
-			printk(KERN_ERR "JBD2: %s: "
+			no_printk(KERN_ERR "JBD2: %s: "
 			       "jh->b_transaction (%llu, %p, %u) != "
 			       "journal->j_running_transaction (%p, %u)\n",
 			       journal->j_devname,
@@ -1460,7 +1460,7 @@ int jbd2_journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 		if (unlikely(((jh->b_transaction !=
 			       journal->j_committing_transaction)) ||
 			     (jh->b_next_transaction != transaction))) {
-			printk(KERN_ERR "jbd2_journal_dirty_metadata: %s: "
+			no_printk(KERN_ERR "jbd2_journal_dirty_metadata: %s: "
 			       "bad jh for block %llu: "
 			       "transaction (%p, %u), "
 			       "jh->b_transaction (%p, %u), "
@@ -2062,7 +2062,7 @@ int jbd2_journal_try_to_free_buffers(journal_t *journal,
 		 * after cleanup journal tail.
 		 */
 		if (buffer_write_io_error(bh)) {
-			pr_err("JBD2: Error while async write back metadata bh %llu.",
+			pr_debug("JBD2: Error while async write back metadata bh %llu.",
 			       (unsigned long long)bh->b_blocknr);
 			has_write_io_error = true;
 		}

@@ -58,7 +58,7 @@ static int wcd_gpio_read(struct wcd_gpio_priv *priv_data,
 
 	ret = regmap_read(priv_data->map, addr, &val);
 	if (ret < 0)
-		dev_err(priv_data->dev, "%s: read 0x%x failed\n",
+		dev_dbg(priv_data->dev, "%s: read 0x%x failed\n",
 			__func__, addr);
 	else
 		ret = (val >> pad->offset);
@@ -75,7 +75,7 @@ static int wcd_gpio_write(struct wcd_gpio_priv *priv_data,
 	ret = regmap_update_bits(priv_data->map, addr, (1 << pad->offset),
 					val << pad->offset);
 	if (ret < 0)
-		dev_err(priv_data->dev, "write 0x%x failed\n", addr);
+		dev_dbg(priv_data->dev, "write 0x%x failed\n", addr);
 
 	return ret;
 }
@@ -275,13 +275,13 @@ static int wcd_pinctrl_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(dev->of_node, "qcom,num-gpios", &npins);
 	if (ret) {
-		dev_err(dev, "%s: Looking up %s property in node %s failed\n",
+		dev_dbg(dev, "%s: Looking up %s property in node %s failed\n",
 			__func__, "qcom,num-gpios", dev->of_node->full_name);
 		ret = -EINVAL;
 		goto err_priv_alloc;
 	}
 	if (!npins) {
-		dev_err(dev, "%s: no.of pins are 0\n", __func__);
+		dev_dbg(dev, "%s: no.of pins are 0\n", __func__);
 		ret = -EINVAL;
 		goto err_priv_alloc;
 	}
@@ -295,7 +295,7 @@ static int wcd_pinctrl_probe(struct platform_device *pdev)
 	priv_data->dev = dev;
 	priv_data->map = dev_get_regmap(dev->parent, NULL);
 	if (!priv_data->map) {
-		dev_err(dev, "%s: failed to get regmap\n", __func__);
+		dev_dbg(dev, "%s: failed to get regmap\n", __func__);
 		ret = -EINVAL;
 		goto err_regmap;
 	}
@@ -356,21 +356,21 @@ static int wcd_pinctrl_probe(struct platform_device *pdev)
 
 	priv_data->ctrl = devm_pinctrl_register(dev, pctrldesc, priv_data);
 	if (IS_ERR(priv_data->ctrl)) {
-		dev_err(dev, "%s: failed to register to pinctrl\n", __func__);
+		dev_dbg(dev, "%s: failed to register to pinctrl\n", __func__);
 		ret = PTR_ERR(priv_data->ctrl);
 		goto err_pin;
 	}
 
 	ret = gpiochip_add_data(&priv_data->chip, priv_data);
 	if (ret) {
-		dev_err(dev, "%s: can't add gpio chip\n", __func__);
+		dev_dbg(dev, "%s: can't add gpio chip\n", __func__);
 		goto err_pin;
 	}
 
 	ret = gpiochip_add_pin_range(&priv_data->chip, dev_name(dev), 0, 0,
 				     npins);
 	if (ret) {
-		dev_err(dev, "%s: failed to add pin range\n", __func__);
+		dev_dbg(dev, "%s: failed to add pin range\n", __func__);
 		goto err_range;
 	}
 	platform_set_drvdata(pdev, priv_data);

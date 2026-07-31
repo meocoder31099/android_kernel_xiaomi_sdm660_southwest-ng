@@ -301,7 +301,7 @@ static ssize_t firmware_name_store(struct device *dev,
 	if (p)
 		count = p - buf;
 
-	pr_info("Changing subsys fw_name to %s\n", buf);
+	pr_debug("Changing subsys fw_name to %s\n", buf);
 	mutex_lock(&track->lock);
 	strlcpy(subsys->desc->fw_name, buf,
 			min(count + 1, sizeof(subsys->desc->fw_name)));
@@ -720,7 +720,7 @@ static int wait_for_err_ready(struct subsys_device *subsys)
 	ret = wait_for_completion_timeout(&subsys->err_ready,
 					  msecs_to_jiffies(10000));
 	if (!ret) {
-		pr_err("[%s]: Error ready timed out\n", subsys->desc->name);
+		pr_debug("[%s]: Error ready timed out\n", subsys->desc->name);
 		return -ETIMEDOUT;
 	}
 
@@ -732,7 +732,7 @@ static int subsystem_shutdown(struct subsys_device *dev, void *data)
 	const char *name = dev->desc->name;
 	int ret;
 
-	pr_info("[%s:%d]: Shutting down %s\n",
+	pr_debug("[%s:%d]: Shutting down %s\n",
 			current->comm, current->pid, name);
 	ret = dev->desc->shutdown(dev->desc, true);
 	if (ret < 0) {
@@ -740,7 +740,7 @@ static int subsystem_shutdown(struct subsys_device *dev, void *data)
 			panic("subsys-restart: [%s:%d]: Failed to shutdown %s!",
 				current->comm, current->pid, name);
 		} else {
-			pr_err("Shutdown failure on %s\n", name);
+			pr_debug("Shutdown failure on %s\n", name);
 			return ret;
 		}
 	}
@@ -757,7 +757,7 @@ static int subsystem_ramdump(struct subsys_device *dev, void *data)
 
 	if (dev->desc->ramdump)
 		if (dev->desc->ramdump(is_ramdump_enabled(dev), dev->desc) < 0)
-			pr_warn("%s[%s:%d]: Ramdump failed.\n",
+			pr_debug("%s[%s:%d]: Ramdump failed.\n",
 				name, current->comm, current->pid);
 	dev->do_ramdump_on_put = false;
 	return 0;
@@ -775,7 +775,7 @@ static int subsystem_powerup(struct subsys_device *dev, void *data)
 	const char *name = dev->desc->name;
 	int ret;
 
-	pr_info("[%s:%d]: Powering up %s\n", current->comm, current->pid, name);
+	pr_debug("[%s:%d]: Powering up %s\n", current->comm, current->pid, name);
 	reinit_completion(&dev->err_ready);
 
 	enable_all_irqs(dev);
@@ -791,7 +791,7 @@ static int subsystem_powerup(struct subsys_device *dev, void *data)
 			panic("[%s:%d]: Powerup error: %s!",
 				current->comm, current->pid, name);
 		else
-			pr_err("Powerup failure on %s\n", name);
+			pr_debug("Powerup failure on %s\n", name);
 		return ret;
 	}
 
@@ -934,7 +934,7 @@ int wait_for_shutdown_ack(struct subsys_desc *desc)
 	ret = wait_for_completion_timeout(&dev->shutdown_ack,
 						msecs_to_jiffies(10000));
 	if (!ret) {
-		pr_err("[%s]: Timed out waiting for shutdown ack\n",
+		pr_debug("[%s]: Timed out waiting for shutdown ack\n",
 				desc->name);
 		return -ETIMEDOUT;
 	}
@@ -971,7 +971,7 @@ void *__subsystem_get(const char *name, const char *fw_name)
 	mutex_lock(&track->lock);
 	if (!subsys->count) {
 		if (fw_name) {
-			pr_info("Changing subsys fw_name to %s\n", fw_name);
+			pr_debug("Changing subsys fw_name to %s\n", fw_name);
 			strlcpy(subsys->desc->fw_name, fw_name,
 				sizeof(subsys->desc->fw_name));
 		}
@@ -1146,7 +1146,7 @@ static void subsystem_restart_wq_func(struct work_struct *work)
 		goto err;
 	notify_each_subsys_device(list, count, SUBSYS_AFTER_POWERUP, NULL);
 
-	pr_info("[%s:%d]: Restart sequence for %s completed.\n",
+	pr_debug("[%s:%d]: Restart sequence for %s completed.\n",
 			current->comm, current->pid, desc->name);
 
 err:
@@ -1232,15 +1232,15 @@ int subsystem_restart_dev(struct subsys_device *dev)
 	 */
 	if (system_state == SYSTEM_RESTART
 		|| system_state == SYSTEM_POWER_OFF) {
-		pr_err("%s crashed during a system poweroff/shutdown.\n", name);
+		pr_debug("%s crashed during a system poweroff/shutdown.\n", name);
 		return -EBUSY;
 	}
 
-	pr_info("Restart sequence requested for %s, restart_level = %s.\n",
+	pr_debug("Restart sequence requested for %s, restart_level = %s.\n",
 		name, restart_levels[dev->restart_level]);
 
 	if (disable_restart_work == DISABLE_SSR) {
-		pr_warn("subsys-restart: Ignoring restart request for %s\n",
+		pr_debug("subsys-restart: Ignoring restart request for %s\n",
 									name);
 		return 0;
 	}
@@ -1310,7 +1310,7 @@ void subsys_set_crash_status(struct subsys_device *dev,
 				enum crash_status crashed)
 {
 	if (!dev) {
-		pr_err("subsys_set_crash_status() dev is NULL\n");
+		pr_debug("subsys_set_crash_status() dev is NULL\n");
 		return;
 	}
 	dev->crashed = crashed;
@@ -1320,7 +1320,7 @@ EXPORT_SYMBOL(subsys_set_crash_status);
 enum crash_status subsys_get_crash_status(struct subsys_device *dev)
 {
 	if (!dev) {
-		pr_err("subsys_get_crash_status() dev is NULL\n");
+		pr_debug("subsys_get_crash_status() dev is NULL\n");
 		return CRASH_STATUS_WDOG_BITE;
 	}
 
@@ -1424,7 +1424,7 @@ static irqreturn_t subsys_err_ready_intr_handler(int irq, void *subsys)
 {
 	struct subsys_device *subsys_dev = subsys;
 
-	dev_info(subsys_dev->desc->dev,
+	dev_dbg(subsys_dev->desc->dev,
 		"Subsystem error monitoring/handling services are up\n");
 
 	if (subsys_dev->desc->is_not_loadable)
@@ -1444,7 +1444,7 @@ static int subsys_char_device_add(struct subsys_device *subsys_dev)
 	if (!major) {
 		ret = alloc_chrdev_region(&dev_no, 0, 4, "subsys");
 		if (ret < 0) {
-			pr_err("Failed to alloc subsys_dev region, err %d\n",
+			pr_debug("Failed to alloc subsys_dev region, err %d\n",
 									ret);
 			goto fail;
 		}
@@ -1455,7 +1455,7 @@ static int subsys_char_device_add(struct subsys_device *subsys_dev)
 
 	if (!device_create(char_class, subsys_dev->desc->dev, dev_no,
 			NULL, "subsys_%s", subsys_dev->desc->name)) {
-		pr_err("Failed to create subsys_%s device\n",
+		pr_debug("Failed to create subsys_%s device\n",
 						subsys_dev->desc->name);
 		goto fail_unregister_cdev_region;
 	}
@@ -1537,7 +1537,7 @@ static struct subsys_soc_restart_order *ssr_parse_restart_orders(struct
 		if (!ssr_node)
 			return ERR_PTR(-ENXIO);
 		of_node_put(ssr_node);
-		pr_info("%s device has been added to %s's restart group\n",
+		pr_debug("%s device has been added to %s's restart group\n",
 						ssr_node->name, desc->name);
 		order->device_ptrs[i] = ssr_node;
 	}
@@ -1591,7 +1591,7 @@ static int __get_irq(struct subsys_desc *desc, const char *prop,
 
 	irql = of_irq_get_byname(dnode, prop);
 	if (irql < 0) {
-		pr_err("[%s]: Error getting IRQ \"%s\"\n", desc->name,
+		pr_debug("[%s]: Error getting IRQ \"%s\"\n", desc->name,
 		prop);
 		return irql;
 	}
@@ -1607,7 +1607,7 @@ static int __get_smem_state(struct subsys_desc *desc, const char *prop,
 	if (of_find_property(dnode, "qcom,smem-states", NULL)) {
 		desc->state = qcom_smem_state_get(desc->dev, prop, smem_bit);
 		if (IS_ERR_OR_NULL(desc->state)) {
-			pr_err("Could not get smem-states %s\n", prop);
+			pr_debug("Could not get smem-states %s\n", prop);
 			return PTR_ERR(desc->state);
 		}
 		return 0;
@@ -1663,7 +1663,7 @@ static int subsys_parse_devicetree(struct subsys_desc *desc)
 
 	order = ssr_parse_restart_orders(desc);
 	if (IS_ERR(order)) {
-		pr_err("Could not initialize SSR restart order, err = %ld\n",
+		pr_debug("Could not initialize SSR restart order, err = %ld\n",
 							PTR_ERR(order));
 		return PTR_ERR(order);
 	}
@@ -1690,7 +1690,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 				desc->err_fatal_handler,
 				IRQF_TRIGGER_RISING, desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev, "[%s]: Unable to register error fatal IRQ handler: %d, irq is %d\n",
+			dev_dbg(desc->dev, "[%s]: Unable to register error fatal IRQ handler: %d, irq is %d\n",
 				desc->name, ret, desc->err_fatal_irq);
 			return ret;
 		}
@@ -1703,7 +1703,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 			desc->stop_ack_handler,
 			IRQF_TRIGGER_RISING, desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev, "[%s]: Unable to register stop ack handler: %d\n",
+			dev_dbg(desc->dev, "[%s]: Unable to register stop ack handler: %d\n",
 				desc->name, ret);
 			return ret;
 		}
@@ -1715,7 +1715,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 			desc->wdog_bite_handler,
 			IRQF_TRIGGER_RISING, desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev, "[%s]: Unable to register wdog bite handler: %d\n",
+			dev_dbg(desc->dev, "[%s]: Unable to register wdog bite handler: %d\n",
 				desc->name, ret);
 			return ret;
 		}
@@ -1729,7 +1729,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 			desc->shutdown_ack_handler,
 			IRQF_TRIGGER_RISING, desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev, "[%s]: Unable to register shutdown ack handler: %d\n",
+			dev_dbg(desc->dev, "[%s]: Unable to register shutdown ack handler: %d\n",
 				desc->name, ret);
 			return ret;
 		}
@@ -1743,7 +1743,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 			desc->ramdump_disable_handler,
 			IRQF_TRIGGER_RISING, desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev, "[%s]: Unable to register shutdown ack handler: %d\n",
+			dev_dbg(desc->dev, "[%s]: Unable to register shutdown ack handler: %d\n",
 				desc->name, ret);
 			return ret;
 		}
@@ -1755,7 +1755,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 			desc->generic_handler,
 			IRQF_TRIGGER_HIGH, desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev, "[%s]: Unable to register generic irq handler: %d\n",
+			dev_dbg(desc->dev, "[%s]: Unable to register generic irq handler: %d\n",
 				desc->name, ret);
 			return ret;
 		}
@@ -1770,7 +1770,7 @@ static int subsys_setup_irqs(struct subsys_device *subsys)
 					IRQF_TRIGGER_RISING,
 					"error_ready_interrupt", subsys);
 		if (ret < 0) {
-			dev_err(desc->dev,
+			dev_dbg(desc->dev,
 				"[%s]: Unable to register err ready handler\n",
 				desc->name);
 			return ret;
@@ -1996,7 +1996,7 @@ static int __init subsys_restart_init(void)
 	char_class = class_create(THIS_MODULE, "subsys");
 	if (IS_ERR(char_class)) {
 		ret = -ENOMEM;
-		pr_err("Failed to create subsys_dev class\n");
+		pr_debug("Failed to create subsys_dev class\n");
 		goto err_class;
 	}
 

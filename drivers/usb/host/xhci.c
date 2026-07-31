@@ -2018,27 +2018,27 @@ static int xhci_configure_endpoint_result(struct xhci_hcd *xhci,
 		ret = -ETIME;
 		break;
 	case COMP_RESOURCE_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			 "Not enough host controller resources for new device state.\n");
 		ret = -ENOMEM;
 		/* FIXME: can we allocate more resources for the HC? */
 		break;
 	case COMP_BANDWIDTH_ERROR:
 	case COMP_SECONDARY_BANDWIDTH_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			 "Not enough bandwidth for new device state.\n");
 		ret = -ENOSPC;
 		/* FIXME: can we go back to the old state? */
 		break;
 	case COMP_TRB_ERROR:
 		/* the HCD set up something wrong */
-		dev_warn(&udev->dev, "ERROR: Endpoint drop flag = 0, "
+		dev_dbg(&udev->dev, "ERROR: Endpoint drop flag = 0, "
 				"add flag = 1, "
 				"and endpoint is not disabled.\n");
 		ret = -EINVAL;
 		break;
 	case COMP_INCOMPATIBLE_DEVICE_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			 "ERROR: Incompatible device for endpoint configure command.\n");
 		ret = -ENODEV;
 		break;
@@ -2068,28 +2068,28 @@ static int xhci_evaluate_context_result(struct xhci_hcd *xhci,
 		ret = -ETIME;
 		break;
 	case COMP_PARAMETER_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			 "WARN: xHCI driver setup invalid evaluate context command.\n");
 		ret = -EINVAL;
 		break;
 	case COMP_SLOT_NOT_ENABLED_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"WARN: slot not enabled for evaluate context command.\n");
 		ret = -EINVAL;
 		break;
 	case COMP_CONTEXT_STATE_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"WARN: invalid context state for evaluate context command.\n");
 		ret = -EINVAL;
 		break;
 	case COMP_INCOMPATIBLE_DEVICE_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			"ERROR: Incompatible device for evaluate context command.\n");
 		ret = -ENODEV;
 		break;
 	case COMP_MAX_EXIT_LATENCY_TOO_LARGE_ERROR:
 		/* Max Exit Latency too large error */
-		dev_warn(&udev->dev, "WARN: Max Exit Latency too large\n");
+		dev_dbg(&udev->dev, "WARN: Max Exit Latency too large\n");
 		ret = -EINVAL;
 		break;
 	case COMP_SUCCESS:
@@ -3188,7 +3188,7 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
 	 */
 
 	if (!list_empty(&ep->ring->td_list)) {
-		dev_err(&udev->dev, "EP not empty, refuse reset\n");
+		dev_dbg(&udev->dev, "EP not empty, refuse reset\n");
 		spin_unlock_irqrestore(&xhci->lock, flags);
 		xhci_free_command(xhci, cfg_cmd);
 		goto cleanup;
@@ -4192,7 +4192,7 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
 		ret = -EINVAL;
 		break;
 	case COMP_USB_TRANSACTION_ERROR:
-		dev_warn(&udev->dev, "Device not responding to setup %s.\n", act);
+		dev_dbg(&udev->dev, "Device not responding to setup %s.\n", act);
 
 		mutex_unlock(&xhci->mutex);
 		ret = xhci_disable_and_free_slot(xhci, udev->slot_id);
@@ -4204,7 +4204,7 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
 		kfree(command);
 		return -EPROTO;
 	case COMP_INCOMPATIBLE_DEVICE_ERROR:
-		dev_warn(&udev->dev,
+		dev_dbg(&udev->dev,
 			 "ERROR: Incompatible device for setup %s command\n", act);
 		ret = -ENODEV;
 		break;
@@ -4600,7 +4600,7 @@ static u16 xhci_get_timeout_no_hub_lpm(struct usb_device *udev,
 		state_name = "U2";
 		break;
 	default:
-		dev_warn(&udev->dev, "%s: Can't get timeout for non-U1 or U2 state.\n",
+		dev_dbg(&udev->dev, "%s: Can't get timeout for non-U1 or U2 state.\n",
 				__func__);
 		return USB3_LPM_DISABLED;
 	}
@@ -4869,7 +4869,7 @@ static u16 xhci_calculate_lpm_timeout(struct usb_hcd *hcd,
 	else if (state == USB3_LPM_U2)
 		state_name = "U2";
 	else {
-		dev_warn(&udev->dev, "Can't enable unknown link state %i\n",
+		dev_dbg(&udev->dev, "Can't enable unknown link state %i\n",
 				state);
 		return timeout;
 	}
@@ -4960,7 +4960,7 @@ static int calculate_max_exit_latency(struct usb_device *udev,
 		mel_us = u2_mel_us;
 	/* xHCI host controller max exit latency field is only 16 bits wide. */
 	if (mel_us > MAX_EXIT) {
-		dev_warn(&udev->dev, "Link PM max exit latency of %lluus "
+		dev_dbg(&udev->dev, "Link PM max exit latency of %lluus "
 				"is too big.\n", mel_us);
 		return -E2BIG;
 	}

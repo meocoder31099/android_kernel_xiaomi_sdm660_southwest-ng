@@ -484,7 +484,7 @@ invalid:
 		req->length = value;
 		value = usb_ep_queue(cdev->gadget->ep0, req, GFP_ATOMIC);
 		if (value < 0)
-			pr_err("port response on (%s), err %d\n",
+			pr_debug("port response on (%s), err %d\n",
 					port->name, value);
 	}
 
@@ -515,7 +515,7 @@ static int usb_cser_set_alt(struct usb_function *f, unsigned int intf,
 
 	rc = usb_ep_enable(port->port_usb.notify);
 	if (rc) {
-		dev_err(&cdev->gadget->dev, "can't enable %s, result %d\n",
+		dev_dbg(&cdev->gadget->dev, "can't enable %s, result %d\n",
 				port->port_usb.notify->name, rc);
 		return rc;
 	}
@@ -617,7 +617,7 @@ static int usb_cser_notify(struct f_cdev *port, u8 type, u16 value,
 
 	status = usb_ep_queue(ep, req, GFP_ATOMIC);
 	if (status < 0) {
-		pr_err("port %s can't notify serial state, %d\n",
+		pr_debug("port %s can't notify serial state, %d\n",
 				port->name, status);
 		spin_lock_irqsave(&port->port_lock, flags);
 		port->port_usb.pending = false;
@@ -771,14 +771,14 @@ usb_cser_alloc_req(struct usb_ep *ep, unsigned int len, size_t extra_sz,
 
 	req = usb_ep_alloc_request(ep, flags);
 	if (!req) {
-		pr_err("usb alloc request failed\n");
+		pr_debug("usb alloc request failed\n");
 		return 0;
 	}
 
 	req->length = len;
 	req->buf = kmalloc(len + extra_sz, flags);
 	if (!req->buf) {
-		pr_err("request buf allocation failed\n");
+		pr_debug("request buf allocation failed\n");
 		usb_ep_free_request(ep, req);
 		return 0;
 	}
@@ -876,7 +876,7 @@ fail:
 	if (port->port_usb.in)
 		port->port_usb.in->driver_data = NULL;
 
-	pr_err("%s: can't bind, err %d\n", f->name, status);
+	pr_debug("%s: can't bind, err %d\n", f->name, status);
 	return status;
 }
 
@@ -943,7 +943,7 @@ static void usb_cser_start_rx(struct f_cdev *port)
 
 	pr_debug("start RX(USB OUT)\n");
 	if (!port) {
-		pr_err("port is null\n");
+		pr_debug("port is null\n");
 		return;
 	}
 
@@ -968,7 +968,7 @@ static void usb_cser_start_rx(struct f_cdev *port)
 		ret = usb_ep_queue(ep, req, GFP_KERNEL);
 		spin_lock_irqsave(&port->port_lock, flags);
 		if (ret) {
-			pr_err("port(%d):%pK usb ep(%s) queue failed\n",
+			pr_debug("port(%d):%pK usb ep(%s) queue failed\n",
 					port->port_num, port, ep->name);
 			if (port->is_connected)
 				list_add(&req->list, &port->read_pool);
@@ -989,7 +989,7 @@ static void usb_cser_read_complete(struct usb_ep *ep, struct usb_request *req)
 	pr_debug("ep:(%pK)(%s) port:%p req_status:%d req->actual:%u\n",
 			ep, ep->name, port, req->status, req->actual);
 	if (!port) {
-		pr_err("port is null\n");
+		pr_debug("port is null\n");
 		return;
 	}
 
@@ -1016,7 +1016,7 @@ static void usb_cser_write_complete(struct usb_ep *ep, struct usb_request *req)
 			ep, ep->name, port, req->status);
 
 	if (!port) {
-		pr_err("port is null\n");
+		pr_debug("port is null\n");
 		return;
 	}
 
@@ -1064,7 +1064,7 @@ static void usb_cser_start_io(struct f_cdev *port)
 				0,
 				usb_cser_read_complete);
 	if (ret) {
-		pr_err("unable to allocate out requests\n");
+		pr_debug("unable to allocate out requests\n");
 		goto start_io_out;
 	}
 
@@ -1075,7 +1075,7 @@ static void usb_cser_start_io(struct f_cdev *port)
 				usb_cser_write_complete);
 	if (ret) {
 		usb_cser_free_requests(port->port_usb.out, &port->read_pool);
-		pr_err("unable to allocate IN requests\n");
+		pr_debug("unable to allocate IN requests\n");
 		goto start_io_out;
 	}
 
@@ -1127,7 +1127,7 @@ int f_cdev_open(struct inode *inode, struct file *file)
 	port = container_of(inode->i_cdev, struct f_cdev, fcdev_cdev);
 	get_device(&port->dev);
 	if (port->port_open) {
-		pr_err("port is already opened.\n");
+		pr_debug("port is already opened.\n");
 		put_device(&port->dev);
 		return -EBUSY;
 	}
@@ -1183,7 +1183,7 @@ ssize_t f_cdev_read(struct file *file,
 
 	port = file->private_data;
 	if (!port) {
-		pr_err("port is NULL.\n");
+		pr_debug("port is NULL.\n");
 		return -EINVAL;
 	}
 
@@ -1285,7 +1285,7 @@ ssize_t f_cdev_write(struct file *file,
 
 	port = file->private_data;
 	if (!port) {
-		pr_err("port is NULL.\n");
+		pr_debug("port is NULL.\n");
 		return -EINVAL;
 	}
 
@@ -1294,7 +1294,7 @@ ssize_t f_cdev_write(struct file *file,
 
 	if (!port->is_connected) {
 		spin_unlock_irqrestore(&port->port_lock, flags);
-		pr_err("%s: cable is disconnected.\n", __func__);
+		pr_debug("%s: cable is disconnected.\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1318,14 +1318,14 @@ ssize_t f_cdev_write(struct file *file,
 
 	ret = copy_from_user(req->buf, buf, xfer_size);
 	if (ret) {
-		pr_err("copy_from_user failed: err %d\n", ret);
+		pr_debug("copy_from_user failed: err %d\n", ret);
 		ret = -EFAULT;
 	} else {
 		req->length = xfer_size;
 		req->zero = 1;
 		ret = usb_ep_queue(in, req, GFP_KERNEL);
 		if (ret) {
-			pr_err("EP QUEUE failed:%d\n", ret);
+			pr_debug("EP QUEUE failed:%d\n", ret);
 			ret = -EIO;
 			goto err_exit;
 		}
@@ -1370,7 +1370,7 @@ static unsigned int f_cdev_poll(struct file *file, poll_table *wait)
 		}
 		spin_unlock_irqrestore(&port->port_lock, flags);
 	} else {
-		pr_err("Failed due to NULL device or disconnected.\n");
+		pr_debug("Failed due to NULL device or disconnected.\n");
 		mask = POLLERR;
 	}
 
@@ -1383,7 +1383,7 @@ static int f_cdev_tiocmget(struct f_cdev *port)
 	unsigned int result = 0;
 
 	if (!port) {
-		pr_err("port is NULL.\n");
+		pr_debug("port is NULL.\n");
 		return -ENODEV;
 	}
 
@@ -1415,7 +1415,7 @@ static int f_cdev_tiocmset(struct f_cdev *port,
 	int status = 0;
 
 	if (!port) {
-		pr_err("port is NULL.\n");
+		pr_debug("port is NULL.\n");
 		return -ENODEV;
 	}
 
@@ -1476,7 +1476,7 @@ static long f_cdev_ioctl(struct file *fp, unsigned int cmd,
 
 	port = fp->private_data;
 	if (!port) {
-		pr_err("port is null.\n");
+		pr_debug("port is null.\n");
 		return POLLERR;
 	}
 
@@ -1487,7 +1487,7 @@ static long f_cdev_ioctl(struct file *fp, unsigned int cmd,
 		pr_debug("TIOCMSET on port(%s)%pK\n", port->name, port);
 		i = get_user(val, (uint32_t *)arg);
 		if (i) {
-			pr_err("Error getting TIOCMSET value\n");
+			pr_debug("Error getting TIOCMSET value\n");
 			return i;
 		}
 		ret = f_cdev_tiocmset(port, val, ~val);
@@ -1501,7 +1501,7 @@ static long f_cdev_ioctl(struct file *fp, unsigned int cmd,
 		}
 		break;
 	default:
-		pr_err("Received cmd:%d not supported\n", cmd);
+		pr_debug("Received cmd:%d not supported\n", cmd);
 		ret = -ENOIOCTLCMD;
 		break;
 	}
@@ -1517,7 +1517,7 @@ static void usb_cser_notify_modem(void *fport, int ctrl_bits)
 
 	cser = &port->port_usb;
 	if (!port) {
-		pr_err("port is null\n");
+		pr_debug("port is null\n");
 		return;
 	}
 
@@ -1552,7 +1552,7 @@ int usb_cser_connect(struct f_cdev *port)
 	struct cserial *cser;
 
 	if (!port) {
-		pr_err("port is NULL.\n");
+		pr_debug("port is NULL.\n");
 		return -ENODEV;
 	}
 
@@ -1563,7 +1563,7 @@ int usb_cser_connect(struct f_cdev *port)
 
 	ret = usb_ep_enable(cser->in);
 	if (ret) {
-		pr_err("usb_ep_enable failed eptype:IN ep:%pK, err:%d\n",
+		pr_debug("usb_ep_enable failed eptype:IN ep:%pK, err:%d\n",
 					cser->in, ret);
 		return ret;
 	}
@@ -1571,7 +1571,7 @@ int usb_cser_connect(struct f_cdev *port)
 
 	ret = usb_ep_enable(cser->out);
 	if (ret) {
-		pr_err("usb_ep_enable failed eptype:OUT ep:%pK, err: %d\n",
+		pr_debug("usb_ep_enable failed eptype:OUT ep:%pK, err: %d\n",
 					cser->out, ret);
 		cser->in->driver_data = 0;
 		return ret;
@@ -1632,7 +1632,7 @@ static ssize_t cser_rw_write(struct file *file, const char __user *ubuf,
 
 	cser = &port->port_usb;
 	if (!cser) {
-		pr_err("cser is NULL\n");
+		pr_debug("cser is NULL\n");
 		return -EINVAL;
 	}
 
@@ -1643,7 +1643,7 @@ static ssize_t cser_rw_write(struct file *file, const char __user *ubuf,
 
 	func = &cser->func;
 	if (!func) {
-		pr_err("func is NULL\n");
+		pr_debug("func is NULL\n");
 		return -EINVAL;
 	}
 
@@ -1654,7 +1654,7 @@ static ssize_t cser_rw_write(struct file *file, const char __user *ubuf,
 
 	ret = kstrtou8_from_user(ubuf, count, 0, &input);
 	if (ret) {
-		pr_err("Invalid value. err:%d\n", ret);
+		pr_debug("Invalid value. err:%d\n", ret);
 		goto err;
 	}
 
@@ -1681,7 +1681,7 @@ static ssize_t cser_rw_write(struct file *file, const char __user *ubuf,
 		if ((ret == -EBUSY) || (ret == -EAGAIN))
 			pr_debug("RW delayed due to LPM exit.\n");
 		else if (ret)
-			pr_err("wakeup failed. ret=%d.\n", ret);
+			pr_debug("wakeup failed. ret=%d.\n", ret);
 	} else {
 		pr_debug("RW disabled.\n");
 	}
@@ -1694,7 +1694,7 @@ static int usb_cser_rw_show(struct seq_file *s, void *unused)
 	struct f_cdev *port = s->private;
 
 	if (!port) {
-		pr_err("port is null\n");
+		pr_debug("port is null\n");
 		return 0;
 	}
 
@@ -1756,7 +1756,7 @@ static struct f_cdev *f_cdev_alloc(char *func_name, int portno)
 		ret = usb_cser_alloc_chardev_region();
 		if (ret) {
 			mutex_unlock(&chardev_ida_lock);
-			pr_err("alloc chardev failed\n");
+			pr_debug("alloc chardev failed\n");
 			goto err_alloc_chardev;
 		}
 	}
@@ -1789,7 +1789,7 @@ static struct f_cdev *f_cdev_alloc(char *func_name, int portno)
 
 	port->fcdev_wq = create_singlethread_workqueue(port->name);
 	if (!port->fcdev_wq) {
-		pr_err("Unable to create workqueue fcdev_wq for port:%s\n",
+		pr_debug("Unable to create workqueue fcdev_wq for port:%s\n",
 						port->name);
 		ret = -ENOMEM;
 		goto err_get_ida;
@@ -1805,13 +1805,13 @@ static struct f_cdev *f_cdev_alloc(char *func_name, int portno)
 	dev_set_name(&port->dev, port->name);
 	ret = cdev_device_add(&port->fcdev_cdev, &port->dev);
 	if (ret) {
-		pr_err("Failed to add cdev for port(%s)\n", port->name);
+		pr_debug("Failed to add cdev for port(%s)\n", port->name);
 		goto err_cdev_add;
 	}
 
 	usb_cser_debugfs_init(port);
 
-	pr_info("port_name:%s (%pK) portno:(%d)\n",
+	pr_debug("port_name:%s (%pK) portno:(%d)\n",
 			port->name, port, port->port_num);
 	return port;
 
@@ -1850,7 +1850,7 @@ static int usb_cser_alloc_chardev_region(void)
 			       NUM_INSTANCE,
 			       MODULE_NAME);
 	if (ret) {
-		pr_err("alloc_chrdev_region() failed ret:%i\n", ret);
+		pr_debug("alloc_chrdev_region() failed ret:%i\n", ret);
 		return ret;
 	}
 
@@ -1859,7 +1859,7 @@ static int usb_cser_alloc_chardev_region(void)
 
 	fcdev_classp = class_create(THIS_MODULE, MODULE_NAME);
 	if (IS_ERR(fcdev_classp)) {
-		pr_err("class_create() failed ENOMEM\n");
+		pr_debug("class_create() failed ENOMEM\n");
 		ret = -ENOMEM;
 	}
 
@@ -1936,12 +1936,12 @@ static ssize_t usb_cser_status_store(struct config_item *item,
 	u8 stats;
 
 	if (page == NULL) {
-		pr_err("Invalid buffer");
+		pr_debug("Invalid buffer");
 		return len;
 	}
 
 	if (kstrtou8(page, 0, &stats) != 0 || stats != 0) {
-		pr_err("(%u)Wrong value. enter 0 to clear.\n", stats);
+		pr_debug("(%u)Wrong value. enter 0 to clear.\n", stats);
 		return len;
 	}
 
@@ -2036,7 +2036,7 @@ static int cser_set_inst_name(struct usb_function_instance *f, const char *name)
 	/* expect name as cdev.<func>.<port_num> */
 	str = strnchr(name, strlen(name), '.');
 	if (!str) {
-		pr_err("invalid input (%s)\n", name);
+		pr_debug("invalid input (%s)\n", name);
 		return -EINVAL;
 	}
 
@@ -2047,7 +2047,7 @@ static int cser_set_inst_name(struct usb_function_instance *f, const char *name)
 
 	ptr = kstrndup(name, str_size - 1, GFP_KERNEL);
 	if (!ptr) {
-		pr_err("error:%ld\n", PTR_ERR(ptr));
+		pr_debug("error:%ld\n", PTR_ERR(ptr));
 		return -ENOMEM;
 	}
 
@@ -2056,7 +2056,7 @@ static int cser_set_inst_name(struct usb_function_instance *f, const char *name)
 	/* get port number */
 	str = strrchr(name, '.');
 	if (!str) {
-		pr_err("err: port number not found\n");
+		pr_debug("err: port number not found\n");
 		return -EINVAL;
 	}
 	pr_debug("str:%s\n", str);
@@ -2066,7 +2066,7 @@ static int cser_set_inst_name(struct usb_function_instance *f, const char *name)
 
 	ret = kstrtou8(str, 0, &opts->port_num);
 	if (ret) {
-		pr_err("erro: not able to get port number\n");
+		pr_debug("erro: not able to get port number\n");
 		return -EINVAL;
 	}
 
@@ -2075,7 +2075,7 @@ static int cser_set_inst_name(struct usb_function_instance *f, const char *name)
 
 	port = f_cdev_alloc(opts->func_name, opts->port_num);
 	if (IS_ERR(port)) {
-		pr_err("Failed to create cdev port(%d)\n", opts->port_num);
+		pr_debug("Failed to create cdev port(%d)\n", opts->port_num);
 		return -ENOMEM;
 	}
 

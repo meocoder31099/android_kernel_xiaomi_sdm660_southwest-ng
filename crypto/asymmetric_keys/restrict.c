@@ -36,13 +36,13 @@ static int __init ca_keys_setup(char *str)
 		int ret;
 
 		if (hexlen == 0 || hexlen > sizeof(cakey.data)) {
-			pr_err("Missing or invalid ca_keys id\n");
+			pr_debug("Missing or invalid ca_keys id\n");
 			return 1;
 		}
 
 		ret = __asymmetric_key_hex_to_key_id(str + 3, p, hexlen);
 		if (ret < 0)
-			pr_err("Unparsable ca_keys id hex string\n");
+			pr_debug("Unparsable ca_keys id hex string\n");
 		else
 			ca_keyid = p;	/* owner key 'id:xxxxxx' */
 	} else if (strcmp(str, "builtin") == 0) {

@@ -242,7 +242,7 @@ static int msm_spm_dev_set_low_power_mode(struct msm_spm_device *dev,
 	uint32_t ctl = 0;
 
 	if (!dev) {
-		pr_err("dev is NULL\n");
+		pr_debug("dev is NULL\n");
 		return -ENODEV;
 	}
 
@@ -578,7 +578,7 @@ int __init msm_spm_init(struct msm_spm_platform_data *data, int nr_devs)
 
 		ret = msm_spm_dev_init(dev, &data[cpu]);
 		if (ret < 0) {
-			pr_warn("%s():failed CPU:%u ret:%d\n", __func__,
+			pr_debug("%s():failed CPU:%u ret:%d\n", __func__,
 					cpu, ret);
 			break;
 		}
@@ -678,7 +678,7 @@ static struct msm_spm_device *msm_spm_get_device(struct platform_device *pdev)
 		return NULL;
 
 	if (of_property_read_string(pdev->dev.of_node, key, &val)) {
-		pr_err("%s(): Cannot find a required node key:%s\n",
+		pr_debug("%s(): Cannot find a required node key:%s\n",
 				__func__, key);
 		return NULL;
 	}
@@ -821,7 +821,7 @@ static int msm_spm_dev_probe(struct platform_device *pdev)
 		dev->q2s_reg = devm_ioremap(&pdev->dev, res->start,
 						resource_size(res));
 		if (!dev->q2s_reg) {
-			pr_err("%s(): Unable to iomap Q2S register\n",
+			pr_debug("%s(): Unable to iomap Q2S register\n",
 					__func__);
 			ret = -EADDRNOTAVAIL;
 			goto fail;
@@ -843,7 +843,7 @@ static int msm_spm_dev_probe(struct platform_device *pdev)
 		dev->flush_base_addr = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(dev->flush_base_addr)) {
 			ret = PTR_ERR(dev->flush_base_addr);
-			pr_err("%s(): Unable to iomap hw flush register %d\n",
+			pr_debug("%s(): Unable to iomap hw flush register %d\n",
 					__func__, ret);
 			goto fail;
 		}
@@ -856,7 +856,7 @@ static int msm_spm_dev_probe(struct platform_device *pdev)
 					resource_size(res));
 		if (!dev->slpreq_base_addr) {
 			ret = -ENOMEM;
-			pr_err("%s(): Unable to iomap slpreq register\n",
+			pr_debug("%s(): Unable to iomap slpreq register\n",
 					__func__);
 			ret = -EADDRNOTAVAIL;
 			goto fail;
@@ -897,7 +897,7 @@ static int msm_spm_dev_probe(struct platform_device *pdev)
 				break;
 
 		if (i == ARRAY_SIZE(mode_of_data)) {
-			pr_err("Mode name invalid %s\n", name);
+			pr_debug("Mode name invalid %s\n", name);
 			break;
 		}
 
@@ -905,7 +905,7 @@ static int msm_spm_dev_probe(struct platform_device *pdev)
 		modes[mode_count].cmd =
 			(uint8_t *)of_get_property(n, "qcom,sequence", &len);
 		if (!modes[mode_count].cmd) {
-			pr_err("cmd is empty\n");
+			pr_debug("cmd is empty\n");
 			continue;
 		}
 
@@ -939,7 +939,7 @@ static int msm_spm_dev_probe(struct platform_device *pdev)
 
 	ret = msm_spm_dev_init(dev, &spm_data);
 	if (ret)
-		pr_err("SPM modes programming is not available from HLOS\n");
+		pr_debug("SPM modes programming is not available from HLOS\n");
 
 	platform_set_drvdata(pdev, dev);
 
@@ -969,7 +969,7 @@ fail:
 			per_cpu(cpu_vctl_device, cpu) = ERR_PTR(ret);
 	}
 
-	pr_err("%s: CPU%d SPM device probe failed: %d\n", __func__, cpu, ret);
+	pr_debug("%s: CPU%d SPM device probe failed: %d\n", __func__, cpu, ret);
 
 	return ret;
 }

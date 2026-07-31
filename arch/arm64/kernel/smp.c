@@ -142,15 +142,15 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 					    msecs_to_jiffies(1000));
 
 		if (!cpu_online(cpu)) {
-			pr_crit("CPU%u: failed to come online\n", cpu);
+			pr_debug("CPU%u: failed to come online\n", cpu);
 
 			if (IS_ENABLED(CONFIG_ARM64_52BIT_VA) && va52mismatch)
-				pr_crit("CPU%u: does not support 52-bit VAs\n", cpu);
+				pr_debug("CPU%u: does not support 52-bit VAs\n", cpu);
 
 			ret = -EIO;
 		}
 	} else {
-		pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
+		pr_debug("CPU%u: failed to boot: %d\n", cpu, ret);
 		return ret;
 	}
 
@@ -164,18 +164,18 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
 
 		switch (status) {
 		default:
-			pr_err("CPU%u: failed in unknown state : 0x%lx\n",
+			pr_debug("CPU%u: failed in unknown state : 0x%lx\n",
 					cpu, status);
 			break;
 		case CPU_KILL_ME:
 			if (!op_cpu_kill(cpu)) {
-				pr_crit("CPU%u: died during early boot\n", cpu);
+				pr_debug("CPU%u: died during early boot\n", cpu);
 				break;
 			}
 			/* Fall through */
-			pr_crit("CPU%u: may not have shut down cleanly\n", cpu);
+			pr_debug("CPU%u: may not have shut down cleanly\n", cpu);
 		case CPU_STUCK_IN_KERNEL:
-			pr_crit("CPU%u: is stuck in kernel\n", cpu);
+			pr_debug("CPU%u: is stuck in kernel\n", cpu);
 			cpus_stuck_in_kernel++;
 			break;
 		case CPU_PANIC_KERNEL:
@@ -329,7 +329,7 @@ void __cpu_die(unsigned int cpu)
 	int err;
 
 	if (!cpu_wait_death(cpu, 5)) {
-		pr_crit("CPU%u: cpu didn't die\n", cpu);
+		pr_debug("CPU%u: cpu didn't die\n", cpu);
 		return;
 	}
 	pr_debug("CPU%u: shutdown\n", cpu);
@@ -342,7 +342,7 @@ void __cpu_die(unsigned int cpu)
 	 */
 	err = op_cpu_kill(cpu);
 	if (err)
-		pr_warn("CPU%d may not have shut down cleanly: %d\n",
+		pr_debug("CPU%d may not have shut down cleanly: %d\n",
 			cpu, err);
 }
 
@@ -383,7 +383,7 @@ void cpu_die_early(void)
 {
 	int cpu = smp_processor_id();
 
-	pr_crit("CPU%d: will not boot\n", cpu);
+	pr_debug("CPU%d: will not boot\n", cpu);
 
 	/* Mark this CPU absent */
 	set_cpu_present(cpu, 0);
@@ -402,17 +402,17 @@ void cpu_die_early(void)
 static void __init hyp_mode_check(void)
 {
 	if (is_hyp_mode_available())
-		pr_info("CPU: All CPU(s) started at EL2\n");
+		pr_debug("CPU: All CPU(s) started at EL2\n");
 	else if (is_hyp_mode_mismatched())
 		WARN_TAINT(1, TAINT_CPU_OUT_OF_SPEC,
 			   "CPU: CPUs started in inconsistent modes");
 	else
-		pr_info("CPU: All CPU(s) started at EL1\n");
+		pr_debug("CPU: All CPU(s) started at EL1\n");
 }
 
 void __init smp_cpus_done(unsigned int max_cpus)
 {
-	pr_info("SMP: Total of %d processors activated.\n", num_online_cpus());
+	pr_debug("SMP: Total of %d processors activated.\n", num_online_cpus());
 	setup_cpu_features();
 	hyp_mode_check();
 	apply_alternatives_all();
@@ -437,7 +437,7 @@ static u64 __init of_get_cpu_mpidr(struct device_node *dn)
 	 */
 	cell = of_get_property(dn, "reg", NULL);
 	if (!cell) {
-		pr_err("%pOF: missing reg property\n", dn);
+		pr_debug("%pOF: missing reg property\n", dn);
 		return INVALID_HWID;
 	}
 
@@ -446,7 +446,7 @@ static u64 __init of_get_cpu_mpidr(struct device_node *dn)
 	 * Non affinity bits must be set to 0 in the DT
 	 */
 	if (hwid & ~MPIDR_HWID_BITMASK) {
-		pr_err("%pOF: invalid reg property\n", dn);
+		pr_debug("%pOF: invalid reg property\n", dn);
 		return INVALID_HWID;
 	}
 	return hwid;
@@ -513,19 +513,19 @@ acpi_map_gic_cpu_interface(struct acpi_madt_generic_interrupt *processor)
 	}
 
 	if (hwid & ~MPIDR_HWID_BITMASK || hwid == INVALID_HWID) {
-		pr_err("skipping CPU entry with invalid MPIDR 0x%llx\n", hwid);
+		pr_debug("skipping CPU entry with invalid MPIDR 0x%llx\n", hwid);
 		return;
 	}
 
 	if (is_mpidr_duplicate(cpu_count, hwid)) {
-		pr_err("duplicate CPU MPIDR 0x%llx in MADT\n", hwid);
+		pr_debug("duplicate CPU MPIDR 0x%llx in MADT\n", hwid);
 		return;
 	}
 
 	/* Check if GICC structure of boot CPU is available in the MADT */
 	if (cpu_logical_map(0) == hwid) {
 		if (bootcpu_valid) {
-			pr_err("duplicate boot CPU MPIDR: 0x%llx in MADT\n",
+			pr_debug("duplicate boot CPU MPIDR: 0x%llx in MADT\n",
 			       hwid);
 			return;
 		}
@@ -623,7 +623,7 @@ static void __init of_parse_and_init_cpus(void)
 			goto next;
 
 		if (is_mpidr_duplicate(cpu_count, hwid)) {
-			pr_err("%pOF: duplicate cpu reg properties in the DT\n",
+			pr_debug("%pOF: duplicate cpu reg properties in the DT\n",
 				dn);
 			goto next;
 		}
@@ -636,7 +636,7 @@ static void __init of_parse_and_init_cpus(void)
 		 */
 		if (hwid == cpu_logical_map(0)) {
 			if (bootcpu_valid) {
-				pr_err("%pOF: duplicate boot cpu reg property in DT\n",
+				pr_debug("%pOF: duplicate boot cpu reg property in DT\n",
 					dn);
 				goto next;
 			}
@@ -680,11 +680,11 @@ void __init smp_init_cpus(void)
 		acpi_parse_and_init_cpus();
 
 	if (cpu_count > nr_cpu_ids)
-		pr_warn("Number of cores (%d) exceeds configured maximum of %u - clipping\n",
+		pr_debug("Number of cores (%d) exceeds configured maximum of %u - clipping\n",
 			cpu_count, nr_cpu_ids);
 
 	if (!bootcpu_valid) {
-		pr_err("missing boot CPU MPIDR, not enabling secondaries\n");
+		pr_debug("missing boot CPU MPIDR, not enabling secondaries\n");
 		return;
 	}
 
@@ -850,7 +850,7 @@ static void ipi_cpu_stop(unsigned int cpu, struct pt_regs *regs)
 	    system_state == SYSTEM_RUNNING) {
 		per_cpu(regs_before_stop, cpu) = *regs;
 		raw_spin_lock(&stop_lock);
-		pr_crit("CPU%u: stopping\n", cpu);
+		pr_debug("CPU%u: stopping\n", cpu);
 		__show_regs(regs);
 		dump_stack();
 		dump_stack_minidump(regs->sp);
@@ -955,7 +955,7 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 #endif
 
 	default:
-		pr_crit("CPU%u: Unknown IPI message 0x%x\n", cpu, ipinr);
+		pr_debug("CPU%u: Unknown IPI message 0x%x\n", cpu, ipinr);
 		break;
 	}
 
@@ -1009,7 +1009,7 @@ void smp_send_stop(void)
 		cpumask_clear_cpu(smp_processor_id(), &mask);
 
 		if (system_state <= SYSTEM_RUNNING)
-			pr_crit("SMP: stopping secondary CPUs\n");
+			pr_debug("SMP: stopping secondary CPUs\n");
 		smp_cross_call_common(&mask, IPI_CPU_STOP);
 	}
 
@@ -1019,7 +1019,7 @@ void smp_send_stop(void)
 		udelay(1);
 
 	if (num_other_active_cpus())
-		pr_warning("SMP: failed to stop secondary CPUs %*pbl\n",
+		pr_debug("SMP: failed to stop secondary CPUs %*pbl\n",
 			   cpumask_pr_args(cpu_online_mask));
 
 	sdei_mask_local_cpu();
@@ -1055,7 +1055,7 @@ void crash_smp_send_stop(void)
 
 	atomic_set(&waiting_for_crash_ipi, num_other_online_cpus());
 
-	pr_crit("SMP: stopping secondary CPUs\n");
+	pr_debug("SMP: stopping secondary CPUs\n");
 	smp_cross_call(&mask, IPI_CPU_CRASH_STOP);
 
 	/* Wait up to one second for other CPUs to stop */
@@ -1064,7 +1064,7 @@ void crash_smp_send_stop(void)
 		udelay(1);
 
 	if (atomic_read(&waiting_for_crash_ipi) > 0)
-		pr_warning("SMP: failed to stop secondary CPUs %*pbl\n",
+		pr_debug("SMP: failed to stop secondary CPUs %*pbl\n",
 			   cpumask_pr_args(&mask));
 
 	sdei_mask_local_cpu();

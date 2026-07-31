@@ -122,7 +122,7 @@ void diag_notify_md_client(uint8_t proc, uint8_t peripheral, int data)
 
 	if (!driver->md_session_map[proc][peripheral] ||
 		driver->md_session_map[proc][peripheral]->pid <= 0) {
-		pr_err("diag: md_session_map[%d] is invalid\n", peripheral);
+		pr_debug("diag: md_session_map[%d] is invalid\n", peripheral);
 		mutex_unlock(&driver->md_session_lock);
 		return;
 	}
@@ -153,10 +153,10 @@ void diag_notify_md_client(uint8_t proc, uint8_t peripheral, int data)
 			stat = send_sig_info(info.si_signo,
 					&info, result);
 			if (stat)
-				pr_err("diag: Err sending signal to memory device client, signal data: 0x%x, stat: %d\n",
+				pr_debug("diag: Err sending signal to memory device client, signal data: 0x%x, stat: %d\n",
 					info.si_int, stat);
 		} else
-			pr_err("diag: md_session_map[%d] data is corrupted, signal data: 0x%x, stat: %d\n",
+			pr_debug("diag: md_session_map[%d] data is corrupted, signal data: 0x%x, stat: %d\n",
 				peripheral, info.si_int, stat);
 	}
 	mutex_unlock(&driver->md_session_lock);
@@ -271,7 +271,7 @@ static void process_command_deregistration(uint8_t *buf, uint32_t len,
 	}
 
 	if (i != dereg->count_entries) {
-		pr_err("diag: In %s, reading less than available, read_len: %d, len: %d count: %d\n",
+		pr_debug("diag: In %s, reading less than available, read_len: %d, len: %d count: %d\n",
 		       __func__, read_len, len, dereg->count_entries);
 	}
 }
@@ -316,7 +316,7 @@ static void process_command_registration(uint8_t *buf, uint32_t len,
 	}
 
 	if (i != reg->count_entries) {
-		pr_err("diag: In %s, reading less than available, read_len: %d, len: %d count: %d\n",
+		pr_debug("diag: In %s, reading less than available, read_len: %d, len: %d count: %d\n",
 		       __func__, read_len, len, reg->count_entries);
 	}
 }
@@ -386,7 +386,7 @@ static void process_incoming_feature_mask(uint8_t *buf, uint32_t len,
 	}
 
 	if (feature_mask_len > FEATURE_MASK_LEN) {
-		pr_alert("diag: Receiving feature mask length more than Apps support\n");
+		pr_debug("diag: Receiving feature mask length more than Apps support\n");
 		feature_mask_len = FEATURE_MASK_LEN;
 	}
 
@@ -453,7 +453,7 @@ static void process_last_event_report(uint8_t *buf, uint32_t len,
 		temp = krealloc(driver->event_mask->ptr, event_size,
 				GFP_KERNEL);
 		if (!temp) {
-			pr_err("diag: In %s, unable to reallocate event mask to support events from %d\n",
+			pr_debug("diag: In %s, unable to reallocate event mask to support events from %d\n",
 			       __func__, peripheral);
 			goto err;
 		}
@@ -494,7 +494,7 @@ static void process_log_range_report(uint8_t *buf, uint32_t len,
 		read_len += sizeof(struct diag_ctrl_log_range);
 
 		if (log_range->equip_id >= MAX_EQUIP_ID) {
-			pr_err("diag: receiving log equip id %d more than supported equip id: %d from peripheral: %d\n",
+			pr_debug("diag: receiving log equip id %d more than supported equip id: %d from peripheral: %d\n",
 			       log_range->equip_id, MAX_EQUIP_ID, peripheral);
 			continue;
 		}
@@ -516,7 +516,7 @@ static int update_msg_mask_tbl_entry(struct diag_msg_mask_t *mask,
 	if (!mask || !range)
 		return -EIO;
 	if (range->ssid_last < range->ssid_first) {
-		pr_err("diag: In %s, invalid ssid range, first: %d, last: %d\n",
+		pr_debug("diag: In %s, invalid ssid range, first: %d, last: %d\n",
 		       __func__, range->ssid_first, range->ssid_last);
 		return -EINVAL;
 	}
@@ -578,7 +578,7 @@ static void process_ssid_range_report(uint8_t *buf, uint32_t len,
 			err = update_msg_mask_tbl_entry(mask_ptr, ssid_range);
 			mutex_unlock(&mask_ptr->lock);
 			if (err == -ENOMEM) {
-				pr_err("diag: In %s, unable to increase the msg mask table range\n",
+				pr_debug("diag: In %s, unable to increase the msg mask table range\n",
 				       __func__);
 			}
 			found = 1;
@@ -594,7 +594,7 @@ static void process_ssid_range_report(uint8_t *buf, uint32_t len,
 			"diag: receiving msg mask size more that Apps can handle\n");
 		temp = krealloc(msg_mask.ptr, new_size, GFP_KERNEL);
 		if (!temp) {
-			pr_err("diag: In %s, Unable to add new ssid table to msg mask, ssid first: %d, last: %d\n",
+			pr_debug("diag: In %s, Unable to add new ssid table to msg mask, ssid first: %d, last: %d\n",
 			       __func__, ssid_range->ssid_first,
 			       ssid_range->ssid_last);
 			continue;
@@ -604,7 +604,7 @@ static void process_ssid_range_report(uint8_t *buf, uint32_t len,
 		err = diag_create_msg_mask_table_entry(mask_ptr,
 				ssid_range, INVALID_INDEX);
 		if (err) {
-			pr_err("diag: In %s, Unable to create a new msg mask table entry, first: %d last: %d err: %d\n",
+			pr_debug("diag: In %s, Unable to create a new msg mask table entry, first: %d last: %d err: %d\n",
 			       __func__, ssid_range->ssid_first,
 			       ssid_range->ssid_last, err);
 			continue;
@@ -632,7 +632,7 @@ static void diag_build_time_mask_update(uint8_t *buf,
 		return;
 
 	if (range->ssid_last < range->ssid_first) {
-		pr_err("diag: In %s, invalid ssid range, first: %d, last: %d\n",
+		pr_debug("diag: In %s, invalid ssid range, first: %d, last: %d\n",
 		       __func__, range->ssid_first, range->ssid_last);
 		return;
 	}
@@ -651,7 +651,7 @@ static void diag_build_time_mask_update(uint8_t *buf,
 		mutex_lock(&build_mask->lock);
 		err = update_msg_mask_tbl_entry(build_mask, range);
 		if (err == -ENOMEM) {
-			pr_err("diag: In %s, unable to increase the msg build mask table range\n",
+			pr_debug("diag: In %s, unable to increase the msg build mask table range\n",
 			       __func__);
 		}
 		dest_ptr = build_mask->ptr;
@@ -672,7 +672,7 @@ static void diag_build_time_mask_update(uint8_t *buf,
 
 	temp = krealloc(driver->build_time_mask->ptr, new_size, GFP_KERNEL);
 	if (!temp) {
-		pr_err("diag: In %s, unable to create a new entry for build time mask\n",
+		pr_debug("diag: In %s, unable to create a new entry for build time mask\n",
 		       __func__);
 		goto end;
 	}
@@ -681,7 +681,7 @@ static void diag_build_time_mask_update(uint8_t *buf,
 	err = diag_create_msg_mask_table_entry(build_mask, range,
 		INVALID_INDEX);
 	if (err) {
-		pr_err("diag: In %s, Unable to create a new msg mask table entry, err: %d\n",
+		pr_debug("diag: In %s, Unable to create a new msg mask table entry, err: %d\n",
 		       __func__, err);
 		goto end;
 	}
@@ -849,7 +849,7 @@ static void process_diagid(uint8_t *buf, uint32_t len,
 		P_FMASK_DIAGID_V2(peripheral);
 
 	if (len < sizeof(struct diag_ctrl_diagid_header)) {
-		pr_err("diag: Invalid control pkt len(%d) from peripheral: %d to parse packet header\n",
+		pr_debug("diag: Invalid control pkt len(%d) from peripheral: %d to parse packet header\n",
 			len, peripheral);
 		return;
 	}
@@ -859,7 +859,7 @@ static void process_diagid(uint8_t *buf, uint32_t len,
 	if (diagid_v2_feature_mask && version == DIAGID_VERSION_2) {
 		if (len < (sizeof(struct diag_ctrl_diagid_v2) -
 			(MAX_DIAGID_STR_LEN - MIN_DIAGID_STR_LEN))) {
-			pr_err("diag: Invalid control pkt len(%d) from peripheral: %d to parse diagid v2 structure\n",
+			pr_debug("diag: Invalid control pkt len(%d) from peripheral: %d to parse diagid v2 structure\n",
 				len, peripheral);
 			return;
 		}
@@ -872,7 +872,7 @@ static void process_diagid(uint8_t *buf, uint32_t len,
 	} else {
 		if (len < (sizeof(struct diag_ctrl_diagid) -
 			(MAX_DIAGID_STR_LEN - MIN_DIAGID_STR_LEN))) {
-			pr_err("diag: Invalid control pkt len(%d) from peripheral: %d to parse diagid v1 structure\n",
+			pr_debug("diag: Invalid control pkt len(%d) from peripheral: %d to parse diagid v1 structure\n",
 				len, peripheral);
 			return;
 		}
@@ -887,7 +887,7 @@ static void process_diagid(uint8_t *buf, uint32_t len,
 		new_request = 1;
 		pd_val = diag_query_pd(process_name);
 		if (pd_val < 0) {
-			pr_err("diag: diagid request string: %s does not exist in the database\n",
+			pr_debug("diag: diagid request string: %s does not exist in the database\n",
 			process_name);
 			return;
 		}
@@ -948,7 +948,7 @@ static void process_diagid(uint8_t *buf, uint32_t len,
 	err = diagfwd_write(peripheral, TYPE_CNTL,
 				&ctrl_pkt, pkt_len);
 	if (err && err != -ENODEV) {
-		pr_err("diag: Unable to send diag id ctrl packet to peripheral %d, err: %d\n",
+		pr_debug("diag: Unable to send diag id ctrl packet to peripheral %d, err: %d\n",
 		       peripheral, err);
 	} else {
 		/*
@@ -1154,7 +1154,7 @@ void diag_update_real_time_vote(uint16_t proc, uint8_t real_time, int index)
 	int i;
 
 	if (index >= DIAG_NUM_PROC) {
-		pr_err("diag: In %s, invalid index %d\n", __func__, index);
+		pr_debug("diag: In %s, invalid index %d\n", __func__, index);
 		return;
 	}
 
@@ -1187,20 +1187,20 @@ static void diag_send_diag_mode_update_remote(int token, int real_time)
 	uint32_t write_len = 0;
 
 	if (token < 0 || token >= NUM_DCI_PROC) {
-		pr_err("diag: Invalid remote device channel in %s, token: %d\n",
+		pr_debug("diag: Invalid remote device channel in %s, token: %d\n",
 							__func__, token);
 		return;
 	}
 
 	if (real_time != MODE_REALTIME && real_time != MODE_NONREALTIME) {
-		pr_err("diag: Invalid real time value in %s, type: %d\n",
+		pr_debug("diag: Invalid real time value in %s, type: %d\n",
 							__func__, real_time);
 		return;
 	}
 
 	buf = dci_get_buffer_from_bridge(token);
 	if (!buf) {
-		pr_err("diag: In %s, unable to get dci buffers to write data\n",
+		pr_debug("diag: In %s, unable to get dci buffers to write data\n",
 			__func__);
 		return;
 	}
@@ -1218,7 +1218,7 @@ static void diag_send_diag_mode_update_remote(int token, int real_time)
 	write_len += sizeof(uint8_t);
 	err = diagfwd_bridge_write(TOKEN_TO_BRIDGE(token), buf, write_len);
 	if (err != write_len) {
-		pr_err("diag: cannot send nrt mode ctrl pkt, err: %d\n", err);
+		pr_debug("diag: cannot send nrt mode ctrl pkt, err: %d\n", err);
 		diagmem_free(driver, buf, dci_ops_tbl[token].mempool);
 	} else {
 		driver->real_time_mode[token + 1] = real_time;
@@ -1336,7 +1336,7 @@ static int __diag_send_real_time_update(uint8_t peripheral, int real_time,
 	int err = 0;
 
 	if (peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__,
 		       peripheral);
 		return -EINVAL;
 	}
@@ -1349,7 +1349,7 @@ static int __diag_send_real_time_update(uint8_t peripheral, int real_time,
 	}
 
 	if (real_time != MODE_NONREALTIME && real_time != MODE_REALTIME) {
-		pr_err("diag: In %s, invalid real time mode %d, peripheral: %d\n",
+		pr_debug("diag: In %s, invalid real time mode %d, peripheral: %d\n",
 		       __func__, real_time, peripheral);
 		return -EINVAL;
 	}
@@ -1364,7 +1364,7 @@ static int __diag_send_real_time_update(uint8_t peripheral, int real_time,
 	err = diagfwd_write(peripheral, TYPE_CNTL, buf, msg_size);
 
 	if (err && err != -ENODEV) {
-		pr_err("diag: In %s, unable to write, peripheral: %d, type: %d, len: %d, err: %d\n",
+		pr_debug("diag: In %s, unable to write, peripheral: %d, type: %d, len: %d, err: %d\n",
 		       __func__, peripheral, TYPE_CNTL,
 		       msg_size, err);
 	} else {
@@ -1424,7 +1424,7 @@ int diag_send_peripheral_buffering_mode(struct diag_buffering_mode_t *params)
 
 	if ((peripheral < 0) ||
 		peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__,
 		       peripheral);
 		return -EINVAL;
 	}
@@ -1436,7 +1436,7 @@ int diag_send_peripheral_buffering_mode(struct diag_buffering_mode_t *params)
 	}
 
 	if (!driver->feature[peripheral].peripheral_buffering) {
-		pr_err("diag: In %s, peripheral %d doesn't support buffering\n",
+		pr_debug("diag: In %s, peripheral %d doesn't support buffering\n",
 		       __func__, peripheral);
 		return -EIO;
 	}
@@ -1450,7 +1450,7 @@ int diag_send_peripheral_buffering_mode(struct diag_buffering_mode_t *params)
 		mode = MODE_NONREALTIME;
 		break;
 	default:
-		pr_err("diag: In %s, invalid tx mode %d\n", __func__,
+		pr_debug("diag: In %s, invalid tx mode %d\n", __func__,
 		       params->mode);
 		return -EINVAL;
 	}
@@ -1471,7 +1471,7 @@ int diag_send_peripheral_buffering_mode(struct diag_buffering_mode_t *params)
 	    (params->low_wm_val > params->high_wm_val) ||
 	    ((params->low_wm_val == params->high_wm_val) &&
 	     (params->low_wm_val != DIAG_MIN_WM_VAL))) {
-		pr_err("diag: In %s, invalid watermark values, high: %d, low: %d, peripheral: %d\n",
+		pr_debug("diag: In %s, invalid watermark values, high: %d, low: %d, peripheral: %d\n",
 		       __func__, params->high_wm_val, params->low_wm_val,
 		       params->peripheral);
 		return -EINVAL;
@@ -1480,19 +1480,19 @@ int diag_send_peripheral_buffering_mode(struct diag_buffering_mode_t *params)
 	mutex_lock(&driver->mode_lock);
 	err = diag_send_buffering_tx_mode_pkt(peripheral, diag_id, params);
 	if (err) {
-		pr_err("diag: In %s, unable to send buffering mode packet to peripheral %d, err: %d\n",
+		pr_debug("diag: In %s, unable to send buffering mode packet to peripheral %d, err: %d\n",
 		       __func__, peripheral, err);
 		goto fail;
 	}
 	err = diag_send_buffering_wm_values(peripheral, diag_id, params);
 	if (err) {
-		pr_err("diag: In %s, unable to send buffering wm value packet to peripheral %d, err: %d\n",
+		pr_debug("diag: In %s, unable to send buffering wm value packet to peripheral %d, err: %d\n",
 		       __func__, peripheral, err);
 		goto fail;
 	}
 	err = __diag_send_real_time_update(peripheral, mode, diag_id);
 	if (err) {
-		pr_err("diag: In %s, unable to send mode update to peripheral %d, mode: %d, err: %d\n",
+		pr_debug("diag: In %s, unable to send mode update to peripheral %d, mode: %d, err: %d\n",
 		       __func__, peripheral, mode, err);
 		goto fail;
 	}
@@ -1601,7 +1601,7 @@ int diag_send_stm_state(uint8_t peripheral, uint8_t stm_control_data)
 	stm_msg.control_data = stm_control_data;
 	err = diagfwd_write(peripheral, TYPE_CNTL, &stm_msg, msg_size);
 	if (err && err != -ENODEV) {
-		pr_err("diag: In %s, unable to write to socket, peripheral: %d, type: %d, len: %d, err: %d\n",
+		pr_debug("diag: In %s, unable to write to socket, peripheral: %d, type: %d, len: %d, err: %d\n",
 		       __func__, peripheral, TYPE_CNTL,
 		       msg_size, err);
 	}
@@ -1642,7 +1642,7 @@ int diag_send_peripheral_drain_immediate(uint8_t pd,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &ctrl_pkt_v2,
 				sizeof(ctrl_pkt_v2));
 		if (err && err != -ENODEV) {
-			pr_err("diag: Unable to send drain immediate ctrl packet to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send drain immediate ctrl packet to peripheral %d, err: %d\n",
 			peripheral, err);
 		}
 	} else {
@@ -1657,7 +1657,7 @@ int diag_send_peripheral_drain_immediate(uint8_t pd,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &ctrl_pkt,
 				sizeof(ctrl_pkt));
 		if (err && err != -ENODEV) {
-			pr_err("diag: Unable to send drain immediate ctrl packet to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send drain immediate ctrl packet to peripheral %d, err: %d\n",
 			peripheral, err);
 		}
 	}
@@ -1676,7 +1676,7 @@ int diag_send_buffering_tx_mode_pkt(uint8_t peripheral,
 		return -EIO;
 
 	if (peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__,
 		       peripheral);
 		return -EINVAL;
 	}
@@ -1693,7 +1693,7 @@ int diag_send_buffering_tx_mode_pkt(uint8_t peripheral,
 	case DIAG_BUFFERING_MODE_CIRCULAR:
 		break;
 	default:
-		pr_err("diag: In %s, invalid tx mode: %d\n", __func__,
+		pr_debug("diag: In %s, invalid tx mode: %d\n", __func__,
 		       params->mode);
 		return -EINVAL;
 	}
@@ -1715,7 +1715,7 @@ int diag_send_buffering_tx_mode_pkt(uint8_t peripheral,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &ctrl_pkt_v2,
 			sizeof(ctrl_pkt_v2));
 		if (err && err != -ENODEV) {
-			pr_err("diag: Unable to send tx_mode ctrl packet to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send tx_mode ctrl packet to peripheral %d, err: %d\n",
 				   peripheral, err);
 			goto fail;
 		}
@@ -1733,7 +1733,7 @@ int diag_send_buffering_tx_mode_pkt(uint8_t peripheral,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &ctrl_pkt,
 			sizeof(ctrl_pkt));
 		if (err && err != -ENODEV) {
-			pr_err("diag: Unable to send tx_mode ctrl packet to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send tx_mode ctrl packet to peripheral %d, err: %d\n",
 			       peripheral, err);
 			goto fail;
 		}
@@ -1755,7 +1755,7 @@ int diag_send_buffering_wm_values(uint8_t peripheral,
 		return -EIO;
 
 	if (peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__,
 		       peripheral);
 		return -EINVAL;
 	}
@@ -1779,7 +1779,7 @@ int diag_send_buffering_wm_values(uint8_t peripheral,
 	case DIAG_BUFFERING_MODE_CIRCULAR:
 		break;
 	default:
-		pr_err("diag: In %s, invalid tx mode: %d\n", __func__,
+		pr_debug("diag: In %s, invalid tx mode: %d\n", __func__,
 		       params->mode);
 		return -EINVAL;
 	}
@@ -1801,7 +1801,7 @@ int diag_send_buffering_wm_values(uint8_t peripheral,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &ctrl_pkt_v2,
 					sizeof(ctrl_pkt_v2));
 		if (err && err != -ENODEV) {
-			pr_err("diag: Unable to send watermark values to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send watermark values to peripheral %d, err: %d\n",
 				   peripheral, err);
 		}
 	} else {
@@ -1819,7 +1819,7 @@ int diag_send_buffering_wm_values(uint8_t peripheral,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &ctrl_pkt,
 				    sizeof(ctrl_pkt));
 		if (err && err != -ENODEV) {
-			pr_err("diag: Unable to send watermark values to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send watermark values to peripheral %d, err: %d\n",
 			       peripheral, err);
 		}
 	}
@@ -1895,7 +1895,7 @@ int diag_send_passthru_ctrl_pkt(struct diag_hw_accel_cmd_req_t *req_params)
 			continue;
 		err = diagfwd_write(i, TYPE_CNTL, &ctrl_pkt, sizeof(ctrl_pkt));
 		if (err && err != -ENODEV)
-			pr_err("diag: Unable to send PASSTHRU ctrl packet to peripheral %d, err: %d\n",
+			pr_debug("diag: Unable to send PASSTHRU ctrl packet to peripheral %d, err: %d\n",
 				i, err);
 	}
 	if ((diagid_mask & DIAG_ID_APPS) &&

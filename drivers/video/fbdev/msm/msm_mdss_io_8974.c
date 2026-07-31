@@ -165,7 +165,7 @@ void mdss_dsi_dfps_config_8996(struct mdss_dsi_ctrl_pdata *ctrl)
 
 	pdata = &ctrl->panel_data;
 	if (!pdata) {
-		pr_err("%s: Invalid panel data\n", __func__);
+		pr_debug("%s: Invalid panel data\n", __func__);
 		return;
 	}
 	pinfo = &pdata->panel_info;
@@ -467,7 +467,7 @@ static void mdss_dsi_phy_sw_reset_sub(struct mdss_dsi_ctrl_pdata *ctrl)
 	u32 reg_val = 0;
 
 	if (ctrl == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -524,7 +524,7 @@ void mdss_dsi_phy_sw_reset(struct mdss_dsi_ctrl_pdata *ctrl)
 	struct dsi_shared_data *sdata;
 
 	if (ctrl == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -545,7 +545,7 @@ void mdss_dsi_phy_sw_reset(struct mdss_dsi_ctrl_pdata *ctrl)
 		if (sctrl)
 			mdss_dsi_phy_sw_reset_sub(sctrl);
 		else
-			pr_warn("%s: unable to get slave ctrl\n", __func__);
+			pr_debug("%s: unable to get slave ctrl\n", __func__);
 	}
 
 	/* All other quirks go here */
@@ -570,7 +570,7 @@ void mdss_dsi_phy_sw_reset(struct mdss_dsi_ctrl_pdata *ctrl)
 static void mdss_dsi_phy_regulator_disable(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	if (!ctrl) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -589,7 +589,7 @@ static void mdss_dsi_phy_regulator_disable(struct mdss_dsi_ctrl_pdata *ctrl)
 static void mdss_dsi_phy_shutdown(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	if (!ctrl) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -618,7 +618,7 @@ void mdss_dsi_lp_cd_rx(struct mdss_dsi_ctrl_pdata *ctrl)
 	struct mdss_dsi_phy_ctrl *pd;
 
 	if (!ctrl) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -640,7 +640,7 @@ static void mdss_dsi_28nm_phy_regulator_enable(
 	pd = &(((ctrl_pdata->panel_data).panel_info.mipi).dsi_phy_db);
 
 	if (pd->regulator_len == 0) {
-		pr_warn("%s: invalid regulator settings\n", __func__);
+		pr_debug("%s: invalid regulator settings\n", __func__);
 		return;
 	}
 
@@ -710,7 +710,7 @@ static void mdss_dsi_28nm_phy_config(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	int i, off, ln, offset;
 
 	if (!ctrl_pdata) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -789,7 +789,7 @@ static void mdss_dsi_20nm_phy_regulator_enable(struct mdss_dsi_ctrl_pdata
 	phy_io_base = ctrl_pdata->phy_regulator_io.base;
 
 	if (pd->regulator_len != 7) {
-		pr_err("%s: wrong regulator settings\n", __func__);
+		pr_debug("%s: wrong regulator settings\n", __func__);
 		return;
 	}
 
@@ -822,7 +822,7 @@ static void mdss_dsi_20nm_phy_config(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	pd = &(((ctrl_pdata->panel_data).panel_info.mipi).dsi_phy_db);
 
 	if (pd->strength_len != 2) {
-		pr_err("%s: wrong strength ctrl\n", __func__);
+		pr_debug("%s: wrong strength ctrl\n", __func__);
 		return;
 	}
 
@@ -850,7 +850,7 @@ static void mdss_dsi_20nm_phy_config(struct mdss_dsi_ctrl_pdata *ctrl_pdata)
 	}
 
 	if (pd->lanecfg_len != 45) {
-		pr_err("%s: wrong lane cfg\n", __func__);
+		pr_debug("%s: wrong lane cfg\n", __func__);
 		return;
 	}
 
@@ -940,7 +940,7 @@ static void mdss_dsi_8996_phy_regulator_enable(
 	struct mdss_panel_info *panel_info;
 
 	if (!ctrl) {
-		pr_warn("%s: null ctrl pdata\n", __func__);
+		pr_debug("%s: null ctrl pdata\n", __func__);
 		return;
 	}
 
@@ -949,7 +949,7 @@ static void mdss_dsi_8996_phy_regulator_enable(
 
 	if (pd->regulator_len != (MDSS_DSI_NUM_DATA_LANES +
 					MDSS_DSI_NUM_CLK_LANES)) {
-		pr_warn("%s: invalid regulator settings\n", __func__);
+		pr_debug("%s: invalid regulator settings\n", __func__);
 		return;
 	}
 
@@ -1003,7 +1003,7 @@ static void mdss_dsi_8996_phy_power_off(
 	if (ctrl) {
 		panel_info = &((ctrl->panel_data).panel_info);
 	} else {
-		pr_warn("%s: null ctrl pdata\n", __func__);
+		pr_debug("%s: null ctrl pdata\n", __func__);
 		return;
 	}
 
@@ -1083,7 +1083,7 @@ static void mdss_dsi_8996_phy_power_on(
 	if (ctrl) {
 		panel_info = &((ctrl->panel_data).panel_info);
 	} else {
-		pr_warn("%s: null ctrl pdata\n", __func__);
+		pr_debug("%s: null ctrl pdata\n", __func__);
 		return;
 	}
 
@@ -1151,7 +1151,7 @@ static void mdss_dsi_8996_phy_config(struct mdss_dsi_ctrl_pdata *ctrl)
 	if (ctrl) {
 		panel_info = &((ctrl->panel_data).panel_info);
 	} else {
-		pr_warn("%s: null ctrl pdata\n", __func__);
+		pr_debug("%s: null ctrl pdata\n", __func__);
 		return;
 	}
 
@@ -1164,18 +1164,18 @@ static void mdss_dsi_8996_phy_config(struct mdss_dsi_ctrl_pdata *ctrl)
 	MIPI_OUTP((ctrl->phy_io.base) + DSIPHY_CMN_GLBL_TEST_CTRL, 0x1);
 
 	if (pd->lanecfg_len != (num_of_lanes * DSIPHY_LANE_CFG_NUM)) {
-		pr_err("%s: wrong lane cfg\n", __func__);
+		pr_debug("%s: wrong lane cfg\n", __func__);
 		return;
 	}
 
 	if (pd->strength_len != (num_of_lanes *
 				DSIPHY_LANE_STRENGTH_CTRL_NUM)) {
-		pr_err("%s: wrong strength ctrl\n", __func__);
+		pr_debug("%s: wrong strength ctrl\n", __func__);
 		return;
 	}
 
 	if (pd->regulator_len != (num_of_lanes * DSIPHY_LANE_VREG_NUM)) {
-		pr_err("%s: wrong regulator setting\n", __func__);
+		pr_debug("%s: wrong regulator setting\n", __func__);
 		return;
 	}
 
@@ -1301,7 +1301,7 @@ static void mdss_dsi_phy_regulator_ctrl(struct mdss_dsi_ctrl_pdata *ctrl,
 	struct dsi_shared_data *sdata;
 
 	if (!ctrl) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -1358,7 +1358,7 @@ static void mdss_dsi_phy_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, bool enable)
 	struct mdss_dsi_ctrl_pdata *other_ctrl;
 
 	if (!ctrl) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -1402,7 +1402,7 @@ static void mdss_dsi_phy_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, bool enable)
 void mdss_dsi_phy_disable(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	if (ctrl == NULL) {
-		pr_err("%s: Invalid input data\n", __func__);
+		pr_debug("%s: Invalid input data\n", __func__);
 		return;
 	}
 
@@ -1441,7 +1441,7 @@ void mdss_dsi_phy_init(struct mdss_dsi_ctrl_pdata *ctrl)
 		if (sctrl)
 			mdss_dsi_phy_init_sub(sctrl);
 		else
-			pr_warn("%s: unable to get slave ctrl\n", __func__);
+			pr_debug("%s: unable to get slave ctrl\n", __func__);
 	}
 }
 
@@ -1463,7 +1463,7 @@ int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy)
 	int rc = 0;
 
 	if (!pdata) {
-		pr_err("%s: invalid panel data\n", __func__);
+		pr_debug("%s: invalid panel data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1472,7 +1472,7 @@ int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy)
 	pinfo = &pdata->panel_info;
 
 	if (!ctrl_pdata || !pinfo) {
-		pr_err("%s: invalid ctrl data\n", __func__);
+		pr_debug("%s: invalid ctrl data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1484,14 +1484,14 @@ int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy)
 
 	pinfo->clk_rate = mdss_dsi_calc_bitclk(pinfo, pinfo->mipi.frame_rate);
 	if (!pinfo->clk_rate) {
-		pr_err("%s: unable to calculate the DSI bit clock\n", __func__);
+		pr_debug("%s: unable to calculate the DSI bit clock\n", __func__);
 		return -EINVAL;
 	}
 
 	pinfo->mipi.dsi_pclk_rate = mdss_dsi_get_pclk_rate(pinfo,
 		pinfo->clk_rate);
 	if (!pinfo->mipi.dsi_pclk_rate) {
-		pr_err("%s: unable to calculate the DSI pclk\n", __func__);
+		pr_debug("%s: unable to calculate the DSI pclk\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1505,7 +1505,7 @@ int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy)
 			MDSS_DSI_LINK_BYTE_CLK, ctrl_pdata->byte_clk_rate,
 			MDSS_DSI_CLK_UPDATE_CLK_RATE_AT_ON);
 	if (rc) {
-		pr_err("%s: dsi_byte_clk - clk_set_rate failed\n",
+		pr_debug("%s: dsi_byte_clk - clk_set_rate failed\n",
 				__func__);
 		return rc;
 	}
@@ -1514,7 +1514,7 @@ int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy)
 			MDSS_DSI_LINK_PIX_CLK, ctrl_pdata->pclk_rate,
 			MDSS_DSI_CLK_UPDATE_CLK_RATE_AT_ON);
 	if (rc) {
-		pr_err("%s: dsi_pixel_clk - clk_set_rate failed\n",
+		pr_debug("%s: dsi_pixel_clk - clk_set_rate failed\n",
 				__func__);
 		return rc;
 	}
@@ -1525,7 +1525,7 @@ int mdss_dsi_clk_refresh(struct mdss_panel_data *pdata, bool update_phy)
 				ctrl_pdata->shared_data->phy_rev,
 				pdata->panel_info.clk_rate);
 		if (rc) {
-			pr_err("Error in calculating phy timings\n");
+			pr_debug("Error in calculating phy timings\n");
 			return rc;
 		}
 		ctrl_pdata->update_phy_timing = false;
@@ -1541,7 +1541,7 @@ int mdss_dsi_core_clk_init(struct platform_device *pdev,
 	int rc = 0;
 
 	if (!pdev) {
-		pr_err("%s: Invalid pdev\n", __func__);
+		pr_debug("%s: Invalid pdev\n", __func__);
 		goto error;
 	}
 
@@ -1551,7 +1551,7 @@ int mdss_dsi_core_clk_init(struct platform_device *pdev,
 	sdata->mdp_core_clk = devm_clk_get(dev, "mdp_core_clk");
 	if (IS_ERR(sdata->mdp_core_clk)) {
 		rc = PTR_ERR(sdata->mdp_core_clk);
-		pr_err("%s: Unable to get mdp core clk. rc=%d\n",
+		pr_debug("%s: Unable to get mdp core clk. rc=%d\n",
 			__func__, rc);
 		goto error;
 	}
@@ -1559,7 +1559,7 @@ int mdss_dsi_core_clk_init(struct platform_device *pdev,
 	sdata->ahb_clk = devm_clk_get(dev, "iface_clk");
 	if (IS_ERR(sdata->ahb_clk)) {
 		rc = PTR_ERR(sdata->ahb_clk);
-		pr_err("%s: Unable to get mdss ahb clk. rc=%d\n",
+		pr_debug("%s: Unable to get mdss ahb clk. rc=%d\n",
 			__func__, rc);
 		goto error;
 	}
@@ -1567,7 +1567,7 @@ int mdss_dsi_core_clk_init(struct platform_device *pdev,
 	sdata->axi_clk = devm_clk_get(dev, "bus_clk");
 	if (IS_ERR(sdata->axi_clk)) {
 		rc = PTR_ERR(sdata->axi_clk);
-		pr_err("%s: Unable to get axi bus clk. rc=%d\n",
+		pr_debug("%s: Unable to get axi bus clk. rc=%d\n",
 			__func__, rc);
 		goto error;
 	}
@@ -1632,7 +1632,7 @@ int mdss_dsi_link_clk_init(struct platform_device *pdev,
 	int rc = 0;
 
 	if (!pdev) {
-		pr_err("%s: Invalid pdev\n", __func__);
+		pr_debug("%s: Invalid pdev\n", __func__);
 		goto error;
 	}
 
@@ -1642,7 +1642,7 @@ int mdss_dsi_link_clk_init(struct platform_device *pdev,
 	ctrl->byte_clk = devm_clk_get(dev, "byte_clk");
 	if (IS_ERR(ctrl->byte_clk)) {
 		rc = PTR_ERR(ctrl->byte_clk);
-		pr_err("%s: can't find dsi_byte_clk. rc=%d\n",
+		pr_debug("%s: can't find dsi_byte_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->byte_clk = NULL;
 		goto error;
@@ -1651,7 +1651,7 @@ int mdss_dsi_link_clk_init(struct platform_device *pdev,
 	ctrl->pixel_clk = devm_clk_get(dev, "pixel_clk");
 	if (IS_ERR(ctrl->pixel_clk)) {
 		rc = PTR_ERR(ctrl->pixel_clk);
-		pr_err("%s: can't find dsi_pixel_clk. rc=%d\n",
+		pr_debug("%s: can't find dsi_pixel_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->pixel_clk = NULL;
 		goto error;
@@ -1660,7 +1660,7 @@ int mdss_dsi_link_clk_init(struct platform_device *pdev,
 	ctrl->esc_clk = devm_clk_get(dev, "core_clk");
 	if (IS_ERR(ctrl->esc_clk)) {
 		rc = PTR_ERR(ctrl->esc_clk);
-		pr_err("%s: can't find dsi_esc_clk. rc=%d\n",
+		pr_debug("%s: can't find dsi_esc_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->esc_clk = NULL;
 		goto error;
@@ -1710,7 +1710,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	int rc = 0;
 
 	if (!pdev) {
-		pr_err("%s: Invalid pdev\n", __func__);
+		pr_debug("%s: Invalid pdev\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1718,7 +1718,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	ctrl->mux_byte_clk = devm_clk_get(dev, "pll_byte_clk_mux");
 	if (IS_ERR(ctrl->mux_byte_clk)) {
 		rc = PTR_ERR(ctrl->mux_byte_clk);
-		pr_err("%s: can't find mux_byte_clk. rc=%d\n",
+		pr_debug("%s: can't find mux_byte_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->mux_byte_clk = NULL;
 		goto error;
@@ -1727,7 +1727,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	ctrl->mux_pixel_clk = devm_clk_get(dev, "pll_pixel_clk_mux");
 	if (IS_ERR(ctrl->mux_pixel_clk)) {
 		rc = PTR_ERR(ctrl->mux_pixel_clk);
-		pr_err("%s: can't find mdss_mux_pixel_clk. rc=%d\n",
+		pr_debug("%s: can't find mdss_mux_pixel_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->mux_pixel_clk = NULL;
 		goto error;
@@ -1736,7 +1736,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	ctrl->pll_byte_clk = devm_clk_get(dev, "pll_byte_clk_src");
 	if (IS_ERR(ctrl->pll_byte_clk)) {
 		rc = PTR_ERR(ctrl->pll_byte_clk);
-		pr_err("%s: can't find pll_byte_clk. rc=%d\n",
+		pr_debug("%s: can't find pll_byte_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->pll_byte_clk = NULL;
 		goto error;
@@ -1745,7 +1745,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	ctrl->pll_pixel_clk = devm_clk_get(dev, "pll_pixel_clk_src");
 	if (IS_ERR(ctrl->pll_pixel_clk)) {
 		rc = PTR_ERR(ctrl->pll_pixel_clk);
-		pr_err("%s: can't find pll_pixel_clk. rc=%d\n",
+		pr_debug("%s: can't find pll_pixel_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->pll_pixel_clk = NULL;
 		goto error;
@@ -1754,7 +1754,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	ctrl->shadow_byte_clk = devm_clk_get(dev, "pll_shadow_byte_clk_src");
 	if (IS_ERR(ctrl->shadow_byte_clk)) {
 		rc = PTR_ERR(ctrl->shadow_byte_clk);
-		pr_err("%s: can't find shadow_byte_clk. rc=%d\n",
+		pr_debug("%s: can't find shadow_byte_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->shadow_byte_clk = NULL;
 		goto error;
@@ -1763,7 +1763,7 @@ int mdss_dsi_shadow_clk_init(struct platform_device *pdev,
 	ctrl->shadow_pixel_clk = devm_clk_get(dev, "pll_shadow_pixel_clk_src");
 	if (IS_ERR(ctrl->shadow_pixel_clk)) {
 		rc = PTR_ERR(ctrl->shadow_pixel_clk);
-		pr_err("%s: can't find shadow_pixel_clk. rc=%d\n",
+		pr_debug("%s: can't find shadow_pixel_clk. rc=%d\n",
 			__func__, rc);
 		ctrl->shadow_pixel_clk = NULL;
 		goto error;
@@ -1964,13 +1964,13 @@ static int mdss_dsi_ulps_config_default(struct mdss_dsi_ctrl_pdata *ctrl,
 	u32 active_lanes = 0;
 
 	if (!ctrl) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
 	pdata = &ctrl->panel_data;
 	if (!pdata) {
-		pr_err("%s: Invalid panel data\n", __func__);
+		pr_debug("%s: Invalid panel data\n", __func__);
 		return -EINVAL;
 	}
 	pinfo = &pdata->panel_info;
@@ -2006,7 +2006,7 @@ static int mdss_dsi_ulps_config_default(struct mdss_dsi_ctrl_pdata *ctrl,
 		/* Check to make sure that all active data lanes are in ULPS */
 		lane_status = MIPI_INP(ctrl->ctrl_base + 0xA8);
 		if (lane_status & (active_lanes << 8)) {
-			pr_err("%s: ULPS entry req failed for ctrl%d. Lane status=0x%08x\n",
+			pr_debug("%s: ULPS entry req failed for ctrl%d. Lane status=0x%08x\n",
 				__func__, ctrl->ndx, lane_status);
 			rc = -EINVAL;
 			goto error;
@@ -2058,7 +2058,7 @@ static int mdss_dsi_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl,
 	int ret = 0;
 
 	if (!ctrl) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2166,12 +2166,12 @@ static int mdss_dsi_clamp_ctrl_default(struct mdss_dsi_ctrl_pdata *ctrl,
 	u32 intf_num = 0;
 
 	if (!ctrl) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!ctrl->mmss_misc_io.base) {
-		pr_err("%s: mmss_misc_io not mapped\n", __func__);
+		pr_debug("%s: mmss_misc_io not mapped\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2269,7 +2269,7 @@ static int mdss_dsi_clamp_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, int enable)
 	int rc = 0;
 
 	if (!ctrl) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2298,7 +2298,7 @@ static int mdss_dsi_clamp_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, int enable)
 
 error:
 	if (rc)
-		pr_err("%s: failed to %s clamps for ctrl%d\n", __func__,
+		pr_debug("%s: failed to %s clamps for ctrl%d\n", __func__,
 			enable ? "enable" : "disable", ctrl->ndx);
 
 	return rc;
@@ -2318,7 +2318,7 @@ int mdss_dsi_clk_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, void *clk_handle,
 	int state = MDSS_DSI_CLK_OFF;
 
 	if (!ctrl) {
-		pr_err("%s: Invalid arg\n", __func__);
+		pr_debug("%s: Invalid arg\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2338,11 +2338,11 @@ int mdss_dsi_clk_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, void *clk_handle,
 	if (mdss_dsi_sync_wait_trigger(ctrl)) {
 		mctrl = mdss_dsi_get_other_ctrl(ctrl);
 		if (!mctrl)
-			pr_warn("%s: Unable to get other control\n", __func__);
+			pr_debug("%s: Unable to get other control\n", __func__);
 	} else if (mdss_dsi_is_ctrl_clk_slave(ctrl)) {
 		mctrl = mdss_dsi_get_ctrl_clk_master();
 		if (!mctrl)
-			pr_warn("%s: Unable to get clk master control\n",
+			pr_debug("%s: Unable to get clk master control\n",
 				__func__);
 	}
 
@@ -2380,7 +2380,7 @@ int mdss_dsi_clk_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, void *clk_handle,
 		rc = mdss_dsi_clk_req_state(m_clk_handle,
 			MDSS_DSI_ALL_CLKS, MDSS_DSI_CLK_ON, mctrl->ndx);
 		if (rc) {
-			pr_err("%s: failed to turn on mctrl clocks, rc=%d\n",
+			pr_debug("%s: failed to turn on mctrl clocks, rc=%d\n",
 				 __func__, rc);
 			goto error;
 		}
@@ -2389,7 +2389,7 @@ int mdss_dsi_clk_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, void *clk_handle,
 
 	rc = mdss_dsi_clk_req_state(clk_handle, clk_type, clk_state, ctrl->ndx);
 	if (rc) {
-		pr_err("%s: failed set clk state, rc = %d\n", __func__, rc);
+		pr_debug("%s: failed set clk state, rc = %d\n", __func__, rc);
 		goto error;
 	}
 
@@ -2425,7 +2425,7 @@ int mdss_dsi_clk_ctrl(struct mdss_dsi_ctrl_pdata *ctrl, void *clk_handle,
 			rc = mdss_dsi_clk_req_state(m_clk_handle,
 				MDSS_DSI_ALL_CLKS, state, mctrl->ndx);
 			if (rc) {
-				pr_err("%s: failed to set mctrl clk state, rc = %d\n",
+				pr_debug("%s: failed to set mctrl clk state, rc = %d\n",
 				       __func__, rc);
 				goto error;
 			}
@@ -2474,7 +2474,7 @@ int mdss_dsi_pre_clkoff_cb(void *priv,
 			rc = mdss_dsi_ulps_config(ctrl, 1, false);
 		}
 		if (rc) {
-			pr_err("%s: failed enable ulps, rc = %d\n",
+			pr_debug("%s: failed enable ulps, rc = %d\n",
 			       __func__, rc);
 		}
 	}
@@ -2489,7 +2489,7 @@ int mdss_dsi_pre_clkoff_cb(void *priv,
 			mdss_dsi_phy_power_off(ctrl);
 			rc = mdss_dsi_clamp_ctrl(ctrl, 1);
 			if (rc)
-				pr_err("%s: Failed to enable dsi clamps. rc=%d\n",
+				pr_debug("%s: Failed to enable dsi clamps. rc=%d\n",
 					__func__, rc);
 		} else {
 			/*
@@ -2498,7 +2498,7 @@ int mdss_dsi_pre_clkoff_cb(void *priv,
 			 */
 			rc = mdss_dsi_ulps_config(ctrl, 0, false);
 			if (rc)
-				pr_err("%s: failed to disable ulps. rc=%d\n",
+				pr_debug("%s: failed to disable ulps. rc=%d\n",
 					__func__, rc);
 		}
 	}
@@ -2516,7 +2516,7 @@ static void mdss_dsi_split_link_clk_cfg(struct mdss_dsi_ctrl_pdata *ctrl,
 	if (ctrl)
 		pdata = &ctrl->panel_data;
 	else {
-		pr_err("%s: ctrl pdata is NULL\n", __func__);
+		pr_debug("%s: ctrl pdata is NULL\n", __func__);
 		return;
 	}
 
@@ -2555,7 +2555,7 @@ int mdss_dsi_post_clkon_cb(void *priv,
 
 		rc = mdss_dsi_clamp_ctrl(ctrl, 0);
 		if (rc) {
-			pr_err("%s: Failed to disable dsi clamps. rc=%d\n",
+			pr_debug("%s: Failed to disable dsi clamps. rc=%d\n",
 				__func__, rc);
 			goto error;
 		}
@@ -2587,7 +2587,7 @@ int mdss_dsi_post_clkon_cb(void *priv,
 			ctrl->ulps = false;
 			rc = mdss_dsi_ulps_config(ctrl, 1, true);
 			if (rc) {
-				pr_err("%s: Failed to enter ULPS. rc=%d\n",
+				pr_debug("%s: Failed to enter ULPS. rc=%d\n",
 					__func__, rc);
 				goto error;
 			}
@@ -2599,7 +2599,7 @@ int mdss_dsi_post_clkon_cb(void *priv,
 
 			rc = mdss_dsi_ulps_config(ctrl, 0, false);
 			if (rc) {
-				pr_err("%s: failed to disable ulps, rc= %d\n",
+				pr_debug("%s: failed to disable ulps, rc= %d\n",
 				       __func__, rc);
 				goto error;
 			}
@@ -2634,7 +2634,7 @@ int mdss_dsi_post_clkoff_cb(void *priv,
 	int i;
 
 	if (!ctrl) {
-		pr_err("%s: Invalid arg\n", __func__);
+		pr_debug("%s: Invalid arg\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2658,7 +2658,7 @@ int mdss_dsi_post_clkoff_cb(void *priv,
 				sdata->power_data[i].vreg_config,
 				sdata->power_data[i].num_vreg, 0);
 			if (rc) {
-				pr_warn("%s: failed to disable vregs for %s\n",
+				pr_debug("%s: failed to disable vregs for %s\n",
 					__func__,
 					__mdss_dsi_pm_name(i));
 				rc = 0;
@@ -2688,7 +2688,7 @@ int mdss_dsi_pre_clkon_cb(void *priv,
 	int i;
 
 	if (!ctrl) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
@@ -2716,7 +2716,7 @@ int mdss_dsi_pre_clkon_cb(void *priv,
 				sdata->power_data[i].vreg_config,
 				sdata->power_data[i].num_vreg, 1);
 			if (rc) {
-				pr_err("%s: failed to enable vregs for %s\n",
+				pr_debug("%s: failed to enable vregs for %s\n",
 					__func__,
 					__mdss_dsi_pm_name(i));
 			} else {

@@ -106,7 +106,7 @@ do {								\
 #define DBG1(level, fmt, args...)				\
 do {								\
 	if (debug == 2)						\
-		printk(level fmt, ##args);			\
+		no_printk(level fmt, ##args);			\
 } while (0)
 #else
 #define tun_debug(level, tun, fmt, args...)			\
@@ -117,7 +117,7 @@ do {								\
 #define DBG1(level, fmt, args...)				\
 do {								\
 	if (0)							\
-		printk(level fmt, ##args);			\
+		no_printk(level fmt, ##args);			\
 } while (0)
 #endif
 
@@ -3582,23 +3582,23 @@ static int __init tun_init(void)
 {
 	int ret = 0;
 
-	pr_info("%s, %s\n", DRV_DESCRIPTION, DRV_VERSION);
+	pr_debug("%s, %s\n", DRV_DESCRIPTION, DRV_VERSION);
 
 	ret = rtnl_link_register(&tun_link_ops);
 	if (ret) {
-		pr_err("Can't register link_ops\n");
+		pr_debug("Can't register link_ops\n");
 		goto err_linkops;
 	}
 
 	ret = misc_register(&tun_miscdev);
 	if (ret) {
-		pr_err("Can't register misc device %d\n", TUN_MINOR);
+		pr_debug("Can't register misc device %d\n", TUN_MINOR);
 		goto err_misc;
 	}
 
 	ret = register_netdevice_notifier(&tun_notifier_block);
 	if (ret) {
-		pr_err("Can't register netdevice notifier\n");
+		pr_debug("Can't register netdevice notifier\n");
 		goto err_notifier;
 	}
 

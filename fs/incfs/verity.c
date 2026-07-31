@@ -105,7 +105,7 @@ static int incfs_end_enable_verity(struct file *filp, u8 *sig, size_t sig_size)
 	error = vfs_setxattr(bfc->bc_file->f_path.dentry,
 			     INCFS_XATTR_VERITY_NAME, NULL, 0, XATTR_CREATE);
 	if (error) {
-		pr_warn("incfs: error setting verity xattr: %d\n", error);
+		pr_debug("incfs: error setting verity xattr: %d\n", error);
 		goto out;
 	}
 
@@ -151,7 +151,7 @@ static struct mem_range incfs_get_verity_digest(struct inode *inode)
 	struct mem_range verity_file_digest;
 
 	if (!node) {
-		pr_warn("Invalid inode\n");
+		pr_debug("Invalid inode\n");
 		return range(NULL, 0);
 	}
 
@@ -176,7 +176,7 @@ static void incfs_set_verity_digest(struct inode *inode,
 	struct data_file *df;
 
 	if (!node) {
-		pr_warn("Invalid inode\n");
+		pr_debug("Invalid inode\n");
 		kfree(verity_file_digest.data);
 		return;
 	}
@@ -227,7 +227,7 @@ static struct mem_range incfs_calc_verity_digest_from_desc(
 	err = incfs_compute_file_digest(hash_alg, desc,
 					verity_file_digest.data);
 	if (err) {
-		pr_err("Error %d computing file digest", err);
+		pr_debug("Error %d computing file digest", err);
 		goto out;
 	}
 	pr_debug("Computed file digest: %s:%*phN\n",
@@ -555,7 +555,7 @@ out:
 	kfree(signature);
 	kfree(verity_file_digest.data);
 	if (err)
-		pr_err("%s failed with err %d\n", __func__, err);
+		pr_debug("%s failed with err %d\n", __func__, err);
 	return err;
 }
 

@@ -225,7 +225,7 @@ static int wait_for_pll(struct clk_alpha_pll *pll, u32 mask, bool inverse,
 	}
 	time = sched_clock() - time;
 
-	pr_err("PLL lock bit detection total wait time: %lld ns\n", time);
+	pr_debug("PLL lock bit detection total wait time: %lld ns\n", time);
 
 	WARN_CLK(hw->core, name, 1, "failed to %s!\n", action);
 	return -ETIMEDOUT;
@@ -535,7 +535,7 @@ alpha_pll_round_rate(unsigned long rate, unsigned long prate, u32 *l, u64 *a,
 	 * registered yet. Return early with the requested rate.
 	 */
 	if (!prate) {
-		pr_warn("PLLs parent rate hasn't been initialized.\n");
+		pr_debug("PLLs parent rate hasn't been initialized.\n");
 		return rate;
 	}
 
@@ -715,13 +715,13 @@ static int __clk_alpha_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 
 	rrate = alpha_pll_round_rate(rate, prate, &l, &a, alpha_width);
 	if (rrate != rate) {
-		pr_err("alpha_pll: Call clk_set_rate with rounded rates!\n");
+		pr_debug("alpha_pll: Call clk_set_rate with rounded rates!\n");
 		return -EINVAL;
 	}
 
 	vco = alpha_pll_find_vco(pll, rrate);
 	if (pll->vco_table && !vco) {
-		pr_err("alpha pll not in a valid vco range\n");
+		pr_debug("alpha pll not in a valid vco range\n");
 		return -EINVAL;
 	}
 
@@ -995,7 +995,7 @@ static int alpha_pll_huayra_set_rate(struct clk_hw *hw, unsigned long rate,
 	 */
 	if (clk_alpha_pll_is_enabled(hw)) {
 		if (cur_alpha != a) {
-			pr_err("clock needs to be gated %s\n",
+			pr_debug("clock needs to be gated %s\n",
 			       clk_hw_get_name(hw));
 			return -EBUSY;
 		}
@@ -1330,7 +1330,7 @@ static int clk_zonda_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 	 * rounded up rate could be marginally higher than the requested rate.
 	 */
 	if (rrate > (rate + PLL_OUT_RATE_MARGIN) || rrate < rate) {
-		pr_err("Requested rate (%lu) not matching the PLL's supported frequency (%lu)\n",
+		pr_debug("Requested rate (%lu) not matching the PLL's supported frequency (%lu)\n",
 				rate, rrate);
 		return -EINVAL;
 	}
@@ -1602,7 +1602,7 @@ int clk_fabia_pll_configure(struct clk_alpha_pll *pll, struct regmap *regmap,
 	u32 val, mask;
 
 	if (!config) {
-		pr_err("PLL configuration missing.\n");
+		pr_debug("PLL configuration missing.\n");
 		return -EINVAL;
 	}
 
@@ -1696,10 +1696,10 @@ static int alpha_pll_fabia_enable(struct clk_hw *hw)
 	if (!l_val || !cal_val) {
 		ret = clk_fabia_pll_configure(pll, regmap, pll->config);
 		if (ret) {
-			pr_err("Failed to configure %s\n", clk_hw_get_name(hw));
+			pr_debug("Failed to configure %s\n", clk_hw_get_name(hw));
 			return ret;
 		}
-		pr_warn("PLL configuration lost, reconfiguration of PLL done.\n");
+		pr_debug("PLL configuration lost, reconfiguration of PLL done.\n");
 	}
 
 	ret = regmap_update_bits(regmap, PLL_MODE(pll), PLL_OUTCTRL, 0);
@@ -1793,10 +1793,10 @@ static int alpha_pll_fabia_set_rate(struct clk_hw *hw, unsigned long rate,
 		ret = clk_fabia_pll_configure(pll, pll->clkr.regmap,
 				pll->config);
 		if (ret) {
-			pr_err("Failed to configure %s\n", clk_hw_get_name(hw));
+			pr_debug("Failed to configure %s\n", clk_hw_get_name(hw));
 			return ret;
 		}
-		pr_warn("%s: PLL configuration lost, reconfiguration of PLL done.\n",
+		pr_debug("%s: PLL configuration lost, reconfiguration of PLL done.\n",
 				clk_hw_get_name(hw));
 	}
 
@@ -1807,7 +1807,7 @@ static int alpha_pll_fabia_set_rate(struct clk_hw *hw, unsigned long rate,
 	 * rounded up rate could be marginally higher than the requested rate.
 	 */
 	if (rrate > (rate + PLL_OUT_RATE_MARGIN) || rrate < rate) {
-		pr_err("Call set rate on the PLL with rounded rates!\n");
+		pr_debug("Call set rate on the PLL with rounded rates!\n");
 		return -EINVAL;
 	}
 
@@ -1844,7 +1844,7 @@ static int alpha_pll_fabia_prepare(struct clk_hw *hw)
 
 	vco = alpha_pll_find_vco(pll, clk_hw_get_rate(hw));
 	if (!vco) {
-		pr_err("alpha pll: not in a valid vco range\n");
+		pr_debug("alpha pll: not in a valid vco range\n");
 		return -EINVAL;
 	}
 
@@ -1871,7 +1871,7 @@ static int alpha_pll_fabia_prepare(struct clk_hw *hw)
 	/* Bringup the pll at calibration frequency */
 	ret = alpha_pll_fabia_enable(hw);
 	if (ret) {
-		pr_err("alpha pll calibration failed\n");
+		pr_debug("alpha pll calibration failed\n");
 		return ret;
 	}
 
@@ -1955,7 +1955,7 @@ static unsigned long clk_alpha_pll_postdiv_fabia_recalc_rate(struct clk_hw *hw,
 	int ret;
 
 	if (!pll->post_div_table) {
-		pr_err("Missing the post_div_table for the PLL\n");
+		pr_debug("Missing the post_div_table for the PLL\n");
 		return -EINVAL;
 	}
 
@@ -1982,7 +1982,7 @@ static long clk_alpha_pll_postdiv_fabia_round_rate(struct clk_hw *hw,
 	struct clk_alpha_pll_postdiv *pll = to_clk_alpha_pll_postdiv(hw);
 
 	if (!pll->post_div_table) {
-		pr_err("Missing the post_div_table for the PLL\n");
+		pr_debug("Missing the post_div_table for the PLL\n");
 		return -EINVAL;
 	}
 
@@ -2008,7 +2008,7 @@ static int clk_alpha_pll_postdiv_fabia_set_rate(struct clk_hw *hw,
 		return 0;
 
 	if (!pll->post_div_table) {
-		pr_err("Missing the post_div_table for the PLL\n");
+		pr_debug("Missing the post_div_table for the PLL\n");
 		return -EINVAL;
 	}
 
@@ -2294,7 +2294,7 @@ static int alpha_pll_lucid_set_rate(struct clk_hw *hw, unsigned long rate,
 	 * rounded up rate could be marginally higher than the requested rate.
 	 */
 	if (rrate > (rate + PLL_OUT_RATE_MARGIN) || rrate < rate) {
-		pr_err("Call set rate on the PLL with rounded rates!\n");
+		pr_debug("Call set rate on the PLL with rounded rates!\n");
 		return -EINVAL;
 	}
 
@@ -2430,7 +2430,7 @@ int clk_agera_pll_configure(struct clk_alpha_pll *pll, struct regmap *regmap,
 	u32 val, mask;
 
 	if (!config) {
-		pr_err("PLL configuration missing.\n");
+		pr_debug("PLL configuration missing.\n");
 		return -EINVAL;
 	}
 
@@ -2508,7 +2508,7 @@ static int clk_agera_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 	 * rounded up rate could be marginally higher than the requested rate.
 	 */
 	if (rrate > (rate + PLL_OUT_RATE_MARGIN) || rrate < rate) {
-		pr_err("Call set rate on the PLL with rounded rates!\n");
+		pr_debug("Call set rate on the PLL with rounded rates!\n");
 		return -EINVAL;
 	}
 
@@ -2522,7 +2522,7 @@ static int clk_agera_pll_set_rate(struct clk_hw *hw, unsigned long rate,
 	if (clk_hw_is_enabled(hw)) {
 		ret = wait_for_pll_enable_lock(pll);
 		if (ret) {
-			pr_err("Failed to lock after L_VAL update\n");
+			pr_debug("Failed to lock after L_VAL update\n");
 			return ret;
 		}
 	}
@@ -2618,19 +2618,19 @@ static int clk_alpha_pll_slew_set_rate(struct clk_hw *hw, unsigned long rate,
 
 	freq_hz =  alpha_pll_round_rate(rate, parent_rate, &l, &a, alpha_width);
 	if (freq_hz != rate) {
-		pr_err("alpha_pll: Call clk_set_rate with rounded rates!\n");
+		pr_debug("alpha_pll: Call clk_set_rate with rounded rates!\n");
 		return -EINVAL;
 	}
 
 	curr_vco = alpha_pll_find_vco(pll, clk_hw_get_rate(hw));
 	if (!curr_vco) {
-		pr_err("alpha pll: not in a valid vco range\n");
+		pr_debug("alpha pll: not in a valid vco range\n");
 		return -EINVAL;
 	}
 
 	vco = alpha_pll_find_vco(pll, freq_hz);
 	if (!vco) {
-		pr_err("alpha pll: not in a valid vco range\n");
+		pr_debug("alpha pll: not in a valid vco range\n");
 		return -EINVAL;
 	}
 
@@ -2673,13 +2673,13 @@ static int clk_alpha_pll_calibrate(struct clk_hw *hw)
 
 	parent = clk_hw_get_parent(hw);
 	if (!parent) {
-		pr_err("alpha pll: no valid parent found\n");
+		pr_debug("alpha pll: no valid parent found\n");
 		return -EINVAL;
 	}
 
 	vco = alpha_pll_find_vco(pll, clk_hw_get_rate(hw));
 	if (!vco) {
-		pr_err("alpha pll: not in a valid vco range\n");
+		pr_debug("alpha pll: not in a valid vco range\n");
 		return -EINVAL;
 	}
 
@@ -2695,7 +2695,7 @@ static int clk_alpha_pll_calibrate(struct clk_hw *hw)
 	freq_hz = alpha_pll_round_rate(calibration_freq,
 			clk_hw_get_rate(parent), &l, &a, alpha_width);
 	if (freq_hz != calibration_freq) {
-		pr_err("alpha_pll: call clk_set_rate with rounded rates!\n");
+		pr_debug("alpha_pll: call clk_set_rate with rounded rates!\n");
 		return -EINVAL;
 	}
 
@@ -2716,7 +2716,7 @@ static int clk_alpha_pll_calibrate(struct clk_hw *hw)
 	/* Bringup the pll at calibration frequency */
 	rc = clk_alpha_pll_enable(hw);
 	if (rc) {
-		pr_err("alpha pll calibration failed\n");
+		pr_debug("alpha pll calibration failed\n");
 		return rc;
 	}
 

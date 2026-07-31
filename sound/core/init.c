@@ -276,7 +276,7 @@ int snd_card_new(struct device *parent, int idx, const char *xid,
 		err = -ENODEV;
 	if (err < 0) {
 		mutex_unlock(&snd_card_mutex);
-		dev_err(parent, "cannot find the slot for index %d (range 0-%i), error: %d\n",
+		dev_dbg(parent, "cannot find the slot for index %d (range 0-%i), error: %d\n",
 			 idx, snd_ecards_limit - 1, err);
 		kfree(card);
 		return err;
@@ -318,12 +318,12 @@ int snd_card_new(struct device *parent, int idx, const char *xid,
 	/* snd_cards_bitmask and snd_cards are set with snd_card_register */
 	err = snd_ctl_create(card);
 	if (err < 0) {
-		dev_err(parent, "unable to register control minors\n");
+		dev_dbg(parent, "unable to register control minors\n");
 		goto __error;
 	}
 	err = snd_info_card_create(card);
 	if (err < 0) {
-		dev_err(parent, "unable to create card info\n");
+		dev_dbg(parent, "unable to create card info\n");
 		goto __error_ctl;
 	}
 	*card_ret = card;
@@ -510,7 +510,7 @@ void snd_card_disconnect_sync(struct snd_card *card)
 
 	err = snd_card_disconnect(card);
 	if (err < 0) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"snd_card_disconnect error (%d), skipping sync\n",
 			err);
 		return;
@@ -535,7 +535,7 @@ static int snd_card_do_free(struct snd_card *card)
 		card->private_free(card);
 	snd_info_free_entry(card->proc_id);
 	if (snd_info_card_free(card) < 0) {
-		dev_warn(card->dev, "unable to free card info\n");
+		dev_dbg(card->dev, "unable to free card info\n");
 		/* Not fatal error */
 	}
 	if (card->release_completion)
@@ -689,7 +689,7 @@ static void snd_card_set_id_no_lock(struct snd_card *card, const char *src,
 		goto again;
 	}
 	/* last resort... */
-	dev_err(card->dev, "unable to set card id (%s)\n", id);
+	dev_dbg(card->dev, "unable to set card id (%s)\n", id);
 	if (card->proc_root->name)
 		strlcpy(card->id, card->proc_root->name, sizeof(card->id));
 }
@@ -791,7 +791,7 @@ int snd_card_add_dev_attr(struct snd_card *card,
 		}
 	}
 
-	dev_err(card->dev, "Too many groups assigned\n");
+	dev_dbg(card->dev, "Too many groups assigned\n");
 	return -ENOSPC;
 }
 EXPORT_SYMBOL_GPL(snd_card_add_dev_attr);
@@ -1039,7 +1039,7 @@ int snd_card_file_remove(struct snd_card *card, struct file *file)
 		wake_up_all(&card->remove_sleep);
 	spin_unlock(&card->files_lock);
 	if (!found) {
-		dev_err(card->dev, "card file remove problem (%p)\n", file);
+		dev_dbg(card->dev, "card file remove problem (%p)\n", file);
 		return -ENOENT;
 	}
 	kfree(found);

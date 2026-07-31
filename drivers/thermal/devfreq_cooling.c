@@ -583,7 +583,7 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
 						  &devfreq_cooling_ops);
 	if (IS_ERR(cdev)) {
 		err = PTR_ERR(cdev);
-		dev_err(df->dev.parent,
+		dev_dbg(df->dev.parent,
 			"Failed to register devfreq cooling device (%d)\n",
 			err);
 		goto release_ida;

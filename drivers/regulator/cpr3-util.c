@@ -71,7 +71,7 @@ static int cpr3_allocate_regulators(struct cpr3_thread *thread)
 		rc = of_property_read_string(node, "regulator-name",
 						&thread->vreg[i].name);
 		if (rc) {
-			dev_err(thread->ctrl->dev, "could not find regulator name, rc=%d\n",
+			dev_dbg(thread->ctrl->dev, "could not find regulator name, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -121,14 +121,14 @@ int cpr3_allocate_threads(struct cpr3_controller *ctrl, u32 min_thread_id,
 		rc = of_property_read_u32(thread_node, "qcom,cpr-thread-id",
 					  &ctrl->thread[i].thread_id);
 		if (rc) {
-			dev_err(dev, "could not read DT property qcom,cpr-thread-id, rc=%d\n",
+			dev_dbg(dev, "could not read DT property qcom,cpr-thread-id, rc=%d\n",
 				rc);
 			return rc;
 		}
 
 		if (ctrl->thread[i].thread_id < min_thread_id ||
 				ctrl->thread[i].thread_id > max_thread_id) {
-			dev_err(dev, "invalid thread id = %u; not within [%u, %u]\n",
+			dev_dbg(dev, "invalid thread id = %u; not within [%u, %u]\n",
 				ctrl->thread[i].thread_id, min_thread_id,
 				max_thread_id);
 			return -EINVAL;
@@ -138,7 +138,7 @@ int cpr3_allocate_threads(struct cpr3_controller *ctrl, u32 min_thread_id,
 		for (j = 0; j < i; j++) {
 			if (ctrl->thread[j].thread_id
 					== ctrl->thread[i].thread_id) {
-				dev_err(dev, "duplicate thread id = %u found\n",
+				dev_dbg(dev, "duplicate thread id = %u found\n",
 					ctrl->thread[i].thread_id);
 				return -EINVAL;
 			}
@@ -168,7 +168,7 @@ int cpr3_map_fuse_base(struct cpr3_controller *ctrl,
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "fuse_base");
 	if (!res || !res->start) {
-		dev_err(&pdev->dev, "fuse base address is missing\n");
+		dev_dbg(&pdev->dev, "fuse base address is missing\n");
 		return -ENXIO;
 	}
 
@@ -204,14 +204,14 @@ int cpr3_read_fuse_param(void __iomem *fuse_base_addr,
 	while (param->row || param->bit_start || param->bit_end) {
 		if (param->bit_start > param->bit_end
 		    || param->bit_end > MAX_FUSE_ROW_BIT) {
-			pr_err("Invalid fuse parameter segment: row=%u, start=%u, end=%u\n",
+			pr_debug("Invalid fuse parameter segment: row=%u, start=%u, end=%u\n",
 				param->row, param->bit_start, param->bit_end);
 			return -EINVAL;
 		}
 
 		bits = param->bit_end - param->bit_start + 1;
 		if (bits_total + bits > 64) {
-			pr_err("Invalid fuse parameter segments; total bits = %d\n",
+			pr_debug("Invalid fuse parameter segments; total bits = %d\n",
 				bits_total + bits);
 			return -EINVAL;
 		}
@@ -1073,7 +1073,7 @@ static int cpr3_panic_notifier_init(struct cpr3_controller *ctrl)
 		}
 		regs[i].virt_addr = devm_ioremap(ctrl->dev, regs[i].addr, 0x4);
 		if (!regs[i].virt_addr) {
-			pr_err("Unable to map panic register addr 0x%08x\n",
+			pr_debug("Unable to map panic register addr 0x%08x\n",
 				regs[i].addr);
 			return -EINVAL;
 		}

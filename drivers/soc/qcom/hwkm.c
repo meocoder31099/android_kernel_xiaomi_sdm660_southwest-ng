@@ -165,7 +165,7 @@ static int qti_hwkm_master_transaction(struct hwkm_device *dev,
 	if (qti_hwkm_testb(dev, QTI_HWKM_MASTER_RG_BANK2_BANKN_CTL,
 			CMD_FIFO_CLEAR_BIT, KM_MASTER)) {
 
-		pr_err("%s: CMD_FIFO_CLEAR_BIT not set\n", __func__);
+		pr_debug("%s: CMD_FIFO_CLEAR_BIT not set\n", __func__);
 		err = -1;
 		return -err;
 	}
@@ -179,7 +179,7 @@ static int qti_hwkm_master_transaction(struct hwkm_device *dev,
 			QTI_HWKM_MASTER_RG_BANK2_BANKN_STATUS,
 			CMD_FIFO_AVAILABLE_SPACE, CMD_FIFO_AVAILABLE_SPACE_MASK,
 			KM_MASTER) == 0) {
-			pr_err("%s: cmd fifo space not available\n", __func__);
+			pr_debug("%s: cmd fifo space not available\n", __func__);
 			err = -1;
 			return err;
 		}
@@ -198,7 +198,7 @@ static int qti_hwkm_master_transaction(struct hwkm_device *dev,
 			QTI_HWKM_MASTER_RG_BANK2_BANKN_STATUS,
 			RSP_FIFO_AVAILABLE_DATA, RSP_FIFO_AVAILABLE_DATA_MASK,
 			KM_MASTER) == 0) {
-			pr_err("%s: rsp fifo data not available\n", __func__);
+			pr_debug("%s: rsp fifo data not available\n", __func__);
 			err = -1;
 			return err;
 		}
@@ -208,7 +208,7 @@ static int qti_hwkm_master_transaction(struct hwkm_device *dev,
 
 	if (!qti_hwkm_testb(dev, QTI_HWKM_MASTER_RG_BANK2_BANKN_IRQ_STATUS,
 			CMD_DONE_BIT, KM_MASTER)) {
-		pr_err("%s: CMD_DONE_BIT not set\n", __func__);
+		pr_debug("%s: CMD_DONE_BIT not set\n", __func__);
 		err = -1;
 		return err;
 	}
@@ -276,7 +276,7 @@ static int qti_hwkm_ice_transaction(struct hwkm_device *dev,
 	if (qti_hwkm_testb(dev, QTI_HWKM_ICE_RG_BANK0_BANKN_CTL,
 			CMD_FIFO_CLEAR_BIT, ICEMEM_SLAVE)) {
 
-		pr_err("%s: CMD_FIFO_CLEAR_BIT not set\n", __func__);
+		pr_debug("%s: CMD_FIFO_CLEAR_BIT not set\n", __func__);
 		err = -1;
 		return err;
 	}
@@ -290,7 +290,7 @@ static int qti_hwkm_ice_transaction(struct hwkm_device *dev,
 			QTI_HWKM_ICE_RG_BANK0_BANKN_STATUS,
 			CMD_FIFO_AVAILABLE_SPACE, CMD_FIFO_AVAILABLE_SPACE_MASK,
 			ICEMEM_SLAVE) == 0) {
-			pr_err("%s: cmd fifo space not available\n", __func__);
+			pr_debug("%s: cmd fifo space not available\n", __func__);
 			err = -1;
 			return err;
 		}
@@ -309,7 +309,7 @@ static int qti_hwkm_ice_transaction(struct hwkm_device *dev,
 			QTI_HWKM_ICE_RG_BANK0_BANKN_STATUS,
 			RSP_FIFO_AVAILABLE_DATA, RSP_FIFO_AVAILABLE_DATA_MASK,
 			ICEMEM_SLAVE) == 0) {
-			pr_err("%s: rsp fifo data not available\n", __func__);
+			pr_debug("%s: rsp fifo data not available\n", __func__);
 			err = -1;
 			return err;
 		}
@@ -319,7 +319,7 @@ static int qti_hwkm_ice_transaction(struct hwkm_device *dev,
 
 	if (!qti_hwkm_testb(dev, QTI_HWKM_ICE_RG_BANK0_BANKN_IRQ_STATUS,
 			CMD_DONE_BIT, ICEMEM_SLAVE)) {
-		pr_err("%s: CMD_DONE_BIT not set\n", __func__);
+		pr_debug("%s: CMD_DONE_BIT not set\n", __func__);
 		err = -1;
 		return err;
 	}
@@ -480,13 +480,13 @@ static int qti_handle_key_unwrap_import(const struct hwkm_cmd *cmd_in,
 	status = qti_hwkm_run_transaction(ICEMEM_SLAVE, cmd,
 			UNWRAP_IMPORT_CMD_WORDS, rsp, UNWRAP_IMPORT_RSP_WORDS);
 	if (status) {
-		pr_err("%s: Error running transaction %d\n", __func__, status);
+		pr_debug("%s: Error running transaction %d\n", __func__, status);
 		return status;
 	}
 
 	rsp_in->status = rsp[RESPONSE_ERR_IDX];
 	if (rsp_in->status) {
-		pr_err("%s: KEY_UNWRAP_IMPORT error status 0x%x\n", __func__,
+		pr_debug("%s: KEY_UNWRAP_IMPORT error status 0x%x\n", __func__,
 								rsp_in->status);
 		return rsp_in->status;
 	}
@@ -526,7 +526,7 @@ static int qti_handle_keyslot_clear(const struct hwkm_cmd *cmd_in,
 				KEYSLOT_CLEAR_CMD_WORDS, rsp,
 				KEYSLOT_CLEAR_RSP_WORDS);
 	if (status) {
-		pr_err("%s: Error running transaction %d\n", __func__, status);
+		pr_debug("%s: Error running transaction %d\n", __func__, status);
 		return status;
 	}
 
@@ -603,13 +603,13 @@ static int qti_handle_system_kdf(const struct hwkm_cmd *cmd_in,
 				operation.len + operation.context_len,
 				rsp, SYSTEM_KDF_RSP_WORDS);
 	if (status) {
-		pr_err("%s: Error running transaction %d\n", __func__, status);
+		pr_debug("%s: Error running transaction %d\n", __func__, status);
 		return status;
 	}
 
 	rsp_in->status = rsp[RESPONSE_ERR_IDX];
 	if (rsp_in->status) {
-		pr_err("%s: SYSTEM_KDF error status 0x%x\n", __func__,
+		pr_debug("%s: SYSTEM_KDF error status 0x%x\n", __func__,
 					rsp_in->status);
 		return rsp_in->status;
 	}
@@ -647,13 +647,13 @@ static int qti_handle_set_tpkey(const struct hwkm_cmd *cmd_in,
 	status = qti_hwkm_run_transaction(KM_MASTER, cmd,
 			SET_TPKEY_CMD_WORDS, rsp, SET_TPKEY_RSP_WORDS);
 	if (status) {
-		pr_err("%s: Error running transaction %d\n", __func__, status);
+		pr_debug("%s: Error running transaction %d\n", __func__, status);
 		return status;
 	}
 
 	rsp_in->status = rsp[RESPONSE_ERR_IDX];
 	if (rsp_in->status) {
-		pr_err("%s: SET_TPKEY error status 0x%x\n", __func__,
+		pr_debug("%s: SET_TPKEY error status 0x%x\n", __func__,
 					rsp_in->status);
 		return rsp_in->status;
 	}
@@ -725,13 +725,13 @@ static int qti_handle_keyslot_rdwr(const struct hwkm_cmd *cmd_in,
 	status = qti_hwkm_run_transaction(ICEMEM_SLAVE, cmd,
 			KEYSLOT_RDWR_CMD_WORDS, rsp, KEYSLOT_RDWR_RSP_WORDS);
 	if (status) {
-		pr_err("%s: Error running transaction %d\n", __func__, status);
+		pr_debug("%s: Error running transaction %d\n", __func__, status);
 		return status;
 	}
 
 	rsp_in->status = rsp[RESPONSE_ERR_IDX];
 	if (rsp_in->status) {
-		pr_err("%s: KEY_SLOT_RDWR error status 0x%x\n",
+		pr_debug("%s: KEY_SLOT_RDWR error status 0x%x\n",
 				__func__, rsp_in->status);
 		return rsp_in->status;
 	}
@@ -770,14 +770,14 @@ static int qti_hwkm_parse_clock_info(struct platform_device *pdev,
 
 	cnt = of_property_count_strings(np, "clock-names");
 	if (cnt <= 0) {
-		dev_info(dev, "%s: Unable to find clocks, assuming enabled\n",
+		dev_dbg(dev, "%s: Unable to find clocks, assuming enabled\n",
 				__func__);
 		ret = cnt;
 		goto out;
 	}
 
 	if (!of_get_property(np, "qcom,op-freq-hz", &len)) {
-		dev_info(dev, "qcom,op-freq-hz property not specified\n");
+		dev_dbg(dev, "qcom,op-freq-hz property not specified\n");
 		goto out;
 	}
 
@@ -824,7 +824,7 @@ static int qti_hwkm_init_clocks(struct hwkm_device *hwkm_dev)
 		return 0;
 
 	if (!head || list_empty(head)) {
-		dev_err(dev, "%s: HWKM clock list null/empty\n", __func__);
+		dev_dbg(dev, "%s: HWKM clock list null/empty\n", __func__);
 		goto out;
 	}
 
@@ -835,7 +835,7 @@ static int qti_hwkm_init_clocks(struct hwkm_device *hwkm_dev)
 		clki->clk = devm_clk_get(dev, clki->name);
 		if (IS_ERR(clki->clk)) {
 			ret = PTR_ERR(clki->clk);
-			dev_err(dev, "%s: %s clk get failed, %d\n",
+			dev_dbg(dev, "%s: %s clk get failed, %d\n",
 					__func__, clki->name, ret);
 			goto out;
 		}
@@ -844,7 +844,7 @@ static int qti_hwkm_init_clocks(struct hwkm_device *hwkm_dev)
 		if (clki->max_freq) {
 			ret = clk_set_rate(clki->clk, clki->max_freq);
 			if (ret) {
-				dev_err(dev,
+				dev_dbg(dev,
 				"%s: %s clk set rate(%dHz) failed, %d\n",
 				__func__, clki->name, clki->max_freq, ret);
 				goto out;
@@ -867,13 +867,13 @@ static int qti_hwkm_enable_disable_clocks(struct hwkm_device *hwkm_dev,
 	struct list_head *head = &hwkm_dev->clk_list_head;
 
 	if (!head || list_empty(head)) {
-		dev_err(dev, "%s: HWKM clock list null/empty\n", __func__);
+		dev_dbg(dev, "%s: HWKM clock list null/empty\n", __func__);
 		ret = -EINVAL;
 		goto out;
 	}
 
 	if (!hwkm_dev->is_hwkm_clk_available) {
-		dev_err(dev, "%s: HWKM clock not available\n", __func__);
+		dev_dbg(dev, "%s: HWKM clock not available\n", __func__);
 		ret = -EINVAL;
 		goto out;
 	}
@@ -888,7 +888,7 @@ static int qti_hwkm_enable_disable_clocks(struct hwkm_device *hwkm_dev,
 			clk_disable_unprepare(clki->clk);
 
 		if (ret) {
-			dev_err(dev, "Unable to %s HWKM clock\n",
+			dev_dbg(dev, "Unable to %s HWKM clock\n",
 				enable?"enable":"disable");
 			goto out;
 		}
@@ -903,7 +903,7 @@ int qti_hwkm_clocks(bool on)
 
 	ret = qti_hwkm_enable_disable_clocks(km_device, on);
 	if (ret) {
-		pr_err("%s:%pK Could not enable/disable clocks\n",
+		pr_debug("%s:%pK Could not enable/disable clocks\n",
 				__func__, km_device);
 	}
 
@@ -922,7 +922,7 @@ static int qti_hwkm_get_device_tree_data(struct platform_device *pdev,
 	hwkm_dev->ice_res = platform_get_resource_byname(pdev,
 				IORESOURCE_MEM, "ice_slave");
 	if (!hwkm_dev->km_res || !hwkm_dev->ice_res) {
-		pr_err("%s: No memory available for IORESOURCE\n", __func__);
+		pr_debug("%s: No memory available for IORESOURCE\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -931,7 +931,7 @@ static int qti_hwkm_get_device_tree_data(struct platform_device *pdev,
 
 	if (IS_ERR(hwkm_dev->km_base) || IS_ERR(hwkm_dev->ice_base)) {
 		ret = PTR_ERR(hwkm_dev->km_base);
-		pr_err("%s: Error = %d mapping HWKM memory\n", __func__, ret);
+		pr_debug("%s: Error = %d mapping HWKM memory\n", __func__, ret);
 		goto out;
 	}
 
@@ -941,7 +941,7 @@ static int qti_hwkm_get_device_tree_data(struct platform_device *pdev,
 	if (hwkm_dev->is_hwkm_clk_available) {
 		ret = qti_hwkm_parse_clock_info(pdev, hwkm_dev);
 		if (ret) {
-			pr_err("%s: qti_hwkm_parse_clock_info failed (%d)\n",
+			pr_debug("%s: qti_hwkm_parse_clock_info failed (%d)\n",
 				__func__, ret);
 			goto out;
 		}
@@ -993,31 +993,31 @@ static int qti_hwkm_check_bist_status(struct hwkm_device *hwkm_dev)
 {
 	if (!qti_hwkm_testb(hwkm_dev, QTI_HWKM_ICE_RG_TZ_KM_STATUS,
 		BIST_DONE, ICEMEM_SLAVE)) {
-		pr_err("%s: Error with BIST_DONE\n", __func__);
+		pr_debug("%s: Error with BIST_DONE\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qti_hwkm_testb(hwkm_dev, QTI_HWKM_ICE_RG_TZ_KM_STATUS,
 		CRYPTO_LIB_BIST_DONE, ICEMEM_SLAVE)) {
-		pr_err("%s: Error with CRYPTO_LIB_BIST_DONE\n", __func__);
+		pr_debug("%s: Error with CRYPTO_LIB_BIST_DONE\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qti_hwkm_testb(hwkm_dev, QTI_HWKM_ICE_RG_TZ_KM_STATUS,
 		BOOT_CMD_LIST1_DONE, ICEMEM_SLAVE)) {
-		pr_err("%s: Error with BOOT_CMD_LIST1_DONE\n", __func__);
+		pr_debug("%s: Error with BOOT_CMD_LIST1_DONE\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qti_hwkm_testb(hwkm_dev, QTI_HWKM_ICE_RG_TZ_KM_STATUS,
 		BOOT_CMD_LIST0_DONE, ICEMEM_SLAVE)) {
-		pr_err("%s: Error with BOOT_CMD_LIST0_DONE\n", __func__);
+		pr_debug("%s: Error with BOOT_CMD_LIST0_DONE\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!qti_hwkm_testb(hwkm_dev, QTI_HWKM_ICE_RG_TZ_KM_STATUS,
 		KT_CLEAR_DONE, ICEMEM_SLAVE)) {
-		pr_err("%s: KT_CLEAR_DONE\n", __func__);
+		pr_debug("%s: KT_CLEAR_DONE\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1035,7 +1035,7 @@ static int qti_hwkm_ice_init_sequence(struct hwkm_device *hwkm_dev)
 
 	ret = qti_hwkm_check_bist_status(hwkm_dev);
 	if (ret) {
-		pr_err("%s: Error in BIST initialization %d\n", __func__, ret);
+		pr_debug("%s: Error in BIST initialization %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -1101,7 +1101,7 @@ static int qti_hwkm_set_tpkey(void)
 	qti_hwkm_enable_slave_receive_mode(km_device);
 	ret = qti_hwkm_handle_cmd(&cmd, &rsp);
 	if (ret) {
-		pr_err("%s: Error running commands\n", __func__, ret);
+		pr_debug("%s: Error running commands\n", __func__, ret);
 		return ret;
 	}
 
@@ -1117,13 +1117,13 @@ int qti_hwkm_init(void)
 
 	ret = qti_hwkm_ice_init_sequence(km_device);
 	if (ret) {
-		pr_err("%s: Error in ICE init sequence %d\n", __func__, ret);
+		pr_debug("%s: Error in ICE init sequence %d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = qti_hwkm_set_tpkey();
 	if (ret) {
-		pr_err("%s: Error setting ICE to receive %d\n", __func__, ret);
+		pr_debug("%s: Error setting ICE to receive %d\n", __func__, ret);
 		return ret;
 	}
 	/* Write memory barrier */
@@ -1139,14 +1139,14 @@ static int qti_hwkm_probe(struct platform_device *pdev)
 
 	pr_debug("%s %d: HWKM probe start\n", __func__, __LINE__);
 	if (!pdev) {
-		pr_err("%s: Invalid platform_device passed\n", __func__);
+		pr_debug("%s: Invalid platform_device passed\n", __func__);
 		return -EINVAL;
 	}
 
 	hwkm_dev = kzalloc(sizeof(struct hwkm_device), GFP_KERNEL);
 	if (!hwkm_dev) {
 		ret = -ENOMEM;
-		pr_err("%s: Error %d allocating memory for HWKM device\n",
+		pr_debug("%s: Error %d allocating memory for HWKM device\n",
 			__func__, ret);
 		goto err_hwkm_dev;
 	}
@@ -1154,7 +1154,7 @@ static int qti_hwkm_probe(struct platform_device *pdev)
 	hwkm_dev->dev = &pdev->dev;
 	if (!hwkm_dev->dev) {
 		ret = -EINVAL;
-		pr_err("%s: Invalid device passed in platform_device\n",
+		pr_debug("%s: Invalid device passed in platform_device\n",
 			__func__);
 		goto err_hwkm_dev;
 	}
@@ -1163,14 +1163,14 @@ static int qti_hwkm_probe(struct platform_device *pdev)
 		ret = qti_hwkm_get_device_tree_data(pdev, hwkm_dev);
 	else {
 		ret = -EINVAL;
-		pr_err("%s: HWKM device node not found\n", __func__);
+		pr_debug("%s: HWKM device node not found\n", __func__);
 	}
 	if (ret)
 		goto err_hwkm_dev;
 
 	ret = qti_hwkm_init_clocks(hwkm_dev);
 	if (ret) {
-		pr_err("%s: Error initializing clocks %d\n", __func__, ret);
+		pr_debug("%s: Error initializing clocks %d\n", __func__, ret);
 		goto err_hwkm_dev;
 	}
 

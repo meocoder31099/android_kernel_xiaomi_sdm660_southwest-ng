@@ -1242,18 +1242,18 @@ static int sctp_side_effects(enum sctp_event event_type,
 		break;
 
 	case SCTP_DISPOSITION_NOT_IMPL:
-		pr_warn("unimplemented feature in state %d, event_type %d, event_id %d\n",
+		pr_debug("unimplemented feature in state %d, event_type %d, event_id %d\n",
 			state, event_type, subtype.chunk);
 		break;
 
 	case SCTP_DISPOSITION_BUG:
-		pr_err("bug in state %d, event_type %d, event_id %d\n",
+		pr_debug("bug in state %d, event_type %d, event_id %d\n",
 		       state, event_type, subtype.chunk);
 		BUG();
 		break;
 
 	default:
-		pr_err("impossible disposition %d in state %d, event_type %d, event_id %d\n",
+		pr_debug("impossible disposition %d in state %d, event_type %d, event_id %d\n",
 		       status, state, event_type, subtype.chunk);
 		error = status;
 		if (error >= 0)
@@ -1795,7 +1795,7 @@ static int sctp_cmd_interpreter(enum sctp_event event_type,
 			break;
 
 		default:
-			pr_warn("Impossible command: %u\n",
+			pr_debug("Impossible command: %u\n",
 				cmd->verb);
 			break;
 		}

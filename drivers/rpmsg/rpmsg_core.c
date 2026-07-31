@@ -487,7 +487,7 @@ static int rpmsg_dev_probe(struct device *dev)
 
 		ept = rpmsg_create_ept(rpdev, rpdrv->callback, NULL, chinfo);
 		if (!ept) {
-			dev_err(dev, "failed to create endpoint\n");
+			dev_dbg(dev, "failed to create endpoint\n");
 			err = -ENOMEM;
 			goto out;
 		}
@@ -502,14 +502,14 @@ static int rpmsg_dev_probe(struct device *dev)
 
 	err = rpdrv->probe(rpdev);
 	if (err) {
-		dev_err(dev, "%s: failed: %d\n", __func__, err);
+		dev_dbg(dev, "%s: failed: %d\n", __func__, err);
 		goto destroy_ept;
 	}
 
 	if (ept && rpdev->ops->announce_create) {
 		err = rpdev->ops->announce_create(rpdev);
 		if (err) {
-			dev_err(dev, "failed to announce creation\n");
+			dev_dbg(dev, "failed to announce creation\n");
 			goto remove_rpdev;
 		}
 	}
@@ -578,7 +578,7 @@ int rpmsg_register_device_override(struct rpmsg_device *rpdev,
 					  driver_override,
 					  strlen(driver_override));
 		if (ret) {
-			dev_err(dev, "device_set_override failed: %d\n", ret);
+			dev_dbg(dev, "device_set_override failed: %d\n", ret);
 			put_device(dev);
 			return ret;
 		}
@@ -586,7 +586,7 @@ int rpmsg_register_device_override(struct rpmsg_device *rpdev,
 
 	ret = device_add(dev);
 	if (ret) {
-		dev_err(dev, "device_add failed: %d\n", ret);
+		dev_dbg(dev, "device_add failed: %d\n", ret);
 		kfree(rpdev->driver_override);
 		rpdev->driver_override = NULL;
 		put_device(&rpdev->dev);
@@ -657,7 +657,7 @@ static int __init rpmsg_init(void)
 
 	ret = bus_register(&rpmsg_bus);
 	if (ret)
-		pr_err("failed to register rpmsg bus: %d\n", ret);
+		pr_debug("failed to register rpmsg bus: %d\n", ret);
 
 	return ret;
 }

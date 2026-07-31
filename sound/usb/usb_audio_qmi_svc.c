@@ -174,7 +174,7 @@ enum usb_qmi_audio_format {
 #define uaudio_print(level, fmt, ...) do { \
 	ipc_log_string(uaudio_svc->uaudio_ipc_log, "%s%s: " fmt, "", __func__,\
 			##__VA_ARGS__); \
-	printk("%s%s: " fmt, level, __func__, ##__VA_ARGS__); \
+	no_printk("%s%s: " fmt, level, __func__, ##__VA_ARGS__); \
 	} while (0)
 
 #ifdef CONFIG_DYNAMIC_DEBUG
@@ -667,7 +667,7 @@ skip_sync_ep:
 	xhci = hcd_to_xhci(hcd);
 	xhci_pa = xhci->dcbaa->dev_context_ptrs[udev->slot_id];
 	if (!xhci_pa) {
-		pr_err("%s:failed to get dcba dma address\n", __func__);
+		pr_debug("%s:failed to get dcba dma address\n", __func__);
 		goto unmap_er;
 	}
 
@@ -1310,27 +1310,27 @@ static int uaudio_qmi_plat_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(node, "qcom,usb-audio-stream-id",
 				&uaudio_qdev->sid);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to read sid.\n");
+		dev_dbg(&pdev->dev, "failed to read sid.\n");
 		return -ENODEV;
 	}
 
 	ret = of_property_read_u32(node, "qcom,usb-audio-intr-num",
 				&uaudio_qdev->intr_num);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to read intr num.\n");
+		dev_dbg(&pdev->dev, "failed to read intr num.\n");
 		return -ENODEV;
 	}
 
 	uaudio_qdev->domain = iommu_domain_alloc(pdev->dev.bus);
 	if (!uaudio_qdev->domain) {
-		dev_err(&pdev->dev, "failed to allocate iommu domain\n");
+		dev_dbg(&pdev->dev, "failed to allocate iommu domain\n");
 		return -ENODEV;
 	}
 
 	/* attach to external processor iommu */
 	ret = iommu_attach_device(uaudio_qdev->domain, &pdev->dev);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to attach device ret = %d\n", ret);
+		dev_dbg(&pdev->dev, "failed to attach device ret = %d\n", ret);
 		goto free_domain;
 	}
 
@@ -1408,14 +1408,14 @@ static int uaudio_qmi_svc_init(void)
 				&uaudio_svc_ops_options,
 				&uaudio_stream_req_handlers);
 	if (ret < 0) {
-		pr_err("%s:Error registering uaudio svc %d\n", __func__, ret);
+		pr_debug("%s:Error registering uaudio svc %d\n", __func__, ret);
 		goto free_svc_hdl;
 	}
 
 	ret = qmi_add_server(svc->uaudio_svc_hdl, UAUDIO_STREAM_SERVICE_ID_V01,
 					UAUDIO_STREAM_SERVICE_VERS_V01, 0);
 	if (ret < 0) {
-		pr_err("%s: failed to add uaudio svc server :%d\n",
+		pr_debug("%s: failed to add uaudio svc server :%d\n",
 							__func__, ret);
 		goto release_uaudio_svs_hdl;
 	}

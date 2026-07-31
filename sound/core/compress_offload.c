@@ -101,12 +101,12 @@ static int snd_compr_open(struct inode *inode, struct file *f)
 		return -EBADFD;
 
 	if (compr == NULL) {
-		pr_err("no device data!!!\n");
+		pr_debug("no device data!!!\n");
 		return -ENODEV;
 	}
 
 	if (dirn != compr->direction) {
-		pr_err("this device doesn't support this direction\n");
+		pr_debug("this device doesn't support this direction\n");
 		snd_card_unref(compr->card);
 		return -EINVAL;
 	}
@@ -1023,7 +1023,7 @@ static int snd_compress_dev_register(struct snd_device *device)
 				  compr->card, compr->device,
 				  &snd_compr_file_ops, compr, &compr->dev);
 	if (ret < 0) {
-		pr_err("snd_register_device failed %d\n", ret);
+		pr_debug("snd_register_device failed %d\n", ret);
 		return ret;
 	}
 	return ret;

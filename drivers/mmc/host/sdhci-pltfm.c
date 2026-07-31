@@ -169,7 +169,7 @@ struct sdhci_host *sdhci_pltfm_init(struct platform_device *pdev,
 
 	return host;
 err:
-	dev_err(&pdev->dev, "%s failed %d\n", __func__, ret);
+	dev_dbg(&pdev->dev, "%s failed %d\n", __func__, ret);
 	return ERR_PTR(ret);
 }
 EXPORT_SYMBOL_GPL(sdhci_pltfm_init);
@@ -263,7 +263,7 @@ EXPORT_SYMBOL_GPL(sdhci_pltfm_pmops);
 
 static int __init sdhci_pltfm_drv_init(void)
 {
-	pr_info("sdhci-pltfm: SDHCI platform and OF driver helper\n");
+	pr_debug("sdhci-pltfm: SDHCI platform and OF driver helper\n");
 
 	return 0;
 }

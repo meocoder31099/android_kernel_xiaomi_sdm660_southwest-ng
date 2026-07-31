@@ -91,7 +91,7 @@ enum {
 
 /* warnings and errors show up on console always */
 #define MSM_HS_WARN(x...) do { \
-	pr_warn(x); \
+	pr_debug(x); \
 	if (msm_uport->ipc_msm_hs_log_ctxt && \
 			msm_uport->ipc_debug_mask >= WARN_LEV) \
 		ipc_log_string(msm_uport->ipc_msm_hs_log_ctxt, x); \
@@ -102,7 +102,7 @@ enum {
  * in IPC logging. Further errors continue to log on the console
  */
 #define MSM_HS_ERR(x...) do { \
-	pr_err(x); \
+	pr_debug(x); \
 	if (msm_uport->ipc_msm_hs_log_ctxt && \
 			msm_uport->ipc_debug_mask >= ERR_LEV) { \
 		ipc_log_string(msm_uport->ipc_msm_hs_log_ctxt, x); \
@@ -337,7 +337,7 @@ static int msm_hs_clk_bus_vote(struct msm_hs_port *msm_uport)
 	if (msm_uport->pclk) {
 		rc = clk_prepare_enable(msm_uport->pclk);
 		if (rc) {
-			dev_err(msm_uport->uport.dev,
+			dev_dbg(msm_uport->uport.dev,
 				"%s(): Could not turn on pclk [%d]\n",
 				__func__, rc);
 			goto busreset;
@@ -345,7 +345,7 @@ static int msm_hs_clk_bus_vote(struct msm_hs_port *msm_uport)
 	}
 	rc = clk_prepare_enable(msm_uport->clk);
 	if (rc) {
-		dev_err(msm_uport->uport.dev,
+		dev_dbg(msm_uport->uport.dev,
 			"%s(): Could not turn on core clk [%d]\n",
 			__func__, rc);
 		goto core_unprepare;
@@ -418,7 +418,7 @@ static struct msm_hs_port *get_matching_hs_port(struct platform_device *pdev)
 
 	if ((!msm_uport) || (msm_uport->uport.line != pdev->id
 	   && msm_uport->uport.line != pdata->userid)) {
-		pr_err("uport line number mismatch\n");
+		pr_debug("uport line number mismatch\n");
 		WARN_ON(1);
 		return NULL;
 	}
@@ -553,13 +553,13 @@ static int sps_rx_disconnect(struct sps_pipe *sps_pipe_handler)
 
 	ret = sps_get_config(sps_pipe_handler, &config);
 	if (ret) {
-		pr_err("%s(): sps_get_config() failed ret %d\n", __func__, ret);
+		pr_debug("%s(): sps_get_config() failed ret %d\n", __func__, ret);
 		return ret;
 	}
 	config.options |= SPS_O_POLL;
 	ret = sps_set_config(sps_pipe_handler, &config);
 	if (ret) {
-		pr_err("%s(): sps_set_config() failed ret %d\n", __func__, ret);
+		pr_debug("%s(): sps_set_config() failed ret %d\n", __func__, ret);
 		return ret;
 	}
 	return sps_disconnect(sps_pipe_handler);
@@ -701,7 +701,7 @@ static int msm_hs_remove(struct platform_device *pdev)
 	struct device *dev;
 
 	if (pdev->id < 0 || pdev->id >= UARTDM_NR) {
-		pr_err("Invalid plaform device ID = %d\n", pdev->id);
+		pr_debug("Invalid plaform device ID = %d\n", pdev->id);
 		return -EINVAL;
 	}
 
@@ -2555,7 +2555,7 @@ static void msm_hs_get_pinctrl_configs(struct uart_port *uport)
 		set_state = pinctrl_lookup_state(msm_uport->pinctrl,
 						PINCTRL_STATE_DEFAULT);
 		if (IS_ERR_OR_NULL(set_state)) {
-			dev_err(uport->dev,
+			dev_dbg(uport->dev,
 				"pinctrl lookup failed for default state\n");
 			goto pinctrl_fail;
 		}
@@ -2567,7 +2567,7 @@ static void msm_hs_get_pinctrl_configs(struct uart_port *uport)
 		set_state = pinctrl_lookup_state(msm_uport->pinctrl,
 						PINCTRL_STATE_SLEEP);
 		if (IS_ERR_OR_NULL(set_state)) {
-			dev_err(uport->dev,
+			dev_dbg(uport->dev,
 				"pinctrl lookup failed for sleep state\n");
 			goto pinctrl_fail;
 		}
@@ -2843,7 +2843,7 @@ struct msm_serial_hs_platform_data
 	pdata->obs = of_property_read_bool(node,
 				"qcom,msm-obs");
 	if (pdata->obs)
-		pr_err("%s():Out of Band sleep flag is set\n", __func__);
+		pr_debug("%s():Out of Band sleep flag is set\n", __func__);
 
 	pdata->inject_rx_on_wakeup = of_property_read_bool(node,
 				"qcom,inject-rx-on-wakeup");
@@ -2852,7 +2852,7 @@ struct msm_serial_hs_platform_data
 		ret = of_property_read_u32(node, "qcom,rx-char-to-inject",
 						&rx_to_inject);
 		if (ret < 0) {
-			pr_err("Error: Rx_char_to_inject not specified\n");
+			pr_debug("Error: Rx_char_to_inject not specified\n");
 			return ERR_PTR(ret);
 		}
 		pdata->rx_to_inject = (u8)rx_to_inject;
@@ -2861,26 +2861,26 @@ struct msm_serial_hs_platform_data
 	ret = of_property_read_u32(node, "qcom,bam-tx-ep-pipe-index",
 				&pdata->bam_tx_ep_pipe_index);
 	if (ret < 0) {
-		pr_err("Error: Getting UART BAM TX EP Pipe Index\n");
+		pr_debug("Error: Getting UART BAM TX EP Pipe Index\n");
 		return ERR_PTR(ret);
 	}
 
 	if (!(pdata->bam_tx_ep_pipe_index >= BAM_PIPE_MIN &&
 		pdata->bam_tx_ep_pipe_index <= BAM_PIPE_MAX)) {
-		pr_err("Error: Invalid UART BAM TX EP Pipe Index\n");
+		pr_debug("Error: Invalid UART BAM TX EP Pipe Index\n");
 		return ERR_PTR(-EINVAL);
 	}
 
 	ret = of_property_read_u32(node, "qcom,bam-rx-ep-pipe-index",
 					&pdata->bam_rx_ep_pipe_index);
 	if (ret < 0) {
-		pr_err("Error: Getting UART BAM RX EP Pipe Index\n");
+		pr_debug("Error: Getting UART BAM RX EP Pipe Index\n");
 		return ERR_PTR(ret);
 	}
 
 	if (!(pdata->bam_rx_ep_pipe_index >= BAM_PIPE_MIN &&
 		pdata->bam_rx_ep_pipe_index <= BAM_PIPE_MAX)) {
-		pr_err("Error: Invalid UART BAM RX EP Pipe Index\n");
+		pr_debug("Error: Invalid UART BAM RX EP Pipe Index\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -3171,7 +3171,7 @@ static void msm_hs_pm_suspend(struct device *dev)
 	mutex_unlock(&msm_uport->mtx);
 	return;
 err_suspend:
-	pr_err("%s(): invalid uport\n", __func__);
+	pr_debug("%s(): invalid uport\n", __func__);
 }
 
 static int msm_hs_pm_resume(struct device *dev)
@@ -3182,7 +3182,7 @@ static int msm_hs_pm_resume(struct device *dev)
 	int client_count = 0;
 
 	if (!msm_uport) {
-		dev_err(dev, "%s():Invalid uport\n", __func__);
+		dev_dbg(dev, "%s():Invalid uport\n", __func__);
 		return -ENODEV;
 	}
 
@@ -3326,7 +3326,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 
 	ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
 	if (ret) {
-		dev_err(&pdev->dev, "could not set DMA mask\n");
+		dev_dbg(&pdev->dev, "could not set DMA mask\n");
 		return ret;
 	}
 
@@ -3339,14 +3339,14 @@ static int msm_hs_probe(struct platform_device *pdev)
 		if (pdev->id < 0) {
 			pdev->id = device_id_grab_next_free();
 			if (pdev->id < 0) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"Error grabbing next free device id\n");
 				return pdev->id;
 			}
 		} else {
 			ret = device_id_set_used(pdev->id);
 			if (ret < 0) {
-				dev_warn(&pdev->dev, "%d alias taken\n",
+				dev_dbg(&pdev->dev, "%d alias taken\n",
 					pdev->id);
 				return ret;
 			}
@@ -3355,7 +3355,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 	}
 
 	if (pdev->id < 0 || pdev->id >= UARTDM_NR) {
-		dev_err(&pdev->dev, "Invalid plaform device ID = %d\n",
+		dev_dbg(&pdev->dev, "Invalid plaform device ID = %d\n",
 								pdev->id);
 		return -EINVAL;
 	}
@@ -3377,31 +3377,31 @@ static int msm_hs_probe(struct platform_device *pdev)
 	core_resource = platform_get_resource_byname(pdev,
 				IORESOURCE_MEM, "core_mem");
 	if (!core_resource) {
-		dev_err(&pdev->dev, "Invalid core HSUART Resources\n");
+		dev_dbg(&pdev->dev, "Invalid core HSUART Resources\n");
 		return -ENXIO;
 	}
 	bam_resource = platform_get_resource_byname(pdev,
 				IORESOURCE_MEM, "bam_mem");
 	if (!bam_resource) {
-		dev_err(&pdev->dev, "Invalid BAM HSUART Resources\n");
+		dev_dbg(&pdev->dev, "Invalid BAM HSUART Resources\n");
 		return -ENXIO;
 	}
 	core_irqres = platform_get_irq_byname(pdev, "core_irq");
 	if (core_irqres < 0) {
-		dev_err(&pdev->dev, "Error %d, invalid core irq resources\n",
+		dev_dbg(&pdev->dev, "Error %d, invalid core irq resources\n",
 			core_irqres);
 		return -ENXIO;
 	}
 	bam_irqres = platform_get_irq_byname(pdev, "bam_irq");
 	if (bam_irqres < 0) {
-		dev_err(&pdev->dev, "Error %d, invalid bam irq resources\n",
+		dev_dbg(&pdev->dev, "Error %d, invalid bam irq resources\n",
 			bam_irqres);
 		return -ENXIO;
 	}
 	wakeup_irqres = platform_get_irq_byname(pdev, "wakeup_irq");
 	if (wakeup_irqres < 0) {
 		wakeup_irqres = -1;
-		pr_info("Wakeup irq not specified\n");
+		pr_debug("Wakeup irq not specified\n");
 	}
 
 	uport->mapbase = core_resource->start;
@@ -3409,14 +3409,14 @@ static int msm_hs_probe(struct platform_device *pdev)
 	uport->membase = ioremap(uport->mapbase,
 				resource_size(core_resource));
 	if (unlikely(!uport->membase)) {
-		dev_err(&pdev->dev, "UART Resource ioremap Failed\n");
+		dev_dbg(&pdev->dev, "UART Resource ioremap Failed\n");
 		return -ENOMEM;
 	}
 	msm_uport->bam_mem = bam_resource->start;
 	msm_uport->bam_base = ioremap(msm_uport->bam_mem,
 				resource_size(bam_resource));
 	if (unlikely(!msm_uport->bam_base)) {
-		dev_err(&pdev->dev, "UART BAM Resource ioremap Failed\n");
+		dev_dbg(&pdev->dev, "UART BAM Resource ioremap Failed\n");
 		iounmap(uport->membase);
 		return -ENOMEM;
 	}
@@ -3429,7 +3429,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 			ipc_log_context_create(IPC_MSM_HS_LOG_STATE_PAGES,
 								name, 0);
 	if (!msm_uport->ipc_msm_hs_log_ctxt) {
-		dev_err(&pdev->dev, "%s(): error creating logging context\n",
+		dev_dbg(&pdev->dev, "%s(): error creating logging context\n",
 								__func__);
 	} else {
 		msm_uport->ipc_debug_mask = INFO_LEV;
@@ -3521,7 +3521,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 	msm_uport->tx.ipc_tx_ctxt =
 		ipc_log_context_create(IPC_MSM_HS_LOG_DATA_PAGES, name, 0);
 	if (!msm_uport->tx.ipc_tx_ctxt)
-		dev_err(&pdev->dev, "%s(): error creating tx log context\n",
+		dev_dbg(&pdev->dev, "%s(): error creating tx log context\n",
 								__func__);
 
 	memset(name, 0, sizeof(name));
@@ -3530,7 +3530,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 	msm_uport->rx.ipc_rx_ctxt = ipc_log_context_create(
 					IPC_MSM_HS_LOG_DATA_PAGES, name, 0);
 	if (!msm_uport->rx.ipc_rx_ctxt)
-		dev_err(&pdev->dev, "%s(): error creating rx log context\n",
+		dev_dbg(&pdev->dev, "%s(): error creating rx log context\n",
 								__func__);
 
 	memset(name, 0, sizeof(name));
@@ -3539,7 +3539,7 @@ static int msm_hs_probe(struct platform_device *pdev)
 	msm_uport->ipc_msm_hs_pwr_ctxt = ipc_log_context_create(
 					IPC_MSM_HS_LOG_USER_PAGES, name, 0);
 	if (!msm_uport->ipc_msm_hs_pwr_ctxt)
-		dev_err(&pdev->dev, "%s(): error creating usr log context\n",
+		dev_dbg(&pdev->dev, "%s(): error creating usr log context\n",
 								__func__);
 #endif
 
@@ -3623,17 +3623,17 @@ static int __init msm_serial_hs_init(void)
 
 	ret = uart_register_driver(&msm_hs_driver);
 	if (unlikely(ret)) {
-		pr_err("%s failed to load\n", __func__);
+		pr_debug("%s failed to load\n", __func__);
 		return ret;
 	}
 #ifdef CONFIG_DEBUG_FS
 	debug_base = debugfs_create_dir("msm_serial_hs", NULL);
 	if (IS_ERR_OR_NULL(debug_base))
-		pr_err("msm_serial_hs: Cannot create debugfs dir\n");
+		pr_debug("msm_serial_hs: Cannot create debugfs dir\n");
 #endif
 	ret = platform_driver_register(&msm_serial_hs_platform_driver);
 	if (ret) {
-		pr_err("%s failed to load\n", __func__);
+		pr_debug("%s failed to load\n", __func__);
 #ifdef CONFIG_DEBUG_FS
 		debugfs_remove_recursive(debug_base);
 #endif

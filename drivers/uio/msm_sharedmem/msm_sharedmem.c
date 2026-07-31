@@ -36,14 +36,14 @@ static int sharedmem_mmap(struct uio_info *info, struct vm_area_struct *vma)
 	int mem_index = uio_get_mem_index(info, vma);
 
 	if (mem_index < 0) {
-		pr_err("mem_index is invalid errno %d\n", mem_index);
+		pr_debug("mem_index is invalid errno %d\n", mem_index);
 		return mem_index;
 	}
 
 	mem = info->mem + mem_index;
 
 	if (vma->vm_end - vma->vm_start > mem->size) {
-		pr_err("vm_end[%lu] - vm_start[%lu] [%lu] > mem->size[%pa]\n",
+		pr_debug("vm_end[%lu] - vm_start[%lu] [%lu] > mem->size[%pa]\n",
 			vma->vm_end, vma->vm_start,
 			(vma->vm_end - vma->vm_start), &mem->size);
 		return -EINVAL;
@@ -58,7 +58,7 @@ static int sharedmem_mmap(struct uio_info *info, struct vm_area_struct *vma)
 				 vma->vm_end - vma->vm_start,
 				 vma->vm_page_prot);
 	if (result != 0)
-		pr_err("mmap Failed with errno %d\n", result);
+		pr_debug("mmap Failed with errno %d\n", result);
 	else
 		pr_debug("mmap success\n");
 
@@ -75,7 +75,7 @@ static int setup_shared_ram_perms(u32 client_id, phys_addr_t addr, u32 size,
 	u32 source_vmlist[1] = {VMID_HLOS};
 
 	if (client_id != MPSS_RMTS_CLIENT_ID) {
-		pr_err("invalid client id %u\n", client_id);
+		pr_debug("invalid client id %u\n", client_id);
 		return ret;
 	}
 
@@ -97,9 +97,9 @@ static int setup_shared_ram_perms(u32 client_id, phys_addr_t addr, u32 size,
 	}
 	if (ret != 0) {
 		if (ret == -EINVAL)
-			pr_warn("hyp_assign_phys is not supported!\n");
+			pr_debug("hyp_assign_phys is not supported!\n");
 		else
-			pr_err("hyp_assign_phys failed IPA=0x016%pa size=%u err=%d\n",
+			pr_debug("hyp_assign_phys failed IPA=0x016%pa size=%u err=%d\n",
 				&addr, size, ret);
 	}
 	return ret;
@@ -121,13 +121,13 @@ static int msm_sharedmem_probe(struct platform_device *pdev)
 
 	/* Get the addresses from platform-data */
 	if (!pdev->dev.of_node) {
-		pr_err("Node not found\n");
+		pr_debug("Node not found\n");
 		ret = -ENODEV;
 		goto out;
 	}
 	clnt_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!clnt_res) {
-		pr_err("resource not found\n");
+		pr_debug("resource not found\n");
 		return -ENODEV;
 	}
 
@@ -135,7 +135,7 @@ static int msm_sharedmem_probe(struct platform_device *pdev)
 				   &client_id);
 	if (ret) {
 		client_id = ((u32)~0U);
-		pr_warn("qcom,client-id property not found\n");
+		pr_debug("qcom,client-id property not found\n");
 	}
 
 	info = devm_kzalloc(&pdev->dev, sizeof(struct uio_info), GFP_KERNEL);
@@ -146,7 +146,7 @@ static int msm_sharedmem_probe(struct platform_device *pdev)
 	shared_mem_pyhsical = clnt_res->start;
 
 	if (shared_mem_size == 0) {
-		pr_err("Shared memory size is zero\n");
+		pr_debug("Shared memory size is zero\n");
 		return -EINVAL;
 	}
 
@@ -170,7 +170,7 @@ static int msm_sharedmem_probe(struct platform_device *pdev)
 		shared_mem = dma_alloc_coherent(&pdev->dev, shared_mem_tot_sz,
 					&shared_mem_pyhsical, GFP_KERNEL);
 		if (shared_mem == NULL) {
-			pr_err("Shared mem alloc client=%s, size=%u\n",
+			pr_debug("Shared mem alloc client=%s, size=%u\n",
 				clnt_res->name, shared_mem_size);
 			return -ENOMEM;
 		}
@@ -198,12 +198,12 @@ static int msm_sharedmem_probe(struct platform_device *pdev)
 
 	ret = uio_register_device(&pdev->dev, info);
 	if (ret) {
-		pr_err("uio register failed ret=%d\n", ret);
+		pr_debug("uio register failed ret=%d\n", ret);
 		goto out;
 	}
 	dev_set_drvdata(&pdev->dev, info);
 
-	pr_info("Device created for client '%s'\n", clnt_res->name);
+	pr_debug("Device created for client '%s'\n", clnt_res->name);
 out:
 	return ret;
 }
@@ -239,7 +239,7 @@ static int __init msm_sharedmem_init(void)
 
 	result = platform_driver_register(&msm_sharedmem_driver);
 	if (result != 0) {
-		pr_err("Platform driver registration failed\n");
+		pr_debug("Platform driver registration failed\n");
 		return result;
 	}
 	return 0;

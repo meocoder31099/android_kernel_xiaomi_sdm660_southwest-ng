@@ -60,13 +60,13 @@ int q6common_pack_pp_params(u8 *dest, struct param_hdr_v3 *v3_hdr,
 	bool iid_supported = q6common_is_instance_id_supported();
 
 	if (dest == NULL) {
-		pr_err("%s: Received NULL pointer for destination\n", __func__);
+		pr_debug("%s: Received NULL pointer for destination\n", __func__);
 		return -EINVAL;
 	} else if (v3_hdr == NULL) {
-		pr_err("%s: Received NULL pointer for header\n", __func__);
+		pr_debug("%s: Received NULL pointer for header\n", __func__);
 		return -EINVAL;
 	} else if (total_size == NULL) {
-		pr_err("%s: Received NULL pointer for total size\n", __func__);
+		pr_debug("%s: Received NULL pointer for total size\n", __func__);
 		return -EINVAL;
 	}
 
@@ -82,7 +82,7 @@ int q6common_pack_pp_params(u8 *dest, struct param_hdr_v3 *v3_hdr,
 		v1_hdr->param_id = v3_hdr->param_id;
 
 		if (param_size > U16_MAX) {
-			pr_err("%s: Invalid param size for V1 %d\n", __func__,
+			pr_debug("%s: Invalid param size for V1 %d\n", __func__,
 			       param_size);
 			return -EINVAL;
 		}
@@ -131,13 +131,13 @@ int q6common_pack_pp_params_v2(u8 *dest, struct param_hdr_v3 *v3_hdr,
 	u32 param_size = 0;
 
 	if (dest == NULL) {
-		pr_err("%s: Received NULL pointer for destination\n", __func__);
+		pr_debug("%s: Received NULL pointer for destination\n", __func__);
 		return -EINVAL;
 	} else if (v3_hdr == NULL) {
-		pr_err("%s: Received NULL pointer for header\n", __func__);
+		pr_debug("%s: Received NULL pointer for header\n", __func__);
 		return -EINVAL;
 	} else if (total_size == NULL) {
-		pr_err("%s: Received NULL pointer for total size\n", __func__);
+		pr_debug("%s: Received NULL pointer for total size\n", __func__);
 		return -EINVAL;
 	}
 
@@ -153,7 +153,7 @@ int q6common_pack_pp_params_v2(u8 *dest, struct param_hdr_v3 *v3_hdr,
 		v1_hdr->param_id = v3_hdr->param_id;
 
 		if (param_size > U16_MAX) {
-			pr_err("%s: Invalid param size for V1 %d\n", __func__,
+			pr_debug("%s: Invalid param size for V1 %d\n", __func__,
 			       param_size);
 			return -EINVAL;
 		}

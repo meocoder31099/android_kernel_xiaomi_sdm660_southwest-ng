@@ -930,9 +930,9 @@ static void nvt_ts_work_func(struct work_struct *work)
 	/*
 	//--- dump I2C buf ---
 	for (i = 0; i < 10; i++) {
-	printk("%02X %02X %02X %02X %02X %02X  ", point_data[1+i*6], point_data[2+i*6], point_data[3+i*6], point_data[4+i*6], point_data[5+i*6], point_data[6+i*6]);
+	no_printk("%02X %02X %02X %02X %02X %02X  ", point_data[1+i*6], point_data[2+i*6], point_data[3+i*6], point_data[4+i*6], point_data[5+i*6], point_data[6+i*6]);
 	}
-	printk("\n");
+	no_printk("\n");
 	*/
 
 #if NVT_TOUCH_ESD_PROTECT
@@ -1883,11 +1883,11 @@ static int32_t __init nvt_driver_init(void)
 
 	ret = i2c_add_driver(&nvt_i2c_driver);
 	if (ret) {
-		pr_err("%s: failed to add i2c driver", __func__);
+		pr_debug("%s: failed to add i2c driver", __func__);
 		goto err;
 	}
 
-	pr_info("%s: finished\n", __func__);
+	pr_debug("%s: finished\n", __func__);
 	goto exit;
 
 err:

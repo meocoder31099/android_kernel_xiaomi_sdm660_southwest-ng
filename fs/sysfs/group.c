@@ -127,7 +127,7 @@ static int internal_create_group(struct kobject *kobj, int update,
 		if (update) {
 			kn = kernfs_find_and_get(kobj->sd, grp->name);
 			if (!kn) {
-				pr_warn("Can't update unknown attr grp name: %s/%s\n",
+				pr_debug("Can't update unknown attr grp name: %s/%s\n",
 					kobj->name, grp->name);
 				return -EINVAL;
 			}

@@ -368,7 +368,7 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 
 	state = gpiod_get_value_cansleep(bdata->gpiod);
 	if (state < 0) {
-		dev_err(input->dev.parent,
+		dev_dbg(input->dev.parent,
 			"failed to get gpio state: %d\n", state);
 		return;
 	}
@@ -514,7 +514,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 				bdata->gpiod = NULL;
 			} else {
 				if (error != -EPROBE_DEFER)
-					dev_err(dev, "failed to get gpio: %d\n",
+					dev_dbg(dev, "failed to get gpio: %d\n",
 						error);
 				return error;
 			}
@@ -531,7 +531,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 
 		error = devm_gpio_request_one(dev, button->gpio, flags, desc);
 		if (error < 0) {
-			dev_err(dev, "Failed to request GPIO %d, error %d\n",
+			dev_dbg(dev, "Failed to request GPIO %d, error %d\n",
 				button->gpio, error);
 			return error;
 		}
@@ -559,7 +559,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 			irq = gpiod_to_irq(bdata->gpiod);
 			if (irq < 0) {
 				error = irq;
-				dev_err(dev,
+				dev_dbg(dev,
 					"Unable to get irq number for GPIO %d, error %d\n",
 					button->gpio, error);
 				return error;
@@ -592,14 +592,14 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 		}
 	} else {
 		if (!button->irq) {
-			dev_err(dev, "Found button without gpio or irq\n");
+			dev_dbg(dev, "Found button without gpio or irq\n");
 			return -EINVAL;
 		}
 
 		bdata->irq = button->irq;
 
 		if (button->type && button->type != EV_KEY) {
-			dev_err(dev, "Only EV_KEY allowed for IRQ buttons.\n");
+			dev_dbg(dev, "Only EV_KEY allowed for IRQ buttons.\n");
 			return -EINVAL;
 		}
 
@@ -625,7 +625,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 	 */
 	error = devm_add_action(dev, gpio_keys_quiesce_key, bdata);
 	if (error) {
-		dev_err(dev, "failed to register quiesce action, error: %d\n",
+		dev_dbg(dev, "failed to register quiesce action, error: %d\n",
 			error);
 		return error;
 	}
@@ -640,7 +640,7 @@ static int gpio_keys_setup_key(struct platform_device *pdev,
 	error = devm_request_any_context_irq(dev, bdata->irq, isr, irqflags,
 					     desc, bdata);
 	if (error < 0) {
-		dev_err(dev, "Unable to claim irq %d; error %d\n",
+		dev_dbg(dev, "Unable to claim irq %d; error %d\n",
 			bdata->irq, error);
 		return error;
 	}
@@ -729,7 +729,7 @@ gpio_keys_get_devtree_pdata(struct device *dev)
 
 		if (fwnode_property_read_u32(child, "linux,code",
 					     &button->code)) {
-			dev_err(dev, "Button without keycode\n");
+			dev_dbg(dev, "Button without keycode\n");
 			fwnode_handle_put(child);
 			return ERR_PTR(-EINVAL);
 		}
@@ -788,7 +788,7 @@ static int gpio_keys_probe(struct platform_device *pdev)
 			pdata->nbuttons * sizeof(struct gpio_button_data);
 	ddata = devm_kzalloc(dev, size, GFP_KERNEL);
 	if (!ddata) {
-		dev_err(dev, "failed to allocate state\n");
+		dev_dbg(dev, "failed to allocate state\n");
 		return -ENOMEM;
 	}
 
@@ -800,7 +800,7 @@ static int gpio_keys_probe(struct platform_device *pdev)
 
 	input = devm_input_allocate_device(dev);
 	if (!input) {
-		dev_err(dev, "failed to allocate input device\n");
+		dev_dbg(dev, "failed to allocate input device\n");
 		return -ENOMEM;
 	}
 
@@ -836,7 +836,7 @@ static int gpio_keys_probe(struct platform_device *pdev)
 		if (!dev_get_platdata(dev)) {
 			child = device_get_next_child_node(dev, child);
 			if (!child) {
-				dev_err(dev,
+				dev_dbg(dev,
 					"missing child device node for entry %d\n",
 					i);
 				return -EINVAL;
@@ -858,14 +858,14 @@ static int gpio_keys_probe(struct platform_device *pdev)
 
 	error = devm_device_add_group(dev, &gpio_keys_attr_group);
 	if (error) {
-		dev_err(dev, "Unable to export keys/switches, error: %d\n",
+		dev_dbg(dev, "Unable to export keys/switches, error: %d\n",
 			error);
 		return error;
 	}
 
 	error = input_register_device(input);
 	if (error) {
-		dev_err(dev, "Unable to register input device, error: %d\n",
+		dev_dbg(dev, "Unable to register input device, error: %d\n",
 			error);
 		return error;
 	}
@@ -882,7 +882,7 @@ gpio_keys_button_enable_wakeup(struct gpio_button_data *bdata)
 
 	error = enable_irq_wake(bdata->irq);
 	if (error) {
-		dev_err(bdata->input->dev.parent,
+		dev_dbg(bdata->input->dev.parent,
 			"failed to configure IRQ %d as wakeup source: %d\n",
 			bdata->irq, error);
 		return error;
@@ -892,7 +892,7 @@ gpio_keys_button_enable_wakeup(struct gpio_button_data *bdata)
 		error = irq_set_irq_type(bdata->irq,
 					 bdata->wakeup_trigger_type);
 		if (error) {
-			dev_err(bdata->input->dev.parent,
+			dev_dbg(bdata->input->dev.parent,
 				"failed to set wakeup trigger %08x for IRQ %d: %d\n",
 				bdata->wakeup_trigger_type, bdata->irq, error);
 			disable_irq_wake(bdata->irq);
@@ -915,14 +915,14 @@ gpio_keys_button_disable_wakeup(struct gpio_button_data *bdata)
 	if (bdata->wakeup_trigger_type) {
 		error = irq_set_irq_type(bdata->irq, IRQ_TYPE_EDGE_BOTH);
 		if (error)
-			dev_warn(bdata->input->dev.parent,
+			dev_dbg(bdata->input->dev.parent,
 				 "failed to restore interrupt trigger for IRQ %d: %d\n",
 				 bdata->irq, error);
 	}
 
 	error = disable_irq_wake(bdata->irq);
 	if (error)
-		dev_warn(bdata->input->dev.parent,
+		dev_dbg(bdata->input->dev.parent,
 			 "failed to disable IRQ %d as wake source: %d\n",
 			 bdata->irq, error);
 }

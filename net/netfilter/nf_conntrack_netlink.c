@@ -3543,13 +3543,13 @@ static int __net_init ctnetlink_net_init(struct net *net)
 
 	ret = nf_conntrack_register_notifier(net, &ctnl_notifier);
 	if (ret < 0) {
-		pr_err("ctnetlink_init: cannot register notifier.\n");
+		pr_debug("ctnetlink_init: cannot register notifier.\n");
 		goto err_out;
 	}
 
 	ret = nf_ct_expect_register_notifier(net, &ctnl_notifier_exp);
 	if (ret < 0) {
-		pr_err("ctnetlink_init: cannot expect register notifier.\n");
+		pr_debug("ctnetlink_init: cannot expect register notifier.\n");
 		goto err_unreg_notifier;
 	}
 #endif
@@ -3593,19 +3593,19 @@ static int __init ctnetlink_init(void)
 
 	ret = nfnetlink_subsys_register(&ctnl_subsys);
 	if (ret < 0) {
-		pr_err("ctnetlink_init: cannot register with nfnetlink.\n");
+		pr_debug("ctnetlink_init: cannot register with nfnetlink.\n");
 		goto err_out;
 	}
 
 	ret = nfnetlink_subsys_register(&ctnl_exp_subsys);
 	if (ret < 0) {
-		pr_err("ctnetlink_init: cannot register exp with nfnetlink.\n");
+		pr_debug("ctnetlink_init: cannot register exp with nfnetlink.\n");
 		goto err_unreg_subsys;
 	}
 
 	ret = register_pernet_subsys(&ctnetlink_net_ops);
 	if (ret < 0) {
-		pr_err("ctnetlink_init: cannot register pernet operations\n");
+		pr_debug("ctnetlink_init: cannot register pernet operations\n");
 		goto err_unreg_exp_subsys;
 	}
 #ifdef CONFIG_NETFILTER_NETLINK_GLUE_CT

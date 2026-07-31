@@ -256,7 +256,7 @@ void usb_qdss_free_req(struct usb_qdss_ch *ch)
 	spin_lock_irqsave(&channel_lock, flags);
 	qdss = ch->priv_usb;
 	if (!qdss) {
-		pr_err("%s: qdss ctx is NULL\n", __func__);
+		pr_debug("%s: qdss ctx is NULL\n", __func__);
 		spin_unlock_irqrestore(&channel_lock, flags);
 		return;
 	}
@@ -290,7 +290,7 @@ int usb_qdss_alloc_req(struct usb_qdss_ch *ch, int no_write_buf)
 	qdss_log("%s\n", __func__);
 
 	if (!qdss) {
-		pr_err("%s: %s closed\n", __func__, ch->name);
+		pr_debug("%s: %s closed\n", __func__, ch->name);
 		return -ENODEV;
 	}
 
@@ -304,7 +304,7 @@ int usb_qdss_alloc_req(struct usb_qdss_ch *ch, int no_write_buf)
 
 		req = usb_ep_alloc_request(in, GFP_ATOMIC);
 		if (!req) {
-			pr_err("%s: ctrl_in allocation err\n", __func__);
+			pr_debug("%s: ctrl_in allocation err\n", __func__);
 			kfree(qreq);
 			goto fail;
 		}
@@ -360,7 +360,7 @@ static int qdss_bind(struct usb_configuration *c, struct usb_function *f)
 	/* Allocate data I/F */
 	iface = usb_interface_id(c, f);
 	if (iface < 0) {
-		pr_err("interface allocation error\n");
+		pr_debug("interface allocation error\n");
 		return iface;
 	}
 	qdss_data_intf_desc.bInterfaceNumber = iface;
@@ -378,7 +378,7 @@ static int qdss_bind(struct usb_configuration *c, struct usb_function *f)
 		/* Allocate ctrl I/F */
 		iface = usb_interface_id(c, f);
 		if (iface < 0) {
-			pr_err("interface allocation error\n");
+			pr_debug("interface allocation error\n");
 			return iface;
 		}
 		qdss_ctrl_intf_desc.bInterfaceNumber = iface;
@@ -400,7 +400,7 @@ static int qdss_bind(struct usb_configuration *c, struct usb_function *f)
 	ep = usb_ep_autoconfig_ss(gadget, &qdss_ss_data_desc,
 		&qdss_data_ep_comp_desc);
 	if (!ep) {
-		pr_err("%s: ep_autoconfig error\n", __func__);
+		pr_debug("%s: ep_autoconfig error\n", __func__);
 		goto clear_ep;
 	}
 	qdss->port.data = ep;
@@ -410,7 +410,7 @@ static int qdss_bind(struct usb_configuration *c, struct usb_function *f)
 		ep = usb_ep_autoconfig_ss(gadget, &qdss_ss_ctrl_in_desc,
 			&qdss_ctrl_in_ep_comp_desc);
 		if (!ep) {
-			pr_err("%s: ep_autoconfig error\n", __func__);
+			pr_debug("%s: ep_autoconfig error\n", __func__);
 			goto clear_ep;
 		}
 
@@ -420,7 +420,7 @@ static int qdss_bind(struct usb_configuration *c, struct usb_function *f)
 		ep = usb_ep_autoconfig_ss(gadget, &qdss_ss_ctrl_out_desc,
 			&qdss_ctrl_out_ep_comp_desc);
 		if (!ep) {
-			pr_err("%s: ep_autoconfig error\n", __func__);
+			pr_debug("%s: ep_autoconfig error\n", __func__);
 			goto clear_ep;
 		}
 		qdss->port.ctrl_out = ep;
@@ -430,7 +430,7 @@ static int qdss_bind(struct usb_configuration *c, struct usb_function *f)
 	if (!strcmp(qdss->ch.name, USB_QDSS_CH_MSM)) {
 		ret = alloc_sps_req(qdss->port.data);
 		if (ret) {
-			pr_err("%s: alloc_sps_req error (%d)\n",
+			pr_debug("%s: alloc_sps_req error (%d)\n",
 							__func__, ret);
 			goto clear_ep;
 		}
@@ -550,11 +550,11 @@ static void usb_qdss_disconnect_work(struct work_struct *work)
 	if (qdss->ch.app_conn && !strcmp(qdss->ch.name, USB_QDSS_CH_MSM)) {
 		status = uninit_data(qdss->port.data);
 		if (status)
-			pr_err("%s: uninit_data error\n", __func__);
+			pr_debug("%s: uninit_data error\n", __func__);
 
 		status = set_qdss_data_connection(qdss, 0);
 		if (status)
-			pr_err("qdss_disconnect error\n");
+			pr_debug("qdss_disconnect error\n");
 	}
 
 	/*
@@ -611,7 +611,7 @@ static void usb_qdss_connect_work(struct work_struct *work)
 	spin_unlock_irqrestore(&qdss->lock, flags);
 	status = set_qdss_data_connection(qdss, 1);
 	if (status) {
-		pr_err("set_qdss_data_connection error(%d)\n", status);
+		pr_debug("set_qdss_data_connection error(%d)\n", status);
 		return;
 	}
 
@@ -623,7 +623,7 @@ static void usb_qdss_connect_work(struct work_struct *work)
 
 	status = usb_ep_queue(qdss->port.data, req, GFP_ATOMIC);
 	if (status) {
-		pr_err("%s: usb_ep_queue error (%d)\n", __func__, status);
+		pr_debug("%s: usb_ep_queue error (%d)\n", __func__, status);
 		return;
 	}
 
@@ -648,7 +648,7 @@ static int qdss_set_alt(struct usb_function *f, unsigned int intf,
 		goto fail1;
 
 	if (gadget->speed < USB_SPEED_HIGH) {
-		pr_err("%s: qdss doesn't support USB full or low speed\n",
+		pr_debug("%s: qdss doesn't support USB full or low speed\n",
 								__func__);
 		ret = -EINVAL;
 		goto fail1;
@@ -724,7 +724,7 @@ fail:
 	/* Decrement usage count in case of failure */
 	usb_gadget_autopm_put_async(qdss->gadget);
 fail1:
-	pr_err("%s failed\n", __func__);
+	pr_debug("%s failed\n", __func__);
 	qdss_eps_disable(f);
 	return ret;
 }
@@ -746,7 +746,7 @@ static struct f_qdss *alloc_usb_qdss(char *channel_name)
 
 	if (found) {
 		spin_unlock_irqrestore(&channel_lock, flags);
-		pr_err("%s: (%s) is already available.\n",
+		pr_debug("%s: (%s) is already available.\n",
 				__func__, channel_name);
 		return ERR_PTR(-EEXIST);
 	}
@@ -754,7 +754,7 @@ static struct f_qdss *alloc_usb_qdss(char *channel_name)
 	spin_unlock_irqrestore(&channel_lock, flags);
 	qdss = kzalloc(sizeof(struct f_qdss), GFP_KERNEL);
 	if (!qdss) {
-		pr_err("%s: Unable to allocate qdss device\n", __func__);
+		pr_debug("%s: Unable to allocate qdss device\n", __func__);
 		return ERR_PTR(-ENOMEM);
 	}
 
@@ -806,7 +806,7 @@ int usb_qdss_write(struct usb_qdss_ch *ch, struct qdss_request *d_req)
 	 */
 	if (list_empty(&qdss->data_write_pool) &&
 	    qdss->debug_inface_enabled) {
-		pr_err("%s:error: Invalid operation.\n", __func__);
+		pr_debug("%s:error: Invalid operation.\n", __func__);
 		spin_unlock_irqrestore(&qdss->lock, flags);
 		return -EINVAL;
 	}
@@ -837,7 +837,7 @@ int usb_qdss_write(struct usb_qdss_ch *ch, struct qdss_request *d_req)
 		list_move_tail(&qreq->list, &qdss->data_write_pool);
 		complete(&qreq->write_done);
 		spin_unlock_irqrestore(&qdss->lock, flags);
-		pr_err("qdss usb_ep_queue failed\n");
+		pr_debug("qdss usb_ep_queue failed\n");
 		return -EIO;
 	}
 
@@ -857,7 +857,7 @@ struct usb_qdss_ch *usb_qdss_open(const char *name, void *priv,
 	qdss_log("%s\n", __func__);
 
 	if (!notify) {
-		pr_err("%s: notification func is missing\n", __func__);
+		pr_debug("%s: notification func is missing\n", __func__);
 		return NULL;
 	}
 
@@ -947,11 +947,11 @@ close:
 
 	status = uninit_data(qdss->port.data);
 	if (status)
-		pr_err("%s: uninit_data error\n", __func__);
+		pr_debug("%s: uninit_data error\n", __func__);
 
 	status = set_qdss_data_connection(qdss, 0);
 	if (status)
-		pr_err("%s:qdss_disconnect error\n", __func__);
+		pr_debug("%s:qdss_disconnect error\n", __func__);
 }
 EXPORT_SYMBOL(usb_qdss_close);
 
@@ -1017,12 +1017,12 @@ static ssize_t qdss_enable_debug_inface_store(struct config_item *item,
 	u8 stats;
 
 	if (page == NULL) {
-		pr_err("Invalid buffer\n");
+		pr_debug("Invalid buffer\n");
 		return len;
 	}
 
 	if (kstrtou8(page, 0, &stats) != 0 && (stats != 0 || stats != 1)) {
-		pr_err("(%u)Wrong value. enter 0 to disable or 1 to enable.\n",
+		pr_debug("(%u)Wrong value. enter 0 to disable or 1 to enable.\n",
 			stats);
 		return len;
 	}
@@ -1071,7 +1071,7 @@ static int usb_qdss_set_inst_name(struct usb_function_instance *f,
 	/* get channel name */
 	ptr = kstrndup(name, name_len, GFP_KERNEL);
 	if (!ptr) {
-		pr_err("error:%ld\n", PTR_ERR(ptr));
+		pr_debug("error:%ld\n", PTR_ERR(ptr));
 		return -ENOMEM;
 	}
 
@@ -1080,7 +1080,7 @@ static int usb_qdss_set_inst_name(struct usb_function_instance *f,
 
 	usb_qdss = alloc_usb_qdss(opts->channel_name);
 	if (IS_ERR(usb_qdss)) {
-		pr_err("Failed to create usb_qdss port(%s)\n",
+		pr_debug("Failed to create usb_qdss port(%s)\n",
 				opts->channel_name);
 		return -ENOMEM;
 	}
@@ -1134,7 +1134,7 @@ static int __init usb_qdss_init(void)
 	INIT_LIST_HEAD(&usb_qdss_ch_list);
 	ret = usb_function_register(&qdssusb_func);
 	if (ret) {
-		pr_err("%s: failed to register diag %d\n", __func__, ret);
+		pr_debug("%s: failed to register diag %d\n", __func__, ret);
 		return ret;
 	}
 	return ret;

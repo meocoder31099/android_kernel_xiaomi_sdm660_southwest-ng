@@ -217,7 +217,7 @@ static int thunder_ecam_config_read(struct pci_bus *bus, unsigned int devfn,
 			}
 			v = readl(addr);
 			if (v & 0xff00)
-				pr_err("Bad MSIX cap header: %08x\n", v);
+				pr_debug("Bad MSIX cap header: %08x\n", v);
 			v |= 0xbc00; /* next capability is EA at 0xbc */
 			set_val(v, where, size, val);
 			return PCIBIOS_SUCCESSFUL;
@@ -274,7 +274,7 @@ static int thunder_ecam_config_read(struct pci_bus *bus, unsigned int devfn,
 			}
 			v = readl(addr);
 			if (v & 0xff00)
-				pr_err("Bad PCIe cap header: %08x\n", v);
+				pr_debug("Bad PCIe cap header: %08x\n", v);
 			v |= 0xbc00; /* next capability is EA at 0xbc */
 			set_val(v, where, size, val);
 			return PCIBIOS_SUCCESSFUL;

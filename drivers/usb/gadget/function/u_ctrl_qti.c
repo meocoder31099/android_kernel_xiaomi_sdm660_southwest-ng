@@ -121,7 +121,7 @@ static void qti_ctrl_queue_notify(struct qti_ctrl_port *port)
 
 	spin_lock_irqsave(&port->lock, flags);
 	if (!port->is_open) {
-		pr_err("%s: rmnet ctrl file handler %pK is not open\n",
+		pr_debug("%s: rmnet ctrl file handler %pK is not open\n",
 			   __func__, port);
 		spin_unlock_irqrestore(&port->lock, flags);
 		return;
@@ -129,7 +129,7 @@ static void qti_ctrl_queue_notify(struct qti_ctrl_port *port)
 
 	cpkt = alloc_rmnet_ctrl_pkt(0, GFP_ATOMIC);
 	if (IS_ERR(cpkt)) {
-		pr_err("%s: Unable to allocate reset function pkt\n", __func__);
+		pr_debug("%s: Unable to allocate reset function pkt\n", __func__);
 		spin_unlock_irqrestore(&port->lock, flags);
 		return;
 	}
@@ -149,19 +149,19 @@ static int gqti_ctrl_send_cpkt_tomodem(enum qti_port_type qport,
 	struct rmnet_ctrl_pkt *cpkt;
 
 	if (len > MAX_QTI_PKT_SIZE) {
-		pr_err("given pkt size too big:%zu > max_pkt_size:%d\n",
+		pr_debug("given pkt size too big:%zu > max_pkt_size:%d\n",
 				len, MAX_QTI_PKT_SIZE);
 		return -EINVAL;
 	}
 
 	if (qport >= QTI_NUM_PORTS) {
-		pr_err("%s: Invalid QTI port %d\n", __func__, qport);
+		pr_debug("%s: Invalid QTI port %d\n", __func__, qport);
 		return -ENODEV;
 	}
 	port = ctrl_port[qport];
 	cpkt = alloc_rmnet_ctrl_pkt(len, GFP_ATOMIC);
 	if (IS_ERR(cpkt)) {
-		pr_err("%s: Unable to allocate ctrl pkt\n", __func__);
+		pr_debug("%s: Unable to allocate ctrl pkt\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -199,7 +199,7 @@ gqti_ctrl_notify_modem(void *gptr, enum qti_port_type qport, int val)
 	struct qti_ctrl_port *port;
 
 	if (qport >= QTI_NUM_PORTS) {
-		pr_err("%s: Invalid QTI port %d\n", __func__, qport);
+		pr_debug("%s: Invalid QTI port %d\n", __func__, qport);
 		return;
 	}
 	port = ctrl_port[qport];
@@ -218,13 +218,13 @@ int gqti_ctrl_connect(void *gr, enum qti_port_type qport, unsigned int intf,
 
 	pr_debug("%s: port type:%d gadget:%pK\n", __func__, qport, gr);
 	if (qport >= QTI_NUM_PORTS) {
-		pr_err("%s: Invalid QTI port %d\n", __func__, qport);
+		pr_debug("%s: Invalid QTI port %d\n", __func__, qport);
 		return -ENODEV;
 	}
 
 	port = ctrl_port[qport];
 	if (!port) {
-		pr_err("%s: gadget port is null\n", __func__);
+		pr_debug("%s: gadget port is null\n", __func__);
 		return -ENODEV;
 	}
 
@@ -250,7 +250,7 @@ int gqti_ctrl_connect(void *gr, enum qti_port_type qport, unsigned int intf,
 			atomic_set(&port->line_state, 1);
 	} else {
 		spin_unlock_irqrestore(&port->lock, flags);
-		pr_err("%s(): Port is used without port type.\n", __func__);
+		pr_debug("%s(): Port is used without port type.\n", __func__);
 		return -ENODEV;
 	}
 
@@ -280,13 +280,13 @@ void gqti_ctrl_disconnect(void *gr, enum qti_port_type qport)
 	pr_debug("%s: gadget:%pK\n", __func__, gr);
 
 	if (qport >= QTI_NUM_PORTS) {
-		pr_err("%s: Invalid QTI port %d\n", __func__, qport);
+		pr_debug("%s: Invalid QTI port %d\n", __func__, qport);
 		return;
 	}
 
 	port = ctrl_port[qport];
 	if (!port) {
-		pr_err("%s: gadget port is null\n", __func__);
+		pr_debug("%s: gadget port is null\n", __func__);
 		return;
 	}
 
@@ -304,7 +304,7 @@ void gqti_ctrl_disconnect(void *gr, enum qti_port_type qport)
 		g_rmnet->send_encap_cmd = NULL;
 		g_rmnet->notify_modem = NULL;
 	} else {
-		pr_err("%s(): unrecognized gadget type(%d).\n",
+		pr_debug("%s(): unrecognized gadget type(%d).\n",
 					__func__, port->port_type);
 	}
 
@@ -328,7 +328,7 @@ void gqti_ctrl_update_ipa_pipes(void *gr, enum qti_port_type qport,
 	struct qti_ctrl_port	*port;
 
 	if (qport >= QTI_NUM_PORTS) {
-		pr_err("%s: Invalid QTI port %d\n", __func__, qport);
+		pr_debug("%s: Invalid QTI port %d\n", __func__, qport);
 		return;
 	}
 
@@ -350,7 +350,7 @@ static int qti_ctrl_open(struct inode *ip, struct file *fp)
 		port->name, port->index);
 
 	if (qti_ctrl_lock(&port->open_excl)) {
-		pr_err("Already opened\n");
+		pr_debug("Already opened\n");
 		return -EBUSY;
 	}
 
@@ -391,13 +391,13 @@ qti_ctrl_read(struct file *fp, char __user *buf, size_t count, loff_t *pos)
 	pr_debug("%s: Enter(%zu)\n", __func__, count);
 
 	if (count > MAX_QTI_PKT_SIZE) {
-		pr_err("Buffer size is too big %zu, should be at most %d\n",
+		pr_debug("Buffer size is too big %zu, should be at most %d\n",
 			count, MAX_QTI_PKT_SIZE);
 		return -EINVAL;
 	}
 
 	if (qti_ctrl_lock(&port->read_excl)) {
-		pr_err("Previous reading is not finished yet\n");
+		pr_debug("Previous reading is not finished yet\n");
 		return -EBUSY;
 	}
 
@@ -424,7 +424,7 @@ qti_ctrl_read(struct file *fp, char __user *buf, size_t count, loff_t *pos)
 	spin_unlock_irqrestore(&port->lock, flags);
 
 	if (cpkt->len > count) {
-		pr_err("cpkt size too big:%d > buf size:%zu\n",
+		pr_debug("cpkt size too big:%d > buf size:%zu\n",
 				cpkt->len, count);
 		qti_ctrl_unlock(&port->read_excl);
 		free_rmnet_ctrl_pkt(cpkt);
@@ -438,7 +438,7 @@ qti_ctrl_read(struct file *fp, char __user *buf, size_t count, loff_t *pos)
 
 	ret = copy_to_user(buf, cpkt->buf, cpkt->len);
 	if (ret) {
-		pr_err("copy_to_user failed: err %d\n", ret);
+		pr_debug("copy_to_user failed: err %d\n", ret);
 		ret = -EFAULT;
 	} else {
 		pr_debug("%s: copied %d bytes to user\n", __func__, cpkt->len);
@@ -476,7 +476,7 @@ qti_ctrl_write(struct file *fp, const char __user *buf, size_t count,
 	}
 
 	if (qti_ctrl_lock(&port->write_excl)) {
-		pr_err("Previous writing not finished yet\n");
+		pr_debug("Previous writing not finished yet\n");
 		return -EBUSY;
 	}
 
@@ -493,7 +493,7 @@ qti_ctrl_write(struct file *fp, const char __user *buf, size_t count,
 	}
 	ret = copy_from_user(kbuf, buf, count);
 	if (ret) {
-		pr_err("copy_from_user failed err:%d\n", ret);
+		pr_debug("copy_from_user failed err:%d\n", ret);
 		kfree(kbuf);
 		qti_ctrl_unlock(&port->write_excl);
 		return -EFAULT;
@@ -506,7 +506,7 @@ qti_ctrl_write(struct file *fp, const char __user *buf, size_t count,
 			g_rmnet = port->port_usb;
 		} else {
 			spin_unlock_irqrestore(&port->lock, flags);
-			pr_err("%s(): unrecognized gadget type(%d).\n",
+			pr_debug("%s(): unrecognized gadget type(%d).\n",
 						__func__, port->port_type);
 			return -EINVAL;
 		}
@@ -515,10 +515,10 @@ qti_ctrl_write(struct file *fp, const char __user *buf, size_t count,
 			ret = g_rmnet->send_cpkt_response(port->port_usb,
 							kbuf, count);
 			if (ret)
-				pr_err("%d failed to send ctrl packet.\n", ret);
+				pr_debug("%d failed to send ctrl packet.\n", ret);
 			port->modem_to_host++;
 		} else {
-			pr_err("send_cpkt_response callback is NULL\n");
+			pr_debug("send_cpkt_response callback is NULL\n");
 			ret = -EINVAL;
 		}
 	}
@@ -547,7 +547,7 @@ static long qti_ctrl_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 	switch (cmd) {
 	case QTI_CTRL_MODEM_OFFLINE:
 		if (port && (port->port_type == QTI_PORT_DPL)) {
-			pr_err("%s(): Modem Offline not handled\n", __func__);
+			pr_debug("%s(): Modem Offline not handled\n", __func__);
 			goto exit_ioctl;
 		}
 
@@ -559,7 +559,7 @@ static long qti_ctrl_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		break;
 	case QTI_CTRL_MODEM_ONLINE:
 		if (port && (port->port_type == QTI_PORT_DPL)) {
-			pr_err("%s(): Modem Online not handled\n", __func__);
+			pr_debug("%s(): Modem Online not handled\n", __func__);
 			goto exit_ioctl;
 		}
 
@@ -573,7 +573,7 @@ static long qti_ctrl_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		val = atomic_read(&port->line_state);
 		ret = copy_to_user((void __user *)arg, &val, sizeof(val));
 		if (ret) {
-			pr_err("copying to user space failed\n");
+			pr_debug("copying to user space failed\n");
 			ret = -EFAULT;
 		}
 		pr_debug("%s: Sent line_state: %d for port type:%d\n", __func__,
@@ -612,12 +612,12 @@ static long qti_ctrl_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 		ret = copy_to_user((void __user *)arg, &info,
 			sizeof(info));
 		if (ret) {
-			pr_err("copying to user space failed\n");
+			pr_debug("copying to user space failed\n");
 			ret = -EFAULT;
 		}
 		break;
 	default:
-		pr_err("wrong parameter\n");
+		pr_debug("wrong parameter\n");
 		ret = -EINVAL;
 	}
 
@@ -634,7 +634,7 @@ static unsigned int qti_ctrl_poll(struct file *file, poll_table *wait)
 	unsigned int mask = 0;
 
 	if (!port) {
-		pr_err("%s on a NULL device\n", __func__);
+		pr_debug("%s on a NULL device\n", __func__);
 		return POLLERR;
 	}
 
@@ -770,13 +770,13 @@ static int qti_ctrl_alloc_chardev_region(void)
 
 	rmnet_class = class_create(THIS_MODULE, RMNET_MODULE_NAME);
 	if (IS_ERR(rmnet_class)) {
-		pr_err("class_create() failed ENOMEM\n");
+		pr_debug("class_create() failed ENOMEM\n");
 		ret = -ENOMEM;
 	}
 	ret = alloc_chrdev_region(&qti_ctrl_dev, 0, QTI_NUM_PORTS,
 		RMNET_MODULE_NAME);
 	if (ret < 0) {
-		pr_err("alloc_chrdev_region() failed ret:%i\n", ret);
+		pr_debug("alloc_chrdev_region() failed ret:%i\n", ret);
 		return ret;
 	}
 
@@ -790,7 +790,7 @@ int gqti_ctrl_init(void)
 
 	ret = qti_ctrl_alloc_chardev_region();
 	if (ret) {
-		pr_err("qti_ctrl_alloc_chardev_region() failed ret:%d\n", ret);
+		pr_debug("qti_ctrl_alloc_chardev_region() failed ret:%d\n", ret);
 		return ret;
 	}
 
@@ -829,7 +829,7 @@ int gqti_ctrl_init(void)
 		port->dev = device_create(rmnet_class, NULL, qti_ctrl_dev+i,
 				port->dev, port->name);
 		if (IS_ERR(port->dev)) {
-			pr_err("device_create() failed for port(%d)\n", i);
+			pr_debug("device_create() failed for port(%d)\n", i);
 			ret = -ENOMEM;
 			goto fail_device_create;
 		}
@@ -842,7 +842,7 @@ int gqti_ctrl_init(void)
 		port->ctrl_device.owner = THIS_MODULE;
 		ret = cdev_add(&port->ctrl_device, qti_ctrl_dev + i, 1);
 		if (ret < 0) {
-			pr_err("cdev_add() failed ret:%d\n", ret);
+			pr_debug("cdev_add() failed ret:%d\n", ret);
 			goto fail_cdev;
 		}
 	}

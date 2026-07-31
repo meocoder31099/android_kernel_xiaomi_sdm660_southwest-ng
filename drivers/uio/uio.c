@@ -219,7 +219,7 @@ static ssize_t name_show(struct device *dev,
 	mutex_lock(&idev->info_lock);
 	if (!idev->info) {
 		ret = -EINVAL;
-		dev_err(dev, "the device has been unregistered\n");
+		dev_dbg(dev, "the device has been unregistered\n");
 		goto out;
 	}
 
@@ -240,7 +240,7 @@ static ssize_t version_show(struct device *dev,
 	mutex_lock(&idev->info_lock);
 	if (!idev->info) {
 		ret = -EINVAL;
-		dev_err(dev, "the device has been unregistered\n");
+		dev_dbg(dev, "the device has been unregistered\n");
 		goto out;
 	}
 
@@ -369,7 +369,7 @@ err_map_kobj:
 		kobject_put(&map->kobj);
 	}
 	kobject_put(idev->map_dir);
-	dev_err(&idev->dev, "error creating sysfs files (%d)\n", ret);
+	dev_dbg(&idev->dev, "error creating sysfs files (%d)\n", ret);
 	return ret;
 }
 
@@ -406,7 +406,7 @@ static int uio_get_minor(struct uio_device *idev)
 		idev->minor = retval;
 		retval = 0;
 	} else if (retval == -ENOSPC) {
-		dev_err(&idev->dev, "too many uio devices\n");
+		dev_dbg(&idev->dev, "too many uio devices\n");
 		retval = -EINVAL;
 	}
 	mutex_unlock(&minor_lock);
@@ -875,7 +875,7 @@ static int init_uio_class(void)
 
 	ret = class_register(&uio_class);
 	if (ret) {
-		printk(KERN_ERR "class_register failed for uio\n");
+		no_printk(KERN_ERR "class_register failed for uio\n");
 		goto err_class_register;
 	}
 

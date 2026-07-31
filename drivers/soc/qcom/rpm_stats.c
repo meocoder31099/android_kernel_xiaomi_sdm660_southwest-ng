@@ -179,7 +179,7 @@ static ssize_t rpmstats_show(struct kobject *kobj,
 	prvdata.reg_base = ioremap_nocache(pdata->phys_addr_base,
 					pdata->phys_size);
 	if (!prvdata.reg_base) {
-		pr_err("ERROR could not ioremap start=%pa, len=%u\n",
+		pr_debug("ERROR could not ioremap start=%pa, len=%u\n",
 				&pdata->phys_addr_base, pdata->phys_size);
 		return -EBUSY;
 	}
@@ -205,7 +205,7 @@ static int msm_rpmstats_create_sysfs(struct platform_device *pdev,
 
 	rpmstats_kobj = kobject_create_and_add("system_sleep", power_kobj);
 	if (!rpmstats_kobj) {
-		pr_err("Cannot create rpmstats kobject\n");
+		pr_debug("Cannot create rpmstats kobject\n");
 		ret = -ENOMEM;
 		goto fail;
 	}
@@ -256,7 +256,7 @@ static int msm_rpmstats_probe(struct platform_device *pdev)
 		/* Remap the rpm-stats pointer */
 		phys_ptr = ioremap_nocache(offset->start, SZ_4);
 		if (!phys_ptr) {
-			pr_err("Failed to ioremap offset address\n");
+			pr_debug("Failed to ioremap offset address\n");
 			return -ENODEV;
 		}
 		offset_addr = readl_relaxed(phys_ptr);

@@ -227,7 +227,7 @@ static int __init tunnel4_init(void)
 	return 0;
 
 err:
-	pr_err("%s: can't add protocol\n", __func__);
+	pr_debug("%s: can't add protocol\n", __func__);
 	return -EAGAIN;
 }
 
@@ -235,14 +235,14 @@ static void __exit tunnel4_fini(void)
 {
 #if IS_ENABLED(CONFIG_MPLS)
 	if (inet_del_protocol(&tunnelmpls4_protocol, IPPROTO_MPLS))
-		pr_err("tunnelmpls4 close: can't remove protocol\n");
+		pr_debug("tunnelmpls4 close: can't remove protocol\n");
 #endif
 #if IS_ENABLED(CONFIG_IPV6)
 	if (inet_del_protocol(&tunnel64_protocol, IPPROTO_IPV6))
-		pr_err("tunnel64 close: can't remove protocol\n");
+		pr_debug("tunnel64 close: can't remove protocol\n");
 #endif
 	if (inet_del_protocol(&tunnel4_protocol, IPPROTO_IPIP))
-		pr_err("tunnel4 close: can't remove protocol\n");
+		pr_debug("tunnel4 close: can't remove protocol\n");
 }
 
 module_init(tunnel4_init);

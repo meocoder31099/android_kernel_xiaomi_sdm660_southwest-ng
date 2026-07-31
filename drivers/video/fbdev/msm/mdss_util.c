@@ -29,7 +29,7 @@ int mdss_register_irq(struct mdss_hw *hw)
 	spin_unlock_irqrestore(&mdss_lock, irq_flags);
 
 	if (err)
-		pr_err("panel %d's irq at %pK is already registered\n",
+		pr_debug("panel %d's irq at %pK is already registered\n",
 			hw->hw_ndx, hw->irq_handler);
 	return 0;
 }
@@ -43,7 +43,7 @@ void mdss_enable_irq(struct mdss_hw *hw)
 		return;
 
 	if (!mdss_irq_handlers[hw->hw_ndx]) {
-		pr_err("failed. First register the irq then enable it.\n");
+		pr_debug("failed. First register the irq then enable it.\n");
 		return;
 	}
 
@@ -93,7 +93,7 @@ void mdss_disable_irq(struct mdss_hw *hw)
 	spin_unlock_irqrestore(&mdss_lock, irq_flags);
 
 	if (err)
-		pr_warn("MDSS HW ndx=%d is NOT set\n", hw->hw_ndx);
+		pr_debug("MDSS HW ndx=%d is NOT set\n", hw->hw_ndx);
 }
 
 /* called from interrupt context */
@@ -123,7 +123,7 @@ void mdss_disable_irq_nosync(struct mdss_hw *hw)
 	spin_unlock(&mdss_lock);
 
 	if (err)
-		pr_warn("MDSS HW ndx=%d is NOT set\n", hw->hw_ndx);
+		pr_debug("MDSS HW ndx=%d is NOT set\n", hw->hw_ndx);
 }
 
 int mdss_irq_dispatch(u32 hw_ndx, int irq, void *ptr)
@@ -150,7 +150,7 @@ void mdss_enable_irq_wake(struct mdss_hw *hw)
 		return;
 
 	if (!mdss_irq_handlers[hw->hw_ndx]) {
-		pr_err("failed. First register the irq then enable it.\n");
+		pr_debug("failed. First register the irq then enable it.\n");
 		return;
 	}
 
@@ -202,7 +202,7 @@ void mdss_disable_irq_wake(struct mdss_hw *hw)
 	spin_unlock_irqrestore(&mdss_lock, irq_flags);
 
 	if (err)
-		pr_warn("MDSS HW ndx=%d is NOT set\n", hw->hw_ndx);
+		pr_debug("MDSS HW ndx=%d is NOT set\n", hw->hw_ndx);
 }
 
 struct mdss_util_intf mdss_util = {

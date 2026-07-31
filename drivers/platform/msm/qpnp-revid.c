@@ -90,7 +90,7 @@ static u8 qpnp_read_byte(struct regmap *regmap, u16 addr)
 
 	rc = regmap_read(regmap, addr, &val);
 	if (rc) {
-		pr_err("read failed rc=%d\n", rc);
+		pr_debug("read failed rc=%d\n", rc);
 		return 0;
 	}
 	return (u8)val;
@@ -174,20 +174,20 @@ static int qpnp_revid_probe(struct platform_device *pdev)
 
 	regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!regmap) {
-		dev_err(&pdev->dev, "Couldn't get parent's regmap\n");
+		dev_dbg(&pdev->dev, "Couldn't get parent's regmap\n");
 		return -EINVAL;
 	}
 
 	rc = of_property_read_u32(pdev->dev.of_node, "reg", &base);
 	if (rc < 0) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Couldn't find reg in node = %s rc = %d\n",
 			pdev->dev.of_node->full_name, rc);
 		return rc;
 	}
 	pmic_type = qpnp_read_byte(regmap, base + REVID_TYPE);
 	if (pmic_type != PMIC_PERIPHERAL_TYPE) {
-		pr_err("Invalid REVID peripheral type: %02X\n", pmic_type);
+		pr_debug("Invalid REVID peripheral type: %02X\n", pmic_type);
 		return -EINVAL;
 	}
 
@@ -252,7 +252,7 @@ static int qpnp_revid_probe(struct platform_device *pdev)
 	build_pmic_string(pmic_string, PMIC_STRING_MAXLENGTH,
 			  to_spmi_device(pdev->dev.parent)->usid,
 			pmic_subtype, rev1, rev2, rev3, rev4);
-	pr_info("%s options: %d, %d, %d, %d\n",
+	pr_debug("%s options: %d, %d, %d, %d\n",
 			pmic_string, option1, option2, option3, option4);
 	return 0;
 }

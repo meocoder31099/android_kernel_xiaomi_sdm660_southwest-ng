@@ -90,7 +90,7 @@ static int msm_digcdc_clock_control(bool flag)
 						AFE_PORT_ID_INT0_MI2S_RX,
 						&pdata->digital_cdc_core_clk);
 			if (ret < 0) {
-				pr_err("%s:failed to enable the MCLK\n",
+				pr_debug("%s:failed to enable the MCLK\n",
 				       __func__);
 				/*
 				 * Avoid access to lpass register
@@ -142,7 +142,7 @@ static int msm_dig_cdc_put_dec_enum(struct snd_kcontrol *kcontrol,
 	char *dec_num;
 
 	if (ucontrol->value.enumerated.item[0] > e->items) {
-		dev_err(component->dev, "%s: Invalid enum value: %d\n",
+		dev_dbg(component->dev, "%s: Invalid enum value: %d\n",
 			__func__, ucontrol->value.enumerated.item[0]);
 		return -EINVAL;
 	}
@@ -150,7 +150,7 @@ static int msm_dig_cdc_put_dec_enum(struct snd_kcontrol *kcontrol,
 
 	widget_name = kstrndup(w->name, 15, GFP_KERNEL);
 	if (!widget_name) {
-		dev_err(component->dev, "%s: failed to copy string\n",
+		dev_dbg(component->dev, "%s: failed to copy string\n",
 			__func__);
 		return -ENOMEM;
 	}
@@ -159,7 +159,7 @@ static int msm_dig_cdc_put_dec_enum(struct snd_kcontrol *kcontrol,
 	dec_name = strsep(&widget_name, " ");
 	widget_name = temp;
 	if (!dec_name) {
-		dev_err(component->dev, "%s: Invalid decimator = %s\n",
+		dev_dbg(component->dev, "%s: Invalid decimator = %s\n",
 			__func__, w->name);
 		ret =  -EINVAL;
 		goto out;
@@ -167,14 +167,14 @@ static int msm_dig_cdc_put_dec_enum(struct snd_kcontrol *kcontrol,
 
 	dec_num = strpbrk(dec_name, "12345");
 	if (dec_num == NULL) {
-		dev_err(component->dev, "%s: Invalid DEC selected\n", __func__);
+		dev_dbg(component->dev, "%s: Invalid DEC selected\n", __func__);
 		ret = -EINVAL;
 		goto out;
 	}
 
 	ret = kstrtouint(dec_num, 10, &decimator);
 	if (ret < 0) {
-		dev_err(component->dev, "%s: Invalid decimator = %s\n",
+		dev_dbg(component->dev, "%s: Invalid decimator = %s\n",
 			__func__, dec_name);
 		ret =  -EINVAL;
 		goto out;
@@ -196,7 +196,7 @@ static int msm_dig_cdc_put_dec_enum(struct snd_kcontrol *kcontrol,
 			adc_dmic_sel = 0x0;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid Decimator = %u\n",
+		dev_dbg(component->dev, "%s: Invalid Decimator = %u\n",
 			__func__, decimator);
 		ret = -EINVAL;
 		goto out;
@@ -345,7 +345,7 @@ static int msm_dig_cdc_codec_enable_interpolator(struct snd_soc_dapm_widget *w,
 	dev_dbg(component->dev, "%s %d %s\n", __func__, event, w->name);
 
 	if (w->shift >= MSM89XX_RX_MAX || w->shift < 0) {
-		dev_err(component->dev, "%s: wrong RX index: %d\n",
+		dev_dbg(component->dev, "%s: wrong RX index: %d\n",
 			__func__, w->shift);
 		return -EINVAL;
 	}
@@ -643,7 +643,7 @@ static int msm_dig_cdc_codec_set_iir_gain(struct snd_soc_dapm_widget *w,
 		snd_soc_component_write(component, reg, value);
 		break;
 	default:
-		pr_err("%s: event = %d not expected\n", __func__, event);
+		pr_debug("%s: event = %d not expected\n", __func__, event);
 	}
 ret:
 	return 0;
@@ -766,7 +766,7 @@ static int msm_dig_cdc_hw_params(struct snd_pcm_substream *substream,
 		rx_clk_fs_rate = 0x05;
 		break;
 	default:
-		dev_err(dai->component->dev,
+		dev_dbg(dai->component->dev,
 			"%s: Invalid sampling rate %d\n", __func__,
 			params_rate(params));
 		return -EINVAL;
@@ -782,14 +782,14 @@ static int msm_dig_cdc_hw_params(struct snd_pcm_substream *substream,
 		ret = msm_dig_cdc_set_interpolator_rate(dai, rx_fs_rate,
 						  params_rate(params));
 		if (ret < 0) {
-			dev_err(dai->component->dev,
+			dev_dbg(dai->component->dev,
 				"%s: set decimator rate failed %d\n", __func__,
 				ret);
 			return ret;
 		}
 		break;
 	default:
-		dev_err(dai->component->dev,
+		dev_dbg(dai->component->dev,
 			"%s: Invalid stream type %d\n", __func__,
 			substream->stream);
 		return -EINVAL;
@@ -805,7 +805,7 @@ static int msm_dig_cdc_hw_params(struct snd_pcm_substream *substream,
 				MSM89XX_CDC_CORE_CLK_RX_I2S_CTL, 0x20, 0x00);
 		break;
 	default:
-		dev_err(dai->component->dev, "%s: wrong format selected\n",
+		dev_dbg(dai->component->dev, "%s: wrong format selected\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -828,13 +828,13 @@ static int msm_dig_cdc_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 	char *dmic_num = strpbrk(w->name, "1234");
 
 	if (dmic_num == NULL) {
-		dev_err(component->dev, "%s: Invalid DMIC\n", __func__);
+		dev_dbg(component->dev, "%s: Invalid DMIC\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = kstrtouint(dmic_num, 10, &dmic);
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Invalid DMIC line on the codec\n", __func__);
 		return -EINVAL;
 	}
@@ -859,7 +859,7 @@ static int msm_dig_cdc_codec_enable_dmic(struct snd_soc_dapm_widget *w,
 			__func__, event,  dmic, *dmic_clk_cnt);
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid DMIC Selection\n",
+		dev_dbg(component->dev, "%s: Invalid DMIC Selection\n",
 				__func__);
 		return -EINVAL;
 	}
@@ -917,7 +917,7 @@ static int msm_dig_cdc_codec_enable_dec(struct snd_soc_dapm_widget *w,
 	dec_name = strsep(&widget_name, " ");
 	widget_name = temp;
 	if (!dec_name) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Invalid decimator = %s\n", __func__, w->name);
 		ret = -EINVAL;
 		goto out;
@@ -925,14 +925,14 @@ static int msm_dig_cdc_codec_enable_dec(struct snd_soc_dapm_widget *w,
 
 	dec_num = strpbrk(dec_name, "12345");
 	if (dec_num == NULL) {
-		dev_err(component->dev, "%s: Invalid Decimator\n", __func__);
+		dev_dbg(component->dev, "%s: Invalid Decimator\n", __func__);
 		ret = -EINVAL;
 		goto out;
 	}
 
 	ret = kstrtouint(dec_num, 10, &decimator);
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Invalid decimator = %s\n", __func__, dec_name);
 		ret = -EINVAL;
 		goto out;
@@ -946,7 +946,7 @@ static int msm_dig_cdc_codec_enable_dec(struct snd_soc_dapm_widget *w,
 		dec_reset_reg = MSM89XX_CDC_CORE_CLK_TX_RESET_B1_CTL;
 		offset = 0;
 	} else {
-		dev_err(component->dev, "%s: Error, incorrect dec\n",
+		dev_dbg(component->dev, "%s: Error, incorrect dec\n",
 				__func__);
 		ret = -EINVAL;
 		goto out;
@@ -1152,7 +1152,7 @@ static int msm_dig_cdc_event_notify(struct notifier_block *block,
 					AFE_PORT_ID_INT0_MI2S_RX,
 					&pdata->digital_cdc_core_clk);
 		if (ret < 0) {
-			pr_err("%s:failed to enable the MCLK\n",
+			pr_debug("%s:failed to enable the MCLK\n",
 			       __func__);
 			mutex_unlock(&pdata->cdc_int_mclk0_mutex);
 			break;
@@ -1190,7 +1190,7 @@ static ssize_t msm_dig_codec_version_read(struct snd_info_entry *entry,
 
 	msm_dig = (struct msm_dig_priv *) entry->private_data;
 	if (!msm_dig) {
-		pr_err("%s: msm_dig priv is null\n", __func__);
+		pr_debug("%s: msm_dig priv is null\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1412,7 +1412,7 @@ static int msm_dig_cdc_soc_probe(struct snd_soc_component *component)
 	int i, ret;
 
 /*zhiguang.su@MultiMedia.AudioDrv, 2017-03-27, add for debug*/
-pr_err("%s enter\n", __func__);
+pr_debug("%s enter\n", __func__);
 
 #ifdef CONFIG_SOUND_CONTROL
 	sound_control_codec_ptr = component;
@@ -1444,7 +1444,7 @@ pr_err("%s enter\n", __func__);
 						     &msm_dig_cdc->nblock,
 						     true);
 		if (ret) {
-			pr_err("%s: Failed to register notifier %d\n",
+			pr_debug("%s: Failed to register notifier %d\n",
 				__func__, ret);
 			return ret;
 		}
@@ -2249,7 +2249,7 @@ static int msm_dig_cdc_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	pdata = dev_get_platdata(&pdev->dev);
 	if (!pdata) {
-		dev_err(&pdev->dev, "%s: pdata from parent is NULL\n",
+		dev_dbg(&pdev->dev, "%s: pdata from parent is NULL\n",
 			__func__);
 		ret = -EINVAL;
 		goto rtn;
@@ -2258,7 +2258,7 @@ static int msm_dig_cdc_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(pdev->dev.of_node, "reg",
 					&dig_cdc_addr);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: could not find %s entry in dt\n",
+		dev_dbg(&pdev->dev, "%s: could not find %s entry in dt\n",
 			__func__, "reg");
 		return ret;
 	}
@@ -2266,19 +2266,19 @@ static int msm_dig_cdc_probe(struct platform_device *pdev)
 #ifdef CONFIG_SOUND_CONTROL
 	sound_control_kobj = kobject_create_and_add("sound_control", kernel_kobj);
 	if (sound_control_kobj == NULL) {
-		pr_warn("%s kobject create failed!\n", __func__);
+		pr_debug("%s kobject create failed!\n", __func__);
         }
 
 	ret = sysfs_create_group(sound_control_kobj, &sound_control_attr_group);
         if (ret) {
-		pr_warn("%s sysfs file create failed!\n", __func__);
+		pr_debug("%s sysfs file create failed!\n", __func__);
 	}
 #endif
 
 	msm_dig_cdc->dig_base = ioremap(dig_cdc_addr,
 					MSM89XX_CDC_CORE_MAX_REGISTER);
 	if (msm_dig_cdc->dig_base == NULL) {
-		dev_err(&pdev->dev, "%s ioremap failed\n", __func__);
+		dev_dbg(&pdev->dev, "%s ioremap failed\n", __func__);
 		return -ENOMEM;
 	}
 	msm_dig_cdc->regmap =

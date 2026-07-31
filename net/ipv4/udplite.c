@@ -130,11 +130,11 @@ void __init udplite4_register(void)
 	inet_register_protosw(&udplite4_protosw);
 
 	if (udplite4_proc_init())
-		pr_err("%s: Cannot register /proc!\n", __func__);
+		pr_debug("%s: Cannot register /proc!\n", __func__);
 	return;
 
 out_unregister_proto:
 	proto_unregister(&udplite_prot);
 out_register_err:
-	pr_crit("%s: Cannot add UDP-Lite protocol\n", __func__);
+	pr_debug("%s: Cannot add UDP-Lite protocol\n", __func__);
 }

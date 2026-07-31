@@ -454,7 +454,7 @@ static int clk_osm_acd_local_read_reg(struct clk_osm *c, u32 offset)
 	int timeout;
 
 	if (offset >= ACD_MASTER_ONLY_REG_ADDR) {
-		pr_err("ACD register at offset=0x%x not locally readable\n",
+		pr_debug("ACD register at offset=0x%x not locally readable\n",
 		       offset);
 		return -EINVAL;
 	}
@@ -486,7 +486,7 @@ static int clk_osm_acd_local_read_reg(struct clk_osm *c, u32 offset)
 	}
 
 	if (!timeout) {
-		pr_err("local read timed out, offset=0x%x status=0x%x\n",
+		pr_debug("local read timed out, offset=0x%x status=0x%x\n",
 		       offset, reg);
 		return -ETIMEDOUT;
 	}
@@ -502,7 +502,7 @@ static int clk_osm_acd_local_write_reg(struct clk_osm *c, u32 val, u32 offset)
 	int timeout;
 
 	if (offset >= ACD_MASTER_ONLY_REG_ADDR) {
-		pr_err("ACD register at offset=0x%x not transferrable\n",
+		pr_debug("ACD register at offset=0x%x not transferrable\n",
 		       offset);
 		return -EINVAL;
 	}
@@ -529,7 +529,7 @@ static int clk_osm_acd_local_write_reg(struct clk_osm *c, u32 val, u32 offset)
 	}
 
 	if (!timeout) {
-		pr_err("local write timed out, offset=0x%x val=0x%x status=0x%x\n",
+		pr_debug("local write timed out, offset=0x%x val=0x%x status=0x%x\n",
 		       offset, val, reg);
 		return -ETIMEDOUT;
 	}
@@ -583,7 +583,7 @@ static int clk_osm_acd_auto_local_write_reg(struct clk_osm *c, u32 mask)
 	}
 
 	if (!timeout) {
-		pr_err("local register auto-transfer timed out, mask=0x%x registers=%d status=0x%x\n",
+		pr_debug("local register auto-transfer timed out, mask=0x%x registers=%d status=0x%x\n",
 		       mask, numregs, reg);
 		return -ETIMEDOUT;
 	}
@@ -689,7 +689,7 @@ static int clk_osm_set_rate(struct clk_hw *hw, unsigned long rate,
 	clk_osm_determine_rate(hw, &req);
 
 	if (rate != req.rate) {
-		pr_err("invalid rate requested rate=%ld\n", rate);
+		pr_debug("invalid rate requested rate=%ld\n", rate);
 		return -EINVAL;
 	}
 
@@ -697,7 +697,7 @@ static int clk_osm_set_rate(struct clk_hw *hw, unsigned long rate,
 	index = clk_osm_search_table(cpuclk->osm_table,
 				     cpuclk->num_entries, req.rate);
 	if (index < 0) {
-		pr_err("cannot set cluster %u to %lu\n",
+		pr_debug("cannot set cluster %u to %lu\n",
 		       cpuclk->cluster_num, rate);
 		return -EINVAL;
 	}
@@ -735,7 +735,7 @@ static int clk_osm_enable(struct clk_hw *hw)
 
 	rc = clk_osm_acd_init(cpuclk);
 	if (rc) {
-		pr_err("Failed to initialize ACD for cluster %d, rc=%d\n",
+		pr_debug("Failed to initialize ACD for cluster %d, rc=%d\n",
 				cpuclk->cluster_num, rc);
 		return rc;
 	}
@@ -903,13 +903,13 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 	bool last_entry = false;
 
 	if (!of_find_property(of, prop_name, &prop_len)) {
-		dev_err(&pdev->dev, "missing %s\n", prop_name);
+		dev_dbg(&pdev->dev, "missing %s\n", prop_name);
 		return -EINVAL;
 	}
 
 	total_elems = prop_len / sizeof(u32);
 	if (total_elems % NUM_FIELDS) {
-		dev_err(&pdev->dev, "bad length %d\n", prop_len);
+		dev_dbg(&pdev->dev, "bad length %d\n", prop_len);
 		return -EINVAL;
 	}
 
@@ -926,14 +926,14 @@ static int clk_osm_get_lut(struct platform_device *pdev,
 
 	rc = of_property_read_u32_array(of, prop_name, array, total_elems);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to parse OSM table, rc=%d\n", rc);
+		dev_dbg(&pdev->dev, "Unable to parse OSM table, rc=%d\n", rc);
 		goto exit;
 	}
 
 	pr_debug("%s: Entries in Table: %d\n", __func__, num_rows);
 	c->num_entries = num_rows;
 	if (c->num_entries > OSM_TABLE_SIZE) {
-		pr_err("LUT entries %d exceed maximum size %d\n",
+		pr_debug("LUT entries %d exceed maximum size %d\n",
 		       c->num_entries, OSM_TABLE_SIZE);
 		return -EINVAL;
 	}
@@ -999,7 +999,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,l-val-base",
 					array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,l-val-base property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,l-val-base property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1010,7 +1010,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,apcs-itm-present",
 				  array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,apcs-itm-present property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,apcs-itm-present property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1021,7 +1021,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,apcs-cfg-rcgr",
 					array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,apcs-cfg-rcgr property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,apcs-cfg-rcgr property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1032,7 +1032,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,apcs-cmd-rcgr",
 					array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,apcs-cmd-rcgr property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,apcs-cmd-rcgr property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1043,7 +1043,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,apcs-pll-user-ctl",
 					array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,apcs-pll-user-ctl property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,apcs-pll-user-ctl property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1054,7 +1054,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,apm-mode-ctl",
 				  array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,apm-mode-ctl property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,apm-mode-ctl property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1065,7 +1065,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32_array(of, "qcom,apm-ctrl-status",
 				  array, MAX_CLUSTER_CNT);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,apm-ctrl-status property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,apm-ctrl-status property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1089,7 +1089,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		rc = of_property_read_u32_array(of, "qcom,acdtd-val",
 						array, MAX_CLUSTER_CNT);
 		if (rc) {
-			dev_err(&pdev->dev, "unable to find qcom,acdtd-val property, rc=%d\n",
+			dev_dbg(&pdev->dev, "unable to find qcom,acdtd-val property, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -1100,7 +1100,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		rc = of_property_read_u32_array(of, "qcom,acdcr-val",
 						array, MAX_CLUSTER_CNT);
 		if (rc) {
-			dev_err(&pdev->dev, "unable to find qcom,acdcr-val property, rc=%d\n",
+			dev_dbg(&pdev->dev, "unable to find qcom,acdcr-val property, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -1111,7 +1111,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		rc = of_property_read_u32_array(of, "qcom,acdsscr-val",
 						array, MAX_CLUSTER_CNT);
 		if (rc) {
-			dev_err(&pdev->dev, "unable to find qcom,acdsscr-val property, rc=%d\n",
+			dev_dbg(&pdev->dev, "unable to find qcom,acdsscr-val property, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -1122,7 +1122,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		rc = of_property_read_u32_array(of, "qcom,acdextint0-val",
 						array, MAX_CLUSTER_CNT);
 		if (rc) {
-			dev_err(&pdev->dev, "unable to find qcom,acdextint0-val property, rc=%d\n",
+			dev_dbg(&pdev->dev, "unable to find qcom,acdextint0-val property, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -1133,7 +1133,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		rc = of_property_read_u32_array(of, "qcom,acdextint1-val",
 						array, MAX_CLUSTER_CNT);
 		if (rc) {
-			dev_err(&pdev->dev, "unable to find qcom,acdextint1-val property, rc=%d\n",
+			dev_dbg(&pdev->dev, "unable to find qcom,acdextint1-val property, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -1144,7 +1144,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 		rc = of_property_read_u32_array(of, "qcom,acdautoxfer-val",
 						array, MAX_CLUSTER_CNT);
 		if (rc) {
-			dev_err(&pdev->dev, "unable to find qcom,acdautoxfer-val property, rc=%d\n",
+			dev_dbg(&pdev->dev, "unable to find qcom,acdautoxfer-val property, rc=%d\n",
 				rc);
 			return -EINVAL;
 		}
@@ -1156,7 +1156,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32(of, "qcom,xo-clk-rate",
 				  &pwrcl_clk.xo_clk_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,xo-clk-rate property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,xo-clk-rate property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1166,7 +1166,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32(of, "qcom,osm-clk-rate",
 				  &pwrcl_clk.osm_clk_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,osm-clk-rate property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,osm-clk-rate property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1175,7 +1175,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 	rc = of_property_read_u32(of, "qcom,cc-reads",
 				  &pwrcl_clk.cycle_counter_reads);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,cc-reads property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,cc-reads property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1229,7 +1229,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 					pwrcl_clk.apcs_mem_acc_cfg,
 					MAX_MEM_ACC_VAL_PER_LEVEL);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,pwrcl-apcs-mem-acc-cfg property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,pwrcl-apcs-mem-acc-cfg property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1238,7 +1238,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 				   perfcl_clk.apcs_mem_acc_cfg,
 				   MAX_MEM_ACC_VAL_PER_LEVEL);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,perfcl-apcs-mem-acc-cfg property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,perfcl-apcs-mem-acc-cfg property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1247,7 +1247,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 					pwrcl_clk.apcs_mem_acc_val,
 					MAX_MEM_ACC_VALUES);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,pwrcl-apcs-mem-acc-val property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,pwrcl-apcs-mem-acc-val property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1256,7 +1256,7 @@ static int clk_osm_parse_dt_configs(struct platform_device *pdev)
 					perfcl_clk.apcs_mem_acc_val,
 					MAX_MEM_ACC_VALUES);
 	if (rc) {
-		dev_err(&pdev->dev, "unable to find qcom,perfcl-apcs-mem-acc-val property, rc=%d\n",
+		dev_dbg(&pdev->dev, "unable to find qcom,perfcl-apcs-mem-acc-val property, rc=%d\n",
 			rc);
 		return -EINVAL;
 	}
@@ -1274,7 +1274,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "osm");
 	if (!res) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Unable to get platform resource for osm\n");
 		return -ENOMEM;
 	}
@@ -1283,7 +1283,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	pwrcl_clk.vbases[OSM_BASE] = devm_ioremap(&pdev->dev, res->start,
 						  resource_size(res));
 	if (!pwrcl_clk.vbases[OSM_BASE]) {
-		dev_err(&pdev->dev, "Unable to map in osm base\n");
+		dev_dbg(&pdev->dev, "Unable to map in osm base\n");
 		return -ENOMEM;
 	}
 
@@ -1297,7 +1297,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						   i == pwrcl_clk.cluster_num ?
 						   "pwrcl_pll" : "perfcl_pll");
 		if (!res) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Unable to get platform resource\n");
 			return -ENOMEM;
 		}
@@ -1306,7 +1306,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 				     resource_size(res));
 
 		if (!vbase) {
-			dev_err(&pdev->dev, "Unable to map in base\n");
+			dev_dbg(&pdev->dev, "Unable to map in base\n");
 			return -ENOMEM;
 		}
 
@@ -1321,20 +1321,20 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "apcs_common");
 	if (!res) {
-		dev_err(&pdev->dev, "Failed to get apcs common base\n");
+		dev_dbg(&pdev->dev, "Failed to get apcs common base\n");
 		return -EINVAL;
 	}
 
 	virt_base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
 	if (!virt_base) {
-		dev_err(&pdev->dev, "Failed to map apcs common registers\n");
+		dev_dbg(&pdev->dev, "Failed to map apcs common registers\n");
 		return -ENOMEM;
 	}
 
 	osm_clk_src.clkr.regmap = devm_regmap_init_mmio(&pdev->dev, virt_base,
 						&osm_qcom_regmap_config);
 	if (IS_ERR(osm_clk_src.clkr.regmap)) {
-		dev_err(&pdev->dev, "Couldn't get regmap OSM clock\n");
+		dev_dbg(&pdev->dev, "Couldn't get regmap OSM clock\n");
 		return PTR_ERR(osm_clk_src.clkr.regmap);
 	}
 
@@ -1346,7 +1346,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 		vbase = devm_ioremap(&pdev->dev, res->start,
 				     resource_size(res));
 		if (!vbase) {
-			dev_err(&pdev->dev, "Unable to map in pwrcl_efuse base\n");
+			dev_dbg(&pdev->dev, "Unable to map in pwrcl_efuse base\n");
 			return -ENOMEM;
 		}
 		pwrcl_clk.pbases[EFUSE_BASE] = pbase;
@@ -1360,7 +1360,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 		vbase = devm_ioremap(&pdev->dev, res->start,
 				     resource_size(res));
 		if (!vbase) {
-			dev_err(&pdev->dev, "Unable to map in perfcl_efuse base\n");
+			dev_dbg(&pdev->dev, "Unable to map in perfcl_efuse base\n");
 			return -ENOMEM;
 		}
 		perfcl_clk.pbases[EFUSE_BASE] = pbase;
@@ -1374,7 +1374,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 		vbase = devm_ioremap(&pdev->dev, res->start,
 				     resource_size(res));
 		if (!vbase) {
-			dev_err(&pdev->dev, "Unable to map in pwrcl_acd base\n");
+			dev_dbg(&pdev->dev, "Unable to map in pwrcl_acd base\n");
 			return -ENOMEM;
 		}
 		pwrcl_clk.pbases[ACD_BASE] = pbase;
@@ -1392,7 +1392,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 		vbase = devm_ioremap(&pdev->dev, res->start,
 				     resource_size(res));
 		if (!vbase) {
-			dev_err(&pdev->dev, "Unable to map in perfcl_acd base\n");
+			dev_dbg(&pdev->dev, "Unable to map in perfcl_acd base\n");
 			return -ENOMEM;
 		}
 		perfcl_clk.pbases[ACD_BASE] = pbase;
@@ -1408,7 +1408,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						clk_panic_reg_offsets[0],
 						0x4);
 	if (!pwrcl_clk.debug_regs[0]) {
-		dev_err(&pdev->dev, "Failed to map %s debug register\n",
+		dev_dbg(&pdev->dev, "Failed to map %s debug register\n",
 						clk_panic_reg_names[0]);
 		return -ENOMEM;
 	}
@@ -1418,7 +1418,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						clk_panic_reg_offsets[1],
 						0x4);
 	if (!pwrcl_clk.debug_regs[1]) {
-		dev_err(&pdev->dev, "Failed to map %s debug register\n",
+		dev_dbg(&pdev->dev, "Failed to map %s debug register\n",
 						clk_panic_reg_names[1]);
 		return -ENOMEM;
 	}
@@ -1427,7 +1427,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						pwrcl_clk.apm_ctrl_status,
 						0x4);
 	if (!pwrcl_clk.debug_regs[2]) {
-		dev_err(&pdev->dev, "Failed to map %s debug register\n",
+		dev_dbg(&pdev->dev, "Failed to map %s debug register\n",
 						clk_panic_reg_names[2]);
 		return -ENOMEM;
 	}
@@ -1437,7 +1437,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						clk_panic_reg_offsets[0],
 						0x4);
 	if (!perfcl_clk.debug_regs[0]) {
-		dev_err(&pdev->dev, "Failed to map %s debug register\n",
+		dev_dbg(&pdev->dev, "Failed to map %s debug register\n",
 						clk_panic_reg_names[0]);
 		return -ENOMEM;
 	}
@@ -1447,7 +1447,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						clk_panic_reg_offsets[1],
 						0x4);
 	if (!perfcl_clk.debug_regs[1]) {
-		dev_err(&pdev->dev, "Failed to map %s debug register\n",
+		dev_dbg(&pdev->dev, "Failed to map %s debug register\n",
 						clk_panic_reg_names[1]);
 		return -ENOMEM;
 	}
@@ -1456,7 +1456,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 						perfcl_clk.apm_ctrl_status,
 						0x4);
 	if (!perfcl_clk.debug_regs[2]) {
-		dev_err(&pdev->dev, "Failed to map %s debug register\n",
+		dev_dbg(&pdev->dev, "Failed to map %s debug register\n",
 						clk_panic_reg_names[2]);
 		return -ENOMEM;
 	}
@@ -1465,7 +1465,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	if (IS_ERR(vdd_pwrcl)) {
 		rc = PTR_ERR(vdd_pwrcl);
 		if (rc != -EPROBE_DEFER)
-			dev_err(&pdev->dev, "Unable to get the pwrcl vreg, rc=%d\n",
+			dev_dbg(&pdev->dev, "Unable to get the pwrcl vreg, rc=%d\n",
 				rc);
 		return rc;
 	}
@@ -1474,7 +1474,7 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 	if (IS_ERR(vdd_perfcl)) {
 		rc = PTR_ERR(vdd_perfcl);
 		if (rc != -EPROBE_DEFER)
-			dev_err(&pdev->dev, "Unable to get the perfcl vreg, rc=%d\n",
+			dev_dbg(&pdev->dev, "Unable to get the perfcl vreg, rc=%d\n",
 				rc);
 		return rc;
 	}
@@ -1484,26 +1484,26 @@ static int clk_osm_resources_init(struct platform_device *pdev)
 
 	node = of_parse_phandle(pdev->dev.of_node, "vdd-pwrcl-supply", 0);
 	if (!node) {
-		pr_err("Unable to find vdd-pwrcl-supply\n");
+		pr_debug("Unable to find vdd-pwrcl-supply\n");
 		return -EINVAL;
 	}
 
 	pwrcl_clk.vdd_dev = of_find_device_by_node(node->parent->parent);
 	if (!pwrcl_clk.vdd_dev) {
-		pr_err("Unable to find device for vdd-pwrcl-supply node\n");
+		pr_debug("Unable to find device for vdd-pwrcl-supply node\n");
 		return -EINVAL;
 	}
 
 	node = of_parse_phandle(pdev->dev.of_node,
 				"vdd-perfcl-supply", 0);
 	if (!node) {
-		pr_err("Unable to find vdd-perfcl-supply\n");
+		pr_debug("Unable to find vdd-perfcl-supply\n");
 		return -EINVAL;
 	}
 
 	perfcl_clk.vdd_dev = of_find_device_by_node(node->parent->parent);
 	if (!perfcl_clk.vdd_dev) {
-		pr_err("Unable to find device for vdd-perfcl-supply\n");
+		pr_debug("Unable to find device for vdd-perfcl-supply\n");
 		return -EINVAL;
 	}
 
@@ -1554,7 +1554,7 @@ static int clk_osm_setup_hw_table(struct clk_osm *c)
 			if (last_virtual_corner && last_virtual_corner ==
 			    entry[i].virtual_corner && last_spare !=
 			    entry[i].spare_data) {
-				pr_err("invalid LUT entry at row=%d virtual_corner=%d, spare_data=%d\n",
+				pr_debug("invalid LUT entry at row=%d virtual_corner=%d, spare_data=%d\n",
 				       i, entry[i].virtual_corner,
 				       entry[i].spare_data);
 				return -EINVAL;
@@ -1609,7 +1609,7 @@ static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
 				  "qcom,apm-threshold-voltage",
 				  &apm_threshold);
 	if (rc) {
-		pr_info("qcom,apm-threshold-voltage property not specified\n");
+		pr_debug("qcom,apm-threshold-voltage property not specified\n");
 		return rc;
 	}
 
@@ -1620,7 +1620,7 @@ static int clk_osm_resolve_crossover_corners(struct clk_osm *c,
 	/* Determine crossover virtual corner */
 	count = regulator_count_voltages(regulator);
 	if (count < 0) {
-		pr_err("Failed to get the number of virtual corners supported\n");
+		pr_debug("Failed to get the number of virtual corners supported\n");
 		return count;
 	}
 
@@ -2269,7 +2269,7 @@ static void clk_osm_do_additional_setup(struct clk_osm *c,
 	if (!c->secure_init)
 		return;
 
-	dev_info(&pdev->dev, "Performing additional OSM setup due to lack of TZ for cluster=%d\n",
+	dev_dbg(&pdev->dev, "Performing additional OSM setup due to lack of TZ for cluster=%d\n",
 						 c->cluster_num);
 
 	clk_osm_write_reg(c, BVAL(23, 16, 0xF), SPM_CC_CTRL);
@@ -2352,7 +2352,7 @@ static irqreturn_t clk_osm_debug_irq_cb(int irq, void *data)
 
 	val = clk_osm_read_reg(c, DCVS_PERF_STATE_DEVIATION_INTR_STAT);
 	if (val & BIT(0)) {
-		pr_info("OS DCVS performance state deviated\n");
+		pr_debug("OS DCVS performance state deviated\n");
 		clk_osm_write_reg(c, BIT(0),
 				  DCVS_PERF_STATE_DEVIATION_INTR_CLEAR);
 	}
@@ -2360,14 +2360,14 @@ static irqreturn_t clk_osm_debug_irq_cb(int irq, void *data)
 	val = clk_osm_read_reg(c,
 			       DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_STAT);
 	if (val & BIT(0)) {
-		pr_info("OS DCVS performance state corrected\n");
+		pr_debug("OS DCVS performance state corrected\n");
 		clk_osm_write_reg(c, BIT(0),
 			  DCVS_PERF_STATE_DEVIATION_CORRECTED_INTR_CLEAR);
 	}
 
 	val = clk_osm_read_reg(c, DCVS_PERF_STATE_MET_INTR_STAT);
 	if (val & BIT(0)) {
-		pr_info("OS DCVS performance state desired reached\n");
+		pr_debug("OS DCVS performance state desired reached\n");
 		clk_osm_write_reg(c, BIT(0), DCVS_PERF_STATE_MET_INTR_CLR);
 	}
 
@@ -2383,7 +2383,7 @@ static irqreturn_t clk_osm_debug_irq_cb(int irq, void *data)
 		total_delta = total_delta + ((second - first) / factor);
 	}
 
-	pr_info("cluster=%d, L_VAL (estimated)=%lu\n",
+	pr_debug("cluster=%d, L_VAL (estimated)=%lu\n",
 		c->cluster_num, total_delta / c->cycle_counter_factor);
 
 	return IRQ_HANDLED;
@@ -2396,7 +2396,7 @@ static int clk_osm_setup_irq(struct platform_device *pdev, struct clk_osm *c,
 
 	rc = c->irq = platform_get_irq_byname(pdev, irq_name);
 	if (rc < 0) {
-		dev_err(&pdev->dev, "%s irq not specified\n", irq_name);
+		dev_dbg(&pdev->dev, "%s irq not specified\n", irq_name);
 		return rc;
 	}
 
@@ -2405,7 +2405,7 @@ static int clk_osm_setup_irq(struct platform_device *pdev, struct clk_osm *c,
 			      IRQF_TRIGGER_RISING | IRQF_SHARED,
 			      "OSM IRQ", c);
 	if (rc)
-		dev_err(&pdev->dev, "Request IRQ failed for OSM IRQ\n");
+		dev_dbg(&pdev->dev, "Request IRQ failed for OSM IRQ\n");
 
 	return rc;
 }
@@ -2439,13 +2439,13 @@ static int add_opp(struct clk_osm *c, struct device *dev)
 		rate = c->hw.init->rate_max[j++];
 		uv = find_voltage(c, rate);
 		if (uv <= 0) {
-			pr_warn("No voltage for %lu.\n", rate);
+			pr_debug("No voltage for %lu.\n", rate);
 			return -EINVAL;
 		}
 
 		rc = dev_pm_opp_add(dev, rate, uv);
 		if (rc) {
-			pr_warn("failed to add OPP for %lu\n", rate);
+			pr_debug("failed to add OPP for %lu\n", rate);
 			return rc;
 		}
 
@@ -2456,11 +2456,11 @@ static int add_opp(struct clk_osm *c, struct device *dev)
 		 * scheduler.
 		 */
 		if (rate == min_rate)
-			pr_info("Set OPP pair (%lu Hz, %d uv) on %s\n",
+			pr_debug("Set OPP pair (%lu Hz, %d uv) on %s\n",
 				rate, uv, dev_name(dev));
 
 		if (rate == max_rate && max_rate != min_rate) {
-			pr_info("Set OPP pair (%lu Hz, %d uv) on %s\n",
+			pr_debug("Set OPP pair (%lu Hz, %d uv) on %s\n",
 				rate, uv, dev_name(dev));
 			break;
 		}
@@ -2488,7 +2488,7 @@ static struct clk *logical_cpu_to_clk(int cpu)
 
 	cell = of_get_property(cpu_node, "reg", NULL);
 	if (!cell) {
-		pr_err("%s: missing reg property\n", cpu_node->full_name);
+		pr_debug("%s: missing reg property\n", cpu_node->full_name);
 		goto fail;
 	}
 
@@ -2517,7 +2517,7 @@ static u64 clk_osm_get_cpu_cycle_counter(int cpu)
 	else if (logical_cpu_to_clk(cpu) == perfcl_clk.hw.clk)
 		c = &perfcl_clk;
 	else {
-		pr_err("no clock device for CPU=%d\n", cpu);
+		pr_debug("no clock device for CPU=%d\n", cpu);
 		return 0;
 	}
 
@@ -2621,14 +2621,14 @@ static ssize_t debugfs_trace_method_set(struct file *file,
 	u32 val;
 
 	if (IS_ERR(file) || file == NULL) {
-		pr_err("input error %ld\n", PTR_ERR(file));
+		pr_debug("input error %ld\n", PTR_ERR(file));
 		return -EINVAL;
 	}
 
 	c = file->private_data;
 
 	if (!c) {
-		pr_err("invalid clk_osm handle\n");
+		pr_debug("invalid clk_osm handle\n");
 		return -EINVAL;
 	}
 
@@ -2662,7 +2662,7 @@ static ssize_t debugfs_trace_method_set(struct file *file,
 		}
 	}
 
-	pr_err("error, supported trace mode types: 'periodic' or 'xor'\n");
+	pr_debug("error, supported trace mode types: 'periodic' or 'xor'\n");
 	return -EINVAL;
 }
 
@@ -2673,14 +2673,14 @@ static ssize_t debugfs_trace_method_get(struct file *file, char __user *buf,
 	int len, rc;
 
 	if (IS_ERR(file) || file == NULL) {
-		pr_err("input error %ld\n", PTR_ERR(file));
+		pr_debug("input error %ld\n", PTR_ERR(file));
 		return -EINVAL;
 	}
 
 	c = file->private_data;
 
 	if (!c) {
-		pr_err("invalid clk_osm handle\n");
+		pr_debug("invalid clk_osm handle\n");
 		return -EINVAL;
 	}
 
@@ -2702,7 +2702,7 @@ static ssize_t debugfs_trace_method_get(struct file *file, char __user *buf,
 static int debugfs_trace_method_open(struct inode *inode, struct file *file)
 {
 	if (IS_ERR(file) || file == NULL) {
-		pr_err("input error %ld\n", PTR_ERR(file));
+		pr_debug("input error %ld\n", PTR_ERR(file));
 		return -EINVAL;
 	}
 
@@ -2729,7 +2729,7 @@ static int debugfs_set_trace_packet_id(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	if (val < TRACE_PACKET0 || val > TRACE_PACKET3) {
-		pr_err("supported trace IDs=%d-%d\n",
+		pr_debug("supported trace IDs=%d-%d\n",
 		       TRACE_PACKET0, TRACE_PACKET3);
 		return 0;
 	}
@@ -2757,7 +2757,7 @@ static int debugfs_set_trace_periodic_timer(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	if (val < PERIODIC_TRACE_MIN_NS || val > PERIODIC_TRACE_MAX_NS) {
-		pr_err("supported periodic trace periods=%d-%lld ns\n",
+		pr_debug("supported periodic trace periods=%d-%lld ns\n",
 		       PERIODIC_TRACE_MIN_NS, PERIODIC_TRACE_MAX_NS);
 		return 0;
 	}
@@ -2842,7 +2842,7 @@ static int debugfs_get_debug_reg(void *data, u64 *val)
 	struct clk_osm *c = data;
 
 	if (!c->pbases[ACD_BASE]) {
-		pr_err("ACD base start not defined\n");
+		pr_debug("ACD base start not defined\n");
 		return -EINVAL;
 	}
 
@@ -2859,7 +2859,7 @@ static int debugfs_set_debug_reg(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	if (!c->pbases[ACD_BASE]) {
-		pr_err("ACD base start not defined\n");
+		pr_debug("ACD base start not defined\n");
 		return -EINVAL;
 	}
 
@@ -2881,7 +2881,7 @@ static int debugfs_get_debug_reg_addr(void *data, u64 *val)
 	struct clk_osm *c = data;
 
 	if (!c->pbases[ACD_BASE]) {
-		pr_err("ACD base start not defined\n");
+		pr_debug("ACD base start not defined\n");
 		return -EINVAL;
 	}
 
@@ -2895,7 +2895,7 @@ static int debugfs_set_debug_reg_addr(void *data, u64 val)
 	struct clk_osm *c = data;
 
 	if (!c->pbases[ACD_BASE]) {
-		pr_err("ACD base start not defined\n");
+		pr_debug("ACD base start not defined\n");
 		return -EINVAL;
 	}
 
@@ -2918,7 +2918,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 	if (osm_debugfs_base == NULL) {
 		osm_debugfs_base = debugfs_create_dir("osm", NULL);
 		if (IS_ERR_OR_NULL(osm_debugfs_base)) {
-			pr_err("osm debugfs base directory creation failed\n");
+			pr_debug("osm debugfs base directory creation failed\n");
 			osm_debugfs_base = NULL;
 			return;
 		}
@@ -2926,7 +2926,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 
 	c->debugfs = debugfs_create_dir(c->hw.init->name, osm_debugfs_base);
 	if (IS_ERR_OR_NULL(c->debugfs)) {
-		pr_err("osm debugfs directory creation failed\n");
+		pr_debug("osm debugfs directory creation failed\n");
 		return;
 	}
 
@@ -2935,7 +2935,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 				   c->debugfs, c,
 				   &debugfs_perf_state_met_irq_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("perf_state_met_irq_enable debugfs file creation failed\n");
+		pr_debug("perf_state_met_irq_enable debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2944,7 +2944,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 				   c->debugfs, c,
 				   &debugfs_perf_state_deviation_irq_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("perf_state_deviation_irq_enable debugfs file creation failed\n");
+		pr_debug("perf_state_deviation_irq_enable debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2953,7 +2953,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_perf_state_deviation_corrected_irq_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_perf_state_deviation_corrected_irq_fops debugfs file creation failed\n");
+		pr_debug("debugfs_perf_state_deviation_corrected_irq_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2962,7 +2962,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_trace_wdog_enable_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_trace_wdog_enable_fops debugfs file creation failed\n");
+		pr_debug("debugfs_trace_wdog_enable_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2971,7 +2971,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_trace_enable_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_trace_enable_fops debugfs file creation failed\n");
+		pr_debug("debugfs_trace_enable_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2980,7 +2980,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_trace_method_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_trace_method_fops debugfs file creation failed\n");
+		pr_debug("debugfs_trace_method_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2989,7 +2989,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_trace_packet_id_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_trace_packet_id_fops debugfs file creation failed\n");
+		pr_debug("debugfs_trace_packet_id_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -2998,7 +2998,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_trace_periodic_timer_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_trace_periodic_timer_fops debugfs file creation failed\n");
+		pr_debug("debugfs_trace_periodic_timer_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -3007,7 +3007,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_acd_debug_reg_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_acd_debug_reg_fops debugfs file creation failed\n");
+		pr_debug("debugfs_acd_debug_reg_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -3016,7 +3016,7 @@ static void populate_debugfs_dir(struct clk_osm *c)
 			   c->debugfs, c,
 			   &debugfs_acd_debug_reg_addr_fops);
 	if (IS_ERR_OR_NULL(temp)) {
-		pr_err("debugfs_acd_debug_reg_addr_fops debugfs file creation failed\n");
+		pr_debug("debugfs_acd_debug_reg_addr_fops debugfs file creation failed\n");
 		goto exit;
 	}
 
@@ -3038,7 +3038,7 @@ static int clk_osm_panic_callback(struct notifier_block *nfb,
 
 	for (i = 0; i < DEBUG_REG_NUM; i++) {
 		value = readl_relaxed(c->debug_regs[i]);
-		pr_err("%s_%d=0x%08x\n", clk_panic_reg_names[i],
+		pr_debug("%s_%d=0x%08x\n", clk_panic_reg_names[i],
 					 c->cluster_num, value);
 	}
 
@@ -3150,14 +3150,14 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	ext_xo_clk = devm_clk_get(dev, "xo_a");
 	if (IS_ERR(ext_xo_clk)) {
 		if (PTR_ERR(ext_xo_clk) != -EPROBE_DEFER)
-			dev_err(dev, "Unable to get xo clock\n");
+			dev_dbg(dev, "Unable to get xo clock\n");
 		return PTR_ERR(ext_xo_clk);
 	}
 
 	ext_hmss_gpll0_clk_src = devm_clk_get(dev, "aux_clk");
 	if (IS_ERR(ext_hmss_gpll0_clk_src)) {
 		if (PTR_ERR(ext_hmss_gpll0_clk_src) != -EPROBE_DEFER)
-			dev_err(dev, "Unable to get aux_clk clock\n");
+			dev_dbg(dev, "Unable to get aux_clk clock\n");
 		return PTR_ERR(ext_hmss_gpll0_clk_src);
 	}
 
@@ -3175,14 +3175,14 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	rc = clk_osm_parse_dt_configs(pdev);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to parse device tree configurations\n");
+		dev_dbg(&pdev->dev, "Unable to parse device tree configurations\n");
 		return rc;
 	}
 
 	rc = clk_osm_resources_init(pdev);
 	if (rc) {
 		if (rc != -EPROBE_DEFER)
-			dev_err(&pdev->dev, "resources init failed, rc=%d\n",
+			dev_dbg(&pdev->dev, "resources init failed, rc=%d\n",
 									rc);
 		return rc;
 	}
@@ -3209,12 +3209,12 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 			 "qcom,pwrcl-speedbin%d-v%d", speedbin, pvs_ver);
 	}
 
-	dev_info(&pdev->dev, "using pwrcl speed bin %u and pvs_ver %d\n",
+	dev_dbg(&pdev->dev, "using pwrcl speed bin %u and pvs_ver %d\n",
 		 speedbin, pvs_ver);
 
 	rc = clk_osm_get_lut(pdev, &pwrcl_clk, pwrclspeedbinstr);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to get OSM LUT for power cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to get OSM LUT for power cluster, rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -3240,12 +3240,12 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 			 "qcom,perfcl-speedbin%d-v%d", speedbin, pvs_ver);
 	}
 
-	dev_info(&pdev->dev, "using perfcl speed bin %u and pvs_ver %d\n",
+	dev_dbg(&pdev->dev, "using perfcl speed bin %u and pvs_ver %d\n",
 		 speedbin, pvs_ver);
 
 	rc = clk_osm_get_lut(pdev, &perfcl_clk, perfclspeedbinstr);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to get OSM LUT for perf cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to get OSM LUT for perf cluster, rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -3254,7 +3254,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	if (rc) {
 		if (rc == -EPROBE_DEFER)
 			return rc;
-		dev_err(&pdev->dev, "Unable to determine open-loop voltages for power cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to determine open-loop voltages for power cluster, rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -3263,19 +3263,19 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	if (rc) {
 		if (rc == -EPROBE_DEFER)
 			return rc;
-		dev_err(&pdev->dev, "Unable to determine open-loop voltages for perf cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to determine open-loop voltages for perf cluster, rc=%d\n",
 			rc);
 		return rc;
 	}
 
 	rc = clk_osm_resolve_crossover_corners(&pwrcl_clk, pdev, NULL);
 	if (rc)
-		dev_info(&pdev->dev, "No APM crossover corner programmed\n");
+		dev_dbg(&pdev->dev, "No APM crossover corner programmed\n");
 
 	rc = clk_osm_resolve_crossover_corners(&perfcl_clk, pdev,
 				"qcom,perfcl-apcs-mem-acc-threshold-voltage");
 	if (rc)
-		dev_info(&pdev->dev, "No MEM-ACC crossover corner programmed\n");
+		dev_dbg(&pdev->dev, "No MEM-ACC crossover corner programmed\n");
 
 	clk_osm_setup_cycle_counters(&pwrcl_clk);
 	clk_osm_setup_cycle_counters(&perfcl_clk);
@@ -3285,33 +3285,33 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	rc = clk_osm_setup_hw_table(&pwrcl_clk);
 	if (rc) {
-		dev_err(&pdev->dev, "failed to setup power cluster hardware table\n");
+		dev_dbg(&pdev->dev, "failed to setup power cluster hardware table\n");
 		goto exit;
 	}
 	rc = clk_osm_setup_hw_table(&perfcl_clk);
 	if (rc) {
-		dev_err(&pdev->dev, "failed to setup perf cluster hardware table\n");
+		dev_dbg(&pdev->dev, "failed to setup perf cluster hardware table\n");
 		goto exit;
 	}
 
 	/* Policy tuning */
 	rc = clk_osm_set_cc_policy(pdev);
 	if (rc < 0) {
-		dev_err(&pdev->dev, "cc policy setup failed\n");
+		dev_dbg(&pdev->dev, "cc policy setup failed\n");
 		goto exit;
 	}
 
 	/* LLM Freq Policy Tuning */
 	rc = clk_osm_set_llm_freq_policy(pdev);
 	if (rc < 0) {
-		dev_err(&pdev->dev, "LLM Frequency Policy setup failed\n");
+		dev_dbg(&pdev->dev, "LLM Frequency Policy setup failed\n");
 		goto exit;
 	}
 
 	/* LLM Voltage Policy Tuning */
 	rc = clk_osm_set_llm_volt_policy(pdev);
 	if (rc < 0) {
-		dev_err(&pdev->dev, "Failed to set LLM voltage Policy\n");
+		dev_dbg(&pdev->dev, "Failed to set LLM voltage Policy\n");
 		goto exit;
 	}
 
@@ -3335,11 +3335,11 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	rc = clk_osm_setup_irq(pdev, &pwrcl_clk, "pwrcl-irq");
 	if (rc)
-		pr_err("Debug IRQ not set for pwrcl\n");
+		pr_debug("Debug IRQ not set for pwrcl\n");
 
 	rc = clk_osm_setup_irq(pdev, &perfcl_clk, "perfcl-irq");
 	if (rc)
-		pr_err("Debug IRQ not set for perfcl\n");
+		pr_debug("Debug IRQ not set for perfcl\n");
 
 	if (of_property_read_bool(pdev->dev.of_node, "qcom,osm-pll-setup")) {
 		clk_osm_setup_cluster_pll(&pwrcl_clk);
@@ -3360,7 +3360,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	for (i = 0; i < num_clks; i++) {
 		clk = devm_clk_register(&pdev->dev, osm_qcom_clk_hws[i]);
 		if (IS_ERR(clk)) {
-			dev_err(&pdev->dev, "Unable to register CPU clock at index %d\n",
+			dev_dbg(&pdev->dev, "Unable to register CPU clock at index %d\n",
 				i);
 			return PTR_ERR(clk);
 		}
@@ -3370,7 +3370,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	rc = of_clk_add_provider(pdev->dev.of_node, of_clk_src_onecell_get,
 								clk_data);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to register CPU clocks\n");
+		dev_dbg(&pdev->dev, "Unable to register CPU clocks\n");
 			goto exit;
 	}
 
@@ -3381,7 +3381,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	 */
 	rc = clk_set_rate(sys_apcsaux_clk_gcc.hw.clk, init_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to set init rate on hmss_gpll0, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to set init rate on hmss_gpll0, rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -3389,7 +3389,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	rc = clk_set_rate(osm_clk_src.clkr.hw.clk, osm_clk_init_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to set init rate on osm_clk, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to set init rate on osm_clk, rc=%d\n",
 			rc);
 		goto exit2;
 	}
@@ -3397,14 +3397,14 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	/* Make sure index zero is selected */
 	rc = clk_set_rate(pwrcl_clk.hw.clk, init_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to set init rate on pwr cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to set init rate on pwr cluster, rc=%d\n",
 			rc);
 		goto exit2;
 	}
 
 	rc = clk_set_rate(perfcl_clk.hw.clk, init_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to set init rate on perf cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to set init rate on perf cluster, rc=%d\n",
 			rc);
 		goto exit2;
 	}
@@ -3427,14 +3427,14 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 	/* Set final boot rate */
 	rc = clk_set_rate(pwrcl_clk.hw.clk, pwrcl_boot_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to set boot rate on pwr cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to set boot rate on pwr cluster, rc=%d\n",
 			rc);
 		goto exit2;
 	}
 
 	rc = clk_set_rate(perfcl_clk.hw.clk, perfcl_boot_rate);
 	if (rc) {
-		dev_err(&pdev->dev, "Unable to set boot rate on perf cluster, rc=%d\n",
+		dev_dbg(&pdev->dev, "Unable to set boot rate on perf cluster, rc=%d\n",
 			rc);
 		goto exit2;
 	}
@@ -3449,7 +3449,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 
 	register_cpu_cycle_counter_cb(&cb);
 
-	pr_info("OSM driver initialize\n");
+	pr_debug("OSM driver initialize\n");
 	put_online_cpus();
 
 	return 0;
@@ -3457,7 +3457,7 @@ static int clk_cpu_osm_driver_probe(struct platform_device *pdev)
 exit2:
 	clk_disable_unprepare(sys_apcsaux_clk_gcc.hw.clk);
 exit:
-	dev_err(&pdev->dev, "OSM driver failed to initialize, rc=%d\n", rc);
+	dev_dbg(&pdev->dev, "OSM driver failed to initialize, rc=%d\n", rc);
 	return rc;
 }
 

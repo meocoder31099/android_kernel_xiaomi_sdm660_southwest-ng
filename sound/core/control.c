@@ -184,7 +184,7 @@ void snd_ctl_notify(struct snd_card *card, unsigned int mask,
 			ev->mask = mask;
 			list_add_tail(&ev->list, &ctl->events);
 		} else {
-			dev_err(card->dev, "No memory available to allocate event\n");
+			dev_dbg(card->dev, "No memory available to allocate event\n");
 		}
 	_found:
 		wake_up(&ctl->change_sleep);
@@ -280,7 +280,7 @@ struct snd_kcontrol *snd_ctl_new1(const struct snd_kcontrol_new *ncontrol,
 	if (ncontrol->name) {
 		strlcpy(kctl->id.name, ncontrol->name, sizeof(kctl->id.name));
 		if (strcmp(ncontrol->name, kctl->id.name) != 0)
-			pr_warn("ALSA: Control name '%s' truncated to '%s'\n",
+			pr_debug("ALSA: Control name '%s' truncated to '%s'\n",
 				ncontrol->name, kctl->id.name);
 	}
 	kctl->id.index = ncontrol->index;
@@ -341,7 +341,7 @@ static int snd_ctl_find_hole(struct snd_card *card, unsigned int count)
 	while (snd_ctl_remove_numid_conflict(card, count)) {
 		if (--iter == 0) {
 			/* this situation is very unlikely */
-			dev_err(card->dev, "unable to allocate new control numid\n");
+			dev_dbg(card->dev, "unable to allocate new control numid\n");
 			return -ENOMEM;
 		}
 	}
@@ -360,7 +360,7 @@ static int __snd_ctl_add(struct snd_card *card, struct snd_kcontrol *kcontrol)
 		return -EINVAL;
 
 	if (snd_ctl_find_id(card, &id)) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"control %i:%i:%i:%s:%i is already present\n",
 			id.iface, id.device, id.subdevice, id.name, id.index);
 		return -EBUSY;

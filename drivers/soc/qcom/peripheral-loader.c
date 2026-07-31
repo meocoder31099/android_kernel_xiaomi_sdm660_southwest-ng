@@ -39,9 +39,9 @@
 #include "peripheral-loader.h"
 
 #define pil_err(desc, fmt, ...)						\
-	dev_err(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
+	dev_dbg(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
 #define pil_info(desc, fmt, ...)					\
-	dev_info(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
+	dev_dbg(desc->dev, "%s: " fmt, desc->name, ##__VA_ARGS__)
 
 #if defined(CONFIG_ARM)
 #define pil_memset_io(d, c, count) memset(d, c, count)
@@ -1441,7 +1441,7 @@ void pil_shutdown(struct pil_desc *desc)
 		flush_delayed_work(&priv->proxy);
 	ret = pil_notify_aop(desc, "off");
 	if (ret < 0)
-		pr_warn("pil: failed to send OFF message to AOP rc:%d\n", ret);
+		pr_debug("pil: failed to send OFF message to AOP rc:%d\n", ret);
 	desc->modem_ssr = true;
 }
 EXPORT_SYMBOL(pil_shutdown);
@@ -1556,7 +1556,7 @@ int pil_desc_init(struct pil_desc *desc)
 	}
 	if (of_property_read_u32(ofnode, "qcom,minidump-id",
 		&desc->minidump_id))
-		pr_err("minidump-id not found for %s\n", desc->name);
+		pr_debug("minidump-id not found for %s\n", desc->name);
 	else {
 		if (g_md_toc && g_md_toc->md_toc_init == true) {
 			ss_toc_addr = &g_md_toc->md_ss_toc[desc->minidump_id];
@@ -1566,7 +1566,7 @@ int pil_desc_init(struct pil_desc *desc)
 			       sizeof(ss_toc_addr));
 
 			if (collect_aux_minidump_ids(desc) < 0)
-				pr_err("Failed to get aux %s minidump ids\n",
+				pr_debug("Failed to get aux %s minidump ids\n",
 				       desc->name);
 		}
 	}
@@ -1587,7 +1587,7 @@ int pil_desc_init(struct pil_desc *desc)
 				  IRQF_ONESHOT | IRQF_TRIGGER_RISING,
 				  desc->name, desc);
 		if (ret < 0) {
-			dev_err(desc->dev,
+			dev_dbg(desc->dev,
 				"Unable to request proxy unvote IRQ: %d\n",
 				ret);
 			goto err;
@@ -1671,20 +1671,20 @@ static int __init msm_pil_init(void)
 
 	np = of_find_compatible_node(NULL, NULL, "qcom,msm-imem-pil");
 	if (!np) {
-		pr_warn("pil: failed to find qcom,msm-imem-pil node\n");
+		pr_debug("pil: failed to find qcom,msm-imem-pil node\n");
 		goto out;
 	}
 	if (of_address_to_resource(np, 0, &res)) {
-		pr_warn("pil: address to resource on imem region failed\n");
+		pr_debug("pil: address to resource on imem region failed\n");
 		goto out;
 	}
 	pil_info_base = ioremap(res.start, resource_size(&res));
 	if (!pil_info_base) {
-		pr_warn("pil: could not map imem region\n");
+		pr_debug("pil: could not map imem region\n");
 		goto out;
 	}
 	if (__raw_readl(pil_info_base) == 0x53444247) {
-		pr_info("pil: pil-imem set to disable pil timeouts\n");
+		pr_debug("pil: pil-imem set to disable pil timeouts\n");
 		disable_timeouts = true;
 	}
 	for (i = 0; i < resource_size(&res)/sizeof(u32); i++)
@@ -1695,18 +1695,18 @@ static int __init msm_pil_init(void)
 				 &size);
 	pr_debug("Minidump: g_md_toc is %pa\n", &g_md_toc);
 	if (PTR_ERR(g_md_toc) == -EPROBE_DEFER) {
-		pr_err("SMEM is not initialized.\n");
+		pr_debug("SMEM is not initialized.\n");
 		return -EPROBE_DEFER;
 	}
 
 	pil_wq = alloc_workqueue("pil_workqueue", WQ_HIGHPRI | WQ_UNBOUND, 0);
 	if (!pil_wq)
-		pr_warn("pil: Defaulting to sequential firmware loading.\n");
+		pr_debug("pil: Defaulting to sequential firmware loading.\n");
 
 #ifdef CONFIG_IPC_LOGGING
 	pil_ipc_log = ipc_log_context_create(2, "PIL-IPC", 0);
 	if (!pil_ipc_log)
-		pr_warn("Failed to setup PIL ipc logging\n");
+		pr_debug("Failed to setup PIL ipc logging\n");
 #endif
 out:
 	return register_pm_notifier(&pil_pm_notifier);

@@ -370,7 +370,7 @@ static bool ns_capable_common(struct user_namespace *ns,
 	int capable;
 
 	if (unlikely(!cap_valid(cap))) {
-		pr_crit("capable() called with invalid cap=%u\n", cap);
+		pr_debug("capable() called with invalid cap=%u\n", cap);
 		BUG();
 	}
 

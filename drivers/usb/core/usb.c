@@ -319,7 +319,7 @@ struct usb_host_interface *usb_find_alt_setting(
 		if (intf_cache->altsetting[i].desc.bAlternateSetting == alt_num)
 			return &intf_cache->altsetting[i];
 
-	printk(KERN_DEBUG "Did not find alt setting %u for intf %u, "
+	no_printk(KERN_DEBUG "Did not find alt setting %u for intf %u, "
 			"config %u\n", alt_num, iface_num,
 			config->desc.bConfigurationValue);
 	return NULL;
@@ -975,7 +975,7 @@ int __usb_get_extra_descriptor(char *buffer, unsigned size,
 		header = (struct usb_descriptor_header *)buffer;
 
 		if (header->bLength < 2 || header->bLength > size) {
-			printk(KERN_ERR
+			no_printk(KERN_ERR
 				"%s: bogus descriptor, type %d length %d\n",
 				usbcore_name,
 				header->bDescriptorType,
@@ -1323,7 +1323,7 @@ static int __init usb_init(void)
 {
 	int retval;
 	if (usb_disabled()) {
-		pr_info("%s: USB support disabled\n", usbcore_name);
+		pr_debug("%s: USB support disabled\n", usbcore_name);
 		return 0;
 	}
 	usb_init_pool_max();

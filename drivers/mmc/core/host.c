@@ -264,7 +264,7 @@ int mmc_of_parse(struct mmc_host *host)
 	case 1:
 		break;
 	default:
-		dev_err(host->parent,
+		dev_dbg(host->parent,
 			"Invalid \"bus-width\" value %u!\n", bus_width);
 		return -EINVAL;
 	}
@@ -301,7 +301,7 @@ int mmc_of_parse(struct mmc_host *host)
 					   cd_debounce_delay_ms * 1000,
 					   &cd_gpio_invert);
 		if (!ret)
-			dev_info(host->parent, "Got CD GPIO\n");
+			dev_dbg(host->parent, "Got CD GPIO\n");
 		else if (ret != -ENOENT && ret != -ENOSYS)
 			return ret;
 
@@ -325,7 +325,7 @@ int mmc_of_parse(struct mmc_host *host)
 
 	ret = mmc_gpiod_request_ro(host, "wp", 0, false, 0, &ro_gpio_invert);
 	if (!ret)
-		dev_info(host->parent, "Got WP GPIO\n");
+		dev_dbg(host->parent, "Got WP GPIO\n");
 	else if (ret != -ENOENT && ret != -ENOSYS)
 		return ret;
 
@@ -391,13 +391,13 @@ int mmc_of_parse(struct mmc_host *host)
 		if (host->caps & MMC_CAP_NONREMOVABLE)
 			host->fixed_drv_type = drv_type;
 		else
-			dev_err(host->parent,
+			dev_dbg(host->parent,
 				"can't use fixed driver type, media is removable\n");
 	}
 
 	host->dsr_req = !device_property_read_u32(dev, "dsr", &host->dsr);
 	if (host->dsr_req && (host->dsr & ~0xffff)) {
-		dev_err(host->parent,
+		dev_dbg(host->parent,
 			"device tree specified broken value for DSR: 0x%x, ignoring\n",
 			host->dsr);
 		host->dsr_req = 0;
@@ -627,7 +627,7 @@ static struct attribute_group clk_scaling_attr_grp = {
 static int mmc_validate_host_caps(struct mmc_host *host)
 {
 	if (host->caps & MMC_CAP_SDIO_IRQ && !host->ops->enable_sdio_irq) {
-		dev_warn(host->parent, "missing ->enable_sdio_irq() ops\n");
+		dev_dbg(host->parent, "missing ->enable_sdio_irq() ops\n");
 		return -EINVAL;
 	}
 
@@ -669,12 +669,12 @@ int mmc_add_host(struct mmc_host *host)
 	host->ipc_log_ctxt = ipc_log_context_create(NUM_LOG_PAGES,
 					dev_name(&host->class_dev), 0);
 	if (!host->ipc_log_ctxt)
-		pr_err("%s: Error getting ipc_log_ctxt\n", __func__);
+		pr_debug("%s: Error getting ipc_log_ctxt\n", __func__);
 #endif
 
 	err = sysfs_create_group(&host->class_dev.kobj, &clk_scaling_attr_grp);
 	if (err)
-		pr_err("%s: failed to create clk scale sysfs group with err %d\n",
+		pr_debug("%s: failed to create clk scale sysfs group with err %d\n",
 				__func__, err);
 
 	mmc_start_host(host);

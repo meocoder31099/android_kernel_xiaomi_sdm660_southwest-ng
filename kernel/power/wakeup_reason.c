@@ -82,7 +82,7 @@ static struct wakeup_irq_node *create_node(int irq)
 
 	result = kmem_cache_alloc(wakeup_irq_nodes_cache, GFP_ATOMIC);
 	if (unlikely(!result))
-		pr_warn("Failed to log wakeup IRQ %d\n", irq);
+		pr_debug("Failed to log wakeup IRQ %d\n", irq);
 	else
 		init_node(result, irq);
 
@@ -259,19 +259,19 @@ static void print_wakeup_sources(void)
 	capture_reasons = false;
 
 	if (suspend_abort) {
-		pr_info("Abort: %s\n", non_irq_wake_reason);
+		pr_debug("Abort: %s\n", non_irq_wake_reason);
 		spin_unlock_irqrestore(&wakeup_reason_lock, flags);
 		return;
 	}
 
 	if (!list_empty(&leaf_irqs))
 		list_for_each_entry(n, &leaf_irqs, siblings)
-			pr_info("Resume caused by IRQ %d, %s\n", n->irq,
+			pr_debug("Resume caused by IRQ %d, %s\n", n->irq,
 				n->irq_name);
 	else if (abnormal_wake)
-		pr_info("Resume caused by %s\n", non_irq_wake_reason);
+		pr_debug("Resume caused by %s\n", non_irq_wake_reason);
 	else
-		pr_info("Resume cause unknown\n");
+		pr_debug("Resume cause unknown\n");
 
 	spin_unlock_irqrestore(&wakeup_reason_lock, flags);
 }
@@ -381,18 +381,18 @@ static struct notifier_block wakeup_reason_pm_notifier_block = {
 static int __init wakeup_reason_init(void)
 {
 	if (register_pm_notifier(&wakeup_reason_pm_notifier_block)) {
-		pr_warn("[%s] failed to register PM notifier\n", __func__);
+		pr_debug("[%s] failed to register PM notifier\n", __func__);
 		goto fail;
 	}
 
 	kobj = kobject_create_and_add("wakeup_reasons", kernel_kobj);
 	if (!kobj) {
-		pr_warn("[%s] failed to create a sysfs kobject\n", __func__);
+		pr_debug("[%s] failed to create a sysfs kobject\n", __func__);
 		goto fail_unregister_pm_notifier;
 	}
 
 	if (sysfs_create_group(kobj, &attr_group)) {
-		pr_warn("[%s] failed to create a sysfs group\n", __func__);
+		pr_debug("[%s] failed to create a sysfs group\n", __func__);
 		goto fail_kobject_put;
 	}
 

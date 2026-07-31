@@ -1745,7 +1745,7 @@ out:
 		 *
 		 * Note, verifier whitelists all opcodes in bpf_opcode_in_insntable().
 		 */
-		pr_warn("BPF interpreter: unknown opcode %02x (imm: 0x%x)\n",
+		pr_debug("BPF interpreter: unknown opcode %02x (imm: 0x%x)\n",
 			insn->code, insn->imm);
 		BUG_ON(1);
 		return 0;

@@ -260,12 +260,12 @@ static int __init nf_conntrack_irc_init(void)
 	int i, ret;
 
 	if (max_dcc_channels < 1) {
-		pr_err("max_dcc_channels must not be zero\n");
+		pr_debug("max_dcc_channels must not be zero\n");
 		return -EINVAL;
 	}
 
 	if (max_dcc_channels > NF_CT_EXPECT_MAX_CNT) {
-		pr_err("max_dcc_channels must not be more than %u\n",
+		pr_debug("max_dcc_channels must not be more than %u\n",
 		       NF_CT_EXPECT_MAX_CNT);
 		return -EINVAL;
 	}
@@ -289,7 +289,7 @@ static int __init nf_conntrack_irc_init(void)
 
 	ret = nf_conntrack_helpers_register(&irc[0], ports_c);
 	if (ret) {
-		pr_err("failed to register helpers\n");
+		pr_debug("failed to register helpers\n");
 		kfree(irc_buffer);
 		return ret;
 	}

@@ -373,10 +373,10 @@ void fscrypt_msg(const struct inode *inode, const char *level,
 	vaf.fmt = fmt;
 	vaf.va = &args;
 	if (inode)
-		printk("%sfscrypt (%s, inode %lu): %pV\n",
+		no_printk("%sfscrypt (%s, inode %lu): %pV\n",
 		       level, inode->i_sb->s_id, inode->i_ino, &vaf);
 	else
-		printk("%sfscrypt: %pV\n", level, &vaf);
+		no_printk("%sfscrypt: %pV\n", level, &vaf);
 	va_end(args);
 }
 

@@ -140,7 +140,7 @@ int usb_gen_phy_init(struct usb_phy *phy)
 
 	if (!IS_ERR(nop->vcc)) {
 		if (regulator_enable(nop->vcc))
-			dev_err(phy->dev, "Failed to enable power\n");
+			dev_dbg(phy->dev, "Failed to enable power\n");
 	}
 
 	if (!IS_ERR(nop->clk)) {
@@ -166,7 +166,7 @@ void usb_gen_phy_shutdown(struct usb_phy *phy)
 
 	if (!IS_ERR(nop->vcc)) {
 		if (regulator_disable(nop->vcc))
-			dev_err(phy->dev, "Failed to disable power\n");
+			dev_dbg(phy->dev, "Failed to disable power\n");
 	}
 }
 EXPORT_SYMBOL_GPL(usb_gen_phy_shutdown);
@@ -248,7 +248,7 @@ int usb_phy_gen_create_phy(struct device *dev, struct usb_phy_generic *nop,
 	if (err == -EPROBE_DEFER)
 		return -EPROBE_DEFER;
 	if (err) {
-		dev_err(dev, "Error requesting RESET or VBUS GPIO\n");
+		dev_dbg(dev, "Error requesting RESET or VBUS GPIO\n");
 		return err;
 	}
 	if (nop->gpiod_reset)
@@ -270,7 +270,7 @@ int usb_phy_gen_create_phy(struct device *dev, struct usb_phy_generic *nop,
 	if (!IS_ERR(nop->clk) && clk_rate) {
 		err = clk_set_rate(nop->clk, clk_rate);
 		if (err) {
-			dev_err(dev, "Error setting clock rate\n");
+			dev_dbg(dev, "Error setting clock rate\n");
 			return err;
 		}
 	}
@@ -318,7 +318,7 @@ static int usb_phy_generic_probe(struct platform_device *pdev)
 						VBUS_IRQ_FLAGS, "vbus_detect",
 						nop);
 		if (err) {
-			dev_err(&pdev->dev, "can't request irq %i, err: %d\n",
+			dev_dbg(&pdev->dev, "can't request irq %i, err: %d\n",
 				gpiod_to_irq(nop->gpiod_vbus), err);
 			return err;
 		}
@@ -331,7 +331,7 @@ static int usb_phy_generic_probe(struct platform_device *pdev)
 
 	err = usb_add_phy_dev(&nop->phy);
 	if (err) {
-		dev_err(&pdev->dev, "can't register transceiver, err: %d\n",
+		dev_dbg(&pdev->dev, "can't register transceiver, err: %d\n",
 			err);
 		return err;
 	}

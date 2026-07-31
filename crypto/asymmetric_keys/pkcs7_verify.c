@@ -73,7 +73,7 @@ static int pkcs7_digest(struct pkcs7_message *pkcs7,
 		u8 tag;
 
 		if (!sinfo->msgdigest) {
-			pr_warn("Sig %u: No messageDigest\n", sinfo->index);
+			pr_debug("Sig %u: No messageDigest\n", sinfo->index);
 			ret = -EKEYREJECTED;
 			goto error;
 		}
@@ -148,7 +148,7 @@ static int pkcs7_find_key(struct pkcs7_message *pkcs7,
 			 sinfo->index, certix);
 
 		if (strcmp(x509->pub->pkey_algo, sinfo->sig->pkey_algo) != 0) {
-			pr_warn("Sig %u: X.509 algo and PKCS#7 sig algo don't match\n",
+			pr_debug("Sig %u: X.509 algo and PKCS#7 sig algo don't match\n",
 				sinfo->index);
 			continue;
 		}
@@ -259,14 +259,14 @@ static int pkcs7_verify_sig_chain(struct pkcs7_message *pkcs7,
 		 */
 		if (sig->auth_ids[1] &&
 		    !asymmetric_key_id_same(p->skid, sig->auth_ids[1])) {
-			pr_warn("Sig %u: X.509 chain contains auth-skid nonmatch (%u->%u)\n",
+			pr_debug("Sig %u: X.509 chain contains auth-skid nonmatch (%u->%u)\n",
 				sinfo->index, x509->index, p->index);
 			return -EKEYREJECTED;
 		}
 	found_issuer:
 		pr_debug("- subject %s\n", p->subject);
 		if (p->seen) {
-			pr_warn("Sig %u: X.509 chain contains loop\n",
+			pr_debug("Sig %u: X.509 chain contains loop\n",
 				sinfo->index);
 			return 0;
 		}
@@ -327,7 +327,7 @@ static int pkcs7_verify_one(struct pkcs7_message *pkcs7,
 	if (test_bit(sinfo_has_signing_time, &sinfo->aa_set)) {
 		if (sinfo->signing_time < sinfo->signer->valid_from ||
 		    sinfo->signing_time > sinfo->signer->valid_to) {
-			pr_warn("Message signed outside of X.509 validity window\n");
+			pr_debug("Message signed outside of X.509 validity window\n");
 			return -EKEYREJECTED;
 		}
 	}
@@ -385,34 +385,34 @@ int pkcs7_verify(struct pkcs7_message *pkcs7,
 	switch (usage) {
 	case VERIFYING_MODULE_SIGNATURE:
 		if (pkcs7->data_type != OID_data) {
-			pr_warn("Invalid module sig (not pkcs7-data)\n");
+			pr_debug("Invalid module sig (not pkcs7-data)\n");
 			return -EKEYREJECTED;
 		}
 		if (pkcs7->have_authattrs) {
-			pr_warn("Invalid module sig (has authattrs)\n");
+			pr_debug("Invalid module sig (has authattrs)\n");
 			return -EKEYREJECTED;
 		}
 		break;
 	case VERIFYING_FIRMWARE_SIGNATURE:
 		if (pkcs7->data_type != OID_data) {
-			pr_warn("Invalid firmware sig (not pkcs7-data)\n");
+			pr_debug("Invalid firmware sig (not pkcs7-data)\n");
 			return -EKEYREJECTED;
 		}
 		if (!pkcs7->have_authattrs) {
-			pr_warn("Invalid firmware sig (missing authattrs)\n");
+			pr_debug("Invalid firmware sig (missing authattrs)\n");
 			return -EKEYREJECTED;
 		}
 		break;
 	case VERIFYING_KEXEC_PE_SIGNATURE:
 		if (pkcs7->data_type != OID_msIndirectData) {
-			pr_warn("Invalid kexec sig (not Authenticode)\n");
+			pr_debug("Invalid kexec sig (not Authenticode)\n");
 			return -EKEYREJECTED;
 		}
 		/* Authattr presence checked in parser */
 		break;
 	case VERIFYING_UNSPECIFIED_SIGNATURE:
 		if (pkcs7->data_type != OID_data) {
-			pr_warn("Invalid unspecified sig (not pkcs7-data)\n");
+			pr_debug("Invalid unspecified sig (not pkcs7-data)\n");
 			return -EKEYREJECTED;
 		}
 		break;

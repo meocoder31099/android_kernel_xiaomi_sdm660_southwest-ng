@@ -347,7 +347,7 @@ int kgsl_snapshot_get_object(struct kgsl_snapshot *snapshot,
 	}
 
 	if (size + offset > entry->memdesc.size) {
-		dev_err(snapshot->device->dev,
+		dev_dbg(snapshot->device->dev,
 			"snapshot: invalid size for GPU buffer 0x%016llx\n",
 			gpuaddr);
 		goto err_put;
@@ -595,7 +595,7 @@ static void kgsl_free_snapshot(struct kgsl_snapshot *snapshot)
 		vfree(snapshot->mempool);
 
 	kfree(snapshot);
-	dev_err(device->dev, "snapshot: objects released\n");
+	dev_dbg(device->dev, "snapshot: objects released\n");
 }
 
 #define SP0_ISDB_ISDB_BRKPT_CFG 0x40014
@@ -659,7 +659,7 @@ void kgsl_device_snapshot(struct kgsl_device *device,
 	set_isdb_breakpoint_registers(device);
 
 	if (device->snapshot_memory.ptr == NULL) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "snapshot: no snapshot memory available\n");
 		return;
 	}
@@ -753,7 +753,7 @@ void kgsl_device_snapshot(struct kgsl_device *device,
 
 	/* log buffer info to aid in ramdump fault tolerance */
 	pa = __pa(device->snapshot_memory.ptr);
-	dev_err(device->dev, "%s snapshot created at pa %pa++0x%zx\n",
+	dev_dbg(device->dev, "%s snapshot created at pa %pa++0x%zx\n",
 			gmu_fault ? "GMU" : "GPU", &pa, snapshot->size);
 
 	if (device->skip_ib_capture)
@@ -1240,7 +1240,7 @@ static size_t _mempool_add_object(struct kgsl_snapshot *snapshot, u8 *data,
 	size = obj->size;
 
 	if (!kgsl_memdesc_map(&obj->entry->memdesc)) {
-		dev_err(snapshot->device->dev,
+		dev_dbg(snapshot->device->dev,
 			"snapshot: failed to map GPU object\n");
 		return 0;
 	}
@@ -1324,11 +1324,11 @@ done:
 	snapshot->process = NULL;
 
 	if (snapshot->ib1base && !snapshot->ib1dumped)
-		dev_err(snapshot->device->dev,
+		dev_dbg(snapshot->device->dev,
 				"snapshot: Active IB1:%016llx not dumped\n",
 				snapshot->ib1base);
 	else if (snapshot->ib2base && !snapshot->ib2dumped)
-		dev_err(snapshot->device->dev,
+		dev_dbg(snapshot->device->dev,
 			       "snapshot: Active IB2:%016llx not dumped\n",
 				snapshot->ib2base);
 

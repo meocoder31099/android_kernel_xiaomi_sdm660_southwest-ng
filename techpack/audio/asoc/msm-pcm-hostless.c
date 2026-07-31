@@ -15,7 +15,7 @@
 static int msm_pcm_hostless_prepare(struct snd_pcm_substream *substream)
 {
 	if (!substream) {
-		pr_err("%s: invalid params\n", __func__);
+		pr_debug("%s: invalid params\n", __func__);
 		return -EINVAL;
 	}
 	pm_qos_remove_request(&substream->latency_pm_qos_req);

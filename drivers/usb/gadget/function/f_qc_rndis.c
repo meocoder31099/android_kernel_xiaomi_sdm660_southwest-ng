@@ -451,7 +451,7 @@ static void rndis_qc_response_available(void *_rndis)
 	status = usb_ep_queue(rndis->notify, req, GFP_ATOMIC);
 	if (status) {
 		atomic_dec(&rndis->notify_count);
-		pr_info("notify/0 --> %d\n", status);
+		pr_debug("notify/0 --> %d\n", status);
 	}
 }
 
@@ -471,7 +471,7 @@ static void rndis_qc_response_complete(struct usb_ep *ep,
 	}
 
 	if (!rndis->func.config || !rndis->func.config->cdev) {
-		pr_err("%s(): cdev or config is NULL.\n", __func__);
+		pr_debug("%s(): cdev or config is NULL.\n", __func__);
 		spin_unlock(&rndis_lock);
 		return;
 	}
@@ -489,7 +489,7 @@ static void rndis_qc_response_complete(struct usb_ep *ep,
 		atomic_set(&rndis->notify_count, 0);
 		goto out;
 	default:
-		pr_info("RNDIS %s response error %d, %d/%d\n",
+		pr_debug("RNDIS %s response error %d, %d/%d\n",
 			ep->name, status,
 			req->actual, req->length);
 		/* FALLTHROUGH */
@@ -530,7 +530,7 @@ static void rndis_qc_command_complete(struct usb_ep *ep,
 	u32		ul_max_xfer_size, dl_max_xfer_size;
 
 	if (req->status != 0) {
-		pr_err("%s: RNDIS command completion error %d\n",
+		pr_debug("%s: RNDIS command completion error %d\n",
 				__func__, req->status);
 		return;
 	}
@@ -545,7 +545,7 @@ static void rndis_qc_command_complete(struct usb_ep *ep,
 	/* received RNDIS command from USB_CDC_SEND_ENCAPSULATED_COMMAND */
 	status = rndis_msg_parser(rndis->params, (u8 *) req->buf);
 	if (status < 0)
-		pr_err("RNDIS command error %d, %d/%d\n",
+		pr_debug("RNDIS command error %d, %d/%d\n",
 			status, req->actual, req->length);
 
 	buf = (rndis_init_msg_type *)req->buf;
@@ -640,7 +640,7 @@ invalid:
 		req->length = value;
 		value = usb_ep_queue(cdev->gadget->ep0, req, GFP_ATOMIC);
 		if (value < 0)
-			pr_err("rndis response on err %d\n", value);
+			pr_debug("rndis response on err %d\n", value);
 	}
 
 	/* device either stalls (value < 0) or reports success */
@@ -740,7 +740,7 @@ static int rndis_qc_set_alt(struct usb_function *f, unsigned int intf,
 		dst_connection_idx = usb_bam_get_connection_idx(usb_bam_type,
 			IPA_P_BAM, PEER_PERIPHERAL_TO_USB, rndis->port_num);
 		if (src_connection_idx < 0 || dst_connection_idx < 0) {
-			pr_err("%s: usb_bam_get_connection_idx failed\n",
+			pr_debug("%s: usb_bam_get_connection_idx failed\n",
 				__func__);
 			return ret;
 		}
@@ -797,7 +797,7 @@ static void rndis_qc_suspend(struct usb_function *f)
 	else
 		remote_wakeup_allowed = f->config->cdev->gadget->remote_wakeup;
 
-	pr_info("%s(): start rndis suspend: remote_wakeup_allowed:%d\n",
+	pr_debug("%s(): start rndis suspend: remote_wakeup_allowed:%d\n",
 					__func__, remote_wakeup_allowed);
 
 	if (!remote_wakeup_allowed) {
@@ -896,7 +896,7 @@ rndis_qc_bind(struct usb_configuration *c, struct usb_function *f)
 
 	status = rndis_ipa_init(&rndis_ipa_params);
 	if (status) {
-		pr_err("%s: failed to init rndis_ipa\n", __func__);
+		pr_debug("%s: failed to init rndis_ipa\n", __func__);
 		return status;
 	}
 
@@ -1080,7 +1080,7 @@ fail:
 	if (rndis->bam_port.in->desc)
 		rndis->bam_port.in->driver_data = NULL;
 
-	pr_err("%s: can't bind, err %d\n", f->name, status);
+	pr_debug("%s: can't bind, err %d\n", f->name, status);
 
 	return status;
 }
@@ -1128,7 +1128,7 @@ void rndis_ipa_reset_trigger(void)
 
 	rndis = _rndis_qc;
 	if (!rndis) {
-		pr_err("%s: No RNDIS instance\n", __func__);
+		pr_debug("%s: No RNDIS instance\n", __func__);
 		return;
 	}
 
@@ -1147,12 +1147,12 @@ static void rndis_net_ready_notify(void)
 	spin_lock_irqsave(&rndis_lock, flags);
 	rndis = _rndis_qc;
 	if (!rndis) {
-		pr_err("%s: No RNDIS instance\n", __func__);
+		pr_debug("%s: No RNDIS instance\n", __func__);
 		spin_unlock_irqrestore(&rndis_lock, flags);
 		return;
 	}
 	if (rndis->net_ready_trigger) {
-		pr_err("%s: Already triggered\n", __func__);
+		pr_debug("%s: Already triggered\n", __func__);
 		spin_unlock_irqrestore(&rndis_lock, flags);
 		return;
 	}
@@ -1255,17 +1255,17 @@ static int rndis_qc_open_dev(struct inode *ip, struct file *fp)
 	int ret = 0;
 	unsigned long flags;
 
-	pr_info("Open rndis QC driver\n");
+	pr_debug("Open rndis QC driver\n");
 
 	spin_lock_irqsave(&rndis_lock, flags);
 	if (!_rndis_qc) {
-		pr_err("rndis_qc_dev not created yet\n");
+		pr_debug("rndis_qc_dev not created yet\n");
 		ret = -ENODEV;
 		goto fail;
 	}
 
 	if (rndis_qc_lock(&_rndis_qc->open_excl)) {
-		pr_err("Already opened\n");
+		pr_debug("Already opened\n");
 		ret = -EBUSY;
 		goto fail;
 	}
@@ -1275,7 +1275,7 @@ fail:
 	spin_unlock_irqrestore(&rndis_lock, flags);
 
 	if (!ret)
-		pr_info("rndis QC file opened\n");
+		pr_debug("rndis QC file opened\n");
 
 	return ret;
 }
@@ -1284,12 +1284,12 @@ static int rndis_qc_release_dev(struct inode *ip, struct file *fp)
 {
 	unsigned long flags;
 
-	pr_info("Close rndis QC file\n");
+	pr_debug("Close rndis QC file\n");
 
 	spin_lock_irqsave(&rndis_lock, flags);
 
 	if (!_rndis_qc) {
-		pr_err("rndis_qc_dev not present\n");
+		pr_debug("rndis_qc_dev not present\n");
 		spin_unlock_irqrestore(&rndis_lock, flags);
 		return -ENODEV;
 	}
@@ -1307,7 +1307,7 @@ static long rndis_qc_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 
 	spin_lock_irqsave(&rndis_lock, flags);
 	if (!_rndis_qc) {
-		pr_err("rndis_qc_dev not present\n");
+		pr_debug("rndis_qc_dev not present\n");
 		ret = -ENODEV;
 		goto fail;
 	}
@@ -1322,7 +1322,7 @@ static long rndis_qc_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 
 	spin_unlock_irqrestore(&rndis_lock, flags);
 
-	pr_info("Received command %d\n", cmd);
+	pr_debug("Received command %d\n", cmd);
 
 	switch (cmd) {
 	case RNDIS_QC_GET_MAX_PKT_PER_XFER:
@@ -1330,10 +1330,10 @@ static long rndis_qc_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 					&qc_max_pkt_per_xfer,
 					sizeof(qc_max_pkt_per_xfer));
 		if (ret) {
-			pr_err("copying to user space failed\n");
+			pr_debug("copying to user space failed\n");
 			ret = -EFAULT;
 		}
-		pr_info("Sent UL max packets per xfer %d\n",
+		pr_debug("Sent UL max packets per xfer %d\n",
 				qc_max_pkt_per_xfer);
 		break;
 	case RNDIS_QC_GET_MAX_PKT_SIZE:
@@ -1341,21 +1341,21 @@ static long rndis_qc_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
 					&qc_max_pkt_size,
 					sizeof(qc_max_pkt_size));
 		if (ret) {
-			pr_err("copying to user space failed\n");
+			pr_debug("copying to user space failed\n");
 			ret = -EFAULT;
 		}
 		pr_debug("Sent max packet size %d\n",
 				qc_max_pkt_size);
 		break;
 	default:
-		pr_err("Unsupported IOCTL\n");
+		pr_debug("Unsupported IOCTL\n");
 		ret = -EINVAL;
 	}
 
 	spin_lock_irqsave(&rndis_lock, flags);
 
 	if (!_rndis_qc) {
-		pr_err("rndis_qc_dev not present\n");
+		pr_debug("rndis_qc_dev not present\n");
 		ret = -ENODEV;
 		goto fail;
 	}
@@ -1411,7 +1411,7 @@ static int qcrndis_set_inst_name(struct usb_function_instance *fi,
 	pr_debug("initialize rndis QC instance\n");
 	rndis = kzalloc(sizeof(*rndis), GFP_KERNEL);
 	if (!rndis) {
-		pr_err("%s: fail allocate and initialize new instance\n",
+		pr_debug("%s: fail allocate and initialize new instance\n",
 			   __func__);
 		return -ENOMEM;
 	}
@@ -1421,14 +1421,14 @@ static int qcrndis_set_inst_name(struct usb_function_instance *fi,
 	rndis_class = class_create(THIS_MODULE, "usbrndis");
 	ret = alloc_chrdev_region(&rndis_dev, 0, 1, "usb_rndis");
 	if (ret < 0) {
-		pr_err("Fail to allocate usb rndis char dev region\n");
+		pr_debug("Fail to allocate usb rndis char dev region\n");
 		return ret;
 	}
 
 	/* get a minor number */
 	minor = ida_simple_get(&chardev_ida, 0, 0, GFP_KERNEL);
 	if (minor < 0) {
-		pr_err("%s: No more minor numbers left! rc:%d\n", __func__,
+		pr_debug("%s: No more minor numbers left! rc:%d\n", __func__,
 			minor);
 		ret = -ENODEV;
 		goto fail_out_of_minors;
@@ -1438,23 +1438,23 @@ static int qcrndis_set_inst_name(struct usb_function_instance *fi,
 			rndis, "android_rndis_qc");
 	if (IS_ERR(rndis->dev)) {
 		ret = PTR_ERR(rndis->dev);
-		pr_err("%s: device_create failed for (%d)\n", __func__, ret);
+		pr_debug("%s: device_create failed for (%d)\n", __func__, ret);
 		goto fail_return_minor;
 	}
 	cdev_init(&rndis->cdev, &rndis_qc_fops);
 	ret = cdev_add(&rndis->cdev, MKDEV(MAJOR(rndis_dev), minor), 1);
 	if (ret < 0) {
-		pr_err("%s: cdev_add failed for %s (%d)\n", __func__,
+		pr_debug("%s: cdev_add failed for %s (%d)\n", __func__,
 			name, ret);
 		goto fail_cdev_add;
 	}
 
 	if (ret)
-		pr_err("rndis QC driver failed to register\n");
+		pr_debug("rndis QC driver failed to register\n");
 
 	ret = ipa_data_setup(USB_IPA_FUNC_RNDIS);
 	if (ret) {
-		pr_err("bam_data_setup failed err: %d\n", ret);
+		pr_debug("bam_data_setup failed err: %d\n", ret);
 		goto fail_data_setup;
 	}
 
@@ -1540,7 +1540,7 @@ static int __init usb_qcrndis_init(void)
 
 	ret = usb_function_register(&rndis_bamusb_func);
 	if (ret) {
-		pr_err("%s: failed to register diag %d\n", __func__, ret);
+		pr_debug("%s: failed to register diag %d\n", __func__, ret);
 		return ret;
 	}
 	return ret;

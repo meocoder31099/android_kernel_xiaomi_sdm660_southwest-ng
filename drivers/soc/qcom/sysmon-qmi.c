@@ -93,11 +93,11 @@ static void sysmon_ind_cb(struct qmi_handle *qmi, struct sockaddr_qrtr *sq,
 					struct sysmon_qmi_data, clnt_handle);
 
 	struct subsys_device *subsys_dev = find_subsys_device(qmi_data->name);
-	pr_info("%s: Indication received from subsystem\n", qmi_data->name);
+	pr_debug("%s: Indication received from subsystem\n", qmi_data->name);
 	if (subsys_dev)
 		complete_shutdown_ack(subsys_dev);
 	else
-		pr_err("Failed to find subsystem: %s for indication\n",
+		pr_debug("Failed to find subsystem: %s for indication\n",
 		       qmi_data->name);
 }
 
@@ -122,7 +122,7 @@ static int ssctl_new_server(struct qmi_handle *qmi, struct qmi_service *svc)
 	struct sysmon_qmi_data *data = container_of(qmi,
 					struct sysmon_qmi_data, clnt_handle);
 
-	pr_info("Connection established between QMI handle and %s's SSCTL service\n"
+	pr_debug("Connection established between QMI handle and %s's SSCTL service\n"
 								, data->name);
 
 	data->ssctl.sq_family = AF_QIPCRTR;
@@ -137,7 +137,7 @@ static void ssctl_del_server(struct qmi_handle *qmi, struct qmi_service *svc)
 	struct sysmon_qmi_data *data = container_of(qmi,
 					struct sysmon_qmi_data, clnt_handle);
 
-	pr_info("Connection lost between QMI handle and %s's SSCTL service\n"
+	pr_debug("Connection lost between QMI handle and %s's SSCTL service\n"
 								, data->name);
 	data->connected = false;
 }
@@ -294,7 +294,7 @@ int sysmon_send_event(struct subsys_desc *dest_desc,
 			&resp);
 
 	if (ret < 0) {
-		pr_err("SYSMON QMI tx init failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI tx init failed to dest %s, ret - %d\n",
 			dest_ss, ret);
 		goto out;
 	}
@@ -305,7 +305,7 @@ int sysmon_send_event(struct subsys_desc *dest_desc,
 			qmi_ssctl_subsys_event_req_msg_ei,
 			&req);
 	if (ret < 0) {
-		pr_err("SYSMON QMI send req failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI send req failed to dest %s, ret - %d\n",
 			 dest_ss, ret);
 		qmi_txn_cancel(&txn);
 		goto out;
@@ -313,14 +313,14 @@ int sysmon_send_event(struct subsys_desc *dest_desc,
 
 	ret = qmi_txn_wait(&txn, msecs_to_jiffies(SERVER_TIMEOUT));
 	if (ret < 0) {
-		pr_err("SYSMON QMI qmi txn wait failed for client %s, ret - %d\n",
+		pr_debug("SYSMON QMI qmi txn wait failed for client %s, ret - %d\n",
 			dest_ss, ret);
 		goto out;
 	}
 
 	/* Check the response */
 	if (QMI_RESP_BIT_SHIFT(resp.resp.result) != QMI_RESULT_SUCCESS_V01) {
-		pr_err("SYSMON QMI request failed 0x%x\n",
+		pr_debug("SYSMON QMI request failed 0x%x\n",
 					QMI_RESP_BIT_SHIFT(resp.resp.error));
 		ret = -EREMOTEIO;
 	}
@@ -408,7 +408,7 @@ int sysmon_send_shutdown(struct subsys_desc *dest_desc)
 			&resp);
 
 	if (ret < 0) {
-		pr_err("SYSMON QMI tx init failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI tx init failed to dest %s, ret - %d\n",
 			dest_ss, ret);
 		goto out;
 	}
@@ -419,7 +419,7 @@ int sysmon_send_shutdown(struct subsys_desc *dest_desc)
 			qmi_ssctl_shutdown_req_msg_ei,
 			&req);
 	if (ret < 0) {
-		pr_err("SYSMON QMI send req failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI send req failed to dest %s, ret - %d\n",
 			 dest_ss, ret);
 		qmi_txn_cancel(&txn);
 		goto out;
@@ -427,14 +427,14 @@ int sysmon_send_shutdown(struct subsys_desc *dest_desc)
 
 	ret = qmi_txn_wait(&txn, msecs_to_jiffies(SERVER_TIMEOUT));
 	if (ret < 0) {
-		pr_err("SYSMON QMI txn wait failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI txn wait failed to dest %s, ret - %d\n",
 			dest_ss, ret);
 	}
 
 	/* Check the response */
 	if (ret != -ETIMEDOUT && QMI_RESP_BIT_SHIFT(resp.resp.result) !=
 	    QMI_RESULT_SUCCESS_V01) {
-		pr_err("SYSMON QMI request failed 0x%x\n",
+		pr_debug("SYSMON QMI request failed 0x%x\n",
 					QMI_RESP_BIT_SHIFT(resp.resp.error));
 		ret = -EREMOTEIO;
 		goto out;
@@ -445,7 +445,7 @@ int sysmon_send_shutdown(struct subsys_desc *dest_desc)
 		ret = 0;
 		goto out;
 	} else if (shutdown_ack_ret < 0) {
-		pr_err("shutdown acknowledgment not received for %s\n",
+		pr_debug("shutdown acknowledgment not received for %s\n",
 		       data->name);
 		ret = shutdown_ack_ret;
 	}
@@ -606,7 +606,7 @@ int sysmon_get_reason(struct subsys_desc *dest_desc, char *buf, size_t len)
 			qmi_ssctl_get_failure_reason_resp_msg_ei,
 			&resp);
 	if (ret < 0) {
-		pr_err("SYSMON QMI tx init failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI tx init failed to dest %s, ret - %d\n",
 			dest_ss, ret);
 		goto out;
 	}
@@ -617,7 +617,7 @@ int sysmon_get_reason(struct subsys_desc *dest_desc, char *buf, size_t len)
 			qmi_ssctl_get_failure_reason_req_msg_ei,
 			&req);
 	if (ret < 0) {
-		pr_err("SYSMON QMI send req failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI send req failed to dest %s, ret - %d\n",
 			 dest_ss, ret);
 		qmi_txn_cancel(&txn);
 		goto out;
@@ -625,14 +625,14 @@ int sysmon_get_reason(struct subsys_desc *dest_desc, char *buf, size_t len)
 
 	ret = qmi_txn_wait(&txn, msecs_to_jiffies(SERVER_TIMEOUT));
 	if (ret < 0) {
-		pr_err("SYSMON QMI qmi txn wait failed to dest %s, ret - %d\n",
+		pr_debug("SYSMON QMI qmi txn wait failed to dest %s, ret - %d\n",
 			dest_ss, ret);
 		goto out;
 	}
 
 	/* Check the response */
 	if (QMI_RESP_BIT_SHIFT(resp.resp.result) != QMI_RESULT_SUCCESS_V01) {
-		pr_err("SYSMON QMI request failed 0x%x\n",
+		pr_debug("SYSMON QMI request failed 0x%x\n",
 					QMI_RESP_BIT_SHIFT(resp.resp.error));
 		ret = -EREMOTEIO;
 		goto out;
@@ -679,7 +679,7 @@ int sysmon_notifier_register(struct subsys_desc *desc)
 			QMI_SSCTL_MAX_MSG_LENGTH, &ssctl_ops,
 			qmi_indication_handler);
 	if (rc < 0) {
-		pr_err("Sysmon QMI handle init failed rc:%d\n", rc);
+		pr_debug("Sysmon QMI handle init failed rc:%d\n", rc);
 		kfree(data);
 		return rc;
 	}

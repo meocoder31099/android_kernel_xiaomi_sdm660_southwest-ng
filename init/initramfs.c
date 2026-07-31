@@ -327,7 +327,7 @@ static int __init do_name(void)
 
 	/* name_len > 0 && name_len <= PATH_MAX checked in do_header */
 	if (collected[name_len - 1] != '\0') {
-		pr_err("initramfs name without nulterm: %.*s\n",
+		pr_debug("initramfs name without nulterm: %.*s\n",
 		       (int)name_len, collected);
 		error("malformed archive");
 		return 1;
@@ -396,7 +396,7 @@ static int __init do_copy(void)
 static int __init do_symlink(void)
 {
 	if (collected[name_len - 1] != '\0') {
-		pr_err("initramfs symlink without nulterm: %.*s\n",
+		pr_debug("initramfs symlink without nulterm: %.*s\n",
 		       (int)name_len, collected);
 		error("malformed archive");
 		return 1;
@@ -638,7 +638,7 @@ static void __init populate_initrd_image(char *err)
 
 	unpack_to_rootfs(__initramfs_start, __initramfs_size);
 
-	printk(KERN_INFO "rootfs image is not initramfs (%s); looks like an initrd\n",
+	no_printk(KERN_INFO "rootfs image is not initramfs (%s); looks like an initrd\n",
 			err);
 	file = filp_open("/initrd.image", O_WRONLY|O_CREAT|O_LARGEFILE, 0700);
 	if (IS_ERR(file))
@@ -647,7 +647,7 @@ static void __init populate_initrd_image(char *err)
 	written = xwrite(file, (char *)initrd_start, initrd_end - initrd_start,
 			&pos);
 	if (written != initrd_end - initrd_start)
-		pr_err("/initrd.image: incomplete write (%zd != %ld)\n",
+		pr_debug("/initrd.image: incomplete write (%zd != %ld)\n",
 		       written, initrd_end - initrd_start);
 	fput(file);
 }
@@ -670,7 +670,7 @@ static int __init populate_rootfs(void)
 	/* If available load the bootloader supplied initrd */
 	if (initrd_start && !IS_ENABLED(CONFIG_INITRAMFS_FORCE)) {
 #ifdef CONFIG_BLK_DEV_RAM
-		printk(KERN_INFO "Trying to unpack rootfs image as initramfs...\n");
+		no_printk(KERN_INFO "Trying to unpack rootfs image as initramfs...\n");
 		err = unpack_to_rootfs((char *)initrd_start,
 			initrd_end - initrd_start);
 		if (!err)
@@ -681,11 +681,11 @@ static int __init populate_rootfs(void)
 	done:
 		/* empty statement */;
 #else
-		printk(KERN_INFO "Unpacking initramfs...\n");
+		no_printk(KERN_INFO "Unpacking initramfs...\n");
 		err = unpack_to_rootfs((char *)initrd_start,
 			initrd_end - initrd_start);
 		if (err)
-			printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
+			no_printk(KERN_EMERG "Initramfs unpacking failed: %s\n", err);
 #endif
 	}
 	free_initrd();

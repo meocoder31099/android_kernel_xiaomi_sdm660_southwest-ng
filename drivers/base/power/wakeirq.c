@@ -153,7 +153,7 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
 	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
 	res = pm_runtime_resume(wirq->dev);
 	if (res < 0)
-		dev_warn(wirq->dev,
+		dev_dbg(wirq->dev,
 			 "wake IRQ with no resume: %i\n", res);
 
 	return IRQ_HANDLED;

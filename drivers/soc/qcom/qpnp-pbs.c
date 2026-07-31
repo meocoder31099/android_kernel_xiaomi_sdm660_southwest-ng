@@ -44,7 +44,7 @@ static int qpnp_pbs_read(struct qpnp_pbs *pbs, u32 address,
 
 	rc = regmap_bulk_read(pbs->regmap, address, val, count);
 	if (rc)
-		pr_err("Failed to read address=0x%02x sid=0x%02x rc=%d\n",
+		pr_debug("Failed to read address=0x%02x sid=0x%02x rc=%d\n",
 			address, to_spmi_device(pdev->dev.parent)->usid, rc);
 
 	return rc;
@@ -58,7 +58,7 @@ static int qpnp_pbs_write(struct qpnp_pbs *pbs, u16 address,
 
 	rc = regmap_bulk_write(pbs->regmap, address, val, count);
 	if (rc < 0)
-		pr_err("Failed to write address =0x%02x sid=0x%02x rc=%d\n",
+		pr_debug("Failed to write address =0x%02x sid=0x%02x rc=%d\n",
 			  address, to_spmi_device(pdev->dev.parent)->usid, rc);
 	else
 		pr_debug("Wrote 0x%02X to addr 0x%04x\n", *val, address);
@@ -73,7 +73,7 @@ static int qpnp_pbs_masked_write(struct qpnp_pbs *pbs, u16 address,
 
 	rc = regmap_update_bits(pbs->regmap, address, mask, val);
 	if (rc < 0)
-		pr_err("Failed to write address 0x%04X, rc = %d\n",
+		pr_debug("Failed to write address 0x%04X, rc = %d\n",
 					address, rc);
 	else
 		pr_debug("Wrote 0x%02X to addr 0x%04X\n",
@@ -108,7 +108,7 @@ static int qpnp_pbs_wait_for_ack(struct qpnp_pbs *pbs, u8 bit_pos)
 		rc = qpnp_pbs_read(pbs, pbs->base +
 					PBS_CLIENT_SCRATCH2, &val, 1);
 		if (rc < 0) {
-			pr_err("Failed to read register %x rc = %d\n",
+			pr_debug("Failed to read register %x rc = %d\n",
 						PBS_CLIENT_SCRATCH2, rc);
 			return rc;
 		}
@@ -119,12 +119,12 @@ static int qpnp_pbs_wait_for_ack(struct qpnp_pbs *pbs, u8 bit_pos)
 			rc = qpnp_pbs_write(pbs, pbs->base +
 					PBS_CLIENT_SCRATCH2, &val, 1);
 			if (rc < 0) {
-				pr_err("Failed to clear register %x rc=%d\n",
+				pr_debug("Failed to clear register %x rc=%d\n",
 						PBS_CLIENT_SCRATCH2, rc);
 				return rc;
 			}
 
-			pr_err("NACK from PBS for bit %d\n", bit_pos);
+			pr_debug("NACK from PBS for bit %d\n", bit_pos);
 			return -EINVAL;
 		}
 
@@ -138,7 +138,7 @@ static int qpnp_pbs_wait_for_ack(struct qpnp_pbs *pbs, u8 bit_pos)
 	}
 
 	if (!retries) {
-		pr_err("Timeout for PBS ACK/NACK for bit %d\n", bit_pos);
+		pr_debug("Timeout for PBS ACK/NACK for bit %d\n", bit_pos);
 		return -ETIMEDOUT;
 	}
 
@@ -173,20 +173,20 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 		return -EINVAL;
 
 	if (!bitmap) {
-		pr_err("Invalid bitmap passed by client\n");
+		pr_debug("Invalid bitmap passed by client\n");
 		return -EINVAL;
 	}
 
 	pbs = get_pbs_client_node(dev_node);
 	if (IS_ERR_OR_NULL(pbs)) {
-		pr_err("Unable to find the PBS dev_node\n");
+		pr_debug("Unable to find the PBS dev_node\n");
 		return -EINVAL;
 	}
 
 	mutex_lock(&pbs->pbs_lock);
 	rc = qpnp_pbs_read(pbs, pbs->base + PBS_CLIENT_SCRATCH2, &val, 1);
 	if (rc < 0) {
-		pr_err("read register %x failed rc = %d\n",
+		pr_debug("read register %x failed rc = %d\n",
 					PBS_CLIENT_SCRATCH2, rc);
 		goto out;
 	}
@@ -197,7 +197,7 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 		rc = qpnp_pbs_write(pbs, pbs->base + PBS_CLIENT_SCRATCH2, &val,
 				    1);
 		if (rc < 0) {
-			pr_err("Failed to clear register %x rc=%d\n",
+			pr_debug("Failed to clear register %x rc=%d\n",
 						PBS_CLIENT_SCRATCH2, rc);
 			goto out;
 		}
@@ -212,7 +212,7 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 			rc = qpnp_pbs_masked_write(pbs, pbs->base +
 					 PBS_CLIENT_SCRATCH2, BIT(bit_pos), 0);
 			if (rc < 0) {
-				pr_err("Failed to clear %x reg bit rc=%d\n",
+				pr_debug("Failed to clear %x reg bit rc=%d\n",
 						PBS_CLIENT_SCRATCH2, rc);
 				goto error;
 			}
@@ -225,7 +225,7 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 			rc = qpnp_pbs_masked_write(pbs, pbs->base +
 						PBS_CLIENT_SCRATCH1, mask, val);
 			if (rc < 0) {
-				pr_err("Failed to set %x reg bit rc=%d\n",
+				pr_debug("Failed to set %x reg bit rc=%d\n",
 						PBS_CLIENT_SCRATCH1, rc);
 				goto error;
 			}
@@ -235,14 +235,14 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 			rc = qpnp_pbs_masked_write(pbs, pbs->base +
 						PBS_CLIENT_TRIG_CTL, mask, val);
 			if (rc < 0) {
-				pr_err("Failed to write register %x rc=%d\n",
+				pr_debug("Failed to write register %x rc=%d\n",
 						PBS_CLIENT_TRIG_CTL, rc);
 				goto error;
 			}
 
 			rc = qpnp_pbs_wait_for_ack(pbs, bit_pos);
 			if (rc < 0) {
-				pr_err("Error during wait_for_ack\n");
+				pr_debug("Error during wait_for_ack\n");
 				goto error;
 			}
 
@@ -253,7 +253,7 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 			rc = qpnp_pbs_masked_write(pbs, pbs->base +
 					PBS_CLIENT_SCRATCH1, BIT(bit_pos), 0);
 			if (rc < 0) {
-				pr_err("Failed to clear %x reg bit rc=%d\n",
+				pr_debug("Failed to clear %x reg bit rc=%d\n",
 						PBS_CLIENT_SCRATCH1, rc);
 				goto error;
 			}
@@ -265,7 +265,7 @@ int qpnp_pbs_trigger_event(struct device_node *dev_node, u8 bitmap)
 			rc = qpnp_pbs_masked_write(pbs, pbs->base +
 					PBS_CLIENT_SCRATCH2, BIT(bit_pos), 0);
 			if (rc < 0) {
-				pr_err("Failed to clear %x reg bit rc=%d\n",
+				pr_debug("Failed to clear %x reg bit rc=%d\n",
 						PBS_CLIENT_SCRATCH2, rc);
 				goto error;
 			}
@@ -278,7 +278,7 @@ error:
 	rc = qpnp_pbs_masked_write(pbs, pbs->base + PBS_CLIENT_SCRATCH1,
 						bitmap, 0);
 	if (rc < 0)
-		pr_err("Failed to clear %x reg bit rc=%d\n",
+		pr_debug("Failed to clear %x reg bit rc=%d\n",
 					PBS_CLIENT_SCRATCH1, rc);
 out:
 	mutex_unlock(&pbs->pbs_lock);
@@ -302,13 +302,13 @@ static int qpnp_pbs_probe(struct platform_device *pdev)
 	pbs->dev_node = pdev->dev.of_node;
 	pbs->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!pbs->regmap) {
-		dev_err(&pdev->dev, "Couldn't get parent's regmap\n");
+		dev_dbg(&pdev->dev, "Couldn't get parent's regmap\n");
 		return -EINVAL;
 	}
 
 	rc = of_property_read_u32(pdev->dev.of_node, "reg", &val);
 	if (rc < 0) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Couldn't find reg in node = %s rc = %d\n",
 			pdev->dev.of_node->full_name, rc);
 		return rc;

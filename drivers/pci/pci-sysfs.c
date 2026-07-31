@@ -409,7 +409,7 @@ static ssize_t msi_bus_store(struct device *dev, struct device_attribute *attr,
 	else
 		subordinate->bus_flags |= PCI_BUS_FLAGS_NO_MSI;
 
-	dev_info(&subordinate->dev, "MSI/MSI-X %s for future drivers of devices on this bus\n",
+	dev_dbg(&subordinate->dev, "MSI/MSI-X %s for future drivers of devices on this bus\n",
 		 val ? "allowed" : "disallowed");
 	return count;
 }
@@ -1138,7 +1138,7 @@ legacy_io_err:
 	kfree(b->legacy_io);
 	b->legacy_io = NULL;
 kzalloc_err:
-	printk(KERN_WARNING "pci: warning: could not create legacy I/O port and ISA memory resources to sysfs\n");
+	no_printk(KERN_WARNING "pci: warning: could not create legacy I/O port and ISA memory resources to sysfs\n");
 	return;
 }
 

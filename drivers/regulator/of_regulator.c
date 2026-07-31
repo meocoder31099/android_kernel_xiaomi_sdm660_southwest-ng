@@ -95,7 +95,7 @@ static void of_get_regulation_constraints(struct device_node *np,
 	if (!ret)
 		constraints->settling_time_up = pval;
 	if (constraints->settling_time_up && constraints->settling_time) {
-		pr_warn("%s: ambiguous configuration for settling time, ignoring 'regulator-settling-time-up-us'\n",
+		pr_debug("%s: ambiguous configuration for settling time, ignoring 'regulator-settling-time-up-us'\n",
 			np->name);
 		constraints->settling_time_up = 0;
 	}
@@ -105,7 +105,7 @@ static void of_get_regulation_constraints(struct device_node *np,
 	if (!ret)
 		constraints->settling_time_down = pval;
 	if (constraints->settling_time_down && constraints->settling_time) {
-		pr_warn("%s: ambiguous configuration for settling time, ignoring 'regulator-settling-time-down-us'\n",
+		pr_debug("%s: ambiguous configuration for settling time, ignoring 'regulator-settling-time-down-us'\n",
 			np->name);
 		constraints->settling_time_down = 0;
 	}
@@ -127,11 +127,11 @@ static void of_get_regulation_constraints(struct device_node *np,
 		if (desc && desc->of_map_mode) {
 			mode = desc->of_map_mode(pval);
 			if (mode == REGULATOR_MODE_INVALID)
-				pr_err("%s: invalid mode %u\n", np->name, pval);
+				pr_debug("%s: invalid mode %u\n", np->name, pval);
 			else
 				constraints->initial_mode = mode;
 		} else {
-			pr_warn("%s: mapping for mode %d not defined\n",
+			pr_debug("%s: mapping for mode %d not defined\n",
 				np->name, pval);
 		}
 	}
@@ -144,13 +144,13 @@ static void of_get_regulation_constraints(struct device_node *np,
 				ret = of_property_read_u32_index(np,
 					"regulator-allowed-modes", i, &pval);
 				if (ret) {
-					pr_err("%s: couldn't read allowed modes index %d, ret=%d\n",
+					pr_debug("%s: couldn't read allowed modes index %d, ret=%d\n",
 						np->name, i, ret);
 					break;
 				}
 				mode = desc->of_map_mode(pval);
 				if (mode == REGULATOR_MODE_INVALID)
-					pr_err("%s: invalid regulator-allowed-modes element %u\n",
+					pr_debug("%s: invalid regulator-allowed-modes element %u\n",
 						np->name, pval);
 				else
 					constraints->valid_modes_mask |= mode;
@@ -159,7 +159,7 @@ static void of_get_regulation_constraints(struct device_node *np,
 				constraints->valid_ops_mask
 					|= REGULATOR_CHANGE_MODE;
 		} else {
-			pr_warn("%s: mode mapping not defined\n", np->name);
+			pr_debug("%s: mode mapping not defined\n", np->name);
 		}
 	}
 
@@ -201,12 +201,12 @@ static void of_get_regulation_constraints(struct device_node *np,
 			if (desc && desc->of_map_mode) {
 				mode = desc->of_map_mode(pval);
 				if (mode == REGULATOR_MODE_INVALID)
-					pr_err("%s: invalid mode %u\n",
+					pr_debug("%s: invalid mode %u\n",
 					       np->name, pval);
 				else
 					suspend_state->mode = mode;
 			} else {
-				pr_warn("%s: mapping for mode %d not defined\n",
+				pr_debug("%s: mapping for mode %d not defined\n",
 					np->name, pval);
 			}
 		}
@@ -352,7 +352,7 @@ int of_regulator_match(struct device *dev, struct device_node *node,
 				of_get_regulator_init_data(dev, child,
 							   match->desc);
 			if (!match->init_data) {
-				dev_err(dev,
+				dev_dbg(dev,
 					"failed to parse DT for regulator %s\n",
 					child->name);
 				of_node_put(child);
@@ -414,7 +414,7 @@ struct regulator_init_data *regulator_of_get_init_data(struct device *dev,
 
 		init_data = of_get_regulator_init_data(dev, child, desc);
 		if (!init_data) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"failed to parse DT for regulator %s\n",
 				child->name);
 			break;
@@ -422,7 +422,7 @@ struct regulator_init_data *regulator_of_get_init_data(struct device *dev,
 
 		if (desc->of_parse_cb) {
 			if (desc->of_parse_cb(child, desc, config)) {
-				dev_err(dev,
+				dev_dbg(dev,
 					"driver callback failed to parse DT for regulator %s\n",
 					child->name);
 				init_data = NULL;
@@ -523,7 +523,7 @@ bool of_check_coupling_data(struct regulator_dev *rdev)
 	bool ret = true;
 
 	if (max_spread <= 0) {
-		dev_err(&rdev->dev, "max_spread value invalid\n");
+		dev_dbg(&rdev->dev, "max_spread value invalid\n");
 		return false;
 	}
 
@@ -542,7 +542,7 @@ bool of_check_coupling_data(struct regulator_dev *rdev)
 							  NULL);
 
 		if (c_n_phandles != n_phandles) {
-			dev_err(&rdev->dev, "number of couped reg phandles mismatch\n");
+			dev_dbg(&rdev->dev, "number of couped reg phandles mismatch\n");
 			ret = false;
 			goto clean;
 		}
@@ -554,14 +554,14 @@ bool of_check_coupling_data(struct regulator_dev *rdev)
 		}
 
 		if (c_max_spread != max_spread) {
-			dev_err(&rdev->dev,
+			dev_dbg(&rdev->dev,
 				"coupled regulators max_spread mismatch\n");
 			ret = false;
 			goto clean;
 		}
 
 		if (!of_coupling_find_node(c_node, node)) {
-			dev_err(&rdev->dev, "missing 2-way linking for coupled regulators\n");
+			dev_dbg(&rdev->dev, "missing 2-way linking for coupled regulators\n");
 			ret = false;
 		}
 

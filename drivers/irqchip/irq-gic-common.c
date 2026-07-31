@@ -43,7 +43,7 @@ void gic_enable_quirks(u32 iidr, const struct gic_quirk *quirks,
 		if (quirks->iidr != (quirks->mask & iidr))
 			continue;
 		if (quirks->init(data))
-			pr_info("GIC: enabling workaround for %s\n",
+			pr_debug("GIC: enabling workaround for %s\n",
 				quirks->desc);
 	}
 }
@@ -87,7 +87,7 @@ int gic_configure_irq(unsigned int irq, unsigned int type,
 		if (WARN_ON(irq >= 32))
 			ret = -EINVAL;
 		else
-			pr_warn("GIC: PPI%d is secure or misconfigured\n",
+			pr_debug("GIC: PPI%d is secure or misconfigured\n",
 				irq - 16);
 	}
 	raw_spin_unlock_irqrestore(&irq_controller_lock, flags);

@@ -867,15 +867,15 @@ static int testing_dynamic_range(void)
 					data < drt_lo_limits[row][col]) {
 				testing_hcd->result = false;
 
-				printk("\n");
+				no_printk("\n");
 				LOGE(tcm_hcd->pdev->dev.parent,
 						"ERR: data[%d][%d]=%d ,lim_h=%d,lim_l=%d\n",
 						row, col, data, drt_hi_limits[row][col], drt_lo_limits[row][col]);
 			}
-			printk("%d ", data);
+			no_printk("%d ", data);
 			idx++;
 		}
-		printk("\n");
+		no_printk("\n");
 	}
 	LOGV("--------------------------------------------\n");
 
@@ -1078,15 +1078,15 @@ static int testing_noise(void)
 			if (data > noise_limits[row][col]) {
 				testing_hcd->result = false;
 
-				printk("\n");
+				no_printk("\n");
 				LOGE(tcm_hcd->pdev->dev.parent,
 						"ERR: data[%d][%d]=%d ,lim=%d\n",
 						row, col, data, noise_limits[row][col]);
 			}
-			printk("%d ", data);
+			no_printk("%d ", data);
 			idx++;
 		}
-		printk("\n");
+		no_printk("\n");
 	}
 	LOGV("--------------------------------------------\n");
 
@@ -1345,15 +1345,15 @@ static int testing_pt11(void)
 					data < pt11_lo_limits[row][col]) {
 				testing_hcd->result = false;
 
-				printk("\n");
+				no_printk("\n");
 				LOGE(tcm_hcd->pdev->dev.parent,
 						"ERR: data[%d][%d]=%d ,lim_h=%d,lim_l=%d\n",
 						row, col, data, pt11_hi_limits[row][col], pt11_lo_limits[row][col]);
 			}
-			printk("%d ", data);
+			no_printk("%d ", data);
 			idx++;
 		}
-		printk("\n");
+		no_printk("\n");
 	}
 	LOGV("--------------------------------------------\n");
 

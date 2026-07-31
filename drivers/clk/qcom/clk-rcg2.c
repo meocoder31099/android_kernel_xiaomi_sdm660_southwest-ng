@@ -124,7 +124,7 @@ static int update_config(struct clk_rcg2 *rcg, u32 cfg)
 		udelay(1);
 	}
 
-	pr_err("CFG_RCGR old frequency configuration 0x%x !\n", cfg);
+	pr_debug("CFG_RCGR old frequency configuration 0x%x !\n", cfg);
 
 	WARN_CLK(hw->core, name, count == 0,
 			"%s: rcg didn't update its configuration.", name);
@@ -367,7 +367,7 @@ static int _determine_parent_and_update_div(struct clk_hw *hw,
 		ret = regmap_update_bits(rcg->clkr.regmap,
 				rcg->cmd_rcgr + CFG_REG, mask, cfg);
 		if (ret) {
-			pr_err("Failed to regmap update cfg\n");
+			pr_debug("Failed to regmap update cfg\n");
 			return ret;
 		}
 
@@ -375,7 +375,7 @@ static int _determine_parent_and_update_div(struct clk_hw *hw,
 
 		ret = update_config(rcg, old_cfg);
 		if (ret)
-			pr_err("Failed to update pre_div in determine rate\n");
+			pr_debug("Failed to update pre_div in determine rate\n");
 	}
 
 	return ret;
@@ -443,7 +443,7 @@ static int _freq_tbl_determine_rate(struct clk_hw *hw, const struct freq_tbl *f,
 
 		ret = _determine_parent_and_update_div(hw, f, p);
 		if (ret)
-			pr_err("Failed to update the div value\n");
+			pr_debug("Failed to update the div value\n");
 	}
 
 	return ret;
@@ -799,7 +799,7 @@ static void clk_rcg2_disable(struct clk_hw *hw)
 	clk_rcg2_set_force_enable(hw);
 	ret = clk_rcg2_configure(rcg, &cxo_f);
 	if (ret)
-		pr_err("%s: CXO configuration failed\n", clk_hw_get_name(hw));
+		pr_debug("%s: CXO configuration failed\n", clk_hw_get_name(hw));
 	clk_rcg2_clear_force_enable(hw);
 }
 
@@ -1212,7 +1212,7 @@ static int clk_dp_set_rate(struct clk_hw *hw, unsigned long rate,
 
 	src_rate = clk_get_rate(parent->clk);
 	if (src_rate <= 0) {
-		pr_err("Invalid RCG parent rate\n");
+		pr_debug("Invalid RCG parent rate\n");
 		return -EINVAL;
 	}
 
@@ -1221,7 +1221,7 @@ static int clk_dp_set_rate(struct clk_hw *hw, unsigned long rate,
 			(unsigned long)(1 << 16) - 1, &den, &num);
 
 	if (!num || !den) {
-		pr_err("Invalid MN values derived for requested rate %lu\n",
+		pr_debug("Invalid MN values derived for requested rate %lu\n",
 							rate);
 		return -EINVAL;
 	}
@@ -1670,7 +1670,7 @@ static int clk_rcg2_dfs_determine_rate(struct clk_hw *hw,
 	if (!rcg->freq_tbl) {
 		ret = clk_rcg2_dfs_populate_freq_table(rcg);
 		if (ret) {
-			pr_err("Failed to update DFS tables for %s\n",
+			pr_debug("Failed to update DFS tables for %s\n",
 					clk_hw_get_name(hw));
 			return ret;
 		}
@@ -1773,7 +1773,7 @@ int qcom_cc_register_rcg_dfs(struct regmap *regmap,
 		if (ret) {
 			const char *name = rcgs[i].init->name;
 
-			pr_err("DFS register failed for clk %s\n", name);
+			pr_debug("DFS register failed for clk %s\n", name);
 			return ret;
 		}
 	}

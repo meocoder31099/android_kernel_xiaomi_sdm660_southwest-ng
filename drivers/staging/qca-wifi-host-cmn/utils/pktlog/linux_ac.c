@@ -55,7 +55,7 @@
 #ifndef __MOD_INC_USE_COUNT
 #define PKTLOG_MOD_INC_USE_COUNT	do {			\
 	if (!try_module_get(THIS_MODULE)) {			\
-		printk(KERN_WARNING "try_module_get failed\n");	\
+		no_printk(KERN_WARNING "try_module_get failed\n");	\
 	} } while (0)
 
 #define PKTLOG_MOD_DEC_USE_COUNT        module_put(THIS_MODULE)
@@ -102,7 +102,7 @@ int pktlog_alloc_buf(struct hif_opaque_softc *scn)
 	pl_dev = get_pktlog_handle();
 
 	if (!pl_dev) {
-		printk(PKTLOG_TAG
+		no_printk(PKTLOG_TAG
 		       "%s: Unable to allocate buffer pdev_txrx_handle or pdev_txrx_handle->pl_dev is null\n",
 		       __func__);
 		return -EINVAL;
@@ -115,14 +115,14 @@ int pktlog_alloc_buf(struct hif_opaque_softc *scn)
 	qdf_spin_lock_bh(&pl_info->log_lock);
 	if (pl_info->buf) {
 		qdf_spin_unlock_bh(&pl_info->log_lock);
-		printk(PKTLOG_TAG "Buffer is already in use\n");
+		no_printk(PKTLOG_TAG "Buffer is already in use\n");
 		return -EINVAL;
 	}
 	qdf_spin_unlock_bh(&pl_info->log_lock);
 
 	buffer = vmalloc((page_cnt + 2) * PAGE_SIZE);
 	if (!buffer) {
-		printk(PKTLOG_TAG
+		no_printk(PKTLOG_TAG
 		       "%s: Unable to allocate buffer "
 		       "(%d pages)\n", __func__, page_cnt);
 		return -ENOMEM;
@@ -204,7 +204,7 @@ qdf_sysctl_decl(ath_sysctl_pktlog_enable, ctl, write, filp, buffer, lenp, ppos)
 
 	if (!scn) {
 		mutex_unlock(&proc_mutex);
-		printk("%s: Invalid scn context\n", __func__);
+		no_printk("%s: Invalid scn context\n", __func__);
 		ASSERT(0);
 		return -EINVAL;
 	}
@@ -213,7 +213,7 @@ qdf_sysctl_decl(ath_sysctl_pktlog_enable, ctl, write, filp, buffer, lenp, ppos)
 
 	if (!pl_dev) {
 		mutex_unlock(&proc_mutex);
-		printk("%s: Invalid pktlog context\n", __func__);
+		no_printk("%s: Invalid pktlog context\n", __func__);
 		ASSERT(0);
 		return -ENODEV;
 	}
@@ -267,7 +267,7 @@ qdf_sysctl_decl(ath_sysctl_pktlog_size, ctl, write, filp, buffer, lenp, ppos)
 
 	if (!scn) {
 		mutex_unlock(&proc_mutex);
-		printk("%s: Invalid scn context\n", __func__);
+		no_printk("%s: Invalid scn context\n", __func__);
 		ASSERT(0);
 		return -EINVAL;
 	}
@@ -276,7 +276,7 @@ qdf_sysctl_decl(ath_sysctl_pktlog_size, ctl, write, filp, buffer, lenp, ppos)
 
 	if (!pl_dev) {
 		mutex_unlock(&proc_mutex);
-		printk("%s: Invalid pktlog handle\n", __func__);
+		no_printk("%s: Invalid pktlog handle\n", __func__);
 		ASSERT(0);
 		return -ENODEV;
 	}
@@ -397,7 +397,7 @@ static int pktlog_sysctl_register(struct hif_opaque_softc *scn)
 		register_sysctl_table(pl_info_lnx->sysctls);
 
 	if (!pl_info_lnx->sysctl_header) {
-		printk("%s: failed to register sysctls!\n", proc_name);
+		no_printk("%s: failed to register sysctls!\n", proc_name);
 		return -EINVAL;
 	}
 
@@ -455,7 +455,7 @@ static int pktlog_attach(struct hif_opaque_softc *scn)
 			&pl_info_lnx->info);
 
 	if (!proc_entry) {
-		printk(PKTLOG_TAG "%s: create_proc_entry failed for %s\n",
+		no_printk(PKTLOG_TAG "%s: create_proc_entry failed for %s\n",
 				__func__, proc_name);
 		goto attach_fail1;
 	}
@@ -463,7 +463,7 @@ static int pktlog_attach(struct hif_opaque_softc *scn)
 	pl_info_lnx->proc_entry = proc_entry;
 
 	if (pktlog_sysctl_register(scn)) {
-		printk(PKTLOG_TAG "%s: sysctl register failed for %s\n",
+		no_printk(PKTLOG_TAG "%s: sysctl register failed for %s\n",
 				__func__, proc_name);
 		goto attach_fail2;
 	}
@@ -485,7 +485,7 @@ static void pktlog_sysctl_unregister(struct pktlog_dev_t *pl_dev)
 	struct ath_pktlog_info_lnx *pl_info_lnx;
 
 	if (!pl_dev) {
-		printk("%s: Invalid pktlog context\n", __func__);
+		no_printk("%s: Invalid pktlog context\n", __func__);
 		ASSERT(0);
 		return;
 	}
@@ -505,7 +505,7 @@ static void pktlog_detach(struct hif_opaque_softc *scn)
 	struct pktlog_dev_t *pl_dev = get_pktlog_handle();
 
 	if (!pl_dev) {
-		printk("%s: Invalid pktlog context\n", __func__);
+		no_printk("%s: Invalid pktlog context\n", __func__);
 		ASSERT(0);
 		return;
 	}
@@ -1042,7 +1042,7 @@ int pktlogmod_init(void *context)
 	g_pktlog_pde = proc_mkdir(PKTLOG_PROC_DIR, NULL);
 
 	if (!g_pktlog_pde) {
-		printk(PKTLOG_TAG "%s: proc_mkdir failed\n", __func__);
+		no_printk(PKTLOG_TAG "%s: proc_mkdir failed\n", __func__);
 		return -EPERM;
 	}
 

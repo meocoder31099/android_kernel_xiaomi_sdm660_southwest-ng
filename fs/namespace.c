@@ -1691,7 +1691,7 @@ static bool may_mandlock(void)
 #else
 static inline bool may_mandlock(void)
 {
-	pr_warn("VFS: \"mand\" mount option not supported");
+	pr_debug("VFS: \"mand\" mount option not supported");
 	return false;
 }
 #endif
@@ -3407,11 +3407,11 @@ void __init mnt_init(void)
 
 	err = sysfs_init();
 	if (err)
-		printk(KERN_WARNING "%s: sysfs_init error: %d\n",
+		no_printk(KERN_WARNING "%s: sysfs_init error: %d\n",
 			__func__, err);
 	fs_kobj = kobject_create_and_add("fs", NULL);
 	if (!fs_kobj)
-		printk(KERN_WARNING "%s: kobj create error\n", __func__);
+		no_printk(KERN_WARNING "%s: kobj create error\n", __func__);
 	init_rootfs();
 	init_mount_tree();
 }

@@ -66,7 +66,7 @@ static __init int timer_of_irq_init(struct device_node *np,
 	if (of_irq->name) {
 		of_irq->irq = ret = of_irq_get_byname(np, of_irq->name);
 		if (ret < 0) {
-			pr_err("Failed to get interrupt %s for %s\n",
+			pr_debug("Failed to get interrupt %s for %s\n",
 			       of_irq->name, np->full_name);
 			return ret;
 		}
@@ -74,7 +74,7 @@ static __init int timer_of_irq_init(struct device_node *np,
 		of_irq->irq = irq_of_parse_and_map(np, of_irq->index);
 	}
 	if (!of_irq->irq) {
-		pr_err("Failed to map interrupt for %pOF\n", np);
+		pr_debug("Failed to map interrupt for %pOF\n", np);
 		return -EINVAL;
 	}
 
@@ -85,7 +85,7 @@ static __init int timer_of_irq_init(struct device_node *np,
 			    of_irq->flags ? of_irq->flags : IRQF_TIMER,
 			    np->full_name, clkevt);
 	if (ret) {
-		pr_err("Failed to request irq %d for %pOF\n", of_irq->irq, np);
+		pr_debug("Failed to request irq %d for %pOF\n", of_irq->irq, np);
 		return ret;
 	}
 
@@ -124,20 +124,20 @@ static __init int timer_of_clk_init(struct device_node *np,
 	of_clk->clk = of_clk->name ? of_clk_get_by_name(np, of_clk->name) :
 		of_clk_get(np, of_clk->index);
 	if (IS_ERR(of_clk->clk)) {
-		pr_err("Failed to get clock for %pOF\n", np);
+		pr_debug("Failed to get clock for %pOF\n", np);
 		return PTR_ERR(of_clk->clk);
 	}
 
 	ret = clk_prepare_enable(of_clk->clk);
 	if (ret) {
-		pr_err("Failed for enable clock for %pOF\n", np);
+		pr_debug("Failed for enable clock for %pOF\n", np);
 		goto out_clk_put;
 	}
 
 	of_clk->rate = clk_get_rate(of_clk->clk);
 	if (!of_clk->rate) {
 		ret = -EINVAL;
-		pr_err("Failed to get clock rate for %pOF\n", np);
+		pr_debug("Failed to get clock rate for %pOF\n", np);
 		goto out_clk_disable;
 	}
 
@@ -165,7 +165,7 @@ static __init int timer_of_base_init(struct device_node *np,
 		of_io_request_and_map(np, of_base->index, of_base->name) :
 		of_iomap(np, of_base->index);
 	if (IS_ERR_OR_NULL(of_base->base)) {
-		pr_err("Failed to iomap (%s:%s)\n", np->name, of_base->name);
+		pr_debug("Failed to iomap (%s:%s)\n", np->name, of_base->name);
 		return of_base->base ? PTR_ERR(of_base->base) : -ENOMEM;
 	}
 

@@ -76,7 +76,7 @@ struct opp_table *_find_opp_table(struct device *dev)
 	struct opp_table *opp_table;
 
 	if (IS_ERR_OR_NULL(dev)) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -99,7 +99,7 @@ struct opp_table *_find_opp_table(struct device *dev)
 unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
 {
 	if (IS_ERR_OR_NULL(opp)) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return 0;
 	}
 
@@ -117,7 +117,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
 unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
 {
 	if (IS_ERR_OR_NULL(opp) || !opp->available) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return 0;
 	}
 
@@ -138,7 +138,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
 bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
 {
 	if (IS_ERR_OR_NULL(opp) || !opp->available) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return false;
 	}
 
@@ -357,7 +357,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
 	if (IS_ERR(opp_table)) {
 		int r = PTR_ERR(opp_table);
 
-		dev_err(dev, "%s: OPP table not found (%d)\n", __func__, r);
+		dev_dbg(dev, "%s: OPP table not found (%d)\n", __func__, r);
 		return ERR_PTR(r);
 	}
 
@@ -429,7 +429,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
 	struct dev_pm_opp *opp;
 
 	if (!dev || !freq) {
-		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+		dev_dbg(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -470,7 +470,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
 
 	if (!dev || !freq) {
-		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+		dev_dbg(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -521,7 +521,7 @@ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
 	ret = regulator_set_voltage_triplet(reg, supply->u_volt_min,
 					    supply->u_volt, supply->u_volt_max);
 	if (ret)
-		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
+		dev_dbg(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
 			__func__, supply->u_volt_min, supply->u_volt,
 			supply->u_volt_max, ret);
 
@@ -536,7 +536,7 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
 
 	ret = clk_set_rate(clk, freq);
 	if (ret) {
-		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
+		dev_dbg(dev, "%s: failed to set clock rate: %d\n", __func__,
 			ret);
 	}
 
@@ -572,7 +572,7 @@ _generic_set_opp_domain(struct device *dev, struct clk *clk,
 
 restore_freq:
 	if (_generic_set_opp_clk_only(dev, clk, freq, old_freq))
-		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+		dev_dbg(dev, "%s: failed to restore old-freq (%lu Hz)\n",
 			__func__, old_freq);
 restore_domain_state:
 	if (freq > old_freq)
@@ -593,7 +593,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
 
 	/* This function only supports single regulator per device */
 	if (WARN_ON(opp_table->regulator_count > 1)) {
-		dev_err(dev, "multiple regulators are not supported\n");
+		dev_dbg(dev, "multiple regulators are not supported\n");
 		return -EINVAL;
 	}
 
@@ -620,7 +620,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
 
 restore_freq:
 	if (_generic_set_opp_clk_only(dev, opp_table->clk, freq, old_freq))
-		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+		dev_dbg(dev, "%s: failed to restore old-freq (%lu Hz)\n",
 			__func__, old_freq);
 restore_voltage:
 	/* This shouldn't harm even if the voltages weren't updated earlier */
@@ -647,20 +647,20 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
 	int ret, size;
 
 	if (unlikely(!target_freq)) {
-		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
+		dev_dbg(dev, "%s: Invalid target frequency %lu\n", __func__,
 			target_freq);
 		return -EINVAL;
 	}
 
 	opp_table = _find_opp_table(dev);
 	if (IS_ERR(opp_table)) {
-		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
+		dev_dbg(dev, "%s: device opp doesn't exist\n", __func__);
 		return PTR_ERR(opp_table);
 	}
 
 	clk = opp_table->clk;
 	if (IS_ERR(clk)) {
-		dev_err(dev, "%s: No clock available for the device\n",
+		dev_dbg(dev, "%s: No clock available for the device\n",
 			__func__);
 		ret = PTR_ERR(clk);
 		goto put_opp_table;
@@ -682,14 +682,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
 
 	old_opp = _find_freq_ceil(opp_table, &old_freq);
 	if (IS_ERR(old_opp)) {
-		dev_err(dev, "%s: failed to find current OPP for freq %lu (%ld)\n",
+		dev_dbg(dev, "%s: failed to find current OPP for freq %lu (%ld)\n",
 			__func__, old_freq, PTR_ERR(old_opp));
 	}
 
 	opp = _find_freq_ceil(opp_table, &freq);
 	if (IS_ERR(opp)) {
 		ret = PTR_ERR(opp);
-		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
+		dev_dbg(dev, "%s: failed to find OPP for freq %lu (%d)\n",
 			__func__, freq, ret);
 		goto put_old_opp;
 	}
@@ -771,7 +771,7 @@ struct opp_device *_add_opp_dev(const struct device *dev,
 	/* Create debugfs entries for the opp_table */
 	ret = opp_debug_register(opp_dev, opp_table);
 	if (ret)
-		dev_err(dev, "%s: Failed to register opp debugfs (%d)\n",
+		dev_dbg(dev, "%s: Failed to register opp debugfs (%d)\n",
 			__func__, ret);
 
 	return opp_dev;
@@ -963,7 +963,7 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
 	if (found) {
 		dev_pm_opp_put(opp);
 	} else {
-		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
+		dev_dbg(dev, "%s: Couldn't find OPP with freq: %lu\n",
 			 __func__, freq);
 	}
 
@@ -1041,7 +1041,7 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
 		if (!regulator_is_supported_voltage(reg,
 					opp->supplies[i].u_volt_min,
 					opp->supplies[i].u_volt_max)) {
-			pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
+			pr_debug("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
 				__func__, opp->supplies[i].u_volt_min,
 				opp->supplies[i].u_volt_max);
 			return false;
@@ -1075,7 +1075,7 @@ static int _opp_is_duplicate(struct device *dev, struct dev_pm_opp *new_opp,
 			return 0;
 
 		/* Duplicate OPPs */
-		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+		dev_dbg(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
 			 __func__, opp->rate, opp->supplies[0].u_volt,
 			 opp->available, new_opp->rate,
 			 new_opp->supplies[0].u_volt, new_opp->available);
@@ -1126,12 +1126,12 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
 
 	ret = opp_debug_create_one(new_opp, opp_table);
 	if (ret)
-		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
+		dev_dbg(dev, "%s: Failed to register opp to debugfs (%d)\n",
 			__func__, ret);
 
 	if (!_opp_supported_by_regulators(new_opp, opp_table)) {
 		new_opp->available = false;
-		dev_warn(dev, "%s: OPP not supported by regulators (%lu)\n",
+		dev_dbg(dev, "%s: OPP not supported by regulators (%lu)\n",
 			 __func__, new_opp->rate);
 	}
 
@@ -1396,7 +1396,7 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
 		if (IS_ERR(reg)) {
 			ret = PTR_ERR(reg);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev, "%s: no regulator (%s) found: %d\n",
+				dev_dbg(dev, "%s: no regulator (%s) found: %d\n",
 					__func__, names[i], ret);
 			goto free_regulators;
 		}
@@ -1491,7 +1491,7 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char *name)
 	if (IS_ERR(opp_table->clk)) {
 		ret = PTR_ERR(opp_table->clk);
 		if (ret != -EPROBE_DEFER) {
-			dev_err(dev, "%s: Couldn't find clock: %d\n", __func__,
+			dev_dbg(dev, "%s: Couldn't find clock: %d\n", __func__,
 				ret);
 		}
 		goto err;
@@ -1635,7 +1635,7 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
 	opp_table = _find_opp_table(dev);
 	if (IS_ERR(opp_table)) {
 		r = PTR_ERR(opp_table);
-		dev_warn(dev, "%s: Device OPP not found (%d)\n", __func__, r);
+		dev_dbg(dev, "%s: Device OPP not found (%d)\n", __func__, r);
 		return r;
 	}
 

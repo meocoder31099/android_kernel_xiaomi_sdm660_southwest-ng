@@ -172,7 +172,7 @@ const char *HdcpErrors[] = {
 	struct hdcp_##x##_req *req_buf = NULL; \
 	struct hdcp_##x##_rsp *rsp_buf = NULL; \
 	if (!handle->qseecom_handle) { \
-		pr_err("invalid qseecom_handle while processing %s\n", #x); \
+		pr_debug("invalid qseecom_handle while processing %s\n", #x); \
 		rc = -EINVAL; \
 		goto error; \
 	} \
@@ -188,7 +188,7 @@ const char *HdcpErrors[] = {
 		req_buf, QSEECOM_ALIGN(sizeof(struct hdcp_##x##_req)), \
 		rsp_buf, QSEECOM_ALIGN(sizeof(struct hdcp_##x##_rsp))); \
 	if ((rc < 0) || (rsp_buf->status != HDCP_SUCCESS)) { \
-		pr_err("qseecom cmd %s failed with err = %d, status = %d:%s\n" \
+		pr_debug("qseecom cmd %s failed with err = %d, status = %d:%s\n" \
 		, #x, rc, rsp_buf->status, \
 		hdcp_cmd_status_to_str(rsp_buf->status)); \
 		rc = -EINVAL; \
@@ -590,7 +590,7 @@ static int hdcp_get_version(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(version);
 
 	if (handle->hdcp_state & HDCP_STATE_APP_LOADED) {
-		pr_err("library already loaded\n");
+		pr_debug("library already loaded\n");
 		goto error;
 	}
 
@@ -616,13 +616,13 @@ static int hdcp2_app_init_legacy(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(init_v1);
 
 	if (!handle->legacy_app) {
-		pr_err("wrong init function\n");
+		pr_debug("wrong init function\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (handle->hdcp_state & HDCP_STATE_APP_LOADED) {
-		pr_err("library already loaded\n");
+		pr_debug("library already loaded\n");
 		goto error;
 	}
 
@@ -643,13 +643,13 @@ static int hdcp2_app_init(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(init);
 
 	if (handle->legacy_app) {
-		pr_err("wrong init function\n");
+		pr_debug("wrong init function\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (handle->hdcp_state & HDCP_STATE_APP_LOADED) {
-		pr_err("library already loaded\n");
+		pr_debug("library already loaded\n");
 		goto error;
 	}
 
@@ -692,13 +692,13 @@ static int hdcp2_app_tx_init(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(tx_init);
 
 	if (!(handle->hdcp_state & HDCP_STATE_SESSION_INIT)) {
-		pr_err("session not initialized\n");
+		pr_debug("session not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (handle->hdcp_state & HDCP_STATE_TXMTR_INIT) {
-		pr_err("txmtr already initialized\n");
+		pr_debug("txmtr already initialized\n");
 		goto error;
 	}
 
@@ -723,13 +723,13 @@ static int hdcp2_app_tx_init_legacy(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(tx_init_v1);
 
 	if (!(handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("app not loaded\n");
+		pr_debug("app not loaded\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (handle->hdcp_state & HDCP_STATE_TXMTR_INIT) {
-		pr_err("txmtr already initialized\n");
+		pr_debug("txmtr already initialized\n");
 		goto error;
 	}
 
@@ -754,27 +754,27 @@ static int hdcp2_app_load(struct hdcp2_handle *handle)
 	int rc = 0;
 
 	if (!handle) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (handle->hdcp_state & HDCP_STATE_APP_LOADED) {
-		pr_err("%s app already loaded\n", handle->app_name);
+		pr_debug("%s app already loaded\n", handle->app_name);
 		goto error;
 	}
 
 	rc = qseecom_start_app(&handle->qseecom_handle,
 		 handle->app_name, QSEECOM_SBUFF_SIZE);
 	if (rc) {
-		pr_err("qseecom_start_app failed for HDCP2P2 (%d)\n", rc);
+		pr_debug("qseecom_start_app failed for HDCP2P2 (%d)\n", rc);
 		goto error;
 	}
 
 	rc = qseecom_start_app(&handle->hdcpsrm_qseecom_handle,
 		 HDCPSRM_APP_NAME, QSEECOM_SBUFF_SIZE);
 	if (rc) {
-		pr_err("qseecom_start_app failed for HDCPSRM (%d)\n", rc);
+		pr_debug("qseecom_start_app failed for HDCPSRM (%d)\n", rc);
 		goto hdcpsrm_error;
 	}
 
@@ -782,7 +782,7 @@ static int hdcp2_app_load(struct hdcp2_handle *handle)
 
 	rc = hdcp_get_version(handle);
 	if (rc) {
-		pr_err("library get version failed\n");
+		pr_debug("library get version failed\n");
 		goto get_version_error;
 	}
 
@@ -796,7 +796,7 @@ static int hdcp2_app_load(struct hdcp2_handle *handle)
 
 	rc = handle->app_init(handle);
 	if (rc) {
-		pr_err("app init failed\n");
+		pr_debug("app init failed\n");
 		goto get_version_error;
 	}
 
@@ -822,12 +822,12 @@ static int hdcp2_app_unload(struct hdcp2_handle *handle)
 	/* deallocate the resources for qseecom HDCPSRM handle */
 	rc = qseecom_shutdown_app(&handle->hdcpsrm_qseecom_handle);
 	if (rc)
-		pr_err("qseecom_shutdown_app failed for HDCPSRM (%d)\n", rc);
+		pr_debug("qseecom_shutdown_app failed for HDCPSRM (%d)\n", rc);
 
 	/* deallocate the resources for qseecom HDCP2P2 handle */
 	rc = qseecom_shutdown_app(&handle->qseecom_handle);
 	if (rc) {
-		pr_err("qseecom_shutdown_app failed for HDCP2P2 (%d)\n", rc);
+		pr_debug("qseecom_shutdown_app failed for HDCP2P2 (%d)\n", rc);
 		return rc;
 	}
 
@@ -847,7 +847,7 @@ static int hdcp2_verify_key(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(verify_key);
 
 	if (!(handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", handle->app_name);
+		pr_debug("%s app not loaded\n", handle->app_name);
 		rc = -EINVAL;
 		goto error;
 	}
@@ -866,7 +866,7 @@ bool hdcp2_feature_supported(void *data)
 	struct hdcp2_handle *handle = data;
 
 	if (!handle) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -896,19 +896,19 @@ static int hdcp2_app_session_init(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(session_init);
 
 	if (!handle->qseecom_handle || !handle->qseecom_handle->sbuf) {
-		pr_err("invalid handle\n");
+		pr_debug("invalid handle\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", handle->app_name);
+		pr_debug("%s app not loaded\n", handle->app_name);
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (handle->hdcp_state & HDCP_STATE_SESSION_INIT) {
-		pr_err("session already initialized\n");
+		pr_debug("session already initialized\n");
 		goto error;
 	}
 
@@ -935,13 +935,13 @@ static int hdcp2_app_session_deinit(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(session_deinit);
 
 	if (!(handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", handle->app_name);
+		pr_debug("%s app not loaded\n", handle->app_name);
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_SESSION_INIT)) {
-		pr_err("session not initialized\n");
+		pr_debug("session not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -965,13 +965,13 @@ static int hdcp2_app_tx_deinit(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(tx_deinit);
 
 	if (!(handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", handle->app_name);
+		pr_debug("%s app not loaded\n", handle->app_name);
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_TXMTR_INIT)) {
-		pr_err("txmtr not initialized\n");
+		pr_debug("txmtr not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -995,13 +995,13 @@ static int hdcp2_app_start_auth(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(start_auth);
 
 	if (!(handle->hdcp_state & HDCP_STATE_SESSION_INIT)) {
-		pr_err("session not initialized\n");
+		pr_debug("session not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_TXMTR_INIT)) {
-		pr_err("txmtr not initialized\n");
+		pr_debug("txmtr not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -1039,7 +1039,7 @@ static int hdcp2_app_start(struct hdcp2_handle *handle)
 	}
 
 	if (handle->tx_init == NULL) {
-		pr_err("invalid txmtr init function pointer\n");
+		pr_debug("invalid txmtr init function pointer\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -1076,7 +1076,7 @@ static int hdcp2_app_process_msg(struct hdcp2_handle *handle)
 	hdcp2_app_init_var(rcvd_msg);
 
 	if (!handle->app_data.request.data) {
-		pr_err("invalid request buffer\n");
+		pr_debug("invalid request buffer\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -1168,7 +1168,7 @@ int hdcp2_force_encryption(void *ctx, uint32_t enable)
 	struct hdcp2_handle *handle = NULL;
 
 	if (!ctx) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -1180,7 +1180,7 @@ int hdcp2_force_encryption(void *ctx, uint32_t enable)
 	pr_debug("success\n");
 	return 0;
 error:
-	pr_err("failed, rc=%d\n", rc);
+	pr_debug("failed, rc=%d\n", rc);
 	return rc;
 }
 EXPORT_SYMBOL(hdcp2_force_encryption);
@@ -1219,7 +1219,7 @@ int hdcp2_app_comm(void *ctx, enum hdcp2_app_cmd cmd,
 	int rc = 0;
 
 	if (!ctx || !app_data) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -1279,13 +1279,13 @@ static int hdcp2_open_stream_helper(struct hdcp2_handle *handle,
 	hdcp2_app_init_var(session_open_stream);
 
 	if (!(handle->hdcp_state & HDCP_STATE_SESSION_INIT)) {
-		pr_err("session not initialized\n");
+		pr_debug("session not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_TXMTR_INIT)) {
-		pr_err("txmtr not initialized\n");
+		pr_debug("txmtr not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -1313,7 +1313,7 @@ int hdcp2_open_stream(void *ctx, uint8_t vc_payload_id, uint8_t stream_number,
 	struct hdcp2_handle *handle = NULL;
 
 	if (!ctx) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -1332,13 +1332,13 @@ static int hdcp2_close_stream_helper(struct hdcp2_handle *handle,
 	hdcp2_app_init_var(session_close_stream);
 
 	if (!(handle->hdcp_state & HDCP_STATE_SESSION_INIT)) {
-		pr_err("session not initialized\n");
+		pr_debug("session not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_TXMTR_INIT)) {
-		pr_err("txmtr not initialized\n");
+		pr_debug("txmtr not initialized\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -1361,7 +1361,7 @@ int hdcp2_close_stream(void *ctx, uint32_t stream_id)
 	struct hdcp2_handle *handle = NULL;
 
 	if (!ctx) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -1435,7 +1435,7 @@ static int hdcp1_validate_aksv(u32 aksv_msb, u32 aksv_lsb)
 
 	/* check there are 20 ones in AKSV */
 	if (hdcp1_count_ones(aksv, 5) != number_of_ones) {
-		pr_err("AKSV bit count failed\n");
+		pr_debug("AKSV bit count failed\n");
 		return -EINVAL;
 	}
 
@@ -1452,17 +1452,17 @@ static int hdcp1_set_key(struct hdcp1_handle *hdcp1_handle, u32 *aksv_msb,
 	struct qseecom_handle *handle = NULL;
 
 	if (aksv_msb == NULL || aksv_lsb == NULL) {
-		pr_err("invalid aksv\n");
+		pr_debug("invalid aksv\n");
 		return -EINVAL;
 	}
 
 	if (!hdcp1_handle || !hdcp1_handle->qseecom_handle) {
-		pr_err("invalid HDCP 1.x handle\n");
+		pr_debug("invalid HDCP 1.x handle\n");
 		return -EINVAL;
 	}
 
 	if (!(hdcp1_handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", hdcp1_handle->app_name);
+		pr_debug("%s app not loaded\n", hdcp1_handle->app_name);
 		return -EINVAL;
 	}
 
@@ -1481,13 +1481,13 @@ static int hdcp1_set_key(struct hdcp1_handle *hdcp1_handle, u32 *aksv_msb,
 				(struct hdcp1_key_set_rsp)));
 
 	if (rc < 0) {
-		pr_err("qseecom cmd failed err=%d\n", rc);
+		pr_debug("qseecom cmd failed err=%d\n", rc);
 		return -ENOKEY;
 	}
 
 	rc = key_set_rsp->ret;
 	if (rc) {
-		pr_err("set key cmd failed, rsp=%d\n", key_set_rsp->ret);
+		pr_debug("set key cmd failed, rsp=%d\n", key_set_rsp->ret);
 		return -ENOKEY;
 	}
 
@@ -1499,7 +1499,7 @@ static int hdcp1_set_key(struct hdcp1_handle *hdcp1_handle, u32 *aksv_msb,
 
 	rc = hdcp1_validate_aksv(*aksv_msb, *aksv_lsb);
 	if (rc) {
-		pr_err("aksv validation failed (%d)\n", rc);
+		pr_debug("aksv validation failed (%d)\n", rc);
 		return rc;
 	}
 
@@ -1511,14 +1511,14 @@ static int hdcp1_app_load(struct hdcp1_handle *handle)
 	int rc = 0;
 
 	if (!handle) {
-		pr_err("invalid handle\n");
+		pr_debug("invalid handle\n");
 		goto error;
 	}
 
 	rc = qseecom_start_app(&handle->qseecom_handle, handle->app_name,
 			QSEECOM_SBUFF_SIZE);
 	if (rc) {
-		pr_err("%s app load failed (%d)\n", handle->app_name, rc);
+		pr_debug("%s app load failed (%d)\n", handle->app_name, rc);
 		goto error;
 	}
 
@@ -1534,19 +1534,19 @@ static void hdcp1_app_unload(struct hdcp1_handle *handle)
 	int rc = 0;
 
 	if (!handle || !handle->qseecom_handle) {
-		pr_err("invalid handle\n");
+		pr_debug("invalid handle\n");
 		return;
 	}
 
 	if (!(handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_warn("%s app not loaded\n", handle->app_name);
+		pr_debug("%s app not loaded\n", handle->app_name);
 		return;
 	}
 
 	/* deallocate the resources for qseecom HDCP 1.x handle */
 	rc = qseecom_shutdown_app(&handle->qseecom_handle);
 	if (rc) {
-		pr_err("%s app unload failed (%d)\n", handle->app_name, rc);
+		pr_debug("%s app unload failed (%d)\n", handle->app_name, rc);
 		return;
 	}
 
@@ -1562,12 +1562,12 @@ static int hdcp1_verify_key(struct hdcp1_handle *hdcp1_handle)
 	struct qseecom_handle *handle = NULL;
 
 	if (!hdcp1_handle || !hdcp1_handle->qseecom_handle) {
-		pr_err("invalid HDCP 1.x handle\n");
+		pr_debug("invalid HDCP 1.x handle\n");
 		return -EINVAL;
 	}
 
 	if (!(hdcp1_handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", hdcp1_handle->app_name);
+		pr_debug("%s app not loaded\n", hdcp1_handle->app_name);
 		return -EINVAL;
 	}
 
@@ -1585,13 +1585,13 @@ static int hdcp1_verify_key(struct hdcp1_handle *hdcp1_handle)
 				(struct hdcp1_key_set_rsp)));
 
 	if (rc < 0) {
-		pr_err("command HDCP1_KEY_VERIFY failed (%d)\n", rc);
+		pr_debug("command HDCP1_KEY_VERIFY failed (%d)\n", rc);
 		return -EINVAL;
 	}
 
 	rc = key_verify_rsp->ret;
 	if (rc) {
-		pr_err("key_verify failed, rsp=%d\n", key_verify_rsp->ret);
+		pr_debug("key_verify failed, rsp=%d\n", key_verify_rsp->ret);
 		return -EINVAL;
 	}
 
@@ -1607,7 +1607,7 @@ bool hdcp1_feature_supported(void *data)
 	int rc = 0;
 
 	if (!handle) {
-		pr_err("invalid handle\n");
+		pr_debug("invalid handle\n");
 		goto error;
 	}
 
@@ -1638,17 +1638,17 @@ int hdcp1_set_enc(void *data, bool enable)
 	struct qseecom_handle *handle = NULL;
 
 	if (!hdcp1_handle || !hdcp1_handle->qseecom_handle) {
-		pr_err("invalid HDCP 1.x handle\n");
+		pr_debug("invalid HDCP 1.x handle\n");
 		return -EINVAL;
 	}
 
 	if (!hdcp1_handle->feature_supported) {
-		pr_err("HDCP 1.x not supported\n");
+		pr_debug("HDCP 1.x not supported\n");
 		return -EINVAL;
 	}
 
 	if (!(hdcp1_handle->hdcp_state & HDCP_STATE_APP_LOADED)) {
-		pr_err("%s app not loaded\n", hdcp1_handle->app_name);
+		pr_debug("%s app not loaded\n", hdcp1_handle->app_name);
 		return -EINVAL;
 	}
 
@@ -1668,13 +1668,13 @@ int hdcp1_set_enc(void *data, bool enable)
 				(struct hdcp1_set_enc_rsp)));
 
 	if (rc < 0) {
-		pr_err("qseecom cmd failed err=%d\n", rc);
+		pr_debug("qseecom cmd failed err=%d\n", rc);
 		return -EINVAL;
 	}
 
 	rc = set_enc_rsp->ret;
 	if (rc) {
-		pr_err("enc cmd failed, rsp=%d\n", set_enc_rsp->ret);
+		pr_debug("enc cmd failed, rsp=%d\n", set_enc_rsp->ret);
 		return -EINVAL;
 	}
 
@@ -1688,19 +1688,19 @@ int hdcp1_start(void *data, u32 *aksv_msb, u32 *aksv_lsb)
 	struct hdcp1_handle *hdcp1_handle = data;
 
 	if (!aksv_msb || !aksv_lsb) {
-		pr_err("invalid aksv output buffer\n");
+		pr_debug("invalid aksv output buffer\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!hdcp1_handle) {
-		pr_err("invalid handle\n");
+		pr_debug("invalid handle\n");
 		rc = -EINVAL;
 		goto error;
 	}
 
 	if (!hdcp1_handle->feature_supported) {
-		pr_err("feature not supported\n");
+		pr_debug("feature not supported\n");
 		rc = -EINVAL;
 		goto error;
 	}
@@ -1732,7 +1732,7 @@ void hdcp1_stop(void *data)
 	struct hdcp1_handle *hdcp1_handle = data;
 
 	if (!hdcp1_handle || !hdcp1_handle->qseecom_handle) {
-		pr_err("invalid handle\n");
+		pr_debug("invalid handle\n");
 		return;
 	}
 

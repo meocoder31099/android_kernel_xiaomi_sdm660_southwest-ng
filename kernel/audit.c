@@ -314,7 +314,7 @@ void audit_panic(const char *message)
 		break;
 	case AUDIT_FAIL_PRINTK:
 		if (printk_ratelimit())
-			pr_err("%s\n", message);
+			pr_debug("%s\n", message);
 		break;
 	case AUDIT_FAIL_PANIC:
 		panic("audit: %s\n", message);
@@ -383,7 +383,7 @@ void audit_log_lost(const char *message)
 
 	if (print) {
 		if (printk_ratelimit())
-			pr_warn("audit_lost=%u audit_rate_limit=%u audit_backlog_limit=%u\n",
+			pr_debug("audit_lost=%u audit_rate_limit=%u audit_backlog_limit=%u\n",
 				atomic_read(&audit_lost),
 				audit_rate_limit,
 				audit_backlog_limit);
@@ -554,7 +554,7 @@ static void kauditd_printk_skb(struct sk_buff *skb)
 	char *data = nlmsg_data(nlh);
 
 	if (nlh->nlmsg_type != AUDIT_EOE && printk_ratelimit())
-		pr_notice("type=%d %s\n", nlh->nlmsg_type, data);
+		pr_debug("type=%d %s\n", nlh->nlmsg_type, data);
 }
 
 /**
@@ -1662,7 +1662,7 @@ static int __init audit_init(void)
 	mutex_init(&audit_cmd_mutex.lock);
 	audit_cmd_mutex.owner = NULL;
 
-	pr_info("initializing netlink subsys (%s)\n",
+	pr_debug("initializing netlink subsys (%s)\n",
 		audit_default ? "enabled" : "disabled");
 	register_pernet_subsys(&audit_net_ops);
 
@@ -1693,17 +1693,17 @@ static int __init audit_enable(char *str)
 	else if (!strcasecmp(str, "on") || !strcmp(str, "1"))
 		audit_default = AUDIT_ON;
 	else {
-		pr_err("audit: invalid 'audit' parameter value (%s)\n", str);
+		pr_debug("audit: invalid 'audit' parameter value (%s)\n", str);
 		audit_default = AUDIT_ON;
 	}
 
 	if (audit_default == AUDIT_OFF)
 		audit_initialized = AUDIT_DISABLED;
 	if (audit_set_enabled(audit_default))
-		pr_err("audit: error setting audit state (%d)\n",
+		pr_debug("audit: error setting audit state (%d)\n",
 		       audit_default);
 
-	pr_info("%s\n", audit_default ?
+	pr_debug("%s\n", audit_default ?
 		"enabled (after initialization)" : "disabled (until reboot)");
 
 	return 1;
@@ -1716,15 +1716,15 @@ static int __init audit_backlog_limit_set(char *str)
 {
 	u32 audit_backlog_limit_arg;
 
-	pr_info("audit_backlog_limit: ");
+	pr_debug("audit_backlog_limit: ");
 	if (kstrtouint(str, 0, &audit_backlog_limit_arg)) {
-		pr_cont("using default of %u, unable to parse %s\n",
+		pr_debug("using default of %u, unable to parse %s\n",
 			audit_backlog_limit, str);
 		return 1;
 	}
 
 	audit_backlog_limit = audit_backlog_limit_arg;
-	pr_cont("%d\n", audit_backlog_limit);
+	pr_debug("%d\n", audit_backlog_limit);
 
 	return 1;
 }
@@ -1857,7 +1857,7 @@ struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask,
 				remove_wait_queue(&audit_backlog_wait, &wait);
 			} else {
 				if (audit_rate_check() && printk_ratelimit())
-					pr_warn("audit_backlog=%d > audit_backlog_limit=%d\n",
+					pr_debug("audit_backlog=%d > audit_backlog_limit=%d\n",
 						skb_queue_len(&audit_queue),
 						audit_backlog_limit);
 				audit_log_lost("backlog limit exceeded");

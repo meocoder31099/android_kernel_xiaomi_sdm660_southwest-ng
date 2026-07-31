@@ -83,7 +83,7 @@ static int dwc3_get_dr_mode(struct dwc3 *dwc)
 	switch (hw_mode) {
 	case DWC3_GHWPARAMS0_MODE_GADGET:
 		if (IS_ENABLED(CONFIG_USB_DWC3_HOST)) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"Controller does not support host mode.\n");
 			return -EINVAL;
 		}
@@ -91,7 +91,7 @@ static int dwc3_get_dr_mode(struct dwc3 *dwc)
 		break;
 	case DWC3_GHWPARAMS0_MODE_HOST:
 		if (IS_ENABLED(CONFIG_USB_DWC3_GADGET)) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"Controller does not support device mode.\n");
 			return -EINVAL;
 		}
@@ -113,7 +113,7 @@ static int dwc3_get_dr_mode(struct dwc3 *dwc)
 	}
 
 	if (mode != dwc->dr_mode) {
-		dev_warn(dev,
+		dev_dbg(dev,
 			 "Configuration mismatch. dr_mode forced to %s\n",
 			 mode == USB_DR_MODE_HOST ? "host" : "gadget");
 
@@ -203,7 +203,7 @@ static int dwc3_core_soft_reset(struct dwc3 *dwc)
 	usb_phy_reset(dwc->usb2_phy);
 	ret = usb_phy_init(dwc->usb2_phy);
 	if (ret) {
-		pr_err("%s: usb_phy_init(dwc->usb2_phy) returned %d\n",
+		pr_debug("%s: usb_phy_init(dwc->usb2_phy) returned %d\n",
 				__func__, ret);
 		return ret;
 	}
@@ -220,7 +220,7 @@ static int dwc3_core_soft_reset(struct dwc3 *dwc)
 		 */
 		dwc->maximum_speed = USB_SPEED_HIGH;
 	} else if (ret) {
-		pr_err("%s: usb_phy_init(dwc->usb3_phy) returned %d\n",
+		pr_debug("%s: usb_phy_init(dwc->usb3_phy) returned %d\n",
 				__func__, ret);
 		return ret;
 	}
@@ -384,7 +384,7 @@ static int dwc3_alloc_event_buffers(struct dwc3 *dwc, unsigned length)
 
 	evt = dwc3_alloc_one_event_buffer(dwc, length);
 	if (IS_ERR(evt)) {
-		dev_err(dwc->dev, "can't allocate event buffer\n");
+		dev_dbg(dwc->dev, "can't allocate event buffer\n");
 		return PTR_ERR(evt);
 	}
 	dwc->ev_buf = evt;
@@ -494,7 +494,7 @@ static int dwc3_setup_scratch_buffers(struct dwc3 *dwc)
 			dwc->nr_scratch * DWC3_SCRATCHBUF_SIZE,
 			DMA_BIDIRECTIONAL);
 	if (dma_mapping_error(dwc->sysdev, scratch_addr)) {
-		dev_err(dwc->sysdev, "failed to map scratch buffer\n");
+		dev_dbg(dwc->sysdev, "failed to map scratch buffer\n");
 		ret = -EFAULT;
 		goto err0;
 	}
@@ -798,7 +798,7 @@ static void dwc3_core_setup_global_control(struct dwc3 *dwc)
 
 	/* check if current dwc3 is on simulation board */
 	if (dwc->hwparams.hwparams6 & DWC3_GHWPARAMS6_EN_FPGA) {
-		dev_info(dwc->dev, "Running with FPGA optmizations\n");
+		dev_dbg(dwc->dev, "Running with FPGA optmizations\n");
 		dwc->is_fpga = true;
 	}
 
@@ -861,7 +861,7 @@ static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 
 	vals = kcalloc(ntype, sizeof(u32), GFP_KERNEL);
 	if (!vals) {
-		dev_err(dev, "Error to get memory\n");
+		dev_dbg(dev, "Error to get memory\n");
 		return;
 	}
 
@@ -869,7 +869,7 @@ static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 	ret = device_property_read_u32_array(dev,
 			"snps,incr-burst-type-adjustment", vals, ntype);
 	if (ret) {
-		dev_err(dev, "Error to get property\n");
+		dev_dbg(dev, "Error to get property\n");
 		return;
 	}
 
@@ -916,7 +916,7 @@ static void dwc3_set_incr_burst_type(struct dwc3 *dwc)
 	case 1:
 		break;
 	default:
-		dev_err(dev, "Invalid property\n");
+		dev_dbg(dev, "Invalid property\n");
 		break;
 	}
 
@@ -935,7 +935,7 @@ int dwc3_core_init(struct dwc3 *dwc)
 	int			ret;
 
 	if (!dwc3_core_is_valid(dwc)) {
-		dev_err(dwc->dev, "this is not a DesignWare USB3 DRD Core\n");
+		dev_dbg(dwc->dev, "this is not a DesignWare USB3 DRD Core\n");
 		ret = -ENODEV;
 		goto err0;
 	}
@@ -1164,7 +1164,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 		} else if (ret == -EPROBE_DEFER) {
 			return ret;
 		} else {
-			dev_err(dev, "no usb2 phy configured\n");
+			dev_dbg(dev, "no usb2 phy configured\n");
 			return ret;
 		}
 	}
@@ -1176,7 +1176,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 		} else if (ret == -EPROBE_DEFER) {
 			return ret;
 		} else {
-			dev_err(dev, "no usb3 phy configured\n");
+			dev_dbg(dev, "no usb3 phy configured\n");
 			return ret;
 		}
 	}
@@ -1189,7 +1189,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 		} else if (ret == -EPROBE_DEFER) {
 			return ret;
 		} else {
-			dev_err(dev, "no usb2 phy configured\n");
+			dev_dbg(dev, "no usb2 phy configured\n");
 			return ret;
 		}
 	}
@@ -1202,7 +1202,7 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 		} else if (ret == -EPROBE_DEFER) {
 			return ret;
 		} else {
-			dev_err(dev, "no usb3 phy configured\n");
+			dev_dbg(dev, "no usb3 phy configured\n");
 			return ret;
 		}
 	}
@@ -1413,7 +1413,7 @@ static void dwc3_check_params(struct dwc3 *dwc)
 
 	/* Check for proper value of imod_interval */
 	if (dwc->imod_interval && !dwc3_has_imod(dwc)) {
-		dev_warn(dwc->dev, "Interrupt moderation not supported\n");
+		dev_dbg(dwc->dev, "Interrupt moderation not supported\n");
 		dwc->imod_interval = 0;
 	}
 
@@ -1437,7 +1437,7 @@ static void dwc3_check_params(struct dwc3 *dwc)
 	case USB_SPEED_SUPER_PLUS:
 		break;
 	default:
-		dev_err(dev, "invalid maximum_speed parameter %d\n",
+		dev_dbg(dev, "invalid maximum_speed parameter %d\n",
 			dwc->maximum_speed);
 		/* fall through */
 	case USB_SPEED_UNKNOWN:
@@ -1469,7 +1469,7 @@ static int dwc3_probe(struct platform_device *pdev)
 #endif
 
 	if (count >= DWC_CTRL_COUNT) {
-		dev_err(dev, "Err dwc instance %d >= %d available\n",
+		dev_dbg(dev, "Err dwc instance %d >= %d available\n",
 					count, DWC_CTRL_COUNT);
 		ret = -EINVAL;
 		return ret;
@@ -1487,7 +1487,7 @@ static int dwc3_probe(struct platform_device *pdev)
 	dwc->dev = dev;
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
-		dev_err(dev, "missing memory resource\n");
+		dev_dbg(dev, "missing memory resource\n");
 		return -ENODEV;
 	}
 
@@ -1503,7 +1503,7 @@ static int dwc3_probe(struct platform_device *pdev)
 	ret = devm_request_irq(dev, irq, dwc3_interrupt, IRQF_SHARED, "dwc3",
 			dwc);
 	if (ret) {
-		dev_err(dwc->dev, "failed to request irq #%d --> %d\n",
+		dev_dbg(dwc->dev, "failed to request irq #%d --> %d\n",
 				irq, ret);
 		return -ENODEV;
 	}
@@ -1524,7 +1524,7 @@ static int dwc3_probe(struct platform_device *pdev)
 
 	dwc->dwc_wq = alloc_ordered_workqueue("dwc_wq", WQ_HIGHPRI);
 	if (!dwc->dwc_wq) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"%s: Unable to create workqueue dwc_wq\n", __func__);
 		goto err0;
 	}
@@ -1583,7 +1583,7 @@ skip_clk_reset:
 
 	ret = dwc3_alloc_event_buffers(dwc, DWC3_EVENT_BUFFERS_SIZE);
 	if (ret) {
-		dev_err(dwc->dev, "failed to allocate event buffers\n");
+		dev_dbg(dwc->dev, "failed to allocate event buffers\n");
 		ret = -ENOMEM;
 		goto err1;
 	}
@@ -1596,7 +1596,7 @@ skip_clk_reset:
 		dwc->dr_mode == USB_DR_MODE_PERIPHERAL) {
 		ret = dwc3_gadget_init(dwc);
 		if (ret) {
-			dev_err(dwc->dev, "gadget init failed %d\n", ret);
+			dev_dbg(dwc->dev, "gadget init failed %d\n", ret);
 			goto err3;
 		}
 	}
@@ -1605,14 +1605,14 @@ skip_clk_reset:
 	dwc->dwc_ipc_log_ctxt = ipc_log_context_create(NUM_LOG_PAGES,
 					dev_name(dwc->dev), 0);
 	if (!dwc->dwc_ipc_log_ctxt)
-		dev_err(dwc->dev, "Error getting ipc_log_ctxt\n");
+		dev_dbg(dwc->dev, "Error getting ipc_log_ctxt\n");
 
 	snprintf(dma_ipc_log_ctx_name, sizeof(dma_ipc_log_ctx_name),
 					"%s.ep_events", dev_name(dwc->dev));
 	dwc->dwc_dma_ipc_log_ctxt = ipc_log_context_create(2 * NUM_LOG_PAGES,
 						dma_ipc_log_ctx_name, 0);
 	if (!dwc->dwc_dma_ipc_log_ctxt)
-		dev_err(dwc->dev, "Error getting ipc_log_ctxt for ep_events\n");
+		dev_dbg(dwc->dev, "Error getting ipc_log_ctxt for ep_events\n");
 #endif
 
 	dwc3_instance[count] = dwc;

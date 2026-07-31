@@ -30,8 +30,8 @@ static void of_dump_addr(const char *s, const __be32 *addr, int na)
 {
 	pr_debug("%s", s);
 	while (na--)
-		pr_cont(" %08x", be32_to_cpu(*(addr++)));
-	pr_cont("\n");
+		pr_debug(" %08x", be32_to_cpu(*(addr++)));
+	pr_debug("\n");
 }
 #else
 static void of_dump_addr(const char *s, const __be32 *addr, int na) { }
@@ -635,7 +635,7 @@ static u64 __of_translate_address(struct device_node *dev,
 		pbus = of_match_bus(parent);
 		pbus->count_cells(dev, &pna, &pns);
 		if (!OF_CHECK_COUNTS(pna, pns)) {
-			pr_err("Bad cell count for %pOF\n", dev);
+			pr_debug("Bad cell count for %pOF\n", dev);
 			break;
 		}
 
@@ -962,7 +962,7 @@ int of_dma_get_range(struct device_node *np, u64 *dma_addr, u64 *paddr, u64 *siz
 	dmaaddr = of_read_number(ranges, naddr);
 	*paddr = of_translate_dma_address(np, ranges);
 	if (*paddr == OF_BAD_ADDR) {
-		pr_err("translation of DMA address(%pad) to CPU address failed node(%pOF)\n",
+		pr_debug("translation of DMA address(%pad) to CPU address failed node(%pOF)\n",
 		       dma_addr, np);
 		ret = -EINVAL;
 		goto out;

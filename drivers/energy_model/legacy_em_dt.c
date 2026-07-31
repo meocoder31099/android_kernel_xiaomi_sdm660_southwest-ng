@@ -78,7 +78,7 @@ static int init_em_dt_callback(struct notifier_block *nb, unsigned long val,
 	/* Do not register twice an energy model */
 	for_each_cpu(cpu, policy->cpus) {
 		if (per_cpu(nr_states, cpu) || per_cpu(cpu_em, cpu)) {
-			pr_err("EM of CPU%d already loaded\n", cpu);
+			pr_debug("EM of CPU%d already loaded\n", cpu);
 			ret = -EEXIST;
 			goto unlock;
 		}
@@ -86,7 +86,7 @@ static int init_em_dt_callback(struct notifier_block *nb, unsigned long val,
 
 	max_freq = policy->cpuinfo.max_freq;
 	if (!max_freq) {
-		pr_err("No policy->max for CPU%d\n", cpu);
+		pr_debug("No policy->max for CPU%d\n", cpu);
 		ret = -EINVAL;
 		goto unlock;
 	}
@@ -94,21 +94,21 @@ static int init_em_dt_callback(struct notifier_block *nb, unsigned long val,
 	cpu = cpumask_first(policy->cpus);
 	cn = of_get_cpu_node(cpu, NULL);
 	if (!cn) {
-		pr_err("No device_node for CPU%d\n", cpu);
+		pr_debug("No device_node for CPU%d\n", cpu);
 		ret = -ENODEV;
 		goto unlock;
 	}
 
 	cp = of_parse_phandle(cn, "sched-energy-costs", 0);
 	if (!cp) {
-		pr_err("CPU%d node has no sched-energy-costs\n", cpu);
+		pr_debug("CPU%d node has no sched-energy-costs\n", cpu);
 		ret = -ENODEV;
 		goto unlock;
 	}
 
 	prop = of_find_property(cp, "busy-cost-data", NULL);
 	if (!prop || !prop->value) {
-		pr_err("No busy-cost-data for CPU%d\n", cpu);
+		pr_debug("No busy-cost-data for CPU%d\n", cpu);
 		ret = -ENODEV;
 		goto unlock;
 	}
@@ -129,7 +129,7 @@ static int init_em_dt_callback(struct notifier_block *nb, unsigned long val,
 	/* Get the CPU capacity (according to the EM) */
 	scale_cpu = em[nstates - 1].capacity;
 	if (!scale_cpu) {
-		pr_err("CPU%d: capacity cannot be 0\n", cpu);
+		pr_debug("CPU%d: capacity cannot be 0\n", cpu);
 		kfree(em);
 		ret = -EINVAL;
 		goto unlock;
@@ -145,7 +145,7 @@ static int init_em_dt_callback(struct notifier_block *nb, unsigned long val,
 		per_cpu(cpu_em, i) = em;
 	}
 
-	pr_info("Registering EM of %*pbl\n", cpumask_pr_args(policy->cpus));
+	pr_debug("Registering EM of %*pbl\n", cpumask_pr_args(policy->cpus));
 	em_register_perf_domain(policy->cpus, nstates, &em_cb);
 
 	/* Finish the work when all possible CPUs have been registered. */

@@ -173,7 +173,7 @@ static inline size_t generic_threshold_store(struct kobject *kobj,
 		return -EINVAL;
 	if (scm_io_write(hang_dev->threshold[offset],
 				threshold_val)){
-		pr_err("%s: Failed to set threshold for gladiator port\n",
+		pr_debug("%s: Failed to set threshold for gladiator port\n",
 				__func__);
 		return -EIO;
 	}
@@ -201,7 +201,7 @@ static inline size_t generic_enable_store(struct kobject *kobj,
 	scm_enable_write(offset, hang_dev, enabled, reg_value, &ret);
 
 	if (ret) {
-		pr_err("%s: Gladiator failed to set enable for port %s\n",
+		pr_debug("%s: Gladiator failed to set enable for port %s\n",
 				__func__, "#_name");
 		mutex_unlock(&hang_dev->lock);
 		return -EIO;
@@ -524,13 +524,13 @@ static int msm_gladiator_hang_detect_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(node, "qcom,threshold-arr",
 			treg, NR_GLA_REG);
 	if (ret) {
-		pr_err("Can't get threshold-arr property\n");
+		pr_debug("Can't get threshold-arr property\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "qcom,config-reg", &creg);
 	if (ret) {
-		pr_err("Can't get config-reg property\n");
+		pr_debug("Can't get config-reg property\n");
 		return -EINVAL;
 	}
 
@@ -542,13 +542,13 @@ static int msm_gladiator_hang_detect_probe(struct platform_device *pdev)
 	ret = kobject_init_and_add(&hang_det->kobj, &gladiator_ktype,
 		&cpu_subsys.dev_root->kobj, "%s", "gladiator_hang_detect");
 	if (ret) {
-		pr_err("%s:Error in creation kobject_add\n", __func__);
+		pr_debug("%s:Error in creation kobject_add\n", __func__);
 		goto out_put_kobj;
 	}
 
 	ret = sysfs_create_group(&hang_det->kobj, &hang_attr_group);
 	if (ret) {
-		pr_err("%s:Error in creation sysfs_create_group\n", __func__);
+		pr_debug("%s:Error in creation sysfs_create_group\n", __func__);
 		goto out_del_kobj;
 	}
 

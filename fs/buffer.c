@@ -231,7 +231,7 @@ __find_get_block_slow(struct block_device *bdev, sector_t block)
 	 */
 	ratelimit_set_flags(&last_warned, RATELIMIT_MSG_ON_RELEASE);
 	if (all_mapped && __ratelimit(&last_warned)) {
-		printk("__find_get_block_slow() failed. block=%llu, "
+		no_printk("__find_get_block_slow() failed. block=%llu, "
 		       "b_blocknr=%llu, b_state=0x%08lx, b_size=%zu, "
 		       "device %pg blocksize: %d\n",
 		       (unsigned long long)block,
@@ -499,7 +499,7 @@ repeat:
 void emergency_thaw_bdev(struct super_block *sb)
 {
 	while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-		printk(KERN_WARNING "Emergency Thaw on %pg\n", sb->s_bdev);
+		no_printk(KERN_WARNING "Emergency Thaw on %pg\n", sb->s_bdev);
 }
 
 /**
@@ -1007,7 +1007,7 @@ grow_buffers(struct block_device *bdev, sector_t block, int size, gfp_t gfp)
 	 * pagecache index.  (this comparison is done using sector_t types).
 	 */
 	if (unlikely(index != block >> sizebits)) {
-		printk(KERN_ERR "%s: requested out-of-range block %llu for "
+		no_printk(KERN_ERR "%s: requested out-of-range block %llu for "
 			"device %pg\n",
 			__func__, (unsigned long long)block,
 			bdev);
@@ -1025,9 +1025,9 @@ __getblk_slow(struct block_device *bdev, sector_t block,
 	/* Size must be multiple of hard sectorsize */
 	if (unlikely(size & (bdev_logical_block_size(bdev)-1) ||
 			(size < 512 || size > PAGE_SIZE))) {
-		printk(KERN_ERR "getblk(): invalid block size %d requested\n",
+		no_printk(KERN_ERR "getblk(): invalid block size %d requested\n",
 					size);
-		printk(KERN_ERR "logical block size: %d\n",
+		no_printk(KERN_ERR "logical block size: %d\n",
 					bdev_logical_block_size(bdev));
 
 		dump_stack();
@@ -3369,10 +3369,10 @@ SYSCALL_DEFINE2(bdflush, int, func, long, data)
 
 	if (msg_count < 5) {
 		msg_count++;
-		printk(KERN_INFO
+		no_printk(KERN_INFO
 			"warning: process `%s' used the obsolete bdflush"
 			" system call\n", current->comm);
-		printk(KERN_INFO "Fix your initscripts?\n");
+		no_printk(KERN_INFO "Fix your initscripts?\n");
 	}
 
 	if (func == 1)

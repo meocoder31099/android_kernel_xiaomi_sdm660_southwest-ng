@@ -255,7 +255,7 @@ void f2fs_printk(struct f2fs_sb_info *sbi, const char *fmt, ...)
 	level = printk_get_level(fmt);
 	vaf.fmt = printk_skip_level(fmt);
 	vaf.va = &args;
-	printk("%c%cF2FS-fs (%s): %pV\n",
+	no_printk("%c%cF2FS-fs (%s): %pV\n",
 	       KERN_SOH_ASCII, level, sbi->sb->s_id, &vaf);
 
 	va_end(args);
@@ -4653,7 +4653,7 @@ static int __init init_f2fs_fs(void)
 	int err;
 
 	if (PAGE_SIZE != F2FS_BLKSIZE) {
-		printk("F2FS not supported on PAGE_SIZE(%lu) != BLOCK_SIZE(%d)\n",
+		no_printk("F2FS not supported on PAGE_SIZE(%lu) != BLOCK_SIZE(%d)\n",
 				PAGE_SIZE, F2FS_BLKSIZE);
 		return -EINVAL;
 	}

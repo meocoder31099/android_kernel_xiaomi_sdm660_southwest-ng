@@ -80,21 +80,21 @@ static void checknv_kobj_create(struct work_struct *work)
 	int ret;
 
 	if (checknv_kset != NULL) {
-		pr_err("checknv_kset is not NULL, should clean up.");
+		pr_debug("checknv_kset is not NULL, should clean up.");
 		kobject_uevent(checknv_kobj, KOBJ_REMOVE);
 		kobject_put(checknv_kobj);
 	}
 
 	checknv_kobj = kzalloc(sizeof(struct kobject), GFP_KERNEL);
 	if (!checknv_kobj) {
-		pr_err("kobject alloc failed.");
+		pr_debug("kobject alloc failed.");
 		return;
 	}
 
 	if (checknv_kset == NULL) {
 		checknv_kset = kset_create_and_add("checknv_errimei", NULL, NULL);
 		if (!checknv_kset) {
-			pr_err("kset creation failed.");
+			pr_debug("kset creation failed.");
 			goto free_kobj;
 		}
 	}
@@ -103,7 +103,7 @@ static void checknv_kobj_create(struct work_struct *work)
 
 	ret = kobject_init_and_add(checknv_kobj, &checknv_ktype, NULL, "%s", "errimei");
 	if (ret) {
-		pr_err("%s: Error in creation kobject", __func__);
+		pr_debug("%s: Error in creation kobject", __func__);
 		goto del_kobj;
 	}
 
@@ -133,11 +133,11 @@ static void log_modem_sfr(struct modem_data *drv)
 	smem_reason = qcom_smem_get(QCOM_SMEM_HOST_ANY, drv->q6->smem_id,
 								&size);
 	if (IS_ERR(smem_reason) || !size) {
-		pr_err("modem SFR: (unknown, qcom_smem_get failed).\n");
+		pr_debug("modem SFR: (unknown, qcom_smem_get failed).\n");
 		return;
 	}
 	if (!smem_reason[0]) {
-		pr_err("modem SFR: (unknown, empty string found).\n");
+		pr_debug("modem SFR: (unknown, empty string found).\n");
 		return;
 	}
 
@@ -145,7 +145,7 @@ static void log_modem_sfr(struct modem_data *drv)
 #ifdef CONFIG_MACH_XIAOMI_CLOVER
         strlcpy(last_modem_sfr_reason, smem_reason, min(size, (size_t)MAX_SSR_REASON_LEN));
 #endif
-	pr_err("modem subsystem failure reason: %s.\n", reason);
+	pr_debug("modem subsystem failure reason: %s.\n", reason);
 }
 
 static void restart_modem(struct modem_data *drv)
@@ -154,7 +154,7 @@ static void restart_modem(struct modem_data *drv)
 	drv->ignore_errors = true;
 #ifdef CONFIG_MACH_XIAOMI_CLOVER
 	if (strnstr(last_modem_sfr_reason, STR_NV_SIGNATURE_DESTROYED, strlen(last_modem_sfr_reason))) {
-		pr_err("errimei_dev: the NV has been destroyed, should restart to recovery\n");
+		pr_debug("errimei_dev: the NV has been destroyed, should restart to recovery\n");
 		schedule_delayed_work(&create_kobj_work, msecs_to_jiffies(1*1000));
 	} else {
 		subsystem_restart_dev(drv->subsys);
@@ -172,7 +172,7 @@ static irqreturn_t modem_err_fatal_intr_handler(int irq, void *dev_id)
 	if (drv->crash_shutdown)
 		return IRQ_HANDLED;
 
-	pr_err("Fatal error on the modem.\n");
+	pr_debug("Fatal error on the modem.\n");
 	subsys_set_crash_status(drv->subsys, CRASH_STATUS_ERR_FATAL);
 	restart_modem(drv);
 	return IRQ_HANDLED;
@@ -182,7 +182,7 @@ static irqreturn_t modem_stop_ack_intr_handler(int irq, void *dev_id)
 {
 	struct modem_data *drv = subsys_to_drv(dev_id);
 
-	pr_info("Received stop ack interrupt from modem\n");
+	pr_debug("Received stop ack interrupt from modem\n");
 	complete(&drv->stop_ack);
 	return IRQ_HANDLED;
 }
@@ -191,7 +191,7 @@ static irqreturn_t modem_shutdown_ack_intr_handler(int irq, void *dev_id)
 {
 	struct modem_data *drv = subsys_to_drv(dev_id);
 
-	pr_info("Received stop shutdown interrupt from modem\n");
+	pr_debug("Received stop shutdown interrupt from modem\n");
 	complete_shutdown_ack(drv->subsys);
 	return IRQ_HANDLED;
 }
@@ -200,7 +200,7 @@ static irqreturn_t modem_ramdump_disable_intr_handler(int irq, void *dev_id)
 {
 	struct modem_data *drv = subsys_to_drv(dev_id);
 
-	pr_info("Received ramdump disable interrupt from modem\n");
+	pr_debug("Received ramdump disable interrupt from modem\n");
 	drv->subsys_desc.ramdump_disable = 1;
 	return IRQ_HANDLED;
 }
@@ -220,13 +220,13 @@ static int modem_shutdown(const struct subsys_desc *subsys, bool force_stop)
 		ret = wait_for_completion_timeout(&drv->stop_ack,
 				msecs_to_jiffies(STOP_ACK_TIMEOUT_MS));
 		if (!ret)
-			pr_warn("Timed out on stop ack from modem.\n");
+			pr_debug("Timed out on stop ack from modem.\n");
 		qcom_smem_state_update_bits(subsys->state,
 				BIT(subsys->force_stop_bit), 0);
 	}
 
 	if (drv->subsys_desc.ramdump_disable_irq) {
-		pr_warn("Ramdump disable value is %d\n",
+		pr_debug("Ramdump disable value is %d\n",
 			drv->subsys_desc.ramdump_disable);
 	}
 
@@ -294,11 +294,11 @@ static int modem_ramdump(int enable, const struct subsys_desc *subsys)
 	ret = pil_do_ramdump(&drv->q6->desc,
 			drv->ramdump_dev, drv->minidump_dev);
 	if (ret < 0)
-		pr_err("Unable to dump modem fw memory (rc = %d).\n", ret);
+		pr_debug("Unable to dump modem fw memory (rc = %d).\n", ret);
 
 	ret = __pil_mss_deinit_image(&drv->q6->desc, false);
 	if (ret < 0)
-		pr_err("Unable to free up resources (rc = %d).\n", ret);
+		pr_debug("Unable to free up resources (rc = %d).\n", ret);
 
 	pil_mss_remove_proxy_votes(&drv->q6->desc);
 	return ret;
@@ -311,7 +311,7 @@ static irqreturn_t modem_wdog_bite_intr_handler(int irq, void *dev_id)
 	if (drv->ignore_errors)
 		return IRQ_HANDLED;
 
-	pr_err("Watchdog bite received from modem software!\n");
+	pr_debug("Watchdog bite received from modem software!\n");
 	if (drv->subsys_desc.system_debug)
 		panic("%s: System ramdump requested. Triggering device restart!\n",
 							__func__);
@@ -344,7 +344,7 @@ static int pil_subsys_init(struct modem_data *drv,
 
 	if (IS_ERR_OR_NULL(drv->q6)) {
 		ret = PTR_ERR(drv->q6);
-		dev_err(&pdev->dev, "Pil q6 data is err %pK %d!!!\n",
+		dev_dbg(&pdev->dev, "Pil q6 data is err %pK %d!!!\n",
 			drv->q6, ret);
 		goto err_subsys;
 	}
@@ -360,7 +360,7 @@ static int pil_subsys_init(struct modem_data *drv,
 		drv->q6->desc.mbox = mbox_request_channel(&drv->q6->desc.cl, 0);
 		if (IS_ERR(drv->q6->desc.mbox)) {
 			ret = PTR_ERR(drv->q6->desc.mbox);
-			dev_err(&pdev->dev, "Failed to get mailbox channel %pK %d\n",
+			dev_dbg(&pdev->dev, "Failed to get mailbox channel %pK %d\n",
 				drv->q6->desc.mbox, ret);
 			goto err_subsys;
 		}
@@ -380,14 +380,14 @@ static int pil_subsys_init(struct modem_data *drv,
 
 	drv->ramdump_dev = create_ramdump_device("modem", &pdev->dev);
 	if (!drv->ramdump_dev) {
-		pr_err("%s: Unable to create a modem ramdump device.\n",
+		pr_debug("%s: Unable to create a modem ramdump device.\n",
 			__func__);
 		ret = -ENOMEM;
 		goto err_ramdump;
 	}
 	drv->minidump_dev = create_ramdump_device("md_modem", &pdev->dev);
 	if (!drv->minidump_dev) {
-		pr_err("%s: Unable to create a modem minidump device.\n",
+		pr_debug("%s: Unable to create a modem minidump device.\n",
 			__func__);
 		ret = -ENOMEM;
 		goto err_minidump;
@@ -445,7 +445,7 @@ static int pil_mss_loadable_init(struct modem_data *drv,
 		res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 							"restart_reg_sec");
 		if (!res) {
-			dev_err(&pdev->dev, "No restart register defined\n");
+			dev_dbg(&pdev->dev, "No restart register defined\n");
 			return -ENOMEM;
 		}
 		q6->restart_reg_sec = true;
@@ -463,7 +463,7 @@ static int pil_mss_loadable_init(struct modem_data *drv,
 						res->start, resource_size(res));
 		if (of_property_read_u32(pdev->dev.of_node,
 			"qcom,mss_pdc_offset", &q6->mss_pdc_offset)) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Offset for MSS PDC not specified\n");
 			return -EINVAL;
 		}
@@ -491,7 +491,7 @@ static int pil_mss_loadable_init(struct modem_data *drv,
 		return PTR_ERR(q6->vreg_mx);
 	prop = of_find_property(pdev->dev.of_node, "vdd_mx-uV", NULL);
 	if (!prop) {
-		dev_err(&pdev->dev, "Missing vdd_mx-uV property\n");
+		dev_dbg(&pdev->dev, "Missing vdd_mx-uV property\n");
 		return -EINVAL;
 	}
 
@@ -516,7 +516,7 @@ static int pil_mss_loadable_init(struct modem_data *drv,
 	ret = of_property_read_u32(pdev->dev.of_node,
 					"qcom,pas-id", &drv->pas_id);
 	if (ret)
-		dev_info(&pdev->dev, "No pas_id found.\n");
+		dev_dbg(&pdev->dev, "No pas_id found.\n");
 
 	drv->subsys_desc.pil_mss_memsetup =
 	of_property_read_bool(pdev->dev.of_node, "qcom,pil-mss-memsetup");
@@ -541,7 +541,7 @@ static int pil_mss_loadable_init(struct modem_data *drv,
 		ret = of_property_read_u32(pdev->dev.of_node, "qcom,smem-id",
 					   &q6->smem_id);
 		if (ret) {
-			dev_err(&pdev->dev, "Failed to get the smem_id(ret:%d)\n",
+			dev_dbg(&pdev->dev, "Failed to get the smem_id(ret:%d)\n",
 				ret);
 			return ret;
 		}
@@ -597,7 +597,7 @@ static int pil_mba_mem_driver_probe(struct platform_device *pdev)
 	struct modem_data *drv;
 
 	if (!pdev->dev.parent) {
-		pr_err("No parent found.\n");
+		pr_debug("No parent found.\n");
 		return -EINVAL;
 	}
 	drv = dev_get_drvdata(pdev->dev.parent);

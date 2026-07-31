@@ -30,7 +30,7 @@ static int qcom_smd_qrtr_callback(struct rpmsg_device *rpdev,
 
 	rc = qrtr_endpoint_post(&qdev->ep, data, len);
 	if (rc == -EINVAL) {
-		dev_err(qdev->dev, "invalid ipcrouter packet\n");
+		dev_dbg(qdev->dev, "invalid ipcrouter packet\n");
 		/* return 0 to let smd drop the packet */
 		rc = 0;
 	}
@@ -64,7 +64,7 @@ static int qcom_smd_qrtr_probe(struct rpmsg_device *rpdev)
 	u32 net_id;
 	bool rt;
 	int rc;
-	pr_info("%s:Entered\n", __func__);
+	pr_debug("%s:Entered\n", __func__);
 
 	qdev = devm_kzalloc(&rpdev->dev, sizeof(*qdev), GFP_KERNEL);
 	if (!qdev)
@@ -86,7 +86,7 @@ static int qcom_smd_qrtr_probe(struct rpmsg_device *rpdev)
 
 	dev_set_drvdata(&rpdev->dev, qdev);
 
-	pr_info("%s:SMD QRTR driver probed\n", __func__);
+	pr_debug("%s:SMD QRTR driver probed\n", __func__);
 
 	return 0;
 }

@@ -146,7 +146,7 @@ int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
 			    rdev->wiphy.debugfsdir,
 			    rdev->wiphy.debugfsdir->d_parent,
 			    newname))
-		pr_err("failed to rename debugfs dir to %s!\n", newname);
+		pr_debug("failed to rename debugfs dir to %s!\n", newname);
 
 	nl80211_notify_wiphy(rdev, NL80211_CMD_NEW_WIPHY);
 
@@ -1216,7 +1216,7 @@ static int cfg80211_netdev_notifier_call(struct notifier_block *nb,
 
 		if (sysfs_create_link(&dev->dev.kobj, &rdev->wiphy.dev.kobj,
 				      "phy80211")) {
-			pr_err("failed to add phy80211 symlink to netdev!\n");
+			pr_debug("failed to add phy80211 symlink to netdev!\n");
 		}
 		wdev->netdev = dev;
 #ifdef CONFIG_CFG80211_WEXT

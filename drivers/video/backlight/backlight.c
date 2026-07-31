@@ -376,7 +376,7 @@ static void backlight_cdev_register(struct device *parent,
 		bd->cdev = thermal_of_cooling_device_register(parent->of_node,
 				(char *)dev_name(&bd->dev), bd, &bd_cdev_ops);
 		if (!bd->cdev)
-			pr_err("Cooling device register failed\n");
+			pr_debug("Cooling device register failed\n");
 	}
 }
 
@@ -724,7 +724,7 @@ static int __init backlight_class_init(void)
 {
 	backlight_class = class_create(THIS_MODULE, "backlight");
 	if (IS_ERR(backlight_class)) {
-		pr_warn("Unable to create backlight class; errno = %ld\n",
+		pr_debug("Unable to create backlight class; errno = %ld\n",
 			PTR_ERR(backlight_class));
 		return PTR_ERR(backlight_class);
 	}

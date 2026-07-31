@@ -65,7 +65,7 @@ static void fsa4480_usbc_update_settings(struct fsa4480_priv *fsa_priv,
 		u32 switch_control, u32 switch_enable)
 {
 	if (!fsa_priv->regmap) {
-		dev_err(fsa_priv->dev, "%s: regmap invalid\n", __func__);
+		dev_dbg(fsa_priv->dev, "%s: regmap invalid\n", __func__);
 		return;
 	}
 
@@ -99,7 +99,7 @@ static int fsa4480_usbc_event_changed(struct notifier_block *nb,
 	ret = power_supply_get_property(fsa_priv->usb_psy,
 			POWER_SUPPLY_PROP_TYPEC_MODE, &mode);
 	if (ret) {
-		dev_err(dev, "%s: Unable to read USB TYPEC_MODE: %d\n",
+		dev_dbg(dev, "%s: Unable to read USB TYPEC_MODE: %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -143,7 +143,7 @@ static int fsa4480_usbc_analog_setup_switches(struct fsa4480_priv *fsa_priv)
 	rc = power_supply_get_property(fsa_priv->usb_psy,
 			POWER_SUPPLY_PROP_TYPEC_MODE, &mode);
 	if (rc) {
-		dev_err(dev, "%s: Unable to read USB TYPEC_MODE: %d\n",
+		dev_dbg(dev, "%s: Unable to read USB TYPEC_MODE: %d\n",
 			__func__, rc);
 		goto done;
 	}
@@ -271,7 +271,7 @@ static int fsa4480_validate_display_port_settings(struct fsa4480_priv *fsa_priv)
 	regmap_read(fsa_priv->regmap, FSA4480_SWITCH_STATUS1, &switch_status);
 
 	if ((switch_status != 0x23) && (switch_status != 0x1C)) {
-		pr_err("AUX SBU1/2 switch status is invalid = %u\n",
+		pr_debug("AUX SBU1/2 switch status is invalid = %u\n",
 				switch_status);
 		return -EIO;
 	}
@@ -335,7 +335,7 @@ static void fsa4480_usbc_analog_work_fn(struct work_struct *work)
 		container_of(work, struct fsa4480_priv, usbc_analog_work);
 
 	if (!fsa_priv) {
-		pr_err("%s: fsa container invalid\n", __func__);
+		pr_debug("%s: fsa container invalid\n", __func__);
 		return;
 	}
 	fsa4480_usbc_analog_setup_switches(fsa_priv);
@@ -375,7 +375,7 @@ static int fsa4480_probe(struct i2c_client *i2c,
 
 	fsa_priv->regmap = devm_regmap_init_i2c(i2c, &fsa4480_regmap_config);
 	if (IS_ERR_OR_NULL(fsa_priv->regmap)) {
-		dev_err(fsa_priv->dev, "%s: Failed to initialize regmap: %d\n",
+		dev_dbg(fsa_priv->dev, "%s: Failed to initialize regmap: %d\n",
 			__func__, rc);
 		if (!fsa_priv->regmap) {
 			rc = -EINVAL;
@@ -391,7 +391,7 @@ static int fsa4480_probe(struct i2c_client *i2c,
 	fsa_priv->psy_nb.priority = 0;
 	rc = power_supply_reg_notifier(&fsa_priv->psy_nb);
 	if (rc) {
-		dev_err(fsa_priv->dev, "%s: power supply reg failed: %d\n",
+		dev_dbg(fsa_priv->dev, "%s: power supply reg failed: %d\n",
 			__func__, rc);
 		goto err_supply;
 	}
@@ -455,7 +455,7 @@ static int __init fsa4480_init(void)
 
 	rc = i2c_add_driver(&fsa4480_i2c_driver);
 	if (rc)
-		pr_err("fsa4480: Failed to register I2C driver: %d\n", rc);
+		pr_debug("fsa4480: Failed to register I2C driver: %d\n", rc);
 
 	return rc;
 }

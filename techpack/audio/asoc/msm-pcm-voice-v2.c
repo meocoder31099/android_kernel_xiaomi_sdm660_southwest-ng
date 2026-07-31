@@ -350,7 +350,7 @@ static int msm_pcm_ioctl(struct snd_pcm_substream *substream,
 	case SNDRV_VOICE_IOCTL_LCH:
 		if (copy_from_user(&lch_mode, (void *)arg,
 				   sizeof(enum voice_lch_mode))) {
-			pr_err("%s: Copy from user failed, size %zd\n",
+			pr_debug("%s: Copy from user failed, size %zd\n",
 				__func__, sizeof(enum voice_lch_mode));
 
 			ret = -EFAULT;
@@ -367,7 +367,7 @@ static int msm_pcm_ioctl(struct snd_pcm_substream *substream,
 			break;
 
 		default:
-			pr_err("%s: Invalid LCH MODE %d\n", __func__, lch_mode);
+			pr_debug("%s: Invalid LCH MODE %d\n", __func__, lch_mode);
 
 			ret = -EFAULT;
 		}
@@ -384,7 +384,7 @@ static int msm_pcm_ioctl(struct snd_pcm_substream *substream,
 	if (!ret)
 		pr_debug("%s: ret %d\n", __func__, ret);
 	else
-		pr_err("%s: cmd 0x%x failed %d\n", __func__, cmd, ret);
+		pr_debug("%s: cmd 0x%x failed %d\n", __func__, cmd, ret);
 
 	return ret;
 }
@@ -398,7 +398,7 @@ static int msm_voice_sidetone_put(struct snd_kcontrol *kcontrol,
 	uint32_t session_id = ALL_SESSION_VSID;
 
 	if (value < 0) {
-		pr_err("%s: Invalid arguments sidetone enable %ld\n",
+		pr_debug("%s: Invalid arguments sidetone enable %ld\n",
 			 __func__, value);
 		ret = -EINVAL;
 		return ret;
@@ -426,7 +426,7 @@ static int msm_voice_gain_put(struct snd_kcontrol *kcontrol,
 
 	if ((volume < 0) || (ramp_duration < 0)
 		|| (ramp_duration > MAX_RAMP_DURATION)) {
-		pr_err(" %s Invalid arguments", __func__);
+		pr_debug(" %s Invalid arguments", __func__);
 
 		ret = -EINVAL;
 		goto done;
@@ -451,7 +451,7 @@ static int msm_voice_mute_put(struct snd_kcontrol *kcontrol,
 
 	if ((mute < 0) || (mute > 1) || (ramp_duration < 0)
 		|| (ramp_duration > MAX_RAMP_DURATION)) {
-		pr_err(" %s Invalid arguments", __func__);
+		pr_debug(" %s Invalid arguments", __func__);
 
 		ret = -EINVAL;
 		goto done;
@@ -476,7 +476,7 @@ static int msm_voice_tx_device_mute_put(struct snd_kcontrol *kcontrol,
 
 	if ((mute < 0) || (mute > 1) || (ramp_duration < 0) ||
 	    (ramp_duration > MAX_RAMP_DURATION)) {
-		pr_err(" %s Invalid arguments", __func__);
+		pr_debug(" %s Invalid arguments", __func__);
 
 		ret = -EINVAL;
 		goto done;
@@ -502,7 +502,7 @@ static int msm_voice_rx_device_mute_put(struct snd_kcontrol *kcontrol,
 
 	if ((mute < 0) || (mute > 1) || (ramp_duration < 0) ||
 	    (ramp_duration > MAX_RAMP_DURATION)) {
-		pr_err(" %s Invalid arguments", __func__);
+		pr_debug(" %s Invalid arguments", __func__);
 
 		ret = -EINVAL;
 		goto done;
@@ -621,7 +621,7 @@ static int msm_voice_topology_disable_put(struct snd_kcontrol *kcontrol,
 	uint32_t session_id = ucontrol->value.integer.value[1];
 
 	if ((disable < 0) || (disable > 1)) {
-		pr_err(" %s Invalid arguments: %d\n", __func__, disable);
+		pr_debug(" %s Invalid arguments: %d\n", __func__, disable);
 
 		ret = -EINVAL;
 		goto done;
@@ -643,7 +643,7 @@ static int msm_voice_rec_config_put(struct snd_kcontrol *kcontrol,
 
 	if (voc_rec_config_channels < NUM_CHANNELS_MONO ||
 			voc_rec_config_channels > NUM_CHANNELS_STEREO) {
-		pr_err("%s: Invalid channel config (%d)\n", __func__,
+		pr_debug("%s: Invalid channel config (%d)\n", __func__,
 			voc_rec_config_channels);
 		ret = -EINVAL;
 		goto done;
@@ -691,7 +691,7 @@ static int msm_voice_cvd_version_get(struct snd_kcontrol *kcontrol,
 	ret = voc_get_cvd_version(cvd_version);
 
 	if (ret)
-		pr_err("%s: Error retrieving CVD version, error:%d\n",
+		pr_debug("%s: Error retrieving CVD version, error:%d\n",
 			__func__, ret);
 
 	memcpy(ucontrol->value.bytes.data, cvd_version, sizeof(cvd_version));
@@ -796,7 +796,7 @@ static int msm_pcm_probe(struct platform_device *pdev)
 
 		goto done;
 	} else if (rc < 0) {
-		pr_err("%s: memory allocation for calibration failed %d\n",
+		pr_debug("%s: memory allocation for calibration failed %d\n",
 		       __func__, rc);
 	}
 

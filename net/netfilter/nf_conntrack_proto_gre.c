@@ -375,7 +375,7 @@ static int proto_gre_net_init(struct net *net)
 	ret = nf_ct_l4proto_pernet_register_one(net,
 						&nf_conntrack_l4proto_gre4);
 	if (ret < 0)
-		pr_err("nf_conntrack_gre4: pernet registration failed.\n");
+		pr_debug("nf_conntrack_gre4: pernet registration failed.\n");
 	return ret;
 }
 

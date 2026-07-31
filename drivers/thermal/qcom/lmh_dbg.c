@@ -63,12 +63,12 @@ static int lmh_debug_read(uint32_t **buf)
 			LMH_DEBUG_READ_BUF_SIZE), &desc_arg);
 	size = desc_arg.ret[0];
 	if (ret) {
-		pr_err("Error in SCM get debug buffer size call. err:%d\n",
+		pr_debug("Error in SCM get debug buffer size call. err:%d\n",
 				ret);
 		goto get_dbg_exit;
 	}
 	if (!size) {
-		pr_err("No Debug data to read\n");
+		pr_debug("No Debug data to read\n");
 		ret = -ENODEV;
 		goto get_dbg_exit;
 	}
@@ -97,11 +97,11 @@ static int lmh_debug_read(uint32_t **buf)
 	/* Have memory barrier before we access the TZ data */
 	mb();
 	if (ret) {
-		pr_err("Error in get debug read. err:%d\n", ret);
+		pr_debug("Error in get debug read. err:%d\n", ret);
 		goto get_dbg_exit;
 	}
 	if (tz_ret) {
-		pr_err("TZ API returned error. err:%d\n", tz_ret);
+		pr_debug("TZ API returned error. err:%d\n", tz_ret);
 		ret = tz_ret;
 		goto get_dbg_exit;
 	}
@@ -145,7 +145,7 @@ static int lmh_debug_config_write(uint32_t cmd_id, uint32_t *buf, int size)
 	/* Have memory barrier before we access the TZ data */
 	mb();
 	if (ret) {
-		pr_err("Error in config debug read. err:%d\n", ret);
+		pr_debug("Error in config debug read. err:%d\n", ret);
 		goto set_cfg_exit;
 	}
 
@@ -168,7 +168,7 @@ static int lmh_parse_and_extract(const char __user *user_buf, size_t count,
 		goto dfs_cfg_write_exit;
 	}
 	if (copy_from_user(local_buf, user_buf, count)) {
-		pr_err("user buf error\n");
+		pr_debug("user buf error\n");
 		ret = -EFAULT;
 		goto dfs_cfg_write_exit;
 	}
@@ -187,7 +187,7 @@ static int lmh_parse_and_extract(const char __user *user_buf, size_t count,
 			 != NULL); token++)
 			data_ct++;
 		if (data_ct < 2) {
-			pr_err("Invalid format string:[%s]\n", curr_ptr);
+			pr_debug("Invalid format string:[%s]\n", curr_ptr);
 			ret = -EINVAL;
 			goto dfs_cfg_write_exit;
 		}
@@ -205,7 +205,7 @@ static int lmh_parse_and_extract(const char __user *user_buf, size_t count,
 				*token = '\0';
 			ret = kstrtouint(curr_ptr, 0, &config_buf[i]);
 			if (ret < 0) {
-				pr_err("Data[%s] scan error. err:%d\n",
+				pr_debug("Data[%s] scan error. err:%d\n",
 					curr_ptr, ret);
 				kfree(config_buf);
 				goto dfs_cfg_write_exit;
@@ -225,7 +225,7 @@ static int lmh_parse_and_extract(const char __user *user_buf, size_t count,
 		}
 		kfree(config_buf);
 		if (ret) {
-			pr_err("Config error. type:%d err:%d\n", type, ret);
+			pr_debug("Config error. type:%d err:%d\n", type, ret);
 			goto dfs_cfg_write_exit;
 		}
 	}
@@ -263,14 +263,14 @@ static int lmh_dbgfs_data_read(struct seq_file *seq_fp, void *data)
 	do {
 		seq_printf(seq_fp, "0x%x ", read_buf[idx]);
 		if (seq_has_overflowed(seq_fp)) {
-			pr_err("Seq overflow. idx:%d\n", idx);
+			pr_debug("Seq overflow. idx:%d\n", idx);
 			goto dfs_read_exit;
 		}
 		idx++;
 		if ((idx % LMH_READ_LINE_LENGTH) == 0) {
 			seq_puts(seq_fp, "\n");
 			if (seq_has_overflowed(seq_fp)) {
-				pr_err("Seq overflow. idx:%d\n", idx);
+				pr_debug("Seq overflow. idx:%d\n", idx);
 				goto dfs_read_exit;
 			}
 		}
@@ -300,12 +300,12 @@ static int lmh_get_recurssive_data(struct scm_desc *desc_arg, uint32_t cmd_idx,
 		/* Have barrier before reading from TZ data */
 		mb();
 		if (ret) {
-			pr_err("Error in SCM get type. cmd:%x err:%d\n",
+			pr_debug("Error in SCM get type. cmd:%x err:%d\n",
 				LMH_DEBUG_GET_TYPE, ret);
 			return ret;
 		}
 		if (!*size) {
-			pr_err("No LMH device supported\n");
+			pr_debug("No LMH device supported\n");
 			return -ENODEV;
 		}
 		if (!*dest_buf) {
@@ -408,7 +408,7 @@ static int lmh_get_types(struct seq_file *seq_fp, enum lmh_read_type type)
 		return -EINVAL;
 	}
 	if (ret <= 0 || !type_list) {
-		pr_err("No device information. err:%d\n", ret);
+		pr_debug("No device information. err:%d\n", ret);
 		return -ENODEV;
 	}
 	size = ret;
@@ -495,7 +495,7 @@ static int lmh_debug_init(void)
 					lmh_data->debugfs_parent, NULL,
 					&lmh_dbgfs_read_fops);
 	if (IS_ERR(lmh_data->debug_read)) {
-		pr_err("Error creating" LMH_DBGFS_READ "entry\n");
+		pr_debug("Error creating" LMH_DBGFS_READ "entry\n");
 		ret = PTR_ERR(lmh_data->debug_read);
 		goto dbg_reg_exit;
 	}
@@ -503,7 +503,7 @@ static int lmh_debug_init(void)
 					0200, lmh_data->debugfs_parent, NULL,
 					&lmh_dbgfs_config_fops);
 	if (IS_ERR(lmh_data->debug_config)) {
-		pr_err("Error creating" LMH_DBGFS_CONFIG_READ "entry\n");
+		pr_debug("Error creating" LMH_DBGFS_CONFIG_READ "entry\n");
 		ret = PTR_ERR(lmh_data->debug_config);
 		goto dbg_reg_exit;
 	}
@@ -511,7 +511,7 @@ static int lmh_debug_init(void)
 					0400, lmh_data->debugfs_parent, NULL,
 					&lmh_dbgfs_read_type_fops);
 	if (IS_ERR(lmh_data->debug_read_type)) {
-		pr_err("Error creating" LMH_DBGFS_READ_TYPES "entry\n");
+		pr_debug("Error creating" LMH_DBGFS_READ_TYPES "entry\n");
 		ret = PTR_ERR(lmh_data->debug_read_type);
 		goto dbg_reg_exit;
 	}
@@ -520,7 +520,7 @@ static int lmh_debug_init(void)
 					0400, lmh_data->debugfs_parent, NULL,
 					&lmh_dbgfs_config_type_fops);
 	if (IS_ERR(lmh_data->debug_config_type)) {
-		pr_err("Error creating" LMH_DBGFS_CONFIG_TYPES "entry\n");
+		pr_debug("Error creating" LMH_DBGFS_CONFIG_TYPES "entry\n");
 		ret = PTR_ERR(lmh_data->debug_config_type);
 		goto dbg_reg_exit;
 	}

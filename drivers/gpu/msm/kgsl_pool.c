@@ -467,7 +467,7 @@ static void kgsl_pool_config(unsigned int order, unsigned int reserved_pages,
 {
 #ifdef CONFIG_ALLOC_BUFFERS_IN_4K_CHUNKS
 	if (order > 0) {
-		pr_err("kgsl: pool order:%d not supprted\n", order);
+		pr_debug("kgsl: pool order:%d not supprted\n", order);
 		return;
 	}
 #endif

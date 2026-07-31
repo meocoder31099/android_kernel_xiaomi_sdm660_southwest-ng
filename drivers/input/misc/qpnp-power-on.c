@@ -315,7 +315,7 @@ qpnp_pon_masked_write(struct qpnp_pon *pon, u16 addr, u8 mask, u8 val)
 
 	rc = regmap_update_bits(pon->regmap, addr, mask, val);
 	if (rc)
-		dev_err(pon->dev, "Register write failed, addr=0x%04X, rc=%d\n",
+		dev_dbg(pon->dev, "Register write failed, addr=0x%04X, rc=%d\n",
 			addr, rc);
 	return rc;
 }
@@ -326,7 +326,7 @@ static int qpnp_pon_write(struct qpnp_pon *pon, u16 addr, u8 val)
 
 	rc = regmap_write(pon->regmap, addr, val);
 	if (rc)
-		dev_err(pon->dev, "Register write failed, addr=0x%04X, rc=%d\n",
+		dev_dbg(pon->dev, "Register write failed, addr=0x%04X, rc=%d\n",
 			addr, rc);
 	return rc;
 }
@@ -337,7 +337,7 @@ static int qpnp_pon_read(struct qpnp_pon *pon, u16 addr, unsigned int *val)
 
 	rc = regmap_read(pon->regmap, addr, val);
 	if (rc)
-		dev_err(pon->dev, "Register read failed, addr=0x%04X, rc=%d\n",
+		dev_dbg(pon->dev, "Register read failed, addr=0x%04X, rc=%d\n",
 			addr, rc);
 	return rc;
 }
@@ -654,7 +654,7 @@ int qpnp_pon_system_pwr_off(enum pon_power_off_type type)
 
 	rc = qpnp_pon_reset_config(sys_reset_dev, type);
 	if (rc) {
-		dev_err(sys_reset_dev->dev, "Error configuring main PON, rc=%d\n",
+		dev_dbg(sys_reset_dev->dev, "Error configuring main PON, rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -669,18 +669,18 @@ int qpnp_pon_system_pwr_off(enum pon_power_off_type type)
 		goto out;
 
 	list_for_each_entry_safe(pon, tmp, &spon_dev_list, list) {
-		dev_emerg(pon->dev, "PMIC@SID%d: configuring PON for reset\n",
+		dev_dbg(pon->dev, "PMIC@SID%d: configuring PON for reset\n",
 			  to_spmi_device(pon->dev->parent)->usid);
 		rc = qpnp_pon_reset_config(pon, type);
 		if (rc) {
-			dev_err(pon->dev, "Error configuring secondary PON, rc=%d\n",
+			dev_dbg(pon->dev, "Error configuring secondary PON, rc=%d\n",
 				rc);
 			goto out;
 		}
 		if (pon->resin_pon_reset) {
 			rc = qpnp_resin_pon_reset_config(pon, type);
 			if (rc) {
-				dev_err(pon->dev, "Error configuring secondary PON resin, rc=%d\n",
+				dev_dbg(pon->dev, "Error configuring secondary PON resin, rc=%d\n",
 					rc);
 				goto out;
 			}
@@ -698,7 +698,7 @@ out:
 			rc = power_supply_set_property(batt_psy,
 					POWER_SUPPLY_PROP_SET_SHIP_MODE, &val);
 			if (rc)
-				dev_err(sys_reset_dev->dev, "Failed to set ship mode\n");
+				dev_dbg(sys_reset_dev->dev, "Failed to set ship mode\n");
 		}
 	}
 
@@ -860,7 +860,7 @@ static int qpnp_pon_get_trigger_config(enum pon_trigger_source pon_src,
 		return -ENODEV;
 
 	if (pon_src < PON_SMPL || pon_src > PON_KPDPWR_N) {
-		dev_err(pon->dev, "Invalid PON source %d\n", pon_src);
+		dev_dbg(pon->dev, "Invalid PON source %d\n", pon_src);
 		return -EINVAL;
 	}
 
@@ -899,7 +899,7 @@ int qpnp_pon_trigger_config(enum pon_trigger_source pon_src, bool enable)
 		return -EPROBE_DEFER;
 
 	if (pon_src < PON_SMPL || pon_src > PON_KPDPWR_N) {
-		dev_err(pon->dev, "Invalid PON source %d\n", pon_src);
+		dev_dbg(pon->dev, "Invalid PON source %d\n", pon_src);
 		return -EINVAL;
 	}
 
@@ -940,7 +940,7 @@ static int qpnp_pon_store_and_clear_warm_reset(struct qpnp_pon *pon)
 		rc = regmap_write(pon->regmap, QPNP_PON_WARM_RESET_REASON1(pon),
 				  0);
 		if (rc) {
-			dev_err(pon->dev, "Register write failed, addr=0x%04X, rc=%d\n",
+			dev_dbg(pon->dev, "Register write failed, addr=0x%04X, rc=%d\n",
 				QPNP_PON_WARM_RESET_REASON1(pon), rc);
 			return rc;
 		}
@@ -1046,7 +1046,7 @@ static irqreturn_t qpnp_kpdpwr_irq(int irq, void *_pon)
 
 	rc = qpnp_pon_input_dispatch(pon, PON_KPDPWR);
 	if (rc)
-		dev_err(pon->dev, "Unable to send input event, rc=%d\n", rc);
+		dev_dbg(pon->dev, "Unable to send input event, rc=%d\n", rc);
 
 	return IRQ_HANDLED;
 }
@@ -1063,7 +1063,7 @@ static irqreturn_t qpnp_resin_irq(int irq, void *_pon)
 
 	rc = qpnp_pon_input_dispatch(pon, PON_RESIN);
 	if (rc)
-		dev_err(pon->dev, "Unable to send input event, rc=%d\n", rc);
+		dev_dbg(pon->dev, "Unable to send input event, rc=%d\n", rc);
 
 	return IRQ_HANDLED;
 }
@@ -1080,7 +1080,7 @@ static irqreturn_t qpnp_cblpwr_irq(int irq, void *_pon)
 
 	rc = qpnp_pon_input_dispatch(pon, PON_CBLPWR);
 	if (rc)
-		dev_err(pon->dev, "Unable to send input event, rc=%d\n", rc);
+		dev_dbg(pon->dev, "Unable to send input event, rc=%d\n", rc);
 
 	return IRQ_HANDLED;
 }
@@ -1094,10 +1094,10 @@ static void print_pon_reg(struct qpnp_pon *pon, u16 offset)
 	addr = pon->base + offset;
 	rc = regmap_read(pon->regmap, addr, &reg);
 	if (rc)
-		dev_emerg(pon->dev, "Register read failed, addr=0x%04X, rc=%d\n",
+		dev_dbg(pon->dev, "Register read failed, addr=0x%04X, rc=%d\n",
 			  addr, rc);
 	else
-		dev_emerg(pon->dev, "reg@0x%04X: 0x%02X\n", addr, reg);
+		dev_dbg(pon->dev, "reg@0x%04X: 0x%02X\n", addr, reg);
 }
 
 #define PON_PBL_STATUS			0x7
@@ -1149,7 +1149,7 @@ static void bark_work_func(struct work_struct *work)
 
 	cfg = qpnp_get_cfg(pon, PON_RESIN);
 	if (!cfg) {
-		dev_err(pon->dev, "Invalid config pointer\n");
+		dev_dbg(pon->dev, "Invalid config pointer\n");
 		return;
 	}
 
@@ -1195,7 +1195,7 @@ static irqreturn_t qpnp_resin_bark_irq(int irq, void *_pon)
 
 	cfg = qpnp_get_cfg(pon, PON_RESIN);
 	if (!cfg) {
-		dev_err(pon->dev, "Invalid config pointer\n");
+		dev_dbg(pon->dev, "Invalid config pointer\n");
 		return IRQ_HANDLED;
 	}
 
@@ -1313,7 +1313,7 @@ qpnp_pon_request_irqs(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 				"pon_kpdpwr_status", pon);
 		if (rc < 0) {
-			dev_err(pon->dev, "IRQ %d request failed, rc=%d\n",
+			dev_dbg(pon->dev, "IRQ %d request failed, rc=%d\n",
 				cfg->state_irq, rc);
 			return rc;
 		}
@@ -1324,7 +1324,7 @@ qpnp_pon_request_irqs(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
 						IRQF_TRIGGER_RISING,
 						"pon_kpdpwr_bark", pon);
 			if (rc < 0) {
-				dev_err(pon->dev, "IRQ %d request failed, rc=%d\n",
+				dev_dbg(pon->dev, "IRQ %d request failed, rc=%d\n",
 					cfg->bark_irq, rc);
 				return rc;
 			}
@@ -1335,7 +1335,7 @@ qpnp_pon_request_irqs(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 				"pon_resin_status", pon);
 		if (rc < 0) {
-			dev_err(pon->dev, "IRQ %d request failed, rc=%d\n",
+			dev_dbg(pon->dev, "IRQ %d request failed, rc=%d\n",
 				cfg->state_irq, rc);
 			return rc;
 		}
@@ -1346,7 +1346,7 @@ qpnp_pon_request_irqs(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
 						IRQF_TRIGGER_RISING,
 						"pon_resin_bark", pon);
 			if (rc < 0) {
-				dev_err(pon->dev, "IRQ %d request failed, rc=%d\n",
+				dev_dbg(pon->dev, "IRQ %d request failed, rc=%d\n",
 					cfg->bark_irq, rc);
 				return rc;
 			}
@@ -1357,7 +1357,7 @@ qpnp_pon_request_irqs(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
 				IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,
 				"pon_cblpwr_status", pon);
 		if (rc < 0) {
-			dev_err(pon->dev, "IRQ %d request failed, rc=%d\n",
+			dev_dbg(pon->dev, "IRQ %d request failed, rc=%d\n",
 				cfg->state_irq, rc);
 			return rc;
 		}
@@ -1369,7 +1369,7 @@ qpnp_pon_request_irqs(struct qpnp_pon *pon, struct qpnp_pon_config *cfg)
 						IRQF_TRIGGER_RISING,
 						"pon_kpdpwr_resin_bark", pon);
 			if (rc < 0) {
-				dev_err(pon->dev, "IRQ %d request failed, rc=%d\n",
+				dev_dbg(pon->dev, "IRQ %d request failed, rc=%d\n",
 					cfg->bark_irq, rc);
 				return rc;
 			}
@@ -1418,7 +1418,7 @@ static int qpnp_pon_config_kpdpwr_init(struct qpnp_pon *pon,
 
 	cfg->state_irq = platform_get_irq_byname(pdev, "kpdpwr");
 	if (cfg->state_irq < 0) {
-		dev_err(pon->dev, "Unable to get kpdpwr irq, rc=%d\n",
+		dev_dbg(pon->dev, "Unable to get kpdpwr irq, rc=%d\n",
 			cfg->state_irq);
 		return cfg->state_irq;
 	}
@@ -1427,7 +1427,7 @@ static int qpnp_pon_config_kpdpwr_init(struct qpnp_pon *pon,
 				  &cfg->support_reset);
 	if (rc) {
 		if (rc != -EINVAL) {
-			dev_err(pon->dev, "Unable to read qcom,support-reset, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to read qcom,support-reset, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1439,7 +1439,7 @@ static int qpnp_pon_config_kpdpwr_init(struct qpnp_pon *pon,
 	if (cfg->use_bark) {
 		cfg->bark_irq = platform_get_irq_byname(pdev, "kpdpwr-bark");
 		if (cfg->bark_irq < 0) {
-			dev_err(pon->dev, "Unable to get kpdpwr-bark irq, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to get kpdpwr-bark irq, rc=%d\n",
 				cfg->bark_irq);
 			return cfg->bark_irq;
 		}
@@ -1457,9 +1457,9 @@ static int qpnp_pon_config_kpdpwr_init(struct qpnp_pon *pon,
 		/* Read PON_RT_STS status during driver initialization. */
 		rc = qpnp_pon_read(pon, QPNP_PON_RT_STS(pon), &pon_rt_sts);
 		if (rc < 0)
-			pr_err("failed to read QPNP_PON_RT_STS rc=%d\n", rc);
+			pr_debug("failed to read QPNP_PON_RT_STS rc=%d\n", rc);
 
-		pr_info("KPDPWR status at init=0x%02x, KPDPWR_ON=%d\n",
+		pr_debug("KPDPWR status at init=0x%02x, KPDPWR_ON=%d\n",
 			pon_rt_sts, (pon_rt_sts & QPNP_PON_KPDPWR_ON));
 	}
 
@@ -1476,7 +1476,7 @@ static int qpnp_pon_config_resin_init(struct qpnp_pon *pon,
 
 	cfg->state_irq = platform_get_irq_byname(pdev, "resin");
 	if (cfg->state_irq < 0) {
-		dev_err(pon->dev, "Unable to get resin irq, rc=%d\n",
+		dev_dbg(pon->dev, "Unable to get resin irq, rc=%d\n",
 			cfg->state_irq);
 		return cfg->state_irq;
 	}
@@ -1485,7 +1485,7 @@ static int qpnp_pon_config_resin_init(struct qpnp_pon *pon,
 				  &cfg->support_reset);
 	if (rc) {
 		if (rc != -EINVAL) {
-			dev_err(pon->dev, "Unable to read qcom,support-reset, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to read qcom,support-reset, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1518,7 +1518,7 @@ static int qpnp_pon_config_resin_init(struct qpnp_pon *pon,
 	if (cfg->use_bark) {
 		cfg->bark_irq = platform_get_irq_byname(pdev, "resin-bark");
 		if (cfg->bark_irq < 0) {
-			dev_err(pon->dev, "Unable to get resin-bark irq, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to get resin-bark irq, rc=%d\n",
 				cfg->bark_irq);
 			return cfg->bark_irq;
 		}
@@ -1542,7 +1542,7 @@ static int qpnp_pon_config_cblpwr_init(struct qpnp_pon *pon,
 {
 	cfg->state_irq = platform_get_irq_byname(pdev, "cblpwr");
 	if (cfg->state_irq < 0) {
-		dev_err(pon->dev, "Unable to get cblpwr irq, rc=%d\n",
+		dev_dbg(pon->dev, "Unable to get cblpwr irq, rc=%d\n",
 			cfg->state_irq);
 		return cfg->state_irq;
 	}
@@ -1561,7 +1561,7 @@ static int qpnp_pon_config_kpdpwr_resin_init(struct qpnp_pon *pon,
 				  &cfg->support_reset);
 	if (rc) {
 		if (rc != -EINVAL) {
-			dev_err(pon->dev, "Unable to read qcom,support-reset, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to read qcom,support-reset, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1574,7 +1574,7 @@ static int qpnp_pon_config_kpdpwr_resin_init(struct qpnp_pon *pon,
 		cfg->bark_irq = platform_get_irq_byname(pdev,
 							"kpdpwr-resin-bark");
 		if (cfg->bark_irq < 0) {
-			dev_err(pon->dev, "Unable to get kpdpwr-resin-bark irq, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to get kpdpwr-resin-bark irq, rc=%d\n",
 				cfg->bark_irq);
 			return cfg->bark_irq;
 		}
@@ -1606,33 +1606,33 @@ static int qpnp_pon_config_parse_reset_info(struct qpnp_pon *pon,
 	 */
 	rc = of_property_read_u32(node, "qcom,s1-timer", &cfg->s1_timer);
 	if (rc) {
-		dev_err(pon->dev, "Unable to read s1-timer, rc=%d\n", rc);
+		dev_dbg(pon->dev, "Unable to read s1-timer, rc=%d\n", rc);
 		return rc;
 	}
 	if (cfg->s1_timer > QPNP_PON_S1_TIMER_MAX) {
-		dev_err(pon->dev, "Invalid S1 debounce time %u\n",
+		dev_dbg(pon->dev, "Invalid S1 debounce time %u\n",
 			cfg->s1_timer);
 		return -EINVAL;
 	}
 
 	rc = of_property_read_u32(node, "qcom,s2-timer", &cfg->s2_timer);
 	if (rc) {
-		dev_err(pon->dev, "Unable to read s2-timer, rc=%d\n", rc);
+		dev_dbg(pon->dev, "Unable to read s2-timer, rc=%d\n", rc);
 		return rc;
 	}
 	if (cfg->s2_timer > QPNP_PON_S2_TIMER_MAX) {
-		dev_err(pon->dev, "Invalid S2 debounce time %u\n",
+		dev_dbg(pon->dev, "Invalid S2 debounce time %u\n",
 			cfg->s2_timer);
 		return -EINVAL;
 	}
 
 	rc = of_property_read_u32(node, "qcom,s2-type", &cfg->s2_type);
 	if (rc) {
-		dev_err(pon->dev, "Unable to read s2-type, rc=%d\n", rc);
+		dev_dbg(pon->dev, "Unable to read s2-type, rc=%d\n", rc);
 		return rc;
 	}
 	if (cfg->s2_type > QPNP_PON_RESET_TYPE_MAX) {
-		dev_err(pon->dev, "Invalid reset type specified %u\n",
+		dev_dbg(pon->dev, "Invalid reset type specified %u\n",
 			cfg->s2_type);
 		return -EINVAL;
 	}
@@ -1664,7 +1664,7 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon,
 		rc = of_property_read_u32(cfg_node, "qcom,pon-type",
 					  &cfg->pon_type);
 		if (rc) {
-			dev_err(pon->dev, "PON type not specified\n");
+			dev_dbg(pon->dev, "PON type not specified\n");
 			return rc;
 		}
 
@@ -1694,7 +1694,7 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon,
 				return rc;
 			break;
 		default:
-			dev_err(pon->dev, "PON RESET %u not supported\n",
+			dev_dbg(pon->dev, "PON RESET %u not supported\n",
 				cfg->pon_type);
 			return -EINVAL;
 		}
@@ -1728,7 +1728,7 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon,
 					IRQF_TRIGGER_RISING,
 					"qpnp_pmic_wd_bark", pon);
 		if (rc < 0) {
-			dev_err(pon->dev, "Can't request %d IRQ, rc=%d\n",
+			dev_dbg(pon->dev, "Can't request %d IRQ, rc=%d\n",
 				pmic_wd_bark_irq, rc);
 			return rc;
 		}
@@ -1738,7 +1738,7 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon,
 	if (pon->pon_input) {
 		rc = input_register_device(pon->pon_input);
 		if (rc) {
-			dev_err(pon->dev, "Can't register pon key: %d\n", rc);
+			dev_dbg(pon->dev, "Can't register pon key: %d\n", rc);
 			return rc;
 		}
 	}
@@ -1851,7 +1851,7 @@ static int pon_regulator_init(struct qpnp_pon *pon)
 		rc = of_property_read_u32(node, "qcom,pon-spare-reg-addr",
 					  &pon_reg->addr);
 		if (rc) {
-			dev_err(dev, "Unable to read address for regulator, rc=%d\n",
+			dev_dbg(dev, "Unable to read address for regulator, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1859,7 +1859,7 @@ static int pon_regulator_init(struct qpnp_pon *pon)
 		rc = of_property_read_u32(node, "qcom,pon-spare-reg-bit",
 					  &pon_reg->bit);
 		if (rc) {
-			dev_err(dev, "Unable to read bit for regulator, rc=%d\n",
+			dev_dbg(dev, "Unable to read bit for regulator, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1867,12 +1867,12 @@ static int pon_regulator_init(struct qpnp_pon *pon)
 		init_data = of_get_regulator_init_data(dev, node,
 						       &pon_reg->rdesc);
 		if (!init_data) {
-			dev_err(dev, "regulator init data is missing\n");
+			dev_dbg(dev, "regulator init data is missing\n");
 			return -ENOMEM;
 		}
 
 		if (!init_data->constraints.name) {
-			dev_err(dev, "regulator-name is missing\n");
+			dev_dbg(dev, "regulator-name is missing\n");
 			return -EINVAL;
 		}
 
@@ -1891,7 +1891,7 @@ static int pon_regulator_init(struct qpnp_pon *pon)
 			rc = PTR_ERR(pon_reg->rdev);
 			pon_reg->rdev = NULL;
 			if (rc != -EPROBE_DEFER)
-				dev_err(dev, "regulator register failed, rc=%d\n",
+				dev_dbg(dev, "regulator register failed, rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -1920,7 +1920,7 @@ static int qpnp_pon_smpl_en_set(const char *val, const struct kernel_param *kp)
 
 	rc = param_set_bool(val, kp);
 	if (rc < 0) {
-		pr_err("Unable to set smpl_en rc=%d\n", rc);
+		pr_debug("Unable to set smpl_en rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1966,7 +1966,7 @@ qpnp_pon_uvlo_dload_set(const char *val, const struct kernel_param *kp)
 
 	rc = param_set_bool(val, kp);
 	if (rc) {
-		pr_err("Unable to set dload_on_uvlo: %d\n", rc);
+		pr_debug("Unable to set dload_on_uvlo: %d\n", rc);
 		return rc;
 	}
 
@@ -2014,12 +2014,12 @@ static void qpnp_pon_debugfs_init(struct qpnp_pon *pon)
 
 	pon->debugfs = debugfs_create_dir(dev_name(pon->dev), NULL);
 	if (!pon->debugfs) {
-		dev_err(pon->dev, "Unable to create debugfs directory\n");
+		dev_dbg(pon->dev, "Unable to create debugfs directory\n");
 	} else {
 		ent = debugfs_create_file_unsafe("uvlo_panic", 0644,
 				pon->debugfs, pon, &qpnp_pon_debugfs_uvlo_fops);
 		if (!ent)
-			dev_err(pon->dev, "Unable to create uvlo_panic debugfs file\n");
+			dev_dbg(pon->dev, "Unable to create uvlo_panic debugfs file\n");
 	}
 }
 
@@ -2058,7 +2058,7 @@ static int qpnp_pon_read_gen2_pon_off_reason(struct qpnp_pon *pon, u16 *reason,
 		rc = regmap_bulk_read(pon->regmap, QPNP_FAULT_REASON1(pon), buf,
 				      2);
 		if (rc) {
-			dev_err(pon->dev, "Register read failed, addr=0x%04X, rc=%d\n",
+			dev_dbg(pon->dev, "Register read failed, addr=0x%04X, rc=%d\n",
 				QPNP_FAULT_REASON1(pon), rc);
 			return rc;
 		}
@@ -2087,7 +2087,7 @@ static int qpnp_pon_configure_s3_reset(struct qpnp_pon *pon)
 	rc = of_property_read_u32(dev->of_node, "qcom,s3-debounce", &debounce);
 	if (!rc) {
 		if (debounce > QPNP_PON_S3_TIMER_SECS_MAX) {
-			dev_err(dev, "S3 debounce time %u greater than max supported %u\n",
+			dev_dbg(dev, "S3 debounce time %u greater than max supported %u\n",
 				debounce, QPNP_PON_S3_TIMER_SECS_MAX);
 			return -EINVAL;
 		}
@@ -2119,7 +2119,7 @@ static int qpnp_pon_configure_s3_reset(struct qpnp_pon *pon)
 		} else if (!strcmp(src_name, "kpdpwr-and-resin")) {
 			src_val = QPNP_PON_S3_SRC_KPDPWR_AND_RESIN;
 		} else {
-			dev_err(dev, "Unknown S3 reset source: %s\n",
+			dev_dbg(dev, "Unknown S3 reset source: %s\n",
 				src_name);
 			return -EINVAL;
 		}
@@ -2170,7 +2170,7 @@ static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 	} else if (pon->subtype == PON_1REG) {
 		pon->pon_ver = QPNP_PON_GEN1_V2;
 	} else {
-		dev_err(dev, "Invalid PON_PERPH_SUBTYPE 0x%02X\n",
+		dev_dbg(dev, "Invalid PON_PERPH_SUBTYPE 0x%02X\n",
 			pon->subtype);
 		return -EINVAL;
 	}
@@ -2193,12 +2193,12 @@ static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 	cold_boot = sys_reset_dev ? !_qpnp_pon_is_warm_reset(sys_reset_dev)
 				  : !_qpnp_pon_is_warm_reset(pon);
 	if (index >= ARRAY_SIZE(qpnp_pon_reason) || index < 0) {
-		dev_info(dev, "PMIC@SID%d Power-on reason: Unknown and '%s' boot\n",
+		dev_dbg(dev, "PMIC@SID%d Power-on reason: Unknown and '%s' boot\n",
 			 to_spmi_device(dev->parent)->usid,
 			 cold_boot ? "cold" : "warm");
 	} else {
 		pon->pon_trigger_reason = index;
-		dev_info(dev, "PMIC@SID%d Power-on reason: %s and '%s' boot\n",
+		dev_dbg(dev, "PMIC@SID%d Power-on reason: %s and '%s' boot\n",
 			 to_spmi_device(dev->parent)->usid,
 			 qpnp_pon_reason[index],
 			 cold_boot ? "cold" : "warm");
@@ -2214,7 +2214,7 @@ static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 		rc = regmap_bulk_read(pon->regmap, QPNP_POFF_REASON1(pon), buf,
 				      2);
 		if (rc) {
-			dev_err(dev, "Register read failed, addr=0x%04X, rc=%d\n",
+			dev_dbg(dev, "Register read failed, addr=0x%04X, rc=%d\n",
 				QPNP_POFF_REASON1(pon), rc);
 			return rc;
 		}
@@ -2223,11 +2223,11 @@ static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 	index = ffs(poff_sts) - 1 + reason_index_offset;
 	if (index >= ARRAY_SIZE(qpnp_poff_reason) || index < 0 ||
 					index < reason_index_offset) {
-		dev_info(dev, "PMIC@SID%d: Unknown power-off reason\n",
+		dev_dbg(dev, "PMIC@SID%d: Unknown power-off reason\n",
 			 to_spmi_device(dev->parent)->usid);
 	} else {
 		pon->pon_power_off_reason = index;
-		dev_info(dev, "PMIC@SID%d: Power-off reason: %s\n",
+		dev_dbg(dev, "PMIC@SID%d: Power-off reason: %s\n",
 			 to_spmi_device(dev->parent)->usid,
 			 qpnp_poff_reason[index]);
 	}
@@ -2250,7 +2250,7 @@ static int qpnp_pon_parse_power_off_type(struct qpnp_pon *pon,
 	rc = of_property_read_u32(pon->dev->of_node, prop, &type);
 	if (rc) {
 		if (rc != -EINVAL) {
-			dev_err(pon->dev, "Unable to read property %s, rc=%d\n",
+			dev_dbg(pon->dev, "Unable to read property %s, rc=%d\n",
 				prop, rc);
 			return rc;
 		}
@@ -2259,7 +2259,7 @@ static int qpnp_pon_parse_power_off_type(struct qpnp_pon *pon,
 	}
 
 	if (type >= PON_POWER_OFF_MAX_TYPE) {
-		dev_err(pon->dev, "Invalid property value %s=%u\n", prop, type);
+		dev_dbg(pon->dev, "Invalid property value %s=%u\n", prop, type);
 		return -EINVAL;
 	}
 
@@ -2334,29 +2334,29 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 
 	pon->regmap = dev_get_regmap(dev->parent, NULL);
 	if (!pon->regmap) {
-		dev_err(dev, "Parent regmap missing\n");
+		dev_dbg(dev, "Parent regmap missing\n");
 		return -ENODEV;
 	}
 
 	rc = of_property_read_u32(dev->of_node, "reg", &base);
 	if (rc < 0) {
-		dev_err(dev, "reg property missing, rc=%d\n", rc);
+		dev_dbg(dev, "reg property missing, rc=%d\n", rc);
 		return rc;
 	}
 	pon->base = base;
 
 	sys_reset = of_property_read_bool(dev->of_node, "qcom,system-reset");
 	if (sys_reset && sys_reset_dev) {
-		dev_err(dev, "qcom,system-reset property must only be specified for one PMIC PON device in the system\n");
+		dev_dbg(dev, "qcom,system-reset property must only be specified for one PMIC PON device in the system\n");
 		return -EINVAL;
 	}
 
 	modem_reset = of_property_read_bool(dev->of_node, "qcom,modem-reset");
 	if (modem_reset && modem_reset_dev) {
-		dev_err(dev, "qcom,modem-reset property must only be specified for one PMIC PON device in the system\n");
+		dev_dbg(dev, "qcom,modem-reset property must only be specified for one PMIC PON device in the system\n");
 		return -EINVAL;
 	} else if (modem_reset && sys_reset) {
-		dev_err(dev, "qcom,modem-reset and qcom,system-reset properties cannot be supported together for one PMIC PON device\n");
+		dev_dbg(dev, "qcom,modem-reset and qcom,system-reset properties cannot be supported together for one PMIC PON device\n");
 		return -EINVAL;
 	}
 
@@ -2367,7 +2367,7 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 		} else if (of_find_property(node, "qcom,pon-type", NULL)) {
 			pon->num_pon_config++;
 		} else {
-			dev_err(dev, "Unknown sub-node found %s\n", node->name);
+			dev_dbg(dev, "Unknown sub-node found %s\n", node->name);
 			return -EINVAL;
 		}
 	}
@@ -2401,7 +2401,7 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 		if (rc)
 			return rc;
 	} else if (rc != -EINVAL) {
-		dev_err(dev, "Unable to read debounce delay, rc=%d\n", rc);
+		dev_dbg(dev, "Unable to read debounce delay, rc=%d\n", rc);
 		return rc;
 	}
 
@@ -2417,10 +2417,10 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 
 	if (of_property_read_bool(dev->of_node, "qcom,secondary-pon-reset")) {
 		if (sys_reset) {
-			dev_err(dev, "qcom,system-reset property shouldn't be used along with qcom,secondary-pon-reset property\n");
+			dev_dbg(dev, "qcom,system-reset property shouldn't be used along with qcom,secondary-pon-reset property\n");
 			return -EINVAL;
 		} else if (modem_reset) {
-			dev_err(dev, "qcom,modem-reset property shouldn't be used along with qcom,secondary-pon-reset property\n");
+			dev_dbg(dev, "qcom,modem-reset property shouldn't be used along with qcom,secondary-pon-reset property\n");
 			return -EINVAL;
 		}
 		spin_lock_irqsave(&spon_list_slock, flags);
@@ -2439,7 +2439,7 @@ static int qpnp_pon_probe(struct platform_device *pdev)
 
 	rc = device_create_file(dev, &dev_attr_debounce_us);
 	if (rc) {
-		dev_err(dev, "sysfs debounce file creation failed, rc=%d\n",
+		dev_dbg(dev, "sysfs debounce file creation failed, rc=%d\n",
 			rc);
 		return rc;
 	}

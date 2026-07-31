@@ -69,7 +69,7 @@ void kgsl_snapshot_push_object(struct kgsl_device *device,
 			if (!kgsl_gpuaddr_in_memdesc(
 				&objbuf[index].entry->memdesc,
 				gpuaddr, dwords << 2)) {
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"snapshot: gpuaddr 0x%016llX size is less than requested\n",
 					gpuaddr);
 				return;
@@ -83,19 +83,19 @@ void kgsl_snapshot_push_object(struct kgsl_device *device,
 	}
 
 	if (objbufptr == SNAPSHOT_OBJ_BUFSIZE) {
-		dev_err(device->dev, "snapshot: too many snapshot objects\n");
+		dev_dbg(device->dev, "snapshot: too many snapshot objects\n");
 		return;
 	}
 
 	entry = kgsl_sharedmem_find(process, gpuaddr);
 	if (entry == NULL) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: Can't find entry for 0x%016llX\n", gpuaddr);
 		return;
 	}
 
 	if (!kgsl_gpuaddr_in_memdesc(&entry->memdesc, gpuaddr, dwords << 2)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: Mem entry 0x%016llX is too small\n",
 			gpuaddr);
 		kgsl_mem_entry_put(entry);
@@ -461,7 +461,7 @@ static size_t snapshot_rb(struct kgsl_device *device, u8 *buf,
 	 */
 
 	if (remain < KGSL_RB_SIZE + sizeof(*header)) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: Not enough memory for the rb section\n");
 		return 0;
 	}
@@ -526,7 +526,7 @@ static size_t snapshot_capture_mem_list(struct kgsl_device *device,
 		goto out;
 
 	if (remain < ((num_mem * sizeof(struct mem_entry)) + sizeof(*header))) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: Not enough memory for the mem list\n");
 		goto out;
 	}
@@ -634,7 +634,7 @@ static size_t snapshot_ib(struct kgsl_device *device, u8 *buf,
 	struct kgsl_memdesc *memdesc;
 
 	if (meta == NULL || meta->snapshot == NULL || meta->obj == NULL) {
-		dev_err(device->dev, "snapshot: bad metadata\n");
+		dev_dbg(device->dev, "snapshot: bad metadata\n");
 		return 0;
 	}
 	snapshot = meta->snapshot;
@@ -646,13 +646,13 @@ static size_t snapshot_ib(struct kgsl_device *device, u8 *buf,
 		obj->size = (memdesc->size - (obj->gpuaddr - memdesc->gpuaddr));
 
 	if (remain < (obj->size + sizeof(*header))) {
-		dev_err(device->dev, "snapshot: Not enough memory for the ib\n");
+		dev_dbg(device->dev, "snapshot: Not enough memory for the ib\n");
 		return 0;
 	}
 
 	src = kgsl_gpuaddr_to_vaddr(memdesc, obj->gpuaddr);
 	if (src == NULL) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			     "snapshot: Unable to map GPU memory object 0x%016llX into the kernel\n",
 			     obj->gpuaddr);
 		return 0;
@@ -745,7 +745,7 @@ static void setup_fault_process(struct kgsl_device *device,
 
 		kgsl_process_private_put(process);
 		process = NULL;
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: ptbase mismatch hw %llx sw %llx\n",
 			hw_ptbase, proc_ptbase);
 	}
@@ -786,13 +786,13 @@ static size_t snapshot_global(struct kgsl_device *device, u8 *buf,
 		return 0;
 
 	if (remain < (memdesc->size + sizeof(*header))) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"snapshot: Not enough memory for the memdesc\n");
 		return 0;
 	}
 
 	if (memdesc->hostptr == NULL) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 		"snapshot: no kernel mapping for global object 0x%016llX\n",
 		memdesc->gpuaddr);
 		return 0;
@@ -939,7 +939,7 @@ void adreno_snapshot(struct kgsl_device *device, struct kgsl_snapshot *snapshot,
 		entry = kgsl_sharedmem_find(snapshot->process,
 				snapshot->ib1base);
 		if (entry == NULL) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"Can't find a memory entry containing IB1BASE %16llx\n",
 				snapshot->ib1base);
 		} else {
@@ -949,7 +949,7 @@ void adreno_snapshot(struct kgsl_device *device, struct kgsl_snapshot *snapshot,
 
 			kgsl_snapshot_push_object(device, snapshot->process,
 				snapshot->ib1base, ibsize >> 2);
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"CP_IB1_BASE is not found in the ringbuffer. Dumping %llx dwords of the buffer\n",
 				ibsize >> 2);
 		}
@@ -983,9 +983,9 @@ void adreno_snapshot(struct kgsl_device *device, struct kgsl_snapshot *snapshot,
 		kgsl_snapshot_add_active_ib_obj_list(device, snapshot);
 
 	if (ib_max_objs)
-		dev_err(device->dev, "Max objects found in IB\n");
+		dev_dbg(device->dev, "Max objects found in IB\n");
 	if (snapshot_frozen_objsize)
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 			"GPU snapshot froze %zdKb of GPU buffers\n",
 			snapshot_frozen_objsize / 1024);
 
@@ -1224,7 +1224,7 @@ static const struct adreno_vbif_snapshot_registers *vbif_registers(
 			return &list[i];
 	}
 
-	dev_err(KGSL_DEVICE(adreno_dev)->dev,
+	dev_dbg(KGSL_DEVICE(adreno_dev)->dev,
 		"snapshot: Registers for VBIF version %X register were not dumped\n",
 		version);
 

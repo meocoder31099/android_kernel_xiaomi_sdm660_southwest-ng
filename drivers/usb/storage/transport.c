@@ -1091,7 +1091,7 @@ int usb_stor_Bulk_max_lun(struct us_data *us)
 		if (us->iobuf[0] < 16) {
 			return us->iobuf[0];
 		} else {
-			dev_info(&us->pusb_intf->dev,
+			dev_dbg(&us->pusb_intf->dev,
 				 "Max LUN %d is not valid, using 0 instead",
 				 us->iobuf[0]);
 		}

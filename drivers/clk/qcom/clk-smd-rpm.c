@@ -413,7 +413,7 @@ static int clk_smd_rpm_enable_scaling(void)
 			QCOM_SMD_RPM_MISC_CLK,
 			QCOM_RPM_SCALING_ENABLE_ID, &req, 1);
 	if (ret) {
-		pr_err("RPM clock scaling (sleep set) not enabled!\n");
+		pr_debug("RPM clock scaling (sleep set) not enabled!\n");
 		return ret;
 	}
 
@@ -421,7 +421,7 @@ static int clk_smd_rpm_enable_scaling(void)
 			QCOM_SMD_RPM_MISC_CLK,
 			QCOM_RPM_SCALING_ENABLE_ID, &req, 1);
 	if (ret) {
-		pr_err("RPM clock scaling (active set) not enabled!\n");
+		pr_debug("RPM clock scaling (active set) not enabled!\n");
 		return ret;
 	}
 
@@ -1337,11 +1337,11 @@ static int rpm_smd_clk_probe(struct platform_device *pdev)
 		clk_prepare_enable(pnoc_keepalive_a_clk.hw.clk);
 	}
 
-	dev_info(&pdev->dev, "Registered RPM clocks\n");
+	dev_dbg(&pdev->dev, "Registered RPM clocks\n");
 
 	return 0;
 err:
-	dev_err(&pdev->dev, "Error registering SMD clock driver (%d)\n", ret);
+	dev_dbg(&pdev->dev, "Error registering SMD clock driver (%d)\n", ret);
 	return ret;
 }
 

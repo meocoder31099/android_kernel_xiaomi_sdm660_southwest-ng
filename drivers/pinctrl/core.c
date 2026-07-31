@@ -170,7 +170,7 @@ const char *pin_get_name(struct pinctrl_dev *pctldev, const unsigned pin)
 
 	desc = pin_desc_get(pctldev, pin);
 	if (!desc) {
-		dev_err(pctldev->dev, "failed to get pin(%d) name\n",
+		dev_dbg(pctldev->dev, "failed to get pin(%d) name\n",
 			pin);
 		return NULL;
 	}
@@ -230,7 +230,7 @@ static int pinctrl_register_one_pin(struct pinctrl_dev *pctldev,
 
 	pindesc = pin_desc_get(pctldev, pin->number);
 	if (pindesc) {
-		dev_err(pctldev->dev, "pin %d already registered\n",
+		dev_dbg(pctldev->dev, "pin %d already registered\n",
 			pin->number);
 		return -EINVAL;
 	}
@@ -585,7 +585,7 @@ int pinctrl_generic_get_group_pins(struct pinctrl_dev *pctldev,
 	group = radix_tree_lookup(&pctldev->pin_group_tree,
 				  selector);
 	if (!group) {
-		dev_err(pctldev->dev, "%s could not find pingroup%i\n",
+		dev_dbg(pctldev->dev, "%s could not find pingroup%i\n",
 			__func__, selector);
 		return -EINVAL;
 	}
@@ -754,7 +754,7 @@ int pinctrl_get_group_selector(struct pinctrl_dev *pctldev,
 		group_selector++;
 	}
 
-	dev_err(pctldev->dev, "does not have pin group %s\n",
+	dev_dbg(pctldev->dev, "does not have pin group %s\n",
 		pin_group);
 
 	return -EINVAL;
@@ -970,7 +970,7 @@ static int add_setting(struct pinctrl *p, struct pinctrl_dev *pctldev,
 		 * OK let us guess that the driver is not there yet, and
 		 * let's defer obtaining this pinctrl handle to later...
 		 */
-		dev_info(p->dev, "unknown pinctrl device %s in map entry, deferring probe",
+		dev_dbg(p->dev, "unknown pinctrl device %s in map entry, deferring probe",
 			map->ctrl_dev_name);
 		return -EPROBE_DEFER;
 	}
@@ -1268,7 +1268,7 @@ static int pinctrl_commit_state(struct pinctrl *p, struct pinctrl_state *state)
 	return 0;
 
 unapply_new_state:
-	dev_err(p->dev, "Error applying setting, reverse things back\n");
+	dev_dbg(p->dev, "Error applying setting, reverse things back\n");
 
 	list_for_each_entry(setting2, &state->settings, node) {
 		if (&setting2->node == &setting->node)
@@ -1370,20 +1370,20 @@ int pinctrl_register_map(const struct pinctrl_map *maps, unsigned num_maps,
 	/* First sanity check the new mapping */
 	for (i = 0; i < num_maps; i++) {
 		if (!maps[i].dev_name) {
-			pr_err("failed to register map %s (%d): no device given\n",
+			pr_debug("failed to register map %s (%d): no device given\n",
 			       maps[i].name, i);
 			return -EINVAL;
 		}
 
 		if (!maps[i].name) {
-			pr_err("failed to register map %d: no map name given\n",
+			pr_debug("failed to register map %d: no map name given\n",
 			       i);
 			return -EINVAL;
 		}
 
 		if (maps[i].type != PIN_MAP_TYPE_DUMMY_STATE &&
 				!maps[i].ctrl_dev_name) {
-			pr_err("failed to register map %s (%d): no pin control device given\n",
+			pr_debug("failed to register map %s (%d): no pin control device given\n",
 			       maps[i].name, i);
 			return -EINVAL;
 		}
@@ -1403,7 +1403,7 @@ int pinctrl_register_map(const struct pinctrl_map *maps, unsigned num_maps,
 				return ret;
 			break;
 		default:
-			pr_err("failed to register map %s (%d): invalid type given\n",
+			pr_debug("failed to register map %s (%d): invalid type given\n",
 			       maps[i].name, i);
 			return -EINVAL;
 		}
@@ -1513,7 +1513,7 @@ int pinctrl_init_done(struct device *dev)
 
 	ret = pinctrl_select_state(pins->p, pins->default_state);
 	if (ret)
-		dev_err(dev, "failed to activate default pinctrl state\n");
+		dev_dbg(dev, "failed to activate default pinctrl state\n");
 
 	return ret;
 }
@@ -1535,7 +1535,7 @@ static int pinctrl_pm_select_state(struct device *dev,
 		return 0; /* No such state */
 	ret = pinctrl_select_state(pins->p, state);
 	if (ret)
-		dev_err(dev, "failed to activate pinctrl state %s\n",
+		dev_dbg(dev, "failed to activate pinctrl state %s\n",
 			state->name);
 	return ret;
 }
@@ -1837,7 +1837,7 @@ static void pinctrl_init_device_debugfs(struct pinctrl_dev *pctldev)
 				"%s-%s", dev_name(pctldev->dev),
 				pctldev->desc->name);
 		if (!debugfs_name) {
-			pr_warn("failed to determine debugfs dir name for %s\n",
+			pr_debug("failed to determine debugfs dir name for %s\n",
 				dev_name(pctldev->dev));
 			return;
 		}
@@ -1849,7 +1849,7 @@ static void pinctrl_init_device_debugfs(struct pinctrl_dev *pctldev)
 	pctldev->device_root = device_root;
 
 	if (IS_ERR(device_root) || !device_root) {
-		pr_warn("failed to create debugfs directory for %s\n",
+		pr_debug("failed to create debugfs directory for %s\n",
 			dev_name(pctldev->dev));
 		return;
 	}
@@ -1874,7 +1874,7 @@ static void pinctrl_init_debugfs(void)
 {
 	debugfs_root = debugfs_create_dir("pinctrl", NULL);
 	if (IS_ERR(debugfs_root) || !debugfs_root) {
-		pr_warn("failed to create debugfs directory\n");
+		pr_debug("failed to create debugfs directory\n");
 		debugfs_root = NULL;
 		return;
 	}
@@ -1956,7 +1956,7 @@ pinctrl_init_controller(struct pinctrl_desc *pctldesc, struct device *dev,
 	/* check core ops for sanity */
 	ret = pinctrl_check_ops(pctldev);
 	if (ret) {
-		dev_err(dev, "pinctrl ops lacks necessary functions\n");
+		dev_dbg(dev, "pinctrl ops lacks necessary functions\n");
 		goto out_err;
 	}
 
@@ -1978,7 +1978,7 @@ pinctrl_init_controller(struct pinctrl_desc *pctldesc, struct device *dev,
 	dev_dbg(dev, "try to register %d pins ...\n",  pctldesc->npins);
 	ret = pinctrl_register_pins(pctldev, pctldesc->pins, pctldesc->npins);
 	if (ret) {
-		dev_err(dev, "error during pin registration\n");
+		dev_dbg(dev, "error during pin registration\n");
 		pinctrl_free_pindescs(pctldev, pctldesc->pins,
 				      pctldesc->npins);
 		goto out_err;
@@ -2010,7 +2010,7 @@ static int pinctrl_claim_hogs(struct pinctrl_dev *pctldev)
 	}
 
 	if (IS_ERR(pctldev->p)) {
-		dev_err(pctldev->dev, "error claiming hogs: %li\n",
+		dev_dbg(pctldev->dev, "error claiming hogs: %li\n",
 			PTR_ERR(pctldev->p));
 
 		return PTR_ERR(pctldev->p);
@@ -2024,7 +2024,7 @@ static int pinctrl_claim_hogs(struct pinctrl_dev *pctldev)
 	} else {
 		if (pinctrl_select_state(pctldev->p,
 					 pctldev->hog_default))
-			dev_err(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				"failed to select default state\n");
 	}
 
@@ -2044,7 +2044,7 @@ int pinctrl_enable(struct pinctrl_dev *pctldev)
 
 	error = pinctrl_claim_hogs(pctldev);
 	if (error) {
-		dev_err(pctldev->dev, "could not claim hogs: %i\n", error);
+		dev_dbg(pctldev->dev, "could not claim hogs: %i\n", error);
 		return error;
 	}
 
@@ -2263,7 +2263,7 @@ EXPORT_SYMBOL_GPL(devm_pinctrl_unregister);
 
 static int __init pinctrl_init(void)
 {
-	pr_info("initialized pinctrl subsystem\n");
+	pr_debug("initialized pinctrl subsystem\n");
 	pinctrl_init_debugfs();
 	return 0;
 }

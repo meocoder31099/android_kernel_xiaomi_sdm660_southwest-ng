@@ -147,7 +147,7 @@ struct clk_hw *clk_hw_register_mux_table(struct device *dev, const char *name,
 	if (clk_mux_flags & CLK_MUX_HIWORD_MASK) {
 		width = fls(mask) - ffs(mask) + 1;
 		if (width + shift > 16) {
-			pr_err("mux value exceeds LOWORD field\n");
+			pr_debug("mux value exceeds LOWORD field\n");
 			return ERR_PTR(-EINVAL);
 		}
 	}

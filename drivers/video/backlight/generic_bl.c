@@ -83,7 +83,7 @@ static int genericbl_probe(struct platform_device *pdev)
 
 	generic_backlight_device = bd;
 
-	dev_info(&pdev->dev, "Generic Backlight Driver Initialized.\n");
+	dev_dbg(&pdev->dev, "Generic Backlight Driver Initialized.\n");
 	return 0;
 }
 
@@ -95,7 +95,7 @@ static int genericbl_remove(struct platform_device *pdev)
 	bd->props.brightness = 0;
 	backlight_update_status(bd);
 
-	dev_info(&pdev->dev, "Generic Backlight Driver Unloaded\n");
+	dev_dbg(&pdev->dev, "Generic Backlight Driver Unloaded\n");
 	return 0;
 }
 

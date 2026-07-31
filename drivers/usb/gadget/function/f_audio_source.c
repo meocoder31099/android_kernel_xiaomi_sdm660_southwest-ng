@@ -429,7 +429,7 @@ static void audio_send(struct audio_dev *audio)
 		req->length = length;
 		ret = usb_ep_queue(audio->in_ep, req, GFP_ATOMIC);
 		if (ret < 0) {
-			pr_err("usb_ep_queue failed ret: %d\n", ret);
+			pr_debug("usb_ep_queue failed ret: %d\n", ret);
 			audio_req_put(audio, req);
 			break;
 		}
@@ -555,7 +555,7 @@ audio_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		req->complete = audio_control_complete;
 		value = usb_ep_queue(cdev->gadget->ep0, req, GFP_ATOMIC);
 		if (value < 0)
-			pr_err("audio response on err %d\n", value);
+			pr_debug("audio response on err %d\n", value);
 	}
 
 	/* device either stalls (value < 0) or reports success */

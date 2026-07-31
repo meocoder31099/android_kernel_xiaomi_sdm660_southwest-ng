@@ -109,12 +109,12 @@ static int __init nf_defrag_init(void)
 
 	ret = nf_ct_frag6_init();
 	if (ret < 0) {
-		pr_err("nf_defrag_ipv6: can't initialize frag6.\n");
+		pr_debug("nf_defrag_ipv6: can't initialize frag6.\n");
 		return ret;
 	}
 	ret = register_pernet_subsys(&defrag6_net_ops);
 	if (ret < 0) {
-		pr_err("nf_defrag_ipv6: can't register pernet ops\n");
+		pr_debug("nf_defrag_ipv6: can't register pernet ops\n");
 		goto cleanup_frag6;
 	}
 	return ret;

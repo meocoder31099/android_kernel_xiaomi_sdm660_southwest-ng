@@ -71,7 +71,7 @@ static int sysfs_kf_seq_show(struct seq_file *sf, void *v)
 	 * indicate truncated result or overflow in normal use cases.
 	 */
 	if (count >= (ssize_t)PAGE_SIZE) {
-		printk("fill_read_buffer: %pS returned bad count\n",
+		no_printk("fill_read_buffer: %pS returned bad count\n",
 				ops->show);
 		/* Try to struggle along */
 		count = PAGE_SIZE - 1;

@@ -380,7 +380,7 @@ void pci_hp_create_module_link(struct pci_slot *pci_slot)
 		return;
 	ret = sysfs_create_link(&pci_slot->kobj, kobj, "module");
 	if (ret)
-		dev_err(&pci_slot->bus->dev, "Error creating sysfs link (%d)\n",
+		dev_dbg(&pci_slot->bus->dev, "Error creating sysfs link (%d)\n",
 			ret);
 	kobject_put(kobj);
 }
@@ -408,7 +408,7 @@ static int pci_slot_init(void)
 	pci_slots_kset = kset_create_and_add("slots", NULL,
 						&pci_bus_kset->kobj);
 	if (!pci_slots_kset) {
-		printk(KERN_ERR "PCI: Slot initialization failure\n");
+		no_printk(KERN_ERR "PCI: Slot initialization failure\n");
 		return -ENOMEM;
 	}
 	return 0;

@@ -788,7 +788,7 @@ static void spidev_probe_acpi(struct spi_device *spi)
 		return;
 
 	if (id->driver_data == SPIDEV_ACPI_DUMMY)
-		dev_warn(&spi->dev, "do not use this driver in production systems!\n");
+		dev_dbg(&spi->dev, "do not use this driver in production systems!\n");
 }
 #else
 static inline void spidev_probe_acpi(struct spi_device *spi) {}

@@ -546,7 +546,7 @@ static unsigned int get_connector_type(struct usbpd *pd)
 	ret = power_supply_get_property(pd->usb_psy,
 		POWER_SUPPLY_PROP_CONNECTOR_TYPE, &val);
 	if (ret) {
-		dev_err(&pd->dev, "Unable to read CONNECTOR TYPE: %d\n", ret);
+		dev_dbg(&pd->dev, "Unable to read CONNECTOR TYPE: %d\n", ret);
 		return ret;
 	}
 
@@ -4638,7 +4638,7 @@ MODULE_PARM_DESC(pd_vbus_ctrl, "PD VBUS CONTROL");
 void pd_vbus_reset(struct usbpd *pd)
 {
 	if (!pd) {
-		pr_err("pd_vbus_reset, pd is null\n");
+		pr_debug("pd_vbus_reset, pd is null\n");
 		return;
 	}
 	if (pd->vbus_enabled) {
@@ -4653,7 +4653,7 @@ void pd_vbus_reset(struct usbpd *pd)
 		msleep(pd_vbus_ctrl);
 		enable_vbus(pd);
 	} else {
-		pr_err("pd_vbus is not enabled yet\n");
+		pr_debug("pd_vbus is not enabled yet\n");
 	}
 }
 
@@ -4662,7 +4662,7 @@ void usbpd_vbus_sm(struct work_struct *w)
 {
 	struct usbpd *pd = pd_lobal;
 
-	pr_err("usbpd_vbus_sm handle state %s, vbus %d\n",
+	pr_debug("usbpd_vbus_sm handle state %s, vbus %d\n",
 	usbpd_state_strings[pd->current_state],pd->vbus_enabled);
 
 	pd_vbus_reset(pd);
@@ -4672,7 +4672,7 @@ void kick_usbpd_vbus_sm(void)
 {
 	 pm_stay_awake(&pd_lobal->dev);
 
-	 pr_err("kick_usbpd_vbus_sm handle state %s, vbus %d\n",
+	 pr_debug("kick_usbpd_vbus_sm handle state %s, vbus %d\n",
 	 usbpd_state_strings[pd_lobal->current_state],pd_lobal->vbus_enabled);
 #ifdef CONFIG_MACH_LONGCHEER
 	 queue_delayed_work(pd_lobal->wq, &(pd_lobal->vbus_work), msecs_to_jiffies(400));
@@ -4685,7 +4685,7 @@ static ssize_t pd_vbus_show(struct device *dev, struct device_attribute *attr,
 	char *buf)
 {
 	struct usbpd *pd = dev_get_drvdata(dev);
-	pr_err("pd_vbus_show handle state %s, vbus %d\n",
+	pr_debug("pd_vbus_show handle state %s, vbus %d\n",
 	usbpd_state_strings[pd_lobal->current_state],pd_lobal->vbus_enabled);
 	pd_vbus_reset(pd);
 
@@ -4699,9 +4699,9 @@ static ssize_t pd_vbus_store(struct device *dev,
 
 	if (sscanf(buf, "%d\n", &val) != 0)
 	{
-		pr_err("pd_vbus_store input err\n");
+		pr_debug("pd_vbus_store input err\n");
 	}
-	pr_err("pd_vbus_store handle state %s, vbus %d,val %d\n",
+	pr_debug("pd_vbus_store handle state %s, vbus %d,val %d\n",
 	usbpd_state_strings[pd_lobal->current_state],pd_lobal->vbus_enabled,val);
 	kick_usbpd_vbus_sm();
 
@@ -4753,7 +4753,7 @@ void notify_typec_mode_changed_for_pd(void)
 {
 	/* force update as usb present is changed to absent */
 	if (pd_lobal) {
-		pr_info("notify_typec_mode_changed_for_pd\n");
+		pr_debug("notify_typec_mode_changed_for_pd\n");
 		psy_changed(&pd_lobal->psy_nb, PSY_EVENT_PROP_CHANGED, pd_lobal->usb_psy);
 	}
 }

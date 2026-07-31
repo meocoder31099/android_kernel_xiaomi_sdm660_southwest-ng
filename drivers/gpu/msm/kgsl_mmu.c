@@ -757,7 +757,7 @@ int kgsl_mmu_probe(struct kgsl_device *device)
 		}
 	}
 
-	dev_err(device->dev, "mmu: couldn't detect any known MMU types\n");
+	dev_dbg(device->dev, "mmu: couldn't detect any known MMU types\n");
 	return -ENODEV;
 }
 EXPORT_SYMBOL(kgsl_mmu_probe);

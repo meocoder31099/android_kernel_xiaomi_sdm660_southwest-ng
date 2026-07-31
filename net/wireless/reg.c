@@ -779,10 +779,10 @@ static void __init load_keys_from_buffer(const u8 *p, unsigned int buflen)
 					   KEY_ALLOC_BUILT_IN |
 					   KEY_ALLOC_BYPASS_RESTRICTION);
 		if (IS_ERR(key)) {
-			pr_err("Problem loading in-kernel X.509 certificate (%ld)\n",
+			pr_debug("Problem loading in-kernel X.509 certificate (%ld)\n",
 			       PTR_ERR(key));
 		} else {
-			pr_notice("Loaded X.509 cert '%s'\n",
+			pr_debug("Loaded X.509 cert '%s'\n",
 				  key_ref_to_ptr(key)->description);
 			key_ref_put(key);
 		}
@@ -792,7 +792,7 @@ static void __init load_keys_from_buffer(const u8 *p, unsigned int buflen)
 	return;
 
 dodgy_cert:
-	pr_err("Problem parsing in-kernel X.509 certificate list\n");
+	pr_debug("Problem parsing in-kernel X.509 certificate list\n");
 }
 
 static int __init load_builtin_regdb_keys(void)
@@ -806,7 +806,7 @@ static int __init load_builtin_regdb_keys(void)
 	if (IS_ERR(builtin_regdb_keys))
 		return PTR_ERR(builtin_regdb_keys);
 
-	pr_notice("Loading compiled-in X.509 certificates for regulatory database\n");
+	pr_debug("Loading compiled-in X.509 certificates for regulatory database\n");
 
 #ifdef CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS
 	load_keys_from_buffer(shipped_regdb_certs, shipped_regdb_certs_len);
@@ -899,7 +899,7 @@ static void set_wmm_rule(const struct fwdb_header *db,
 	wmm = (void *)((u8 *)db + wmm_ptr);
 
 	if (!valid_wmm(wmm)) {
-		pr_err("Invalid regulatory WMM rule %u-%u in domain %c%c\n",
+		pr_debug("Invalid regulatory WMM rule %u-%u in domain %c%c\n",
 		       be32_to_cpu(rule->start), be32_to_cpu(rule->end),
 		       country->alpha2[0], country->alpha2[1]);
 		return;
@@ -1055,10 +1055,10 @@ static void regdb_fw_cb(const struct firmware *fw, void *context)
 	void *db;
 
 	if (!fw) {
-		pr_info("failed to load regulatory.db\n");
+		pr_debug("failed to load regulatory.db\n");
 		set_error = -ENODATA;
 	} else if (!valid_regdb(fw->data, fw->size)) {
-		pr_info("loaded regulatory.db is malformed or signature is missing/invalid\n");
+		pr_debug("loaded regulatory.db is malformed or signature is missing/invalid\n");
 		set_error = -EINVAL;
 	}
 
@@ -3539,7 +3539,7 @@ static int reg_set_rd_user(const struct ieee80211_regdomain *rd,
 		return -EALREADY;
 
 	if (!is_valid_rd(rd)) {
-		pr_err("Invalid regulatory domain detected: %c%c\n",
+		pr_debug("Invalid regulatory domain detected: %c%c\n",
 		       rd->alpha2[0], rd->alpha2[1]);
 		print_regdomain_info(rd);
 		return -EINVAL;
@@ -3576,7 +3576,7 @@ static int reg_set_rd_driver(const struct ieee80211_regdomain *rd,
 		return -EALREADY;
 
 	if (!is_valid_rd(rd)) {
-		pr_err("Invalid regulatory domain detected: %c%c\n",
+		pr_debug("Invalid regulatory domain detected: %c%c\n",
 		       rd->alpha2[0], rd->alpha2[1]);
 		print_regdomain_info(rd);
 		return -EINVAL;
@@ -3635,7 +3635,7 @@ static int reg_set_rd_country_ie(const struct ieee80211_regdomain *rd,
 	 */
 
 	if (!is_valid_rd(rd)) {
-		pr_err("Invalid regulatory domain detected: %c%c\n",
+		pr_debug("Invalid regulatory domain detected: %c%c\n",
 		       rd->alpha2[0], rd->alpha2[1]);
 		print_regdomain_info(rd);
 		return -EINVAL;
@@ -4005,7 +4005,7 @@ static int __init regulatory_init_db(void)
 		 * early boot for call_usermodehelper(). For now treat these
 		 * errors as non-fatal.
 		 */
-		pr_err("kobject_uevent_env() was unable to call CRDA during init\n");
+		pr_debug("kobject_uevent_env() was unable to call CRDA during init\n");
 	}
 
 	/*

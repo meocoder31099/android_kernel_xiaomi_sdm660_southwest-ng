@@ -138,7 +138,7 @@ static int virt_sensor_read_temp(void *data, int *val)
 
 		ret = thermal_zone_get_temp_nolock(sens->tz[idx], &sens_temp);
 		if (ret) {
-			pr_err("virt zone: sensor[%s] read error:%d\n",
+			pr_debug("virt zone: sensor[%s] read error:%d\n",
 				sens->tz[idx]->type, ret);
 			return ret;
 		}
@@ -1003,7 +1003,7 @@ struct thermal_zone_device *devm_thermal_of_virtual_sensor_register(
 		 * n+2 coefficients.
 		 */
 		if (coeff_ct != sens->num_sensors) {
-			dev_err(dev, "sens:%s Invalid coefficient\n",
+			dev_dbg(dev, "sens:%s Invalid coefficient\n",
 					sensor_data->virt_zone_name);
 			return ERR_PTR(-EINVAL);
 		}
@@ -1017,7 +1017,7 @@ struct thermal_zone_device *devm_thermal_of_virtual_sensor_register(
 		sens->tz[sens_idx] = thermal_zone_get_zone_by_name(
 					sensor_data->sensor_names[sens_idx]);
 		if (IS_ERR(sens->tz[sens_idx])) {
-			dev_err(dev, "sens:%s sensor[%s] fetch err:%ld\n",
+			dev_dbg(dev, "sens:%s sensor[%s] fetch err:%ld\n",
 				     sensor_data->virt_zone_name,
 				     sensor_data->sensor_names[sens_idx],
 				     PTR_ERR(sens->tz[sens_idx]));
@@ -1157,7 +1157,7 @@ static int thermal_of_populate_bind_params(struct device_node *np,
 
 	trip = of_parse_phandle(np, "trip", 0);
 	if (!trip) {
-		pr_err("missing trip property\n");
+		pr_debug("missing trip property\n");
 		return -ENODEV;
 	}
 
@@ -1176,7 +1176,7 @@ static int thermal_of_populate_bind_params(struct device_node *np,
 	ret = of_parse_phandle_with_args(np, "cooling-device", "#cooling-cells",
 					 0, &cooling_spec);
 	if (ret < 0) {
-		pr_err("missing cooling_device property\n");
+		pr_debug("missing cooling_device property\n");
 		goto end;
 	}
 	__tbp->cooling_device = cooling_spec.np;
@@ -1184,7 +1184,7 @@ static int thermal_of_populate_bind_params(struct device_node *np,
 		__tbp->min = cooling_spec.args[0];
 		__tbp->max = cooling_spec.args[1];
 	} else {
-		pr_err("wrong reference to cooling device, missing limits\n");
+		pr_debug("wrong reference to cooling device, missing limits\n");
 	}
 
 end:
@@ -1251,21 +1251,21 @@ static int thermal_of_populate_trip(struct device_node *np,
 
 	ret = of_property_read_u32(np, "temperature", &prop);
 	if (ret < 0) {
-		pr_err("missing temperature property\n");
+		pr_debug("missing temperature property\n");
 		return ret;
 	}
 	trip->temperature = prop;
 
 	ret = of_property_read_u32(np, "hysteresis", &prop);
 	if (ret < 0) {
-		pr_err("missing hysteresis property\n");
+		pr_debug("missing hysteresis property\n");
 		return ret;
 	}
 	trip->hysteresis = prop;
 
 	ret = thermal_of_get_trip_type(np, &trip->type);
 	if (ret < 0) {
-		pr_err("wrong trip type property\n");
+		pr_debug("wrong trip type property\n");
 		return ret;
 	}
 
@@ -1299,7 +1299,7 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
 	u32 prop, coef[2];
 
 	if (!np) {
-		pr_err("no thermal zone np\n");
+		pr_debug("no thermal zone np\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -1310,14 +1310,14 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
 	INIT_LIST_HEAD(&tz->list);
 	ret = of_property_read_u32(np, "polling-delay-passive", &prop);
 	if (ret < 0) {
-		pr_err("missing polling-delay-passive property\n");
+		pr_debug("missing polling-delay-passive property\n");
 		goto free_tz;
 	}
 	tz->passive_delay = prop;
 
 	ret = of_property_read_u32(np, "polling-delay", &prop);
 	if (ret < 0) {
-		pr_err("missing polling-delay property\n");
+		pr_debug("missing polling-delay property\n");
 		goto free_tz;
 	}
 	tz->polling_delay = prop;
@@ -1460,7 +1460,7 @@ int __init of_parse_thermal_zones(void)
 
 		tz = thermal_of_build_thermal_zone(child);
 		if (IS_ERR(tz)) {
-			pr_err("failed to build thermal zone %s: %ld\n",
+			pr_debug("failed to build thermal zone %s: %ld\n",
 			       child->name,
 			       PTR_ERR(tz));
 			continue;
@@ -1503,7 +1503,7 @@ int __init of_parse_thermal_zones(void)
 						    tz->passive_delay,
 						    tz->polling_delay);
 		if (IS_ERR(zone)) {
-			pr_err("Failed to build %s zone %ld\n", child->name,
+			pr_debug("Failed to build %s zone %ld\n", child->name,
 			       PTR_ERR(zone));
 			kfree(tzp);
 			kfree(ops);

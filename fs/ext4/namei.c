@@ -617,13 +617,13 @@ static inline unsigned dx_node_limit(struct inode *dir)
 static void dx_show_index(char * label, struct dx_entry *entries)
 {
 	int i, n = dx_get_count (entries);
-	printk(KERN_DEBUG "%s index", label);
+	no_printk(KERN_DEBUG "%s index", label);
 	for (i = 0; i < n; i++) {
-		printk(KERN_CONT " %x->%lu",
+		no_printk(KERN_CONT " %x->%lu",
 		       i ? dx_get_hash(entries + i) : 0,
 		       (unsigned long)dx_get_block(entries + i));
 	}
-	printk(KERN_CONT "\n");
+	no_printk(KERN_CONT "\n");
 }
 
 struct stats
@@ -642,7 +642,7 @@ static struct stats dx_show_leaf(struct inode *dir,
 	char *base = (char *) de;
 	struct dx_hash_info h = *hinfo;
 
-	printk("names: ");
+	no_printk("names: ");
 	while ((char *) de < base + size)
 	{
 		if (de->inode)
@@ -661,14 +661,14 @@ static struct stats dx_show_leaf(struct inode *dir,
 				if (IS_ENCRYPTED(dir))
 					res = fscrypt_get_encryption_info(dir);
 				if (res) {
-					printk(KERN_WARNING "Error setting up"
+					no_printk(KERN_WARNING "Error setting up"
 					       " fname crypto: %d\n", res);
 				}
 				if (!fscrypt_has_encryption_key(dir)) {
 					/* Directory is not encrypted */
 					ext4fs_dirhash(dir, de->name,
 						de->name_len, &h);
-					printk("%*.s:(U)%x.%u ", len,
+					no_printk("%*.s:(U)%x.%u ", len,
 					       name, h.hash,
 					       (unsigned) ((char *) de
 							   - base));
@@ -681,7 +681,7 @@ static struct stats dx_show_leaf(struct inode *dir,
 						dir, len,
 						&fname_crypto_str);
 					if (res)
-						printk(KERN_WARNING "Error "
+						no_printk(KERN_WARNING "Error "
 							"allocating crypto "
 							"buffer--skipping "
 							"crypto\n");
@@ -689,7 +689,7 @@ static struct stats dx_show_leaf(struct inode *dir,
 						0, 0, &de_name,
 						&fname_crypto_str);
 					if (res) {
-						printk(KERN_WARNING "Error "
+						no_printk(KERN_WARNING "Error "
 							"converting filename "
 							"from disk to usr"
 							"\n");
@@ -704,7 +704,7 @@ static struct stats dx_show_leaf(struct inode *dir,
 					else
 						ext4fs_dirhash(dir, de->name,
 						       de->name_len, &h);
-					printk("%*.s:(E)%x.%u ", len, name,
+					no_printk("%*.s:(E)%x.%u ", len, name,
 					       h.hash, (unsigned) ((char *) de
 								   - base));
 					fscrypt_fname_free_buffer(
@@ -714,7 +714,7 @@ static struct stats dx_show_leaf(struct inode *dir,
 				int len = de->name_len;
 				char *name = de->name;
 				ext4fs_dirhash(dir, de->name, de->name_len, &h);
-				printk("%*.s:%x.%u ", len, name, h.hash,
+				no_printk("%*.s:%x.%u ", len, name, h.hash,
 				       (unsigned) ((char *) de - base));
 #endif
 			}
@@ -723,7 +723,7 @@ static struct stats dx_show_leaf(struct inode *dir,
 		}
 		de = ext4_next_entry(de, size);
 	}
-	printk(KERN_CONT "(%i)\n", names);
+	no_printk(KERN_CONT "(%i)\n", names);
 	return (struct stats) { names, space, 1 };
 }
 
@@ -734,14 +734,14 @@ struct stats dx_show_entries(struct dx_hash_info *hinfo, struct inode *dir,
 	unsigned count = dx_get_count(entries), names = 0, space = 0, i;
 	unsigned bcount = 0;
 	struct buffer_head *bh;
-	printk("%i indexed blocks...\n", count);
+	no_printk("%i indexed blocks...\n", count);
 	for (i = 0; i < count; i++, entries++)
 	{
 		ext4_lblk_t block = dx_get_block(entries);
 		ext4_lblk_t hash  = i ? dx_get_hash(entries): 0;
 		u32 range = i < count - 1? (dx_get_hash(entries + 1) - hash): ~hash;
 		struct stats stats;
-		printk("%s%3u:%03u hash %8x/%8x ",levels?"":"   ", i, block, hash, range);
+		no_printk("%s%3u:%03u hash %8x/%8x ",levels?"":"   ", i, block, hash, range);
 		bh = ext4_bread(NULL,dir, block, 0);
 		if (!bh || IS_ERR(bh))
 			continue;
@@ -755,7 +755,7 @@ struct stats dx_show_entries(struct dx_hash_info *hinfo, struct inode *dir,
 		brelse(bh);
 	}
 	if (bcount)
-		printk(KERN_DEBUG "%snames %u, fullness %u (%u%%)\n",
+		no_printk(KERN_DEBUG "%snames %u, fullness %u (%u%%)\n",
 		       levels ? "" : "   ", names, space/bcount,
 		       (space/bcount)*100/blocksize);
 	return (struct stats) { names, space, bcount};
@@ -853,7 +853,7 @@ dx_probe(struct ext4_filename *fname, struct inode *dir,
 		goto fail;
 	}
 
-	dxtrace(printk("Look up %x", hash));
+	dxtrace(no_printk("Look up %x", hash));
 	level = 0;
 	blocks[0] = 0;
 	while (1) {
@@ -869,7 +869,7 @@ dx_probe(struct ext4_filename *fname, struct inode *dir,
 		q = entries + count - 1;
 		while (p <= q) {
 			m = p + (q - p) / 2;
-			dxtrace(printk(KERN_CONT "."));
+			dxtrace(no_printk(KERN_CONT "."));
 			if (dx_get_hash(m) > hash)
 				q = m - 1;
 			else
@@ -881,7 +881,7 @@ dx_probe(struct ext4_filename *fname, struct inode *dir,
 			at = entries;
 			while (n--)
 			{
-				dxtrace(printk(KERN_CONT ","));
+				dxtrace(no_printk(KERN_CONT ","));
 				if (dx_get_hash(++at) > hash)
 				{
 					at--;
@@ -892,7 +892,7 @@ dx_probe(struct ext4_filename *fname, struct inode *dir,
 		}
 
 		at = p - 1;
-		dxtrace(printk(KERN_CONT " %x->%u\n",
+		dxtrace(no_printk(KERN_CONT " %x->%u\n",
 			       at == entries ? 0 : dx_get_hash(at),
 			       dx_get_block(at)));
 		frame->entries = entries;
@@ -1050,7 +1050,7 @@ static int htree_dirblock_to_tree(struct file *dir_file,
 	struct fscrypt_str fname_crypto_str = FSTR_INIT(NULL, 0), tmp_str;
 	int csum = ext4_has_metadata_csum(dir->i_sb);
 
-	dxtrace(printk(KERN_INFO "In htree dirblock_to_tree: block %lu\n",
+	dxtrace(no_printk(KERN_INFO "In htree dirblock_to_tree: block %lu\n",
 							(unsigned long)block));
 	bh = ext4_read_dirblock(dir, block, DIRENT_HTREE);
 	if (IS_ERR(bh))
@@ -1163,7 +1163,7 @@ int ext4_htree_fill_tree(struct file *dir_file, __u32 start_hash,
 	__u32 hashval;
 	struct fscrypt_str tmp_str;
 
-	dxtrace(printk(KERN_DEBUG "In htree_fill_tree, start hash: %x:%x\n",
+	dxtrace(no_printk(KERN_DEBUG "In htree_fill_tree, start hash: %x:%x\n",
 		       start_hash, start_minor_hash));
 	dir = file_inode(dir_file);
 	if (!(ext4_test_inode_flag(dir, EXT4_INODE_INDEX))) {
@@ -1253,7 +1253,7 @@ int ext4_htree_fill_tree(struct file *dir_file, __u32 start_hash,
 			break;
 	}
 	dx_release(frames);
-	dxtrace(printk(KERN_DEBUG "Fill tree: returned %d entries, "
+	dxtrace(no_printk(KERN_DEBUG "Fill tree: returned %d entries, "
 		       "next hash: %x\n", count, *next_hash));
 	return count;
 errout:
@@ -1608,7 +1608,7 @@ static struct buffer_head *__ext4_find_entry(struct inode *dir,
 		 */
 		if (!IS_ERR(ret) || PTR_ERR(ret) != ERR_BAD_DX_DIR)
 			goto cleanup_and_exit;
-		dxtrace(printk(KERN_DEBUG "ext4_find_entry: dx failed, "
+		dxtrace(no_printk(KERN_DEBUG "ext4_find_entry: dx failed, "
 			       "falling back\n"));
 		ret = NULL;
 	}
@@ -1790,7 +1790,7 @@ static struct buffer_head * ext4_dx_find_entry(struct inode *dir,
 
 	bh = NULL;
 errout:
-	dxtrace(printk(KERN_DEBUG "%s not found\n", fname->usr_fname->name));
+	dxtrace(no_printk(KERN_DEBUG "%s not found\n", fname->usr_fname->name));
 success:
 	dx_release(frames);
 	return bh;
@@ -2007,7 +2007,7 @@ static struct ext4_dir_entry_2 *do_split(handle_t *handle, struct inode *dir,
 
 	hash2 = map[split].hash;
 	continued = split > 0 ? hash2 == map[split - 1].hash : 0;
-	dxtrace(printk(KERN_INFO "Split block %lu at %x, %i/%i\n",
+	dxtrace(no_printk(KERN_INFO "Split block %lu at %x, %i/%i\n",
 			(unsigned long)dx_get_block(frame->at),
 					hash2, split, count-split));
 
@@ -2254,7 +2254,7 @@ static int make_indexed_dir(handle_t *handle, struct ext4_filename *fname,
 		csum_size = sizeof(struct ext4_dir_entry_tail);
 
 	blocksize =  dir->i_sb->s_blocksize;
-	dxtrace(printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
+	dxtrace(no_printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
 	BUFFER_TRACE(bh, "get_write_access");
 	retval = ext4_journal_get_write_access(handle, bh);
 	if (retval) {
@@ -2521,7 +2521,7 @@ again:
 
 	err = 0;
 	/* Block full, should compress but for now just split */
-	dxtrace(printk(KERN_DEBUG "using %u of %u node entries\n",
+	dxtrace(no_printk(KERN_DEBUG "using %u of %u node entries\n",
 		       dx_get_count(entries), dx_get_limit(entries)));
 	/* Need to split index? */
 	if (dx_get_count(entries) == dx_get_limit(entries)) {
@@ -2574,7 +2574,7 @@ again:
 		if (!add_level) {
 			unsigned icount1 = icount/2, icount2 = icount - icount1;
 			unsigned hash2 = dx_get_hash(entries + icount1);
-			dxtrace(printk(KERN_DEBUG "Split index %i/%i\n",
+			dxtrace(no_printk(KERN_DEBUG "Split index %i/%i\n",
 				       icount1, icount2));
 
 			BUFFER_TRACE(frame->bh, "get_write_access"); /* index root */
@@ -2622,7 +2622,7 @@ again:
 			dx_set_block(entries + 0, newblock);
 			dxroot = (struct dx_root *)frames[0].bh->b_data;
 			dxroot->info.indirect_levels += 1;
-			dxtrace(printk(KERN_DEBUG
+			dxtrace(no_printk(KERN_DEBUG
 				       "Creating %d level index...\n",
 				       dxroot->info.indirect_levels));
 			err = ext4_handle_dirty_dx_node(handle, dir, frame->bh);

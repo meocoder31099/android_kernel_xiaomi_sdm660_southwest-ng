@@ -141,7 +141,7 @@ static void debug_print_probes(struct tracepoint_func *funcs)
 		return;
 
 	for (i = 0; funcs[i].func; i++)
-		printk(KERN_DEBUG "Probe %d : %p\n", i, funcs[i].func);
+		no_printk(KERN_DEBUG "Probe %d : %p\n", i, funcs[i].func);
 }
 
 static struct tracepoint_func *
@@ -623,7 +623,7 @@ static __init int init_tracepoints(void)
 
 	ret = register_module_notifier(&tracepoint_module_nb);
 	if (ret)
-		pr_warn("Failed to register tracepoint module enter notifier\n");
+		pr_debug("Failed to register tracepoint module enter notifier\n");
 
 	return ret;
 }

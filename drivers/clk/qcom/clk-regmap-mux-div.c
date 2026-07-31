@@ -69,7 +69,7 @@ int mux_div_get_src_div(struct clk_regmap_mux_div *md, u32 *src,
 		return ret;
 
 	if (val & CMD_RCGR_DIRTY_CFG) {
-		pr_err("%s: RCG configuration is pending\n", name);
+		pr_debug("%s: RCG configuration is pending\n", name);
 		return -EBUSY;
 	}
 
@@ -181,7 +181,7 @@ static u8 mux_div_get_parent(struct clk_hw *hw)
 		if (src == md->parent_map[i].cfg)
 			return i;
 
-	pr_err("%s: Can't find parent with src %d\n", name, src);
+	pr_debug("%s: Can't find parent with src %d\n", name, src);
 	return 0;
 }
 
@@ -225,7 +225,7 @@ static unsigned long mux_div_recalc_rate(struct clk_hw *hw, unsigned long prate)
 			return mult_frac(parent_rate, 2, div + 1);
 		}
 
-	pr_err("%s: Can't find parent %d\n", name, src);
+	pr_debug("%s: Can't find parent %d\n", name, src);
 	return 0;
 }
 

@@ -64,14 +64,14 @@ int mdss_dsi_buf_alloc(struct device *ctrl_dev, struct dsi_buf *dp, int size)
 	dp->start = mdss_smmu_dsi_alloc_buf(ctrl_dev, size, &dp->dmap,
 			GFP_KERNEL);
 	if (dp->start == NULL) {
-		pr_err("%s:%u\n", __func__, __LINE__);
+		pr_debug("%s:%u\n", __func__, __LINE__);
 		return -ENOMEM;
 	}
 	dp->end = dp->start + size;
 	dp->size = size;
 
 	if ((int) (unsigned long) dp->start & 0x07)
-		pr_err("%s: buf NOT 8 bytes aligned\n", __func__);
+		pr_debug("%s: buf NOT 8 bytes aligned\n", __func__);
 
 	dp->data = dp->start;
 	dp->len = 0;
@@ -134,7 +134,7 @@ static int mdss_dsi_generic_swrite(struct dsi_buf *dp, struct dsi_cmd_desc *cm)
 
 	dchdr = &cm->dchdr;
 	if (dchdr->dlen && !cm->payload) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return 0;
 	}
 
@@ -177,7 +177,7 @@ static int mdss_dsi_generic_read(struct dsi_buf *dp, struct dsi_cmd_desc *cm)
 
 	dchdr = &cm->dchdr;
 	if (dchdr->dlen && !cm->payload) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return 0;
 	}
 
@@ -267,7 +267,7 @@ static int mdss_dsi_dcs_swrite(struct dsi_buf *dp, struct dsi_cmd_desc *cm)
 
 	dchdr = &cm->dchdr;
 	if (!cm->payload) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return -EINVAL;
 	}
 
@@ -300,7 +300,7 @@ static int mdss_dsi_dcs_swrite1(struct dsi_buf *dp, struct dsi_cmd_desc *cm)
 
 	dchdr = &cm->dchdr;
 	if (dchdr->dlen < 2 || (!cm->payload)) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return -EINVAL;
 	}
 
@@ -331,7 +331,7 @@ static int mdss_dsi_dcs_read(struct dsi_buf *dp, struct dsi_cmd_desc *cm)
 
 	dchdr = &cm->dchdr;
 	if (!cm->payload) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return -EINVAL;
 	}
 
@@ -474,7 +474,7 @@ static int mdss_dsi_set_max_pktsize(struct dsi_buf *dp, struct dsi_cmd_desc *cm)
 
 	dchdr = &cm->dchdr;
 	if (!cm->payload) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return 0;
 	}
 
@@ -501,7 +501,7 @@ static int mdss_dsi_compression_mode(struct dsi_buf *dp,
 
 	dchdr = &cm->dchdr;
 	if (!cm->payload) {
-		pr_err("%s: NO payload error\n", __func__);
+		pr_debug("%s: NO payload error\n", __func__);
 		return 0;
 	}
 
@@ -772,7 +772,7 @@ int mdss_dsi_cmdlist_put(struct mdss_dsi_ctrl_pdata *ctrl,
 
 	if (req->flags & CMD_REQ_COMMIT) {
 		if (!ctrl->cmdlist_commit)
-			pr_err("cmdlist_commit not implemented!\n");
+			pr_debug("cmdlist_commit not implemented!\n");
 		else
 			ret = ctrl->cmdlist_commit(ctrl, 0);
 	}

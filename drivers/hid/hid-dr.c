@@ -300,7 +300,7 @@ static int dr_probe(struct hid_device *hdev, const struct hid_device_id *id)
 	case 0x0006:
 		ret = drff_init(hdev);
 		if (ret) {
-			dev_err(&hdev->dev, "force feedback init failed\n");
+			dev_dbg(&hdev->dev, "force feedback init failed\n");
 			hid_hw_stop(hdev);
 			goto err;
 		}

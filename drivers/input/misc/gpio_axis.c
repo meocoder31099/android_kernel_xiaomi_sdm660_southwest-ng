@@ -70,7 +70,7 @@ static void gpio_event_update_axis(struct gpio_axis_state *as, int report)
 		state = (state << 1) | gpio_get_value(ai->gpio[i]);
 	pos = ai->map(ai, state);
 	if (ai->flags & GPIOEAF_PRINT_RAW)
-		pr_info("axis %d-%d raw %x, pos %d -> %d\n",
+		pr_debug("axis %d-%d raw %x, pos %d -> %d\n",
 			ai->type, ai->code, state, old_pos, pos);
 	if (report && pos != old_pos) {
 		if (ai->type == EV_REL) {
@@ -80,19 +80,19 @@ static void gpio_event_update_axis(struct gpio_axis_state *as, int report)
 				change -= ai->decoded_size;
 			if (change == ai->decoded_size / 2) {
 				if (ai->flags & GPIOEAF_PRINT_EVENT)
-					pr_info("axis %d-%d unknown direction, "
+					pr_debug("axis %d-%d unknown direction, "
 						"pos %d -> %d\n", ai->type,
 						ai->code, old_pos, pos);
 				change = 0; /* no closest direction */
 			}
 			if (ai->flags & GPIOEAF_PRINT_EVENT)
-				pr_info("axis %d-%d change %d\n",
+				pr_debug("axis %d-%d change %d\n",
 					ai->type, ai->code, change);
 			input_report_rel(as->input_devs->dev[ai->dev],
 						ai->code, change);
 		} else {
 			if (ai->flags & GPIOEAF_PRINT_EVENT)
-				pr_info("axis %d-%d now %d\n",
+				pr_debug("axis %d-%d now %d\n",
 					ai->type, ai->code, pos);
 			input_event(as->input_devs->dev[ai->dev],
 					ai->type, ai->code, pos);
@@ -139,7 +139,7 @@ int gpio_event_axis_func(struct gpio_event_input_devs *input_devs,
 		as->input_devs = input_devs;
 		as->info = ai;
 		if (ai->dev >= input_devs->count) {
-			pr_err("gpio_event_axis: bad device index %d >= %d "
+			pr_debug("gpio_event_axis: bad device index %d >= %d "
 				"for %d:%d\n", ai->dev, input_devs->count,
 				ai->type, ai->code);
 			ret = -EINVAL;

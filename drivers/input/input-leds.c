@@ -141,7 +141,7 @@ static int input_leds_connect(struct input_handler *handler,
 
 		error = led_classdev_register(&dev->dev, &led->cdev);
 		if (error) {
-			dev_err(&dev->dev, "failed to register LED %s: %d\n",
+			dev_dbg(&dev->dev, "failed to register LED %s: %d\n",
 				led->cdev.name, error);
 			kfree(led->cdev.name);
 			goto err_unregister_leds;

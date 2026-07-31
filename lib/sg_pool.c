@@ -129,7 +129,7 @@ static __init int sg_pool_init(void)
 		sgp->slab = kmem_cache_create(sgp->name, size, 0,
 				SLAB_HWCACHE_ALIGN, NULL);
 		if (!sgp->slab) {
-			printk(KERN_ERR "SG_POOL: can't init sg slab %s\n",
+			no_printk(KERN_ERR "SG_POOL: can't init sg slab %s\n",
 					sgp->name);
 			goto cleanup_sdb;
 		}
@@ -137,7 +137,7 @@ static __init int sg_pool_init(void)
 		sgp->pool = mempool_create_slab_pool(SG_MEMPOOL_SIZE,
 						     sgp->slab);
 		if (!sgp->pool) {
-			printk(KERN_ERR "SG_POOL: can't init sg mempool %s\n",
+			no_printk(KERN_ERR "SG_POOL: can't init sg mempool %s\n",
 					sgp->name);
 			goto cleanup_sdb;
 		}

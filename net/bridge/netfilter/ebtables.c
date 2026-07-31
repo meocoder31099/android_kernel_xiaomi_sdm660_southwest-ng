@@ -1840,7 +1840,7 @@ static int compat_copy_everything_to_user(struct ebt_table *t,
 
 	if (*len != sizeof(tmp) + repl.entries_size +
 	   (tmp.num_counters? tinfo.nentries * sizeof(struct ebt_counter): 0)) {
-		pr_err("wrong size: *len %d, entries_size %u, replsz %d\n",
+		pr_debug("wrong size: *len %d, entries_size %u, replsz %d\n",
 				*len, tinfo.entries_size, repl.entries_size);
 		return -EINVAL;
 	}

@@ -118,7 +118,7 @@ void __jbd2_debug(int level, const char *file, const char *func,
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	printk(KERN_DEBUG "%s: (%s, %u): %pV", file, func, line, &vaf);
+	no_printk(KERN_DEBUG "%s: (%s, %u): %pV", file, func, line, &vaf);
 	va_end(args);
 }
 EXPORT_SYMBOL(__jbd2_debug);
@@ -718,7 +718,7 @@ int jbd2_log_wait_commit(journal_t *journal, tid_t tid)
 #endif
 #ifdef CONFIG_JBD2_DEBUG
 	if (!tid_geq(journal->j_commit_request, tid)) {
-		printk(KERN_ERR
+		no_printk(KERN_ERR
 		       "%s: error: j_commit_request=%d, tid=%d\n",
 		       __func__, journal->j_commit_request, tid);
 	}
@@ -826,7 +826,7 @@ int jbd2_journal_bmap(journal_t *journal, unsigned long blocknr,
 		ret = bmap(journal->j_inode, &block);
 
 		if (ret || !block) {
-			printk(KERN_ALERT "%s: journal block not found "
+			no_printk(KERN_ALERT "%s: journal block not found "
 					"at offset %lu on %s\n",
 			       __func__, blocknr, journal->j_devname);
 			err = -EIO;
@@ -1195,7 +1195,7 @@ static journal_t *journal_init_common(struct block_device *bdev,
 
 	bh = getblk_unmovable(journal->j_dev, start, journal->j_blocksize);
 	if (!bh) {
-		pr_err("%s: Cannot get buffer for journal superblock\n",
+		pr_debug("%s: Cannot get buffer for journal superblock\n",
 			__func__);
 		goto err_cleanup;
 	}
@@ -1270,7 +1270,7 @@ journal_t *jbd2_journal_init_inode(struct inode *inode)
 	err = bmap(inode, &blocknr);
 
 	if (err || !blocknr) {
-		pr_err("%s: Cannot locate journal superblock\n",
+		pr_debug("%s: Cannot locate journal superblock\n",
 			__func__);
 		return NULL;
 	}
@@ -1321,7 +1321,7 @@ static int journal_reset(journal_t *journal)
 	first = be32_to_cpu(sb->s_first);
 	last = be32_to_cpu(sb->s_maxlen);
 	if (first + JBD2_MIN_JOURNAL_BLOCKS > last + 1) {
-		printk(KERN_ERR "JBD2: Journal too short (blocks %llu-%llu).\n",
+		no_printk(KERN_ERR "JBD2: Journal too short (blocks %llu-%llu).\n",
 		       first, last);
 		journal_fail_superblock(journal);
 		return -EINVAL;
@@ -1400,7 +1400,7 @@ static int jbd2_write_superblock(journal_t *journal, int write_flags)
 		 * be remapped.  Nothing we can do but to retry the
 		 * write and hope for the best.
 		 */
-		printk(KERN_ERR "JBD2: previous I/O error detected "
+		no_printk(KERN_ERR "JBD2: previous I/O error detected "
 		       "for journal superblock update for %s.\n",
 		       journal->j_devname);
 		clear_buffer_write_io_error(bh);
@@ -1417,7 +1417,7 @@ static int jbd2_write_superblock(journal_t *journal, int write_flags)
 		ret = -EIO;
 	}
 	if (ret) {
-		printk(KERN_ERR "JBD2: Error %d detected when updating "
+		no_printk(KERN_ERR "JBD2: Error %d detected when updating "
 		       "journal superblock for %s.\n", ret,
 		       journal->j_devname);
 		jbd2_journal_abort(journal, ret);
@@ -1540,7 +1540,7 @@ static int journal_get_superblock(journal_t *journal)
 		ll_rw_block(REQ_OP_READ, 0, 1, &bh);
 		wait_on_buffer(bh);
 		if (!buffer_uptodate(bh)) {
-			printk(KERN_ERR
+			no_printk(KERN_ERR
 				"JBD2: IO error reading journal superblock\n");
 			goto out;
 		}
@@ -1555,7 +1555,7 @@ static int journal_get_superblock(journal_t *journal)
 
 	if (sb->s_header.h_magic != cpu_to_be32(JBD2_MAGIC_NUMBER) ||
 	    sb->s_blocksize != cpu_to_be32(journal->j_blocksize)) {
-		printk(KERN_WARNING "JBD2: no valid journal superblock found\n");
+		no_printk(KERN_WARNING "JBD2: no valid journal superblock found\n");
 		goto out;
 	}
 
@@ -1567,20 +1567,20 @@ static int journal_get_superblock(journal_t *journal)
 		journal->j_format_version = 2;
 		break;
 	default:
-		printk(KERN_WARNING "JBD2: unrecognised superblock format ID\n");
+		no_printk(KERN_WARNING "JBD2: unrecognised superblock format ID\n");
 		goto out;
 	}
 
 	if (be32_to_cpu(sb->s_maxlen) < journal->j_maxlen)
 		journal->j_maxlen = be32_to_cpu(sb->s_maxlen);
 	else if (be32_to_cpu(sb->s_maxlen) > journal->j_maxlen) {
-		printk(KERN_WARNING "JBD2: journal file too short\n");
+		no_printk(KERN_WARNING "JBD2: journal file too short\n");
 		goto out;
 	}
 
 	if (be32_to_cpu(sb->s_first) == 0 ||
 	    be32_to_cpu(sb->s_first) >= journal->j_maxlen) {
-		printk(KERN_WARNING
+		no_printk(KERN_WARNING
 			"JBD2: Invalid start block of journal: %u\n",
 			be32_to_cpu(sb->s_first));
 		goto out;
@@ -1589,7 +1589,7 @@ static int journal_get_superblock(journal_t *journal)
 	if (jbd2_has_feature_csum2(journal) &&
 	    jbd2_has_feature_csum3(journal)) {
 		/* Can't have checksum v2 and v3 at the same time! */
-		printk(KERN_ERR "JBD2: Can't enable checksumming v2 and v3 "
+		no_printk(KERN_ERR "JBD2: Can't enable checksumming v2 and v3 "
 		       "at the same time!\n");
 		goto out;
 	}
@@ -1597,13 +1597,13 @@ static int journal_get_superblock(journal_t *journal)
 	if (jbd2_journal_has_csum_v2or3_feature(journal) &&
 	    jbd2_has_feature_checksum(journal)) {
 		/* Can't have checksum v1 and v2 on at the same time! */
-		printk(KERN_ERR "JBD2: Can't enable checksumming v1 and v2/3 "
+		no_printk(KERN_ERR "JBD2: Can't enable checksumming v1 and v2/3 "
 		       "at the same time!\n");
 		goto out;
 	}
 
 	if (!jbd2_verify_csum_type(journal, sb)) {
-		printk(KERN_ERR "JBD2: Unknown checksum type\n");
+		no_printk(KERN_ERR "JBD2: Unknown checksum type\n");
 		goto out;
 	}
 
@@ -1611,7 +1611,7 @@ static int journal_get_superblock(journal_t *journal)
 	if (jbd2_journal_has_csum_v2or3_feature(journal)) {
 		journal->j_chksum_driver = crypto_alloc_shash("crc32c", 0, 0);
 		if (IS_ERR(journal->j_chksum_driver)) {
-			printk(KERN_ERR "JBD2: Cannot load crc32c driver.\n");
+			no_printk(KERN_ERR "JBD2: Cannot load crc32c driver.\n");
 			err = PTR_ERR(journal->j_chksum_driver);
 			journal->j_chksum_driver = NULL;
 			goto out;
@@ -1620,7 +1620,7 @@ static int journal_get_superblock(journal_t *journal)
 
 	/* Check superblock checksum */
 	if (!jbd2_superblock_csum_verify(journal, sb)) {
-		printk(KERN_ERR "JBD2: journal checksum error\n");
+		no_printk(KERN_ERR "JBD2: journal checksum error\n");
 		err = -EFSBADCRC;
 		goto out;
 	}
@@ -1691,7 +1691,7 @@ int jbd2_journal_load(journal_t *journal)
 		     ~cpu_to_be32(JBD2_KNOWN_ROCOMPAT_FEATURES)) ||
 		    (sb->s_feature_incompat &
 		     ~cpu_to_be32(JBD2_KNOWN_INCOMPAT_FEATURES))) {
-			printk(KERN_WARNING
+			no_printk(KERN_WARNING
 				"JBD2: Unrecognised features on journal\n");
 			return -EINVAL;
 		}
@@ -1710,7 +1710,7 @@ int jbd2_journal_load(journal_t *journal)
 		goto recovery_error;
 
 	if (journal->j_failed_commit) {
-		printk(KERN_ERR "JBD2: journal transaction %u on %s "
+		no_printk(KERN_ERR "JBD2: journal transaction %u on %s "
 		       "is corrupt.\n", journal->j_failed_commit,
 		       journal->j_devname);
 		return -EFSCORRUPTED;
@@ -1731,7 +1731,7 @@ int jbd2_journal_load(journal_t *journal)
 	return 0;
 
 recovery_error:
-	printk(KERN_WARNING "JBD2: recovery failed\n");
+	no_printk(KERN_WARNING "JBD2: recovery failed\n");
 	return -EIO;
 }
 
@@ -1926,7 +1926,7 @@ int jbd2_journal_set_features (journal_t *journal, unsigned long compat,
 	    INCOMPAT_FEATURE_ON(JBD2_FEATURE_INCOMPAT_CSUM_V3)) {
 		journal->j_chksum_driver = crypto_alloc_shash("crc32c", 0, 0);
 		if (IS_ERR(journal->j_chksum_driver)) {
-			printk(KERN_ERR "JBD2: Cannot load crc32c driver.\n");
+			no_printk(KERN_ERR "JBD2: Cannot load crc32c driver.\n");
 			journal->j_chksum_driver = NULL;
 			return 0;
 		}
@@ -2102,7 +2102,7 @@ int jbd2_journal_wipe(journal_t *journal, int write)
 	if (!journal->j_tail)
 		goto no_recovery;
 
-	printk(KERN_WARNING "JBD2: %s recovery information on journal\n",
+	no_printk(KERN_WARNING "JBD2: %s recovery information on journal\n",
 		write ? "Clearing" : "Ignoring");
 
 	err = jbd2_journal_skip_recovery(journal);
@@ -2137,7 +2137,7 @@ void __jbd2_journal_abort_hard(journal_t *journal)
 	if (journal->j_flags & JBD2_ABORT)
 		return;
 
-	printk(KERN_ERR "Aborting journal on device %s.\n",
+	no_printk(KERN_ERR "Aborting journal on device %s.\n",
 	       journal->j_devname);
 
 	write_lock(&journal->j_state_lock);
@@ -2365,7 +2365,7 @@ static int jbd2_journal_create_slab(size_t size)
 					 slab_size, 0, NULL);
 	mutex_unlock(&jbd2_slab_create_mutex);
 	if (!jbd2_slab[i]) {
-		printk(KERN_EMERG "JBD2: no memory for jbd2_slab cache\n");
+		no_printk(KERN_EMERG "JBD2: no memory for jbd2_slab cache\n");
 		return -ENOMEM;
 	}
 	return 0;
@@ -2425,7 +2425,7 @@ static int __init jbd2_journal_init_journal_head_cache(void)
 				SLAB_TEMPORARY | SLAB_TYPESAFE_BY_RCU,
 				NULL);		/* ctor */
 	if (!jbd2_journal_head_cache) {
-		printk(KERN_EMERG "JBD2: no memory for journal_head cache\n");
+		no_printk(KERN_EMERG "JBD2: no memory for journal_head cache\n");
 		return -ENOMEM;
 	}
 	return 0;
@@ -2574,11 +2574,11 @@ static void __journal_remove_journal_head(struct buffer_head *bh)
 	J_ASSERT_BH(bh, jh2bh(jh) == bh);
 	BUFFER_TRACE(bh, "remove journal_head");
 	if (jh->b_frozen_data) {
-		printk(KERN_WARNING "%s: freeing b_frozen_data\n", __func__);
+		no_printk(KERN_WARNING "%s: freeing b_frozen_data\n", __func__);
 		jbd2_free(jh->b_frozen_data, bh->b_size);
 	}
 	if (jh->b_committed_data) {
-		printk(KERN_WARNING "%s: freeing b_committed_data\n", __func__);
+		no_printk(KERN_WARNING "%s: freeing b_committed_data\n", __func__);
 		jbd2_free(jh->b_committed_data, bh->b_size);
 	}
 	bh->b_private = NULL;
@@ -2681,7 +2681,7 @@ static int __init jbd2_journal_init_inode_cache(void)
 	J_ASSERT(!jbd2_inode_cache);
 	jbd2_inode_cache = KMEM_CACHE(jbd2_inode, 0);
 	if (!jbd2_inode_cache) {
-		pr_emerg("JBD2: failed to create inode cache\n");
+		pr_debug("JBD2: failed to create inode cache\n");
 		return -ENOMEM;
 	}
 	return 0;
@@ -2692,7 +2692,7 @@ static int __init jbd2_journal_init_handle_cache(void)
 	J_ASSERT(!jbd2_handle_cache);
 	jbd2_handle_cache = KMEM_CACHE(jbd2_journal_handle, SLAB_TEMPORARY);
 	if (!jbd2_handle_cache) {
-		printk(KERN_EMERG "JBD2: failed to create handle cache\n");
+		no_printk(KERN_EMERG "JBD2: failed to create handle cache\n");
 		return -ENOMEM;
 	}
 	return 0;
@@ -2763,7 +2763,7 @@ static void __exit journal_exit(void)
 #ifdef CONFIG_JBD2_DEBUG
 	int n = atomic_read(&nr_journal_heads);
 	if (n)
-		printk(KERN_ERR "JBD2: leaked %d journal_heads!\n", n);
+		no_printk(KERN_ERR "JBD2: leaked %d journal_heads!\n", n);
 #endif
 	jbd2_remove_jbd_stats_proc_entry();
 	jbd2_journal_destroy_caches();

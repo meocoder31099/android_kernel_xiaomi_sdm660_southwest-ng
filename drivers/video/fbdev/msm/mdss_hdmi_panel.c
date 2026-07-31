@@ -162,7 +162,7 @@ static int hdmi_panel_config_avi(struct hdmi_panel *panel)
 
 	timing = panel->vid_cfg.timing;
 	if (!timing) {
-		pr_err("fmt not supported: %d\n", panel->vic);
+		pr_debug("fmt not supported: %d\n", panel->vic);
 		ret = -EPERM;
 		goto end;
 	}
@@ -202,7 +202,7 @@ static int hdmi_panel_setup_video(struct hdmi_panel *panel)
 
 	timing = panel->vid_cfg.timing;
 	if (!timing) {
-		pr_err("fmt not supported: %d\n", panel->vic);
+		pr_debug("fmt not supported: %d\n", panel->vic);
 		return -EPERM;
 	}
 
@@ -214,7 +214,7 @@ static int hdmi_panel_setup_video(struct hdmi_panel *panel)
 	total_v = hdmi_tx_get_v_total(timing) - 1;
 
 	if (((total_v << 16) & 0xE0000000) || (total_h & 0xFFFFE000)) {
-		pr_err("total v=%d or h=%d is larger than supported\n",
+		pr_debug("total v=%d or h=%d is larger than supported\n",
 			total_v, total_h);
 		return -EPERM;
 	}
@@ -224,7 +224,7 @@ static int hdmi_panel_setup_video(struct hdmi_panel *panel)
 		  (timing->pulse_width_h >> div);
 	end_h   = (total_h + 1) - (timing->front_porch_h >> div);
 	if (((end_h << 16) & 0xE0000000) || (start_h & 0xFFFFE000)) {
-		pr_err("end_h=%d or start_h=%d is larger than supported\n",
+		pr_debug("end_h=%d or start_h=%d is larger than supported\n",
 			end_h, start_h);
 		return -EPERM;
 	}
@@ -233,7 +233,7 @@ static int hdmi_panel_setup_video(struct hdmi_panel *panel)
 	start_v = timing->back_porch_v + timing->pulse_width_v - 1;
 	end_v   = total_v - timing->front_porch_v;
 	if (((end_v << 16) & 0xE0000000) || (start_v & 0xFFFFE000)) {
-		pr_err("end_v=%d or start_v=%d is larger than supported\n",
+		pr_debug("end_v=%d or start_v=%d is larger than supported\n",
 			end_v, start_v);
 		return -EPERM;
 	}
@@ -578,7 +578,7 @@ static int hdmi_panel_setup_infoframe(struct hdmi_panel *panel)
 	int rc = 0;
 
 	if (!panel) {
-		pr_err("invalid panel data\n");
+		pr_debug("invalid panel data\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -638,19 +638,19 @@ static int hdmi_panel_setup_scrambler(struct hdmi_panel *panel)
 	struct mdss_panel_info *pinfo = NULL;
 
 	if (!panel) {
-		pr_err("invalid panel data\n");
+		pr_debug("invalid panel data\n");
 		return -EINVAL;
 	}
 
 	timing = panel->vid_cfg.timing;
 	if (!timing) {
-		pr_err("Invalid timing info\n");
+		pr_debug("Invalid timing info\n");
 		return -EINVAL;
 	}
 
 	pinfo = panel->data->pinfo;
 	if (!pinfo) {
-		pr_err("invalid panel info\n");
+		pr_debug("invalid panel info\n");
 		return -EINVAL;
 	}
 
@@ -677,7 +677,7 @@ static int hdmi_panel_setup_scrambler(struct hdmi_panel *panel)
 			HDMI_TX_SCDC_TMDS_BIT_CLOCK_RATIO_UPDATE,
 			tmds_clock_ratio);
 		if (rc) {
-			pr_err("TMDS CLK RATIO ERR\n");
+			pr_debug("TMDS CLK RATIO ERR\n");
 			return rc;
 		}
 
@@ -692,7 +692,7 @@ static int hdmi_panel_setup_scrambler(struct hdmi_panel *panel)
 		if (!rc) {
 			panel->scrambler_enabled = true;
 		} else {
-			pr_err("failed to enable scrambling\n");
+			pr_debug("failed to enable scrambling\n");
 			return rc;
 		}
 
@@ -706,7 +706,7 @@ static int hdmi_panel_setup_scrambler(struct hdmi_panel *panel)
 					HDMI_TX_SCRAMBLER_TIMEOUT_MSEC);
 
 		if (timeout_hsync <= 0) {
-			pr_err("err in timeout hsync calc\n");
+			pr_debug("err in timeout hsync calc\n");
 			timeout_hsync = HDMI_DEFAULT_TIMEOUT_HSYNC;
 		}
 
@@ -774,14 +774,14 @@ static int hdmi_panel_power_on(void *input)
 	struct msm_hdmi_mode_timing_info *info;
 
 	if (!panel) {
-		pr_err("invalid panel data\n");
+		pr_debug("invalid panel data\n");
 		rc = -EINVAL;
 		goto err;
 	}
 
 	pinfo = panel->data->pinfo;
 	if (!pinfo) {
-		pr_err("invalid panel info\n");
+		pr_debug("invalid panel info\n");
 		rc = -EINVAL;
 		goto err;
 	}
@@ -812,31 +812,31 @@ static int hdmi_panel_power_on(void *input)
 
 	rc = hdmi_panel_config_avi(panel);
 	if (rc) {
-		pr_err("avi config failed. rc=%d\n", rc);
+		pr_debug("avi config failed. rc=%d\n", rc);
 		goto err;
 	}
 
 	rc = hdmi_panel_setup_video(panel);
 	if (rc) {
-		pr_err("video setup failed. rc=%d\n", rc);
+		pr_debug("video setup failed. rc=%d\n", rc);
 		goto err;
 	}
 
 	rc = hdmi_panel_setup_infoframe(panel);
 	if (rc) {
-		pr_err("infoframe setup failed. rc=%d\n", rc);
+		pr_debug("infoframe setup failed. rc=%d\n", rc);
 		goto err;
 	}
 
 	rc = hdmi_panel_setup_scrambler(panel);
 	if (rc) {
-		pr_err("scrambler setup failed. rc=%d\n", rc);
+		pr_debug("scrambler setup failed. rc=%d\n", rc);
 		goto err;
 	}
 
 	rc = hdmi_panel_setup_dc(panel);
 	if (rc) {
-		pr_err("Deep Color setup failed. rc=%d\n", rc);
+		pr_debug("Deep Color setup failed. rc=%d\n", rc);
 		goto err;
 	}
 end:
@@ -869,7 +869,7 @@ void *hdmi_panel_init(struct hdmi_panel_init_data *data)
 	struct hdmi_panel *panel = NULL;
 
 	if (!data) {
-		pr_err("invalid panel init data\n");
+		pr_debug("invalid panel init data\n");
 		goto end;
 	}
 

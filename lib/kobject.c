@@ -269,10 +269,10 @@ static int kobject_add_internal(struct kobject *kobj)
 
 		/* be noisy on error issues */
 		if (error == -EEXIST)
-			pr_err("%s failed for %s with -EEXIST, don't try to register things with the same name in the same directory.\n",
+			pr_debug("%s failed for %s with -EEXIST, don't try to register things with the same name in the same directory.\n",
 			       __func__, kobject_name(kobj));
 		else
-			pr_err("%s failed for %s (error: %d parent: %s)\n",
+			pr_debug("%s failed for %s (error: %d parent: %s)\n",
 			       __func__, kobject_name(kobj), error,
 			       parent ? kobject_name(parent) : "'none'");
 	} else
@@ -369,7 +369,7 @@ void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 	}
 	if (kobj->state_initialized) {
 		/* do not error out as sometimes we can recover */
-		pr_err("kobject (%p): tried to init an initialized object, something is seriously wrong.\n",
+		pr_debug("kobject (%p): tried to init an initialized object, something is seriously wrong.\n",
 		       kobj);
 		dump_stack();
 	}
@@ -379,7 +379,7 @@ void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 	return;
 
 error:
-	pr_err("kobject (%p): %s\n", kobj, err_str);
+	pr_debug("kobject (%p): %s\n", kobj, err_str);
 	dump_stack();
 }
 EXPORT_SYMBOL(kobject_init);
@@ -392,7 +392,7 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
 
 	retval = kobject_set_name_vargs(kobj, fmt, vargs);
 	if (retval) {
-		pr_err("kobject: can not set name properly!\n");
+		pr_debug("kobject: can not set name properly!\n");
 		return retval;
 	}
 	kobj->parent = parent;
@@ -434,7 +434,7 @@ int kobject_add(struct kobject *kobj, struct kobject *parent,
 		return -EINVAL;
 
 	if (!kobj->state_initialized) {
-		pr_err("kobject '%s' (%p): tried to add an uninitialized object, something is seriously wrong.\n",
+		pr_debug("kobject '%s' (%p): tried to add an uninitialized object, something is seriously wrong.\n",
 		       kobject_name(kobj), kobj);
 		dump_stack();
 		return -EINVAL;
@@ -704,7 +704,7 @@ static void kobject_release(struct kref *kref)
 	struct kobject *kobj = container_of(kref, struct kobject, kref);
 #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
 	unsigned long delay = HZ + HZ * (get_random_int() & 0x3);
-	pr_info("kobject: '%s' (%p): %s, parent %p (delayed %ld)\n",
+	pr_debug("kobject: '%s' (%p): %s, parent %p (delayed %ld)\n",
 		 kobject_name(kobj), kobj, __func__, kobj->parent, delay);
 	INIT_DELAYED_WORK(&kobj->release, kobject_delayed_cleanup);
 
@@ -790,7 +790,7 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 
 	retval = kobject_add(kobj, parent, "%s", name);
 	if (retval) {
-		pr_warn("%s: kobject_add error: %d\n", __func__, retval);
+		pr_debug("%s: kobject_add error: %d\n", __func__, retval);
 		kobject_put(kobj);
 		kobj = NULL;
 	}
@@ -852,7 +852,7 @@ int kset_register(struct kset *k)
 		return -EINVAL;
 
 	if (!k->kobj.ktype) {
-		pr_err("must have a ktype to be initialized properly!\n");
+		pr_debug("must have a ktype to be initialized properly!\n");
 		return -EINVAL;
 	}
 

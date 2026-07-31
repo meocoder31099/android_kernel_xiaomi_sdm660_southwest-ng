@@ -211,7 +211,7 @@ int i2c_generic_scl_recovery(struct i2c_adapter *adap)
 		if (scl) {
 			/* SCL shouldn't be low here */
 			if (!bri->get_scl(adap)) {
-				dev_err(&adap->dev,
+				dev_dbg(&adap->dev,
 					"SCL is stuck low, exit recovery\n");
 				ret = -EBUSY;
 				break;
@@ -383,7 +383,7 @@ static int i2c_device_probe(struct device *dev)
 			status = 0;
 
 		if (status)
-			dev_warn(&client->dev, "failed to set up wakeup irq\n");
+			dev_dbg(&client->dev, "failed to set up wakeup irq\n");
 	}
 
 	dev_dbg(dev, "probe\n");
@@ -766,7 +766,7 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
 
 	status = i2c_check_addr_validity(client->addr, client->flags);
 	if (status) {
-		dev_err(&adap->dev, "Invalid %d-bit I2C address 0x%02hx\n",
+		dev_dbg(&adap->dev, "Invalid %d-bit I2C address 0x%02hx\n",
 			client->flags & I2C_CLIENT_TEN ? 10 : 7, client->addr);
 		goto out_err_silent;
 	}
@@ -787,7 +787,7 @@ i2c_new_device(struct i2c_adapter *adap, struct i2c_board_info const *info)
 	if (info->properties) {
 		status = device_add_properties(&client->dev, info->properties);
 		if (status) {
-			dev_err(&adap->dev,
+			dev_dbg(&adap->dev,
 				"Failed to add properties to client %s: %d\n",
 				client->name, status);
 			goto out_err_put_of_node;
@@ -809,7 +809,7 @@ out_free_props:
 out_err_put_of_node:
 	of_node_put(info->of_node);
 out_err:
-	dev_err(&adap->dev,
+	dev_dbg(&adap->dev,
 		"Failed to register i2c client %s at 0x%02x (%d)\n",
 		client->name, client->addr, status);
 out_err_silent:
@@ -982,11 +982,11 @@ i2c_sysfs_new_device(struct device *dev, struct device_attribute *attr,
 
 	blank = strchr(buf, ' ');
 	if (!blank) {
-		dev_err(dev, "%s: Missing parameters\n", "new_device");
+		dev_dbg(dev, "%s: Missing parameters\n", "new_device");
 		return -EINVAL;
 	}
 	if (blank - buf > I2C_NAME_SIZE - 1) {
-		dev_err(dev, "%s: Invalid device name\n", "new_device");
+		dev_dbg(dev, "%s: Invalid device name\n", "new_device");
 		return -EINVAL;
 	}
 	memcpy(info.type, buf, blank - buf);
@@ -994,11 +994,11 @@ i2c_sysfs_new_device(struct device *dev, struct device_attribute *attr,
 	/* Parse remaining parameters, reject extra parameters */
 	res = sscanf(++blank, "%hi%c", &info.addr, &end);
 	if (res < 1) {
-		dev_err(dev, "%s: Can't parse I2C address\n", "new_device");
+		dev_dbg(dev, "%s: Can't parse I2C address\n", "new_device");
 		return -EINVAL;
 	}
 	if (res > 1  && end != '\n') {
-		dev_err(dev, "%s: Extra parameters\n", "new_device");
+		dev_dbg(dev, "%s: Extra parameters\n", "new_device");
 		return -EINVAL;
 	}
 
@@ -1020,7 +1020,7 @@ i2c_sysfs_new_device(struct device *dev, struct device_attribute *attr,
 	mutex_lock(&adap->userspace_clients_lock);
 	list_add_tail(&client->detected, &adap->userspace_clients);
 	mutex_unlock(&adap->userspace_clients_lock);
-	dev_info(dev, "%s: Instantiated device %s at 0x%02hx\n", "new_device",
+	dev_dbg(dev, "%s: Instantiated device %s at 0x%02hx\n", "new_device",
 		 info.type, info.addr);
 
 	return count;
@@ -1049,11 +1049,11 @@ i2c_sysfs_delete_device(struct device *dev, struct device_attribute *attr,
 	/* Parse parameters, reject extra parameters */
 	res = sscanf(buf, "%hi%c", &addr, &end);
 	if (res < 1) {
-		dev_err(dev, "%s: Can't parse I2C address\n", "delete_device");
+		dev_dbg(dev, "%s: Can't parse I2C address\n", "delete_device");
 		return -EINVAL;
 	}
 	if (res > 1  && end != '\n') {
-		dev_err(dev, "%s: Extra parameters\n", "delete_device");
+		dev_dbg(dev, "%s: Extra parameters\n", "delete_device");
 		return -EINVAL;
 	}
 
@@ -1064,7 +1064,7 @@ i2c_sysfs_delete_device(struct device *dev, struct device_attribute *attr,
 	list_for_each_entry_safe(client, next, &adap->userspace_clients,
 				 detected) {
 		if (i2c_encode_flags_to_addr(client) == addr) {
-			dev_info(dev, "%s: Deleting device %s at 0x%02hx\n",
+			dev_dbg(dev, "%s: Deleting device %s at 0x%02hx\n",
 				 "delete_device", client->name, client->addr);
 
 			list_del(&client->detected);
@@ -1076,7 +1076,7 @@ i2c_sysfs_delete_device(struct device *dev, struct device_attribute *attr,
 	mutex_unlock(&adap->userspace_clients_lock);
 
 	if (res < 0)
-		dev_err(dev, "%s: Can't find device in list\n",
+		dev_dbg(dev, "%s: Can't find device in list\n",
 			"delete_device");
 	return res;
 }
@@ -1127,7 +1127,7 @@ static void i2c_scan_static_board_info(struct i2c_adapter *adapter)
 		if (devinfo->busnum == adapter->nr
 				&& !i2c_new_device(adapter,
 						&devinfo->board_info))
-			dev_err(&adapter->dev,
+			dev_dbg(&adapter->dev,
 				"Can't create device at 0x%02x\n",
 				devinfo->board_info.addr);
 	}
@@ -1242,7 +1242,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
 		goto out_list;
 
 	if (!adap->algo) {
-		pr_err("adapter '%s': no algo supplied!\n", adap->name);
+		pr_debug("adapter '%s': no algo supplied!\n", adap->name);
 		goto out_list;
 	}
 
@@ -1261,7 +1261,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
 	/* register soft irqs for Host Notify */
 	res = i2c_setup_host_notify_irq_domain(adap);
 	if (res) {
-		pr_err("adapter '%s': can't create Host Notify IRQs (%d)\n",
+		pr_debug("adapter '%s': can't create Host Notify IRQs (%d)\n",
 		       adap->name, res);
 		goto out_list;
 	}
@@ -1271,7 +1271,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
 	adap->dev.type = &i2c_adapter_type;
 	res = device_register(&adap->dev);
 	if (res) {
-		pr_err("adapter '%s': can't register device (%d)\n", adap->name, res);
+		pr_debug("adapter '%s': can't register device (%d)\n", adap->name, res);
 		goto out_list;
 	}
 
@@ -1289,7 +1289,7 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
 	res = class_compat_create_link(i2c_adapter_compat_class, &adap->dev,
 				       adap->dev.parent);
 	if (res)
-		dev_warn(&adap->dev,
+		dev_dbg(&adap->dev,
 			 "Failed to create compatibility class link\n");
 #endif
 
@@ -2091,7 +2091,7 @@ static int i2c_default_probe(struct i2c_adapter *adap, unsigned short addr)
 		err = i2c_smbus_xfer(adap, addr, 0, I2C_SMBUS_READ, 0,
 				     I2C_SMBUS_BYTE, &dummy);
 	else {
-		dev_warn(&adap->dev, "No suitable probing method supported for address 0x%02X\n",
+		dev_dbg(&adap->dev, "No suitable probing method supported for address 0x%02X\n",
 			 addr);
 		err = -EOPNOTSUPP;
 	}
@@ -2110,7 +2110,7 @@ static int i2c_detect_address(struct i2c_client *temp_client,
 	/* Make sure the address is valid */
 	err = i2c_check_7bit_addr_validity_strict(addr);
 	if (err) {
-		dev_warn(&adapter->dev, "Invalid probe address 0x%02x\n",
+		dev_dbg(&adapter->dev, "Invalid probe address 0x%02x\n",
 			 addr);
 		return err;
 	}
@@ -2135,7 +2135,7 @@ static int i2c_detect_address(struct i2c_client *temp_client,
 
 	/* Consistency check */
 	if (info.type[0] == '\0') {
-		dev_err(&adapter->dev,
+		dev_dbg(&adapter->dev,
 			"%s detection function provided no name for 0x%x\n",
 			driver->driver.name, addr);
 	} else {
@@ -2143,7 +2143,7 @@ static int i2c_detect_address(struct i2c_client *temp_client,
 
 		/* Detection succeeded, instantiate the device */
 		if (adapter->class & I2C_CLASS_DEPRECATED)
-			dev_warn(&adapter->dev,
+			dev_dbg(&adapter->dev,
 				"This adapter will soon drop class based instantiation of devices. "
 				"Please make sure client 0x%02x gets instantiated by other means. "
 				"Check 'Documentation/i2c/instantiating-devices' for details.\n",
@@ -2155,7 +2155,7 @@ static int i2c_detect_address(struct i2c_client *temp_client,
 		if (client)
 			list_add_tail(&client->detected, &driver->clients);
 		else
-			dev_err(&adapter->dev, "Failed creating %s at 0x%02x\n",
+			dev_dbg(&adapter->dev, "Failed creating %s at 0x%02x\n",
 				info.type, info.addr);
 	}
 	return 0;
@@ -2226,7 +2226,7 @@ i2c_new_probed_device(struct i2c_adapter *adap,
 	for (i = 0; addr_list[i] != I2C_CLIENT_END; i++) {
 		/* Check address validity */
 		if (i2c_check_7bit_addr_validity_strict(addr_list[i]) < 0) {
-			dev_warn(&adap->dev, "Invalid 7-bit address 0x%02x\n",
+			dev_dbg(&adap->dev, "Invalid 7-bit address 0x%02x\n",
 				 addr_list[i]);
 			continue;
 		}

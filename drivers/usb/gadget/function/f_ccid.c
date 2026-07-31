@@ -308,7 +308,7 @@ static void ccid_notify_complete(struct usb_ep *ep, struct usb_request *req)
 	case 0:
 		break;
 	default:
-		pr_err("CCID notify ep error %d\n", req->status);
+		pr_debug("CCID notify ep error %d\n", req->status);
 	}
 }
 
@@ -422,7 +422,7 @@ invalid:
 		req->length = ret;
 		ret = usb_ep_queue(cdev->gadget->ep0, req, GFP_ATOMIC);
 		if (ret < 0)
-			pr_err("ccid ep0 enqueue err %d\n", ret);
+			pr_debug("ccid ep0 enqueue err %d\n", ret);
 	}
 
 	return ret;
@@ -460,13 +460,13 @@ ccid_function_set_alt(struct usb_function *f, unsigned int intf,
 	ret = config_ep_by_speed(cdev->gadget, f, ccid_dev->notify);
 	if (ret) {
 		ccid_dev->notify->desc = NULL;
-		pr_err("%s: config_ep_by_speed failed for ep#%s, err#%d\n",
+		pr_debug("%s: config_ep_by_speed failed for ep#%s, err#%d\n",
 				__func__, ccid_dev->notify->name, ret);
 		return ret;
 	}
 	ret = usb_ep_enable(ccid_dev->notify);
 	if (ret) {
-		pr_err("%s: usb ep#%s enable failed, err#%d\n",
+		pr_debug("%s: usb ep#%s enable failed, err#%d\n",
 				__func__, ccid_dev->notify->name, ret);
 		return ret;
 	}
@@ -475,13 +475,13 @@ ccid_function_set_alt(struct usb_function *f, unsigned int intf,
 	ret = config_ep_by_speed(cdev->gadget, f, ccid_dev->in);
 	if (ret) {
 		ccid_dev->in->desc = NULL;
-		pr_err("%s: config_ep_by_speed failed for ep#%s, err#%d\n",
+		pr_debug("%s: config_ep_by_speed failed for ep#%s, err#%d\n",
 				__func__, ccid_dev->in->name, ret);
 		goto disable_ep_notify;
 	}
 	ret = usb_ep_enable(ccid_dev->in);
 	if (ret) {
-		pr_err("%s: usb ep#%s enable failed, err#%d\n",
+		pr_debug("%s: usb ep#%s enable failed, err#%d\n",
 				__func__, ccid_dev->in->name, ret);
 		goto disable_ep_notify;
 	}
@@ -489,13 +489,13 @@ ccid_function_set_alt(struct usb_function *f, unsigned int intf,
 	ret = config_ep_by_speed(cdev->gadget, f, ccid_dev->out);
 	if (ret) {
 		ccid_dev->out->desc = NULL;
-		pr_err("%s: config_ep_by_speed failed for ep#%s, err#%d\n",
+		pr_debug("%s: config_ep_by_speed failed for ep#%s, err#%d\n",
 				__func__, ccid_dev->out->name, ret);
 		goto disable_ep_in;
 	}
 	ret = usb_ep_enable(ccid_dev->out);
 	if (ret) {
-		pr_err("%s: usb ep#%s enable failed, err#%d\n",
+		pr_debug("%s: usb ep#%s enable failed, err#%d\n",
 				__func__, ccid_dev->out->name, ret);
 		goto disable_ep_in;
 	}
@@ -541,7 +541,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 
 	ccid_dev->ifc_id = usb_interface_id(c, f);
 	if (ccid_dev->ifc_id < 0) {
-		pr_err("%s: unable to allocate ifc id, err:%d",
+		pr_debug("%s: unable to allocate ifc id, err:%d",
 				__func__, ccid_dev->ifc_id);
 		return ccid_dev->ifc_id;
 	}
@@ -549,7 +549,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 
 	ep = usb_ep_autoconfig(cdev->gadget, &ccid_fs_notify_desc);
 	if (!ep) {
-		pr_err("%s: usb epnotify autoconfig failed\n", __func__);
+		pr_debug("%s: usb epnotify autoconfig failed\n", __func__);
 		return -ENODEV;
 	}
 	ccid_dev->notify = ep;
@@ -557,7 +557,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 
 	ep = usb_ep_autoconfig(cdev->gadget, &ccid_fs_in_desc);
 	if (!ep) {
-		pr_err("%s: usb epin autoconfig failed\n", __func__);
+		pr_debug("%s: usb epin autoconfig failed\n", __func__);
 		ret = -ENODEV;
 		goto ep_auto_in_fail;
 	}
@@ -566,7 +566,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 
 	ep = usb_ep_autoconfig(cdev->gadget, &ccid_fs_out_desc);
 	if (!ep) {
-		pr_err("%s: usb epout autoconfig failed\n", __func__);
+		pr_debug("%s: usb epout autoconfig failed\n", __func__);
 		ret = -ENODEV;
 		goto ep_auto_out_fail;
 	}
@@ -601,7 +601,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 	ccid_dev->notify_req = ccid_request_alloc(ccid_dev->notify,
 			sizeof(struct usb_ccid_notification), GFP_KERNEL);
 	if (IS_ERR(ccid_dev->notify_req)) {
-		pr_err("%s: unable to allocate memory for notify req\n",
+		pr_debug("%s: unable to allocate memory for notify req\n",
 				__func__);
 		goto notify_alloc_fail;
 	}
@@ -612,7 +612,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 	req = ccid_request_alloc(ccid_dev->out, BULK_OUT_BUFFER_SIZE,
 							GFP_KERNEL);
 	if (IS_ERR(req)) {
-		pr_err("%s: unable to allocate memory for out req\n",
+		pr_debug("%s: unable to allocate memory for out req\n",
 				__func__);
 		ret = PTR_ERR(req);
 		goto out_alloc_fail;
@@ -625,7 +625,7 @@ static int ccid_function_bind(struct usb_configuration *c,
 		req = ccid_request_alloc(ccid_dev->in, BULK_IN_BUFFER_SIZE,
 				GFP_KERNEL);
 		if (IS_ERR(req)) {
-			pr_err("%s: unable to allocate memory for in req\n",
+			pr_debug("%s: unable to allocate memory for in req\n",
 					__func__);
 			ret = PTR_ERR(req);
 			goto in_alloc_fail;
@@ -706,14 +706,14 @@ static ssize_t ccid_bulk_read(struct file *fp, char __user *buf,
 	pr_debug("%s: %zu bytes\n", __func__, count);
 
 	if (count > BULK_OUT_BUFFER_SIZE) {
-		pr_err("%s: max_buffer_size:%d given_pkt_size:%zu\n",
+		pr_debug("%s: max_buffer_size:%d given_pkt_size:%zu\n",
 				__func__, BULK_OUT_BUFFER_SIZE, count);
 		return -ENOMEM;
 	}
 
 	if (atomic_read(&bulk_dev->error)) {
 		r = -EIO;
-		pr_err("%s bulk_dev_error\n", __func__);
+		pr_debug("%s bulk_dev_error\n", __func__);
 		goto done;
 	}
 
@@ -732,7 +732,7 @@ requeue_req:
 	ret = usb_ep_queue(ccid_dev->out, req, GFP_KERNEL);
 	if (ret < 0) {
 		r = -EIO;
-		pr_err("%s usb ep queue failed\n", __func__);
+		pr_debug("%s usb ep queue failed\n", __func__);
 		atomic_set(&bulk_dev->error, 1);
 		goto done;
 	}
@@ -760,7 +760,7 @@ requeue_req:
 			goto requeue_req;
 		}
 		if (req->actual > count)
-			pr_err("%s More data received(%d) than required(%zu)\n",
+			pr_debug("%s More data received(%d) than required(%zu)\n",
 						__func__, req->actual, count);
 		xfer = (req->actual < count) ? req->actual : count;
 		atomic_set(&bulk_dev->rx_req_busy, 1);
@@ -807,11 +807,11 @@ static ssize_t ccid_bulk_write(struct file *fp, const char __user *buf,
 	}
 
 	if (!count) {
-		pr_err("%s: zero length ctrl pkt\n", __func__);
+		pr_debug("%s: zero length ctrl pkt\n", __func__);
 		return -ENODEV;
 	}
 	if (count > BULK_IN_BUFFER_SIZE) {
-		pr_err("%s: max_buffer_size:%zu given_pkt_size:%zu\n",
+		pr_debug("%s: max_buffer_size:%zu given_pkt_size:%zu\n",
 				__func__, BULK_IN_BUFFER_SIZE, count);
 		return -ENOMEM;
 	}
@@ -828,7 +828,7 @@ static ssize_t ccid_bulk_write(struct file *fp, const char __user *buf,
 	}
 
 	if (!req || atomic_read(&bulk_dev->error)) {
-		pr_err(" %s dev->error\n", __func__);
+		pr_debug(" %s dev->error\n", __func__);
 		r = -EIO;
 		goto done;
 	}
@@ -972,7 +972,7 @@ ccid_ctrl_ioctl(struct file *fp, unsigned int cmd, u_long arg)
 	}
 	ret = usb_ep_queue(ccid_dev->notify, ccid_dev->notify_req, GFP_KERNEL);
 	if (ret < 0) {
-		pr_err("ccid notify ep enqueue error %d\n", ret);
+		pr_debug("ccid notify ep enqueue error %d\n", ret);
 		return ret;
 	}
 	return 0;
@@ -994,7 +994,7 @@ static int ccid_cdev_init(struct cdev *cdev, const struct file_operations *fops,
 
 	minor = ida_simple_get(&ccid_ida, 0, MAX_INSTANCES, GFP_KERNEL);
 	if (minor < 0) {
-		pr_err("%s: No more minor numbers left! rc:%d\n", __func__,
+		pr_debug("%s: No more minor numbers left! rc:%d\n", __func__,
 				minor);
 		return minor;
 	}
@@ -1002,7 +1002,7 @@ static int ccid_cdev_init(struct cdev *cdev, const struct file_operations *fops,
 	cdev_init(cdev, fops);
 	ret = cdev_add(cdev, MKDEV(major, minor), 1);
 	if (ret) {
-		pr_err("Failed to add cdev for (%s)\n", name);
+		pr_debug("Failed to add cdev for (%s)\n", name);
 		goto err_cdev_add;
 	}
 
@@ -1059,13 +1059,13 @@ static int ccid_alloc_chrdev_region(void)
 	if (IS_ERR(ccid_class)) {
 		ret = PTR_ERR(ccid_class);
 		ccid_class = NULL;
-		pr_err("%s: class_create() failed:%d\n", __func__, ret);
+		pr_debug("%s: class_create() failed:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = alloc_chrdev_region(&dev, 0, MAX_INSTANCES, "ccid_usb");
 	if (ret) {
-		pr_err("%s: alloc_chrdev_region() failed:%d\n", __func__, ret);
+		pr_debug("%s: alloc_chrdev_region() failed:%d\n", __func__, ret);
 		class_destroy(ccid_class);
 		ccid_class = NULL;
 		return ret;
@@ -1125,7 +1125,7 @@ static struct f_ccid *ccid_setup(void)
 	ret = ccid_cdev_init(&ccid_dev->ctrl_dev.cdev, &ccid_ctrl_fops,
 			CCID_CTRL_DEV_NAME);
 	if (ret) {
-		pr_err("%s: ccid_ctrl_device_init failed, err:%d\n",
+		pr_debug("%s: ccid_ctrl_device_init failed, err:%d\n",
 				__func__, ret);
 		goto err_ctrl_init;
 	}
@@ -1133,7 +1133,7 @@ static struct f_ccid *ccid_setup(void)
 	ret = ccid_cdev_init(&ccid_dev->bulk_dev.cdev, &ccid_bulk_fops,
 			CCID_BULK_DEV_NAME);
 	if (ret) {
-		pr_err("%s: ccid_bulk_device_init failed, err:%d\n",
+		pr_debug("%s: ccid_bulk_device_init failed, err:%d\n",
 				__func__, ret);
 		goto err_bulk_init;
 	}
@@ -1146,7 +1146,7 @@ err_ctrl_init:
 err_chrdev:
 	kfree(ccid_dev);
 error:
-	pr_err("ccid gadget driver failed to initialize\n");
+	pr_debug("ccid gadget driver failed to initialize\n");
 	return ERR_PTR(ret);
 }
 

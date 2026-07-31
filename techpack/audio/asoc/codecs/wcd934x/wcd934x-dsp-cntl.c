@@ -126,11 +126,11 @@ static void wcd_cntl_collect_debug_dumps(struct wcd_dsp_cntl *cntl,
 		      0xFF);
 
 	/* Collect important WDSP registers dump for debug use */
-	pr_err("%s: Dump the WDSP registers for debug use\n", __func__);
+	pr_debug("%s: Dump the WDSP registers for debug use\n", __func__);
 	for (i = 0; i < sizeof(wdsp_reg_for_debug_dump)/sizeof(u16); i++) {
 		val = snd_soc_component_read32(component,
 				wdsp_reg_for_debug_dump[i]);
-		pr_err("%s: reg = 0x%x, val = 0x%x\n", __func__,
+		pr_debug("%s: reg = 0x%x, val = 0x%x\n", __func__,
 		       wdsp_reg_for_debug_dump[i], val);
 	}
 
@@ -178,7 +178,7 @@ static ssize_t wdsp_boot_store(struct wcd_dsp_cntl *cntl,
 
 	ret = kstrtou32(buf, 10, &val);
 	if (ret) {
-		dev_err(cntl->component->dev,
+		dev_dbg(cntl->component->dev,
 			"%s: Invalid entry, ret = %d\n", __func__, ret);
 		return -EINVAL;
 	}
@@ -198,7 +198,7 @@ static ssize_t wdsp_boot_store(struct wcd_dsp_cntl *cntl,
 		ret = -EINVAL;
 
 	if (ret < 0)
-		dev_err(cntl->component->dev,
+		dev_dbg(cntl->component->dev,
 			"%s: failed to %s dsp\n", __func__,
 			vote ? "enable" : "disable");
 	return count;
@@ -274,7 +274,7 @@ static ssize_t wdsp_ssr_entry_read(struct snd_info_entry *entry,
 
 	cntl = (struct wcd_dsp_cntl *) entry->private_data;
 	if (!cntl) {
-		pr_err("%s: Invalid private data for SSR procfs entry\n",
+		pr_debug("%s: Invalid private data for SSR procfs entry\n",
 		       __func__);
 		return -EINVAL;
 	}
@@ -304,7 +304,7 @@ static unsigned int wdsp_ssr_entry_poll(struct snd_info_entry *entry,
 	unsigned int ret = 0;
 
 	if (!entry || !entry->private_data) {
-		pr_err("%s: %s is NULL\n", __func__,
+		pr_debug("%s: %s is NULL\n", __func__,
 		       (!entry) ? "entry" : "private_data");
 		return -EINVAL;
 	}
@@ -389,7 +389,7 @@ static int wcd_cntl_cpe_fll_calibrate(struct wcd_dsp_cntl *cntl)
 		 retry <= WCD_CPE_FLL_MAX_RETRIES);
 
 	if (!(lock_det & 0x01)) {
-		dev_err(component->dev, "%s: lock detect not set, 0x%02x\n",
+		dev_dbg(component->dev, "%s: lock detect not set, 0x%02x\n",
 			__func__, lock_det);
 		ret = -EIO;
 		goto err_lock_det;
@@ -450,7 +450,7 @@ static int wcd_cntl_cpe_fll_ctrl(struct wcd_dsp_cntl *cntl,
 	if (enable) {
 		ret = wcd_cntl_cpe_fll_calibrate(cntl);
 		if (ret < 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: cpe_fll_cal failed, err = %d\n",
 				__func__, ret);
 			goto done;
@@ -492,7 +492,7 @@ static int wcd_cntl_clocks_enable(struct wcd_dsp_cntl *cntl)
 		ret = -EINVAL;
 
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to enable cdc clk, err = %d\n",
 			__func__, ret);
 		goto done;
@@ -504,7 +504,7 @@ static int wcd_cntl_clocks_enable(struct wcd_dsp_cntl *cntl)
 	/* Configure and Enable CPE FLL clock */
 	ret = wcd_cntl_cpe_fll_ctrl(cntl, true);
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to enable cpe clk, err = %d\n",
 			__func__, ret);
 		goto err_cpe_clk;
@@ -535,7 +535,7 @@ static int wcd_cntl_clocks_disable(struct wcd_dsp_cntl *cntl)
 
 	WCD_CNTL_MUTEX_LOCK(component, cntl->clk_mutex);
 	if (!cntl->is_clk_enabled) {
-		dev_info(component->dev, "%s: clocks already disabled\n",
+		dev_dbg(component->dev, "%s: clocks already disabled\n",
 			__func__);
 		goto done;
 	}
@@ -547,7 +547,7 @@ static int wcd_cntl_clocks_disable(struct wcd_dsp_cntl *cntl)
 	/* Disable CPE FLL clock */
 	ret = wcd_cntl_cpe_fll_ctrl(cntl, false);
 	if (ret < 0)
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to disable cpe clk, err = %d\n",
 			__func__, ret);
 
@@ -629,7 +629,7 @@ static int wcd_cntl_enable_memory(struct wcd_dsp_cntl *cntl,
 			  loop_cnt != WCD_MEM_ENABLE_MAX_RETRIES);
 
 		if ((status & 0x02) != 0x02) {
-			dev_err(cntl->component->dev,
+			dev_dbg(cntl->component->dev,
 				"%s: power domain not enabled, status = 0x%02x\n",
 				__func__, status);
 			ret = -EIO;
@@ -652,7 +652,7 @@ static int wcd_cntl_enable_memory(struct wcd_dsp_cntl *cntl,
 		break;
 
 	default:
-		dev_err(cntl->component->dev, "%s: Invalid mem_type %d\n",
+		dev_dbg(cntl->component->dev, "%s: Invalid mem_type %d\n",
 			__func__, mem_type);
 		ret = -EINVAL;
 		break;
@@ -699,7 +699,7 @@ static void wcd_cntl_disable_memory(struct wcd_dsp_cntl *cntl,
 		val = snd_soc_component_read32(component,
 				WCD934X_CPE_SS_SOC_SW_COLLAPSE_CTL);
 		if (val & 0x02)
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: Disable switchable failed, val = 0x%02x",
 				__func__, val);
 
@@ -708,7 +708,7 @@ static void wcd_cntl_disable_memory(struct wcd_dsp_cntl *cntl,
 				0x80, 0x00);
 		break;
 	default:
-		dev_err(cntl->component->dev, "%s: Invalid mem_type %d\n",
+		dev_dbg(cntl->component->dev, "%s: Invalid mem_type %d\n",
 			__func__, mem_type);
 		break;
 	}
@@ -785,7 +785,7 @@ static int wcd_cntl_do_boot(struct wcd_dsp_cntl *cntl)
 	ret = wait_for_completion_timeout(&cntl->boot_complete,
 				msecs_to_jiffies(WCD_DSP_BOOT_TIMEOUT_MS));
 	if (!ret) {
-		dev_err(component->dev, "%s: WDSP boot timed out\n",
+		dev_dbg(component->dev, "%s: WDSP boot timed out\n",
 			__func__);
 		if (cntl->dbg_dmp_enable)
 			wcd_cntl_collect_debug_dumps(cntl, true);
@@ -832,7 +832,7 @@ static irqreturn_t wcd_cntl_ipc_irq(int irq, void *data)
 		ret = -EINVAL;
 
 	if (ret < 0)
-		dev_err(cntl->component->dev,
+		dev_dbg(cntl->component->dev,
 			"%s: Failed to handle irq %d\n", __func__, irq);
 
 	return IRQ_HANDLED;
@@ -855,7 +855,7 @@ static irqreturn_t wcd_cntl_err_irq(int irq, void *data)
 				WCD934X_CPE_SS_SS_ERROR_INT_STATUS_0B);
 	status = status | (reg_val << 8);
 
-	dev_info(component->dev, "%s: error interrupt status = 0x%x\n",
+	dev_dbg(component->dev, "%s: error interrupt status = 0x%x\n",
 		__func__, status);
 
 	if ((status & cntl->irqs.fatal_irqs) &&
@@ -872,14 +872,14 @@ static irqreturn_t wcd_cntl_err_irq(int irq, void *data)
 		ret = cntl->m_ops->signal_handler(cntl->m_dev, WDSP_ERR_INTR,
 						  &arg);
 		if (ret < 0)
-			dev_err(cntl->component->dev,
+			dev_dbg(cntl->component->dev,
 				"%s: Failed to handle fatal irq 0x%x\n",
 				__func__, status & cntl->irqs.fatal_irqs);
 		wcd_cntl_change_online_state(cntl, 0);
 		if (rc == 0)
 			WCD_CNTL_CLR_ERR_IRQ_FLAG(cntl);
 	} else {
-		dev_err(cntl->component->dev, "%s: Invalid signal_handler\n",
+		dev_dbg(cntl->component->dev, "%s: Invalid signal_handler\n",
 			__func__);
 	}
 
@@ -904,7 +904,7 @@ static int wcd_control_handler(struct device *dev, void *priv_data,
 		/* Disable all the clocks */
 		ret = wcd_cntl_clocks_disable(cntl);
 		if (ret < 0)
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: Failed to disable clocks, err = %d\n",
 				__func__, ret);
 
@@ -919,7 +919,7 @@ static int wcd_control_handler(struct device *dev, void *priv_data,
 		/* Enable all the clocks */
 		ret = wcd_cntl_clocks_enable(cntl);
 		if (ret < 0) {
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: Failed to enable clocks, err = %d\n",
 				__func__, ret);
 			goto done;
@@ -938,7 +938,7 @@ static int wcd_control_handler(struct device *dev, void *priv_data,
 
 		ret = wcd_cntl_do_boot(cntl);
 		if (ret < 0)
-			dev_err(component->dev,
+			dev_dbg(component->dev,
 				"%s: WDSP boot failed, err = %d\n",
 				__func__, ret);
 		break;
@@ -966,7 +966,7 @@ static int wcd_cntl_sysfs_init(char *dir, struct wcd_dsp_cntl *cntl)
 	ret = kobject_init_and_add(&cntl->wcd_kobj, &wcd_cntl_ktype,
 				   kernel_kobj, dir);
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to add kobject %s, err = %d\n",
 			__func__, dir, ret);
 		goto done;
@@ -974,7 +974,7 @@ static int wcd_cntl_sysfs_init(char *dir, struct wcd_dsp_cntl *cntl)
 
 	ret = sysfs_create_file(&cntl->wcd_kobj, &cntl_attr_boot.attr);
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to add wdsp_boot sysfs entry to %s\n",
 			__func__, dir);
 		goto fail_create_file;
@@ -1000,7 +1000,7 @@ static void wcd_cntl_debugfs_init(char *dir, struct wcd_dsp_cntl *cntl)
 
 	cntl->entry = debugfs_create_dir(dir, NULL);
 	if (IS_ERR_OR_NULL(dir)) {
-		dev_err(component->dev, "%s debugfs_create_dir failed for %s\n",
+		dev_dbg(component->dev, "%s debugfs_create_dir failed for %s\n",
 			__func__, dir);
 		goto done;
 	}
@@ -1027,7 +1027,7 @@ static int wcd_miscdev_release(struct inode *inode, struct file *filep)
 						 struct wcd_dsp_cntl, miscdev);
 	if (!cntl->m_dev || !cntl->m_ops ||
 	    !cntl->m_ops->vote_for_dsp) {
-		dev_err(cntl->component->dev,
+		dev_dbg(cntl->component->dev,
 			"%s: DSP not ready to boot\n", __func__);
 		return -EINVAL;
 	}
@@ -1053,14 +1053,14 @@ static ssize_t wcd_miscdev_write(struct file *filep, const char __user *ubuf,
 	memset(val, 0, WCD_MISCDEV_CMD_MAX_LEN + 1);
 
 	if (count == 0 || count > WCD_MISCDEV_CMD_MAX_LEN) {
-		pr_err("%s: Invalid count = %zd\n", __func__, count);
+		pr_debug("%s: Invalid count = %zd\n", __func__, count);
 		ret = -EINVAL;
 		goto done;
 	}
 
 	ret = copy_from_user(val, ubuf, count);
 	if (ret < 0) {
-		dev_err(cntl->component->dev,
+		dev_dbg(cntl->component->dev,
 			"%s: copy_from_user failed, err = %d\n",
 			__func__, ret);
 		ret = -EFAULT;
@@ -1072,7 +1072,7 @@ static ssize_t wcd_miscdev_write(struct file *filep, const char __user *ubuf,
 		vote = true;
 	} else if (val[0] == '0') {
 		if (cntl->boot_reqs == 0) {
-			dev_err(cntl->component->dev,
+			dev_dbg(cntl->component->dev,
 				"%s: WDSP already disabled\n",
 				__func__);
 			ret = -EINVAL;
@@ -1092,7 +1092,7 @@ static ssize_t wcd_miscdev_write(struct file *filep, const char __user *ubuf,
 		 */
 		goto done;
 	} else {
-		dev_err(cntl->component->dev, "%s: Invalid value %s\n",
+		dev_dbg(cntl->component->dev, "%s: Invalid value %s\n",
 			__func__, val);
 		ret = -EINVAL;
 		goto done;
@@ -1151,7 +1151,7 @@ static int wcd_control_init(struct device *dev, void *priv_data)
 				  wcd_cntl_ipc_irq, "CPE IPC1",
 				  cntl);
 	if (ret < 0) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: Failed to request cpe ipc irq, err = %d\n",
 			__func__, ret);
 		goto done;
@@ -1170,7 +1170,7 @@ static int wcd_control_init(struct device *dev, void *priv_data)
 	 */
 	if (wcd9xxx_request_irq(core_res, cntl->irqs.cpe_err_irq,
 				wcd_cntl_err_irq, "CPE ERR", cntl))
-		dev_info(component->dev, "%s: Failed request_irq(cpe_err_irq)",
+		dev_dbg(component->dev, "%s: Failed request_irq(cpe_err_irq)",
 			__func__);
 	else
 		err_irq_requested = true;
@@ -1179,7 +1179,7 @@ static int wcd_control_init(struct device *dev, void *priv_data)
 	/* Enable all the clocks */
 	ret = wcd_cntl_clocks_enable(cntl);
 	if (ret < 0) {
-		dev_err(component->dev, "%s: Failed to enable clocks, err = %d\n",
+		dev_dbg(component->dev, "%s: Failed to enable clocks, err = %d\n",
 			__func__, ret);
 		goto err_clk_enable;
 	}
@@ -1245,13 +1245,13 @@ static int wcd_ctrl_component_bind(struct device *dev,
 	int ret = 0;
 
 	if (!dev || !master || !data) {
-		pr_err("%s: Invalid parameters\n", __func__);
+		pr_debug("%s: Invalid parameters\n", __func__);
 		return -EINVAL;
 	}
 
 	cntl = tavil_get_wcd_dsp_cntl(dev);
 	if (!cntl) {
-		dev_err(dev, "%s: Failed to get cntl reference\n",
+		dev_dbg(dev, "%s: Failed to get cntl reference\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -1260,7 +1260,7 @@ static int wcd_ctrl_component_bind(struct device *dev,
 	cntl->m_ops = data;
 
 	if (!cntl->m_ops->register_cmpnt_ops) {
-		dev_err(dev, "%s: invalid master callback register_cmpnt_ops\n",
+		dev_dbg(dev, "%s: invalid master callback register_cmpnt_ops\n",
 			__func__);
 		ret = -EINVAL;
 		goto done;
@@ -1268,14 +1268,14 @@ static int wcd_ctrl_component_bind(struct device *dev,
 
 	ret = cntl->m_ops->register_cmpnt_ops(master, dev, cntl, &control_ops);
 	if (ret) {
-		dev_err(dev, "%s: register_cmpnt_ops failed, err = %d\n",
+		dev_dbg(dev, "%s: register_cmpnt_ops failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
 
 	ret = wcd_cntl_miscdev_create(cntl);
 	if (ret < 0) {
-		dev_err(dev, "%s: misc dev register failed, err = %d\n",
+		dev_dbg(dev, "%s: misc dev register failed, err = %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -1284,7 +1284,7 @@ static int wcd_ctrl_component_bind(struct device *dev,
 		 "%s%d", "wdsp", cntl->dsp_instance);
 	ret = wcd_cntl_sysfs_init(wcd_cntl_dir_name, cntl);
 	if (ret < 0) {
-		dev_err(dev, "%s: sysfs_init failed, err = %d\n",
+		dev_dbg(dev, "%s: sysfs_init failed, err = %d\n",
 			__func__, ret);
 		goto err_sysfs_init;
 	}
@@ -1298,7 +1298,7 @@ static int wcd_ctrl_component_bind(struct device *dev,
 	entry = snd_info_create_card_entry(card, proc_name, card->proc_root);
 	if (!entry) {
 		/* Do not treat this as Fatal error */
-		dev_err(dev, "%s: Failed to create procfs entry %s\n",
+		dev_dbg(dev, "%s: Failed to create procfs entry %s\n",
 			__func__, proc_name);
 		goto err_sysfs_init;
 	}
@@ -1311,7 +1311,7 @@ static int wcd_ctrl_component_bind(struct device *dev,
 	entry->private_data = cntl;
 	ret = snd_info_register(entry);
 	if (ret < 0) {
-		dev_err(dev, "%s: Failed to register entry %s, err = %d\n",
+		dev_dbg(dev, "%s: Failed to register entry %s, err = %d\n",
 			__func__, proc_name, ret);
 		snd_info_free_entry(entry);
 		/* Let bind still happen even if creating the entry failed */
@@ -1332,13 +1332,13 @@ static void wcd_ctrl_component_unbind(struct device *dev,
 	struct wcd_dsp_cntl *cntl;
 
 	if (!dev) {
-		pr_err("%s: Invalid device\n", __func__);
+		pr_debug("%s: Invalid device\n", __func__);
 		return;
 	}
 
 	cntl = tavil_get_wcd_dsp_cntl(dev);
 	if (!cntl) {
-		dev_err(dev, "%s: Failed to get cntl reference\n",
+		dev_dbg(dev, "%s: Failed to get cntl reference\n",
 			__func__);
 		return;
 	}
@@ -1374,12 +1374,12 @@ int wcd_dsp_ssr_event(struct wcd_dsp_cntl *cntl, enum cdc_ssr_event event)
 	int ret = 0;
 
 	if (!cntl) {
-		pr_err("%s: Invalid handle to control\n", __func__);
+		pr_debug("%s: Invalid handle to control\n", __func__);
 		return -EINVAL;
 	}
 
 	if (!cntl->m_dev || !cntl->m_ops || !cntl->m_ops->signal_handler) {
-		dev_err(cntl->component->dev,
+		dev_dbg(cntl->component->dev,
 			"%s: Invalid signal_handler callback\n", __func__);
 		return -EINVAL;
 	}
@@ -1390,7 +1390,7 @@ int wcd_dsp_ssr_event(struct wcd_dsp_cntl *cntl, enum cdc_ssr_event event)
 						  WDSP_CDC_DOWN_SIGNAL,
 						  NULL);
 		if (ret < 0)
-			dev_err(cntl->component->dev,
+			dev_dbg(cntl->component->dev,
 				"%s: WDSP_CDC_DOWN_SIGNAL failed, err = %d\n",
 				__func__, ret);
 		wcd_cntl_change_online_state(cntl, 0);
@@ -1400,12 +1400,12 @@ int wcd_dsp_ssr_event(struct wcd_dsp_cntl *cntl, enum cdc_ssr_event event)
 						  WDSP_CDC_UP_SIGNAL,
 						  NULL);
 		if (ret < 0)
-			dev_err(cntl->component->dev,
+			dev_dbg(cntl->component->dev,
 				"%s: WDSP_CDC_UP_SIGNAL failed, err = %d\n",
 				__func__, ret);
 		break;
 	default:
-		dev_err(cntl->component->dev, "%s: Invalid event %d\n",
+		dev_dbg(cntl->component->dev, "%s: Invalid event %d\n",
 			__func__, event);
 		ret = -EINVAL;
 		break;
@@ -1432,21 +1432,21 @@ void wcd_dsp_cntl_init(struct snd_soc_component *component,
 	int ret;
 
 	if (!component || !params) {
-		pr_err("%s: Invalid handle to %s\n", __func__,
+		pr_debug("%s: Invalid handle to %s\n", __func__,
 		       (!component) ? "component" : "params");
 		*cntl = NULL;
 		return;
 	}
 
 	if (*cntl) {
-		pr_err("%s: cntl is non NULL, maybe already initialized ?\n",
+		pr_debug("%s: cntl is non NULL, maybe already initialized ?\n",
 			__func__);
 		return;
 	}
 
 	if (!params->cb || !params->cb->cdc_clk_en ||
 	    !params->cb->cdc_vote_svs) {
-		dev_err(component->dev,
+		dev_dbg(component->dev,
 			"%s: clk_en and vote_svs callbacks must be provided\n",
 			__func__);
 		return;
@@ -1483,7 +1483,7 @@ void wcd_dsp_cntl_init(struct snd_soc_component *component,
 	*cntl = control;
 	ret = component_add(component->dev, &wcd_ctrl_component_ops);
 	if (ret) {
-		dev_err(component->dev, "%s: component_add failed, err = %d\n",
+		dev_dbg(component->dev, "%s: component_add failed, err = %d\n",
 			__func__, ret);
 		kfree(*cntl);
 		*cntl = NULL;

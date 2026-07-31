@@ -210,7 +210,7 @@ int snd_dma_alloc_pages(int type, struct device *device, size_t size,
 		break;
 #endif
 	default:
-		pr_err("snd-malloc: invalid device type %d\n", type);
+		pr_debug("snd-malloc: invalid device type %d\n", type);
 		dmab->area = NULL;
 		dmab->addr = 0;
 		return -ENXIO;
@@ -285,7 +285,7 @@ void snd_dma_free_pages(struct snd_dma_buffer *dmab)
 		break;
 #endif
 	default:
-		pr_err("snd-malloc: invalid device type %d\n", dmab->dev.type);
+		pr_debug("snd-malloc: invalid device type %d\n", dmab->dev.type);
 	}
 }
 EXPORT_SYMBOL(snd_dma_free_pages);

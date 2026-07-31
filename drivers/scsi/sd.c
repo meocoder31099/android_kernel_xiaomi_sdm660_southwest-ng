@@ -1062,7 +1062,7 @@ static int sd_setup_read_write_cmnd(struct scsi_cmnd *SCpnt)
 		 * quietly refuse to do anything to a changed disc until 
 		 * the changed bit has been reset
 		 */
-		/* printk("SCSI disk has been changed or is not present. Prohibiting further I/O.\n"); */
+		/* no_printk("SCSI disk has been changed or is not present. Prohibiting further I/O.\n"); */
 		goto out;
 	}
 
@@ -2089,7 +2089,7 @@ sd_spinup_disk(struct scsi_disk *sdkp)
 			}
 			/* Wait 1 second for next try */
 			msleep(1000);
-			printk(KERN_CONT ".");
+			no_printk(KERN_CONT ".");
 
 		/*
 		 * Wait for USB flash devices with slow firmware.
@@ -2119,9 +2119,9 @@ sd_spinup_disk(struct scsi_disk *sdkp)
 
 	if (spintime) {
 		if (scsi_status_is_good(the_result))
-			printk(KERN_CONT "ready\n");
+			no_printk(KERN_CONT "ready\n");
 		else
-			printk(KERN_CONT "not responding...\n");
+			no_printk(KERN_CONT "not responding...\n");
 	}
 }
 
@@ -3600,7 +3600,7 @@ static int __init init_sd(void)
 {
 	int majors = 0, i, err;
 
-	SCSI_LOG_HLQUEUE(3, printk("init_sd: sd driver entry point\n"));
+	SCSI_LOG_HLQUEUE(3, no_printk("init_sd: sd driver entry point\n"));
 
 	for (i = 0; i < SD_MAJORS; i++) {
 		if (register_blkdev(sd_major(i), "sd") != 0)
@@ -3620,21 +3620,21 @@ static int __init init_sd(void)
 	sd_cdb_cache = kmem_cache_create("sd_ext_cdb", SD_EXT_CDB_SIZE,
 					 0, 0, NULL);
 	if (!sd_cdb_cache) {
-		printk(KERN_ERR "sd: can't init extended cdb cache\n");
+		no_printk(KERN_ERR "sd: can't init extended cdb cache\n");
 		err = -ENOMEM;
 		goto err_out_class;
 	}
 
 	sd_cdb_pool = mempool_create_slab_pool(SD_MEMPOOL_SIZE, sd_cdb_cache);
 	if (!sd_cdb_pool) {
-		printk(KERN_ERR "sd: can't init extended cdb pool\n");
+		no_printk(KERN_ERR "sd: can't init extended cdb pool\n");
 		err = -ENOMEM;
 		goto err_out_cache;
 	}
 
 	sd_page_pool = mempool_create_page_pool(SD_MEMPOOL_SIZE, 0);
 	if (!sd_page_pool) {
-		printk(KERN_ERR "sd: can't init discard page pool\n");
+		no_printk(KERN_ERR "sd: can't init discard page pool\n");
 		err = -ENOMEM;
 		goto err_out_ppool;
 	}
@@ -3671,7 +3671,7 @@ static void __exit exit_sd(void)
 {
 	int i;
 
-	SCSI_LOG_HLQUEUE(3, printk("exit_sd: exiting sd driver\n"));
+	SCSI_LOG_HLQUEUE(3, no_printk("exit_sd: exiting sd driver\n"));
 
 	scsi_unregister_driver(&sd_template.gendrv);
 	mempool_destroy(sd_cdb_pool);

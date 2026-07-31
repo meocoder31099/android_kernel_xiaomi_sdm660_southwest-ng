@@ -73,7 +73,7 @@ int tcp_register_congestion_control(struct tcp_congestion_ops *ca)
 	/* all algorithms must implement these */
 	if (!ca->ssthresh || !ca->undo_cwnd ||
 	    !(ca->cong_avoid || ca->cong_control)) {
-		pr_err("%s does not implement required ops\n", ca->name);
+		pr_debug("%s does not implement required ops\n", ca->name);
 		return -EINVAL;
 	}
 
@@ -81,7 +81,7 @@ int tcp_register_congestion_control(struct tcp_congestion_ops *ca)
 
 	spin_lock(&tcp_cong_list_lock);
 	if (ca->key == TCP_CA_UNSPEC || tcp_ca_find_key(ca->key)) {
-		pr_notice("%s already registered or non-unique key\n",
+		pr_debug("%s already registered or non-unique key\n",
 			  ca->name);
 		ret = -EEXIST;
 	} else {

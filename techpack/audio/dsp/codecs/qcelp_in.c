@@ -37,13 +37,13 @@ static long qcelp_in_ioctl_shared(struct file *file,
 		pr_debug("%s:session id %d: default buf alloc[%d]\n", __func__,
 				audio->ac->session, audio->buf_alloc);
 		if (audio->enabled == 1) {
-			pr_info("%s:AUDIO_START already over\n", __func__);
+			pr_debug("%s:AUDIO_START already over\n", __func__);
 			rc = 0;
 			break;
 		}
 		rc = audio_in_buf_alloc(audio);
 		if (rc < 0) {
-			pr_err("%s:session id %d: buffer allocation failed\n",
+			pr_debug("%s:session id %d: buffer allocation failed\n",
 				__func__, audio->ac->session);
 			break;
 		}
@@ -57,7 +57,7 @@ static long qcelp_in_ioctl_shared(struct file *file,
 			enc_cfg->max_bit_rate, 0, 0);
 
 		if (rc < 0) {
-			pr_err("%s:session id %d: cmd qcelp media format block failed\n",
+			pr_debug("%s:session id %d: cmd qcelp media format block failed\n",
 					__func__, audio->ac->session);
 			break;
 		}
@@ -67,7 +67,7 @@ static long qcelp_in_ioctl_shared(struct file *file,
 				audio->pcm_cfg.channel_count);
 
 			if (rc < 0) {
-				pr_err("%s:session id %d: media format block failed\n",
+				pr_debug("%s:session id %d: media format block failed\n",
 					__func__, audio->ac->session);
 				break;
 			}
@@ -79,7 +79,7 @@ static long qcelp_in_ioctl_shared(struct file *file,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("%s:session id %d: Audio Start procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Start procedure failed rc=%d\n",
 					__func__, audio->ac->session, rc);
 			break;
 		}
@@ -95,7 +95,7 @@ static long qcelp_in_ioctl_shared(struct file *file,
 				audio->ac->session);
 		rc = audio_in_disable(audio);
 		if (rc  < 0) {
-			pr_err("%s:session id %d: Audio Stop procedure failed rc=%d\n",
+			pr_debug("%s:session id %d: Audio Stop procedure failed rc=%d\n",
 				__func__, audio->ac->session,
 					rc);
 			break;
@@ -109,20 +109,20 @@ static long qcelp_in_ioctl_shared(struct file *file,
 		enc_cfg = audio->enc_cfg;
 		cfg = (struct msm_audio_qcelp_enc_config *)arg;
 		if (cfg == NULL) {
-			pr_err("%s: NULL config pointer\n", __func__);
+			pr_debug("%s: NULL config pointer\n", __func__);
 			rc = -EINVAL;
 			break;
 		}
 		if (cfg->min_bit_rate > 4 ||
 			 cfg->min_bit_rate < 1) {
-			pr_err("%s:session id %d: invalid min bitrate\n",
+			pr_debug("%s:session id %d: invalid min bitrate\n",
 					__func__, audio->ac->session);
 			rc = -EINVAL;
 			break;
 		}
 		if (cfg->max_bit_rate > 4 ||
 			 cfg->max_bit_rate < 1) {
-			pr_err("%s:session id %d: invalid max bitrate\n",
+			pr_debug("%s:session id %d: invalid max bitrate\n",
 					__func__, audio->ac->session);
 			rc = -EINVAL;
 			break;
@@ -137,7 +137,7 @@ static long qcelp_in_ioctl_shared(struct file *file,
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -158,7 +158,7 @@ static long qcelp_in_ioctl(struct file *file,
 	case AUDIO_GET_QCELP_ENC_CONFIG: {
 		if (copy_to_user((void *)arg, audio->enc_cfg,
 			sizeof(struct msm_audio_qcelp_enc_config))) {
-			pr_err(
+			pr_debug(
 				"%s: copy_to_user for AUDIO_GET_QCELP_ENC_CONFIG failed",
 				__func__);
 			rc = -EFAULT;
@@ -170,7 +170,7 @@ static long qcelp_in_ioctl(struct file *file,
 
 		if (copy_from_user(&cfg, (void *) arg,
 				sizeof(cfg))) {
-			pr_err(
+			pr_debug(
 				"%s: copy_from_user for AUDIO_SET_QCELP_ENC_CONFIG failed",
 				__func__);
 			rc = -EFAULT;
@@ -178,12 +178,12 @@ static long qcelp_in_ioctl(struct file *file,
 		}
 		rc = qcelp_in_ioctl_shared(file, cmd, (unsigned long)&cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_QCELP_ENC_CONFIG failed. Rc= %d\n",
+			pr_debug("%s:AUDIO_SET_QCELP_ENC_CONFIG failed. Rc= %d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -227,7 +227,7 @@ static long qcelp_in_compat_ioctl(struct file *file,
 		cfg_32.max_bit_rate = enc_cfg->max_bit_rate;
 		if (copy_to_user((void *)arg, &cfg_32,
 			sizeof(cfg_32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_QCELP_ENC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_QCELP_ENC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 }
@@ -239,7 +239,7 @@ static long qcelp_in_compat_ioctl(struct file *file,
 
 		if (copy_from_user(&cfg_32, (void *) arg,
 				sizeof(cfg_32))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_QCELP_ENC_CONFIG_32 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_QCELP_ENC_CONFIG_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -250,12 +250,12 @@ static long qcelp_in_compat_ioctl(struct file *file,
 		cmd = AUDIO_SET_QCELP_ENC_CONFIG;
 		rc = qcelp_in_ioctl_shared(file, cmd, (unsigned long)&cfg);
 		if (rc)
-			pr_err("%s:AUDIO_SET_QCELP_ENC_CONFIG failed. rc= %d\n",
+			pr_debug("%s:AUDIO_SET_QCELP_ENC_CONFIG failed. rc= %d\n",
 				__func__, rc);
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd = %d", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd = %d", __func__, cmd);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -312,7 +312,7 @@ static int qcelp_in_open(struct inode *inode, struct file *file)
 				(void *)audio);
 
 	if (!audio->ac) {
-		pr_err("%s: Could not allocate memory for audio client\n",
+		pr_debug("%s: Could not allocate memory for audio client\n",
 				__func__);
 		kfree(audio->enc_cfg);
 		kfree(audio);
@@ -326,19 +326,19 @@ static int qcelp_in_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_V13K,
 					FORMAT_LINEAR_PCM);
 		if (rc < 0) {
-			pr_err("%s:session id %d: NT mode Open failed rc=%d\n",
+			pr_debug("%s:session id %d: NT mode Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
 		}
-		pr_info("%s:session id %d: NT mode encoder success\n", __func__,
+		pr_debug("%s:session id %d: NT mode encoder success\n", __func__,
 				audio->ac->session);
 	} else if (!(file->f_mode & FMODE_WRITE) &&
 				(file->f_mode & FMODE_READ)) {
 		audio->feedback = TUNNEL_MODE;
 		rc = q6asm_open_read(audio->ac, FORMAT_V13K);
 		if (rc < 0) {
-			pr_err("%s:session id %d: T mode Open failed rc=%d\n",
+			pr_debug("%s:session id %d: T mode Open failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
@@ -346,15 +346,15 @@ static int qcelp_in_open(struct inode *inode, struct file *file)
 		/* register for tx overflow (valid for tunnel mode only) */
 		rc = q6asm_reg_tx_overflow(audio->ac, 0x01);
 		if (rc < 0) {
-			pr_err("%s:session id %d: TX Overflow registration failed rc=%d\n",
+			pr_debug("%s:session id %d: TX Overflow registration failed rc=%d\n",
 				__func__, audio->ac->session, rc);
 			rc = -ENODEV;
 			goto fail;
 		}
-		pr_info("%s:session id %d: T mode encoder success\n", __func__,
+		pr_debug("%s:session id %d: T mode encoder success\n", __func__,
 				audio->ac->session);
 	} else {
-		pr_err("%s:session id %d: Unexpected mode\n", __func__,
+		pr_debug("%s:session id %d: Unexpected mode\n", __func__,
 				audio->ac->session);
 		rc = -EACCES;
 		goto fail;
@@ -368,7 +368,7 @@ static int qcelp_in_open(struct inode *inode, struct file *file)
 	audio->enc_ioctl = qcelp_in_ioctl;
 	file->private_data = audio;
 
-	pr_info("%s:session id %d: success\n", __func__, audio->ac->session);
+	pr_debug("%s:session id %d: success\n", __func__, audio->ac->session);
 	return 0;
 fail:
 	q6asm_audio_client_free(audio->ac);

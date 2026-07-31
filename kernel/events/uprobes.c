@@ -1481,7 +1481,7 @@ static int dup_utask(struct task_struct *t, struct uprobe_task *o_utask)
 
 static void uprobe_warn(struct task_struct *t, const char *msg)
 {
-	pr_warn("uprobe: %s:%d failed to %s\n",
+	pr_debug("uprobe: %s:%d failed to %s\n",
 			current->comm, current->pid, msg);
 }
 

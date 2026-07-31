@@ -405,12 +405,12 @@ static int __scm_call2(u32 fn_id, struct scm_desc *desc, bool retry)
 		if (ret == SCM_V2_EBUSY)
 			msleep(SCM_EBUSY_WAIT_MS);
 		if (retry_count == 33)
-			pr_warn("scm: secure world has been busy for 1 second!\n");
+			pr_debug("scm: secure world has been busy for 1 second!\n");
 	} while (ret == SCM_V2_EBUSY && (retry_count++ < SCM_EBUSY_MAX_RETRY));
 out:
 	trace_scm_call_end(desc);
 	if (ret < 0)
-		pr_err("scm_call failed: func id %#llx, ret: %d, syscall returns: %#llx, %#llx, %#llx\n",
+		pr_debug("scm_call failed: func id %#llx, ret: %d, syscall returns: %#llx, %#llx, %#llx\n",
 			x0, ret, desc->ret[0], desc->ret[1], desc->ret[2]);
 
 	if (arglen > N_REGISTER_ARGS)
@@ -495,7 +495,7 @@ int scm_call2_atomic(u32 fn_id, struct scm_desc *desc)
 					  &desc->ret[1], &desc->ret[2]);
 	trace_scm_call_end(desc);
 	if (ret < 0)
-		pr_err("scm_call failed: func id %#llx, ret: %d, syscall returns: %#llx, %#llx, %#llx\n",
+		pr_debug("scm_call failed: func id %#llx, ret: %d, syscall returns: %#llx, %#llx, %#llx\n",
 			x0, ret, desc->ret[0],
 			desc->ret[1], desc->ret[2]);
 
@@ -659,7 +659,7 @@ bool scm_is_secure_device(void)
 	resp = desc.ret[0];
 
 	if (ret) {
-		pr_err("%s: SCM call failed\n", __func__);
+		pr_debug("%s: SCM call failed\n", __func__);
 		return false;
 	}
 
@@ -693,10 +693,10 @@ int  scm_mem_protection_init_do_qrks(void)
 	resp = desc.ret[0];
 
 	if (ret == -1) {
-		pr_err("%s: SCM call not supported\n", __func__);
+		pr_debug("%s: SCM call not supported\n", __func__);
 		return ret;
 	} else if (ret || resp) {
-		pr_err("%s: SCM call failed\n", __func__);
+		pr_debug("%s: SCM call failed\n", __func__);
 		if (ret)
 			return ret;
 		else
@@ -728,10 +728,10 @@ static int __init scm_mem_protection_init(void)
 	resp = desc.ret[0];
 
 	if (ret == -1) {
-		pr_err("%s: SCM call not supported\n", __func__);
+		pr_debug("%s: SCM call not supported\n", __func__);
 		return ret;
 	} else if (ret || resp) {
-		pr_err("%s: SCM call failed\n", __func__);
+		pr_debug("%s: SCM call failed\n", __func__);
 		if (ret)
 			return ret;
 		else

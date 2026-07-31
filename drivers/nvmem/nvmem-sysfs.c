@@ -219,7 +219,7 @@ int nvmem_sysfs_setup_compat(struct nvmem_device *nvmem,
 
 	rval = device_create_bin_file(nvmem->base_dev, &nvmem->eeprom);
 	if (rval) {
-		dev_err(&nvmem->dev,
+		dev_dbg(&nvmem->dev,
 			"Failed to create eeprom binary file %d\n", rval);
 		return rval;
 	}

@@ -898,7 +898,7 @@ static int glink_spi_request_intent(struct glink_spi *glink,
 
 	ret = wait_for_completion_timeout(&channel->intent_req_comp, 10 * HZ);
 	if (!ret) {
-		dev_err(&glink->dev, "intent request timed out\n");
+		dev_dbg(&glink->dev, "intent request timed out\n");
 		ret = -ETIMEDOUT;
 	} else {
 		ret = channel->intent_req_result ? 0 : -ECANCELED;
@@ -929,7 +929,7 @@ static int glink_spi_handle_intent(struct glink_spi *glink,
 	unsigned long flags;
 
 	if (avail < msglen) {
-		dev_err(&glink->dev, "Not enough data in buf\n");
+		dev_dbg(&glink->dev, "Not enough data in buf\n");
 		return avail;
 	}
 
@@ -937,7 +937,7 @@ static int glink_spi_handle_intent(struct glink_spi *glink,
 	channel = idr_find(&glink->rcids, cid);
 	spin_unlock_irqrestore(&glink->idr_lock, flags);
 	if (!channel) {
-		dev_err(&glink->dev, "intents for non-existing channel\n");
+		dev_dbg(&glink->dev, "intents for non-existing channel\n");
 		return msglen;
 	}
 
@@ -960,7 +960,7 @@ static int glink_spi_handle_intent(struct glink_spi *glink,
 		spin_unlock_irqrestore(&channel->intent_lock, flags);
 
 		if (ret < 0)
-			dev_err(&glink->dev, "failed to store remote intent\n");
+			dev_dbg(&glink->dev, "failed to store remote intent\n");
 	}
 
 	return msglen;
@@ -976,7 +976,7 @@ static void glink_spi_handle_intent_req_ack(struct glink_spi *glink,
 	channel = idr_find(&glink->rcids, cid);
 	spin_unlock_irqrestore(&glink->idr_lock, flags);
 	if (!channel) {
-		dev_err(&glink->dev, "unable to find channel\n");
+		dev_dbg(&glink->dev, "unable to find channel\n");
 		return;
 	}
 
@@ -1107,7 +1107,7 @@ static void glink_spi_handle_intent_req(struct glink_spi *glink,
 	spin_unlock_irqrestore(&glink->idr_lock, flags);
 
 	if (!channel) {
-		pr_err("%s channel not found for cid %d\n", __func__, cid);
+		pr_debug("%s channel not found for cid %d\n", __func__, cid);
 		return;
 	}
 
@@ -1297,7 +1297,7 @@ static void glink_spi_handle_rx_done(struct glink_spi *glink,
 	channel = idr_find(&glink->rcids, cid);
 	spin_unlock_irqrestore(&glink->idr_lock, flags);
 	if (!channel) {
-		dev_err(&glink->dev, "invalid channel id received\n");
+		dev_dbg(&glink->dev, "invalid channel id received\n");
 		return;
 	}
 
@@ -1306,7 +1306,7 @@ static void glink_spi_handle_rx_done(struct glink_spi *glink,
 
 	if (!intent) {
 		spin_unlock_irqrestore(&channel->intent_lock, flags);
-		dev_err(&glink->dev, "invalid intent id received\n");
+		dev_dbg(&glink->dev, "invalid intent id received\n");
 		return;
 	}
 
@@ -1692,7 +1692,7 @@ static int glink_spi_handle_signals(struct glink_spi *glink,
 	channel = idr_find(&glink->rcids, rcid);
 	spin_unlock_irqrestore(&glink->idr_lock, flags);
 	if (!channel) {
-		dev_err(&glink->dev, "signal for non-existing channel\n");
+		dev_dbg(&glink->dev, "signal for non-existing channel\n");
 		return -EINVAL;
 	}
 
@@ -1804,7 +1804,7 @@ static int glink_spi_rx_open(struct glink_spi *glink, unsigned int rcid,
 	spin_lock_irqsave(&glink->idr_lock, flags);
 	ret = idr_alloc(&glink->rcids, channel, rcid, rcid + 1, GFP_ATOMIC);
 	if (ret < 0) {
-		dev_err(&glink->dev, "Unable to insert channel into rcid list\n");
+		dev_dbg(&glink->dev, "Unable to insert channel into rcid list\n");
 		spin_unlock_irqrestore(&glink->idr_lock, flags);
 		goto free_channel;
 	}
@@ -1902,14 +1902,14 @@ static int glink_spi_rx_data(struct glink_spi *glink,
 	spin_unlock_irqrestore(&channel->intent_lock, flags);
 
 	if (!intent) {
-		dev_err(&glink->dev,
+		dev_dbg(&glink->dev,
 			"no intent found for channel %s intent %d\n",
 			channel->name, liid);
 		return msglen;
 	}
 
 	if (intent->size - intent->offset < chunk_size) {
-		dev_err(&glink->dev, "Insufficient space in intent\n");
+		dev_dbg(&glink->dev, "Insufficient space in intent\n");
 
 		/* The packet header lied, drop payload */
 		return msglen;
@@ -1968,14 +1968,14 @@ static int glink_spi_rx_short_data(struct glink_spi *glink,
 	spin_unlock_irqrestore(&channel->intent_lock, flags);
 
 	if (!intent) {
-		dev_err(&glink->dev,
+		dev_dbg(&glink->dev,
 			"no intent found for channel %s intent %d\n",
 			channel->name, liid);
 		return msglen;
 	}
 
 	if (intent->size - intent->offset < chunk_size) {
-		dev_err(&glink->dev, "Insufficient space in intent\n");
+		dev_dbg(&glink->dev, "Insufficient space in intent\n");
 
 		/* The packet header lied, drop payload */
 		return msglen;
@@ -2182,7 +2182,7 @@ static void glink_spi_process_cmd(struct glink_spi *glink, void *rx_data,
 			glink_spi_handle_signals(glink, param1, param2);
 			break;
 		default:
-			dev_err(&glink->dev, "unhandled rx cmd: %d\n", cmd);
+			dev_dbg(&glink->dev, "unhandled rx cmd: %d\n", cmd);
 			break;
 		}
 	}
@@ -2300,7 +2300,7 @@ static int glink_component_bind(struct device *dev, struct device *master,
 		ret = -EINVAL;
 
 	if (ret)
-		dev_err(dev, "%s: register_cmpnt_ops failed, err = %d\n",
+		dev_dbg(dev, "%s: register_cmpnt_ops failed, err = %d\n",
 			__func__, ret);
 	return ret;
 }
@@ -2328,12 +2328,12 @@ static int glink_spi_init_pipe(const char *key, struct device_node *node,
 
 	prop = of_find_property(node, key, NULL);
 	if (!prop) {
-		pr_err("%s failed to find prop %s\n", __func__, key);
+		pr_debug("%s failed to find prop %s\n", __func__, key);
 		return -ENODEV;
 	}
 
 	if ((prop->length / sizeof(u32)) != 2) {
-		pr_err("%s %s wrong length %d\n", __func__, key, prop->length);
+		pr_debug("%s %s wrong length %d\n", __func__, key, prop->length);
 		return -EINVAL;
 	}
 	addrs = prop->value;
@@ -2370,7 +2370,7 @@ struct glink_spi *qcom_glink_spi_register(struct device *parent,
 	dev_set_name(dev, "%s:%s", node->parent->name, node->name);
 	ret = device_register(dev);
 	if (ret) {
-		pr_err("failed to register glink edge\n");
+		pr_debug("failed to register glink edge\n");
 		return ERR_PTR(ret);
 	}
 	dev_set_drvdata(dev, glink);
@@ -2407,7 +2407,7 @@ struct glink_spi *qcom_glink_spi_register(struct device *parent,
 
 	ret = component_add(dev, &glink_component_ops);
 	if (ret) {
-		dev_err(dev, "component_add failed, err = %d\n", ret);
+		dev_dbg(dev, "component_add failed, err = %d\n", ret);
 		goto err_put_dev;
 	}
 
@@ -2417,7 +2417,7 @@ struct glink_spi *qcom_glink_spi_register(struct device *parent,
 				     "spi_%s", glink->name);
 	if (IS_ERR(glink->rx_task)) {
 		ret = PTR_ERR(glink->rx_task);
-		dev_err(dev, "kthread run failed %d\n", ret);
+		dev_dbg(dev, "kthread run failed %d\n", ret);
 		goto err_put_dev;
 	}
 
@@ -2455,7 +2455,7 @@ static void glink_spi_remove(struct glink_spi *glink)
 
 	ret = device_for_each_child(&glink->dev, NULL, glink_spi_remove_device);
 	if (ret)
-		dev_warn(&glink->dev, "Can't remove GLINK devices: %d\n", ret);
+		dev_dbg(&glink->dev, "Can't remove GLINK devices: %d\n", ret);
 
 	spin_lock_irqsave(&glink->idr_lock, flags);
 	idr_for_each_entry(&glink->lcids, channel, cid) {

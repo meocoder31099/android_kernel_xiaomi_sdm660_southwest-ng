@@ -290,12 +290,12 @@ static void populate_properties(const void *blob,
 
 		val = fdt_getprop_by_offset(blob, cur, &pname, &sz);
 		if (!val) {
-			pr_warn("Cannot locate property at 0x%x\n", cur);
+			pr_debug("Cannot locate property at 0x%x\n", cur);
 			continue;
 		}
 
 		if (!pname) {
-			pr_warn("Cannot find property name at 0x%x\n", cur);
+			pr_debug("Cannot find property name at 0x%x\n", cur);
 			continue;
 		}
 
@@ -502,7 +502,7 @@ static int unflatten_dt_nodes(const void *blob,
 	}
 
 	if (offset < 0 && offset != -FDT_ERR_NOTFOUND) {
-		pr_err("Error %d processing FDT\n", offset);
+		pr_debug("Error %d processing FDT\n", offset);
 		return -EINVAL;
 	}
 
@@ -555,7 +555,7 @@ void *__unflatten_device_tree(const void *blob,
 	pr_debug("version: %08x\n", fdt_version(blob));
 
 	if (fdt_check_header(blob)) {
-		pr_err("Invalid device tree blob header\n");
+		pr_debug("Invalid device tree blob header\n");
 		return NULL;
 	}
 
@@ -581,7 +581,7 @@ void *__unflatten_device_tree(const void *blob,
 	/* Second pass, do actual unflattening */
 	unflatten_dt_nodes(blob, mem, dad, mynodes);
 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
-		pr_warning("End of tree marker overwritten: %08x\n",
+		pr_debug("End of tree marker overwritten: %08x\n",
 			   be32_to_cpup(mem + size));
 
 	if (detached && mynodes) {
@@ -656,7 +656,7 @@ static int __init __reserved_mem_reserve_reg(unsigned long node,
 		return -ENOENT;
 
 	if (len && len % t_len != 0) {
-		pr_err("Reserved memory: invalid reg property in '%s', skipping node.\n",
+		pr_debug("Reserved memory: invalid reg property in '%s', skipping node.\n",
 		       uname);
 		return -EINVAL;
 	}
@@ -672,7 +672,7 @@ static int __init __reserved_mem_reserve_reg(unsigned long node,
 			pr_debug("Reserved memory: reserved region for node '%s': base %pa, size %lu MiB\n",
 				uname, &base, (unsigned long)(size / SZ_1M));
 		else
-			pr_info("Reserved memory: failed to reserve memory for node '%s': base %pa, size %lu MiB\n",
+			pr_debug("Reserved memory: failed to reserve memory for node '%s': base %pa, size %lu MiB\n",
 				uname, &base, (unsigned long)(size / SZ_1M));
 
 		len -= t_len;
@@ -718,7 +718,7 @@ static int __init __fdt_scan_reserved_mem(unsigned long node, const char *uname,
 
 	if (!found && depth == 1 && strcmp(uname, "reserved-memory") == 0) {
 		if (__reserved_mem_check_root(node) != 0) {
-			pr_err("Reserved memory: unsupported node format, ignoring\n");
+			pr_debug("Reserved memory: unsupported node format, ignoring\n");
 			/* break scan */
 			return 1;
 		}
@@ -965,21 +965,21 @@ const void * __init of_flat_dt_match_machine(const void *default_match,
 		const char *prop;
 		int size;
 
-		pr_err("\n unrecognized device tree list:\n[ ");
+		pr_debug("\n unrecognized device tree list:\n[ ");
 
 		prop = of_get_flat_dt_prop(dt_root, "compatible", &size);
 		if (prop) {
 			while (size > 0) {
-				printk("'%s' ", prop);
+				no_printk("'%s' ", prop);
 				size -= strlen(prop) + 1;
 				prop += strlen(prop) + 1;
 			}
 		}
-		printk("]\n\n");
+		no_printk("]\n\n");
 		return NULL;
 	}
 
-	pr_info("Machine model: %s\n", of_flat_dt_get_machine_name());
+	pr_debug("Machine model: %s\n", of_flat_dt_get_machine_name());
 
 	return best_data;
 }
@@ -1058,7 +1058,7 @@ int __init early_init_dt_scan_chosen_stdout(void)
 	/* Get the node specified by stdout-path */
 	offset = fdt_path_offset_namelen(fdt, p, l);
 	if (offset < 0) {
-		pr_warn("earlycon: stdout-path %.*s not found\n", l, p);
+		pr_debug("earlycon: stdout-path %.*s not found\n", l, p);
 		return 0;
 	}
 
@@ -1158,7 +1158,7 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 			continue;
 
 		if (early_init_dt_mark_hotplug_memory_arch(base, size))
-			pr_warn("failed to mark hotplug range 0x%llx - 0x%llx\n",
+			pr_debug("failed to mark hotplug range 0x%llx - 0x%llx\n",
 				base, base + size);
 	}
 
@@ -1259,7 +1259,7 @@ void __init __weak early_init_dt_add_memory_arch(u64 base, u64 size)
 
 	if (!PAGE_ALIGNED(base)) {
 		if (size < PAGE_SIZE - (base & ~PAGE_MASK)) {
-			pr_warn("Ignoring memory block 0x%llx - 0x%llx\n",
+			pr_debug("Ignoring memory block 0x%llx - 0x%llx\n",
 				base, base + size);
 			return;
 		}
@@ -1269,24 +1269,24 @@ void __init __weak early_init_dt_add_memory_arch(u64 base, u64 size)
 	size &= PAGE_MASK;
 
 	if (base > MAX_MEMBLOCK_ADDR) {
-		pr_warning("Ignoring memory block 0x%llx - 0x%llx\n",
+		pr_debug("Ignoring memory block 0x%llx - 0x%llx\n",
 				base, base + size);
 		return;
 	}
 
 	if (base + size - 1 > MAX_MEMBLOCK_ADDR) {
-		pr_warning("Ignoring memory range 0x%llx - 0x%llx\n",
+		pr_debug("Ignoring memory range 0x%llx - 0x%llx\n",
 				((u64)MAX_MEMBLOCK_ADDR) + 1, base + size);
 		size = MAX_MEMBLOCK_ADDR - base + 1;
 	}
 
 	if (base + size < phys_offset) {
-		pr_warning("Ignoring memory block 0x%llx - 0x%llx\n",
+		pr_debug("Ignoring memory block 0x%llx - 0x%llx\n",
 			   base, base + size);
 		return;
 	}
 	if (base < phys_offset) {
-		pr_warning("Ignoring memory range 0x%llx - 0x%llx\n",
+		pr_debug("Ignoring memory range 0x%llx - 0x%llx\n",
 			   base, phys_offset);
 		size -= phys_offset - base;
 		base = phys_offset;
@@ -1321,7 +1321,7 @@ int __init __weak early_init_dt_mark_hotplug_memory_arch(u64 base, u64 size)
 int __init __weak early_init_dt_reserve_memory_arch(phys_addr_t base,
 					phys_addr_t size, bool nomap)
 {
-	pr_err("Reserved memory not supported, ignoring range %pa - %pa%s\n",
+	pr_debug("Reserved memory not supported, ignoring range %pa - %pa%s\n",
 		  &base, &size, nomap ? " (nomap)" : "");
 	return -ENOSYS;
 }
@@ -1409,7 +1409,7 @@ void __init unflatten_and_copy_device_tree(void)
 	void *dt;
 
 	if (!initial_boot_params) {
-		pr_warn("No valid device tree found, continuing without\n");
+		pr_debug("No valid device tree found, continuing without\n");
 		return;
 	}
 
@@ -1443,7 +1443,7 @@ static int __init of_fdt_raw_init(void)
 
 	if (of_fdt_crc32 != crc32_be(~0, initial_boot_params,
 				     fdt_totalsize(initial_boot_params))) {
-		pr_warn("not creating '/sys/firmware/fdt': CRC check failed\n");
+		pr_debug("not creating '/sys/firmware/fdt': CRC check failed\n");
 		return 0;
 	}
 	of_fdt_raw_attr.size = fdt_totalsize(initial_boot_params);

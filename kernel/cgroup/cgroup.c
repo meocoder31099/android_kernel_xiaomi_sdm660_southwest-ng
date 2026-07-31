@@ -1818,7 +1818,7 @@ int rebind_subsystems(struct cgroup_root *dst_root, u16 ss_mask)
 
 		ret = cgroup_apply_control(dcgrp);
 		if (ret)
-			pr_warn("partial failure to rebind %s controller (err=%d)\n",
+			pr_debug("partial failure to rebind %s controller (err=%d)\n",
 				ss->name, ret);
 
 		if (ss->bind)
@@ -1877,7 +1877,7 @@ static int parse_cgroup_root_flags(char *data, unsigned int *root_flags)
 			continue;
 		}
 
-		pr_err("cgroup2: unknown option \"%s\"\n", token);
+		pr_debug("cgroup2: unknown option \"%s\"\n", token);
 		return -EINVAL;
 	}
 
@@ -3992,7 +3992,7 @@ restart:
 		if (is_add) {
 			ret = cgroup_add_file(css, cgrp, cft);
 			if (ret) {
-				pr_warn("%s: failed to add %s, err=%d\n",
+				pr_debug("%s: failed to add %s, err=%d\n",
 					__func__, cft->name, ret);
 				cft_end = cft;
 				is_add = false;
@@ -5266,10 +5266,10 @@ static struct cgroup_subsys_state *css_create(struct cgroup *cgrp,
 
 	if (ss->broken_hierarchy && !ss->warned_broken_hierarchy &&
 	    cgroup_parent(parent)) {
-		pr_warn("%s (%d) created nested cgroup for controller \"%s\" which has incomplete hierarchy support. Nested cgroups may change behavior in the future.\n",
+		pr_debug("%s (%d) created nested cgroup for controller \"%s\" which has incomplete hierarchy support. Nested cgroups may change behavior in the future.\n",
 			current->comm, current->pid, ss->name);
 		if (!strcmp(ss->name, "memory"))
-			pr_warn("\"memory\" requires setting use_hierarchy to 1 on the root\n");
+			pr_debug("\"memory\" requires setting use_hierarchy to 1 on the root\n");
 		ss->warned_broken_hierarchy = true;
 	}
 
@@ -5843,7 +5843,7 @@ int __init cgroup_init(void)
 			continue;
 
 		if (cgroup1_ssid_disabled(ssid))
-			printk(KERN_INFO "Disabling %s control group subsystem in v1 mounts\n",
+			no_printk(KERN_INFO "Disabling %s control group subsystem in v1 mounts\n",
 			       ss->name);
 
 		cgrp_dfl_root.subsys_mask |= 1 << ss->id;
@@ -6232,7 +6232,7 @@ static int __init cgroup_disable(char *str)
 				continue;
 
 			static_branch_disable(cgroup_subsys_enabled_key[i]);
-			pr_info("Disabling %s control group subsystem\n",
+			pr_debug("Disabling %s control group subsystem\n",
 				ss->name);
 		}
 
@@ -6240,7 +6240,7 @@ static int __init cgroup_disable(char *str)
 			if (strcmp(token, cgroup_opt_feature_names[i]))
 				continue;
 			cgroup_feature_disable_mask |= 1 << i;
-			pr_info("Disabling %s control group feature\n",
+			pr_debug("Disabling %s control group feature\n",
 				cgroup_opt_feature_names[i]);
 			break;
 		}
@@ -6428,7 +6428,7 @@ void cgroup_sk_alloc_disable(void)
 {
 	if (cgroup_sk_alloc_disabled)
 		return;
-	pr_info("cgroup: disabling cgroup2 socket matching due to net_prio or net_cls activation\n");
+	pr_debug("cgroup: disabling cgroup2 socket matching due to net_prio or net_cls activation\n");
 	cgroup_sk_alloc_disabled = true;
 }
 

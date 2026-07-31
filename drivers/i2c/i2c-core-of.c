@@ -31,13 +31,13 @@ int of_i2c_get_board_info(struct device *dev, struct device_node *node,
 	memset(info, 0, sizeof(*info));
 
 	if (of_modalias_node(node, info->type, sizeof(info->type)) < 0) {
-		dev_err(dev, "of_i2c: modalias failure on %pOF\n", node);
+		dev_dbg(dev, "of_i2c: modalias failure on %pOF\n", node);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "reg", &addr);
 	if (ret) {
-		dev_err(dev, "of_i2c: invalid reg on %pOF\n", node);
+		dev_dbg(dev, "of_i2c: invalid reg on %pOF\n", node);
 		return ret;
 	}
 
@@ -80,7 +80,7 @@ static struct i2c_client *of_i2c_register_device(struct i2c_adapter *adap,
 
 	client = i2c_new_device(adap, &info);
 	if (!client) {
-		dev_err(&adap->dev, "of_i2c: Failure registering %pOF\n", node);
+		dev_dbg(&adap->dev, "of_i2c: Failure registering %pOF\n", node);
 		return ERR_PTR(-EINVAL);
 	}
 	return client;
@@ -107,7 +107,7 @@ void of_i2c_register_devices(struct i2c_adapter *adap)
 
 		client = of_i2c_register_device(adap, node);
 		if (IS_ERR(client)) {
-			dev_err(&adap->dev,
+			dev_dbg(&adap->dev,
 				 "Failed to create I2C device for %pOF\n",
 				 node);
 			of_node_clear_flag(node, OF_POPULATED);
@@ -255,7 +255,7 @@ static int of_i2c_notify(struct notifier_block *nb, unsigned long action,
 
 		client = of_i2c_register_device(adap, rd->dn);
 		if (IS_ERR(client)) {
-			dev_err(&adap->dev, "failed to create client for '%pOF'\n",
+			dev_dbg(&adap->dev, "failed to create client for '%pOF'\n",
 				 rd->dn);
 			put_device(&adap->dev);
 			of_node_clear_flag(rd->dn, OF_POPULATED);

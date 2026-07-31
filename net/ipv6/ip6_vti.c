@@ -1251,7 +1251,7 @@ xfrm_proto_ah_failed:
 xfrm_proto_esp_failed:
 	unregister_pernet_device(&vti6_net_ops);
 pernet_dev_failed:
-	pr_err("vti6 init: failed to register %s\n", msg);
+	pr_debug("vti6 init: failed to register %s\n", msg);
 	return err;
 }
 

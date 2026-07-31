@@ -97,7 +97,7 @@ static int qpnp_write_byte(struct qpnp_misc_dev *mdev, u16 addr, u8 val)
 
 	rc = regmap_write(mdev->regmap, mdev->base + addr, val);
 	if (rc)
-		pr_err("regmap write failed rc=%d\n", rc);
+		pr_debug("regmap write failed rc=%d\n", rc);
 
 	return rc;
 }
@@ -109,7 +109,7 @@ static int qpnp_read_byte(struct qpnp_misc_dev *mdev, u16 addr, u8 *val)
 
 	rc = regmap_read(mdev->regmap, mdev->base + addr, &temp);
 	if (rc) {
-		pr_err("regmap read failed rc=%d\n", rc);
+		pr_debug("regmap read failed rc=%d\n", rc);
 		return rc;
 	}
 
@@ -147,7 +147,7 @@ int qpnp_misc_read_reg(struct device_node *node, u16 addr, u8 *val)
 	u8 temp = 0;
 
 	if (IS_ERR_OR_NULL(node)) {
-		pr_err("Invalid device node pointer\n");
+		pr_debug("Invalid device node pointer\n");
 		return -EINVAL;
 	}
 
@@ -166,13 +166,13 @@ int qpnp_misc_read_reg(struct device_node *node, u16 addr, u8 *val)
 		 * be called by drivers which have specified the
 		 * misc phandle in their device tree node.
 		 */
-		pr_err("no probed misc device found\n");
+		pr_debug("no probed misc device found\n");
 		return -EPROBE_DEFER;
 	}
 
 	rc = qpnp_read_byte(mdev, addr, &temp);
 	if (rc < 0) {
-		dev_err(mdev->dev, "Failed to read addr %x, rc=%d\n", addr, rc);
+		dev_dbg(mdev->dev, "Failed to read addr %x, rc=%d\n", addr, rc);
 		return rc;
 	}
 
@@ -187,7 +187,7 @@ int qpnp_misc_irqs_available(struct device *consumer_dev)
 	struct qpnp_misc_dev *mdev_found = NULL;
 
 	if (IS_ERR_OR_NULL(consumer_dev)) {
-		pr_err("Invalid consumer device pointer\n");
+		pr_debug("Invalid consumer device pointer\n");
 		return -EINVAL;
 	}
 
@@ -213,7 +213,7 @@ int qpnp_misc_irqs_available(struct device *consumer_dev)
 		 * be called by drivers which have specified the
 		 * misc phandle in their device tree node.
 		 */
-		pr_err("no probed misc device found\n");
+		pr_debug("no probed misc device found\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -267,7 +267,7 @@ static ssize_t twm_exit_show(struct class *c,
 
 	rc = qpnp_read_byte(mdev, MISC_SPARE_1, &val);
 	if (rc < 0) {
-		pr_err("Failed to read TWM enable (misc_spare_1) rc=%d\n", rc);
+		pr_debug("Failed to read TWM enable (misc_spare_1) rc=%d\n", rc);
 		return rc;
 	}
 
@@ -310,20 +310,20 @@ static int qpnp_misc_dt_init(struct qpnp_misc_dev *mdev)
 							&mdev->twm_mode);
 		if (!rc && (mdev->twm_mode < TWM_MODE_1 ||
 				mdev->twm_mode > TWM_MODE_3)) {
-			pr_err("Invalid TWM mode %d\n", mdev->twm_mode);
+			pr_debug("Invalid TWM mode %d\n", mdev->twm_mode);
 			return -EINVAL;
 		}
 	}
 
 	rc = of_property_read_u32(node, "reg", &mdev->base);
 	if (rc < 0 || !mdev->base) {
-		dev_err(mdev->dev, "Base address not defined or invalid\n");
+		dev_dbg(mdev->dev, "Base address not defined or invalid\n");
 		return -EINVAL;
 	}
 
 	if (!of_property_read_u32(node, "qcom,pwm-sel", &val)) {
 		if (val > PWM_SEL_MAX) {
-			dev_err(mdev->dev, "Invalid value for pwm-sel\n");
+			dev_dbg(mdev->dev, "Invalid value for pwm-sel\n");
 			return -EINVAL;
 		}
 		mdev->pwm_sel = (u8)val;
@@ -350,7 +350,7 @@ static int qpnp_misc_config(struct qpnp_misc_dev *mdev)
 		if (mdev->pwm_sel > 0 && mdev->enable_gp_driver) {
 			rc = qpnp_write_byte(mdev, REG_PWM_SEL, mdev->pwm_sel);
 			if (rc < 0) {
-				dev_err(mdev->dev,
+				dev_dbg(mdev->dev,
 					"Failed to write PWM_SEL reg\n");
 				return rc;
 			}
@@ -358,7 +358,7 @@ static int qpnp_misc_config(struct qpnp_misc_dev *mdev)
 			rc = qpnp_write_byte(mdev, REG_GP_DRIVER_EN,
 					GP_DRIVER_EN_BIT);
 			if (rc < 0) {
-				dev_err(mdev->dev,
+				dev_dbg(mdev->dev,
 					"Failed to write GP_DRIVER_EN reg\n");
 				return rc;
 			}
@@ -375,7 +375,7 @@ static int qpnp_misc_config(struct qpnp_misc_dev *mdev)
 
 		rc = class_register(&mdev->twm_class);
 		if (rc < 0) {
-			pr_err("Failed to register pmic_twm class rc=%d\n", rc);
+			pr_debug("Failed to register pmic_twm class rc=%d\n", rc);
 			return rc;
 		}
 	}
@@ -396,13 +396,13 @@ static int qpnp_misc_probe(struct platform_device *pdev)
 	dev_set_drvdata(&pdev->dev, mdev);
 	mdev->regmap = dev_get_regmap(mdev->dev->parent, NULL);
 	if (!mdev->regmap) {
-		dev_err(mdev->dev, "Parent regmap is unavailable\n");
+		dev_dbg(mdev->dev, "Parent regmap is unavailable\n");
 		return -ENXIO;
 	}
 
 	rc = qpnp_misc_dt_init(mdev);
 	if (rc < 0) {
-		dev_err(mdev->dev,
+		dev_dbg(mdev->dev,
 			"Error reading device tree properties, rc=%d\n", rc);
 		return rc;
 	}
@@ -410,14 +410,14 @@ static int qpnp_misc_probe(struct platform_device *pdev)
 
 	rc = qpnp_read_byte(mdev, REG_SUBTYPE, &mdev->version.subtype);
 	if (rc < 0) {
-		dev_err(mdev->dev, "Failed to read subtype, rc=%d\n", rc);
+		dev_dbg(mdev->dev, "Failed to read subtype, rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = qpnp_read_byte(mdev, REG_DIG_MAJOR_REV,
 			&mdev->version.dig_major_rev);
 	if (rc < 0) {
-		dev_err(mdev->dev, "Failed to read dig_major_rev, rc=%d\n", rc);
+		dev_dbg(mdev->dev, "Failed to read dig_major_rev, rc=%d\n", rc);
 		return rc;
 	}
 
@@ -427,12 +427,12 @@ static int qpnp_misc_probe(struct platform_device *pdev)
 
 	rc = qpnp_misc_config(mdev);
 	if (rc < 0) {
-		dev_err(mdev->dev,
+		dev_dbg(mdev->dev,
 			"Error configuring module registers, rc=%d\n", rc);
 		return rc;
 	}
 
-	dev_info(mdev->dev, "probe successful\n");
+	dev_dbg(mdev->dev, "probe successful\n");
 	return 0;
 }
 
@@ -445,13 +445,13 @@ static void qpnp_misc_shutdown(struct platform_device *pdev)
 		rc = qpnp_write_byte(mdev, MISC_SPARE_2,
 				mdev->twm_enable ? mdev->twm_mode : 0x0);
 		if (rc < 0)
-			pr_err("Failed to write MISC_SPARE_2 (twm_mode) val=%d rc=%d\n",
+			pr_debug("Failed to write MISC_SPARE_2 (twm_mode) val=%d rc=%d\n",
 				mdev->twm_enable ? mdev->twm_mode : 0x0, rc);
 
 		rc = qpnp_write_byte(mdev, MISC_SPARE_1,
 				mdev->twm_enable ? ENABLE_TWM_MODE : 0x0);
 		if (rc < 0)
-			pr_err("Failed to write MISC_SPARE_1 (twm_state) val=%d rc=%d\n",
+			pr_debug("Failed to write MISC_SPARE_1 (twm_state) val=%d rc=%d\n",
 				mdev->twm_enable ? ENABLE_TWM_MODE : 0x0, rc);
 
 		pr_debug("PMIC configured for TWM-%s MODE=%d\n",

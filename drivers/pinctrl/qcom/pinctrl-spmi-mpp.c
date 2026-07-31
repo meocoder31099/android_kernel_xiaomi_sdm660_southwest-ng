@@ -189,7 +189,7 @@ static int pmic_mpp_read(struct pmic_mpp_state *state,
 
 	ret = regmap_read(state->map, pad->base + addr, &val);
 	if (ret < 0)
-		dev_err(state->dev, "read 0x%x failed\n", addr);
+		dev_dbg(state->dev, "read 0x%x failed\n", addr);
 	else
 		ret = val;
 
@@ -204,7 +204,7 @@ static int pmic_mpp_write(struct pmic_mpp_state *state,
 
 	ret = regmap_write(state->map, pad->base + addr, val);
 	if (ret < 0)
-		dev_err(state->dev, "write 0x%x failed\n", addr);
+		dev_dbg(state->dev, "write 0x%x failed\n", addr);
 
 	return ret;
 }
@@ -674,7 +674,7 @@ static int pmic_mpp_populate(struct pmic_mpp_state *state,
 		return type;
 
 	if (type != PMIC_MPP_TYPE) {
-		dev_err(state->dev, "incorrect block type 0x%x at 0x%x\n",
+		dev_dbg(state->dev, "incorrect block type 0x%x at 0x%x\n",
 			type, pad->base);
 		return -ENODEV;
 	}
@@ -695,7 +695,7 @@ static int pmic_mpp_populate(struct pmic_mpp_state *state,
 		pad->num_sources = 8;
 		break;
 	default:
-		dev_err(state->dev, "unknown MPP type 0x%x at 0x%x\n",
+		dev_dbg(state->dev, "unknown MPP type 0x%x at 0x%x\n",
 			subtype, pad->base);
 		return -ENODEV;
 	}
@@ -746,7 +746,7 @@ static int pmic_mpp_populate(struct pmic_mpp_state *state,
 		pad->function = PMIC_MPP_SINK;
 		break;
 	default:
-		dev_err(state->dev, "unknown MPP direction\n");
+		dev_dbg(state->dev, "unknown MPP direction\n");
 		return -ENODEV;
 	}
 
@@ -816,7 +816,7 @@ static int pmic_mpp_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(dev->of_node, "reg", &reg);
 	if (ret < 0) {
-		dev_err(dev, "missing base address");
+		dev_dbg(dev, "missing base address");
 		return ret;
 	}
 
@@ -894,13 +894,13 @@ static int pmic_mpp_probe(struct platform_device *pdev)
 
 	ret = gpiochip_add_data(&state->chip, state);
 	if (ret) {
-		dev_err(state->dev, "can't add gpio chip\n");
+		dev_dbg(state->dev, "can't add gpio chip\n");
 		return ret;
 	}
 
 	ret = gpiochip_add_pin_range(&state->chip, dev_name(dev), 0, 0, npins);
 	if (ret) {
-		dev_err(dev, "failed to add pin range\n");
+		dev_dbg(dev, "failed to add pin range\n");
 		goto err_range;
 	}
 

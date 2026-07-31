@@ -26,7 +26,7 @@ do {									       \
 
 #define GLINK_ERR(dev, x, ...)						       \
 do {									       \
-	dev_err(dev, "[%s]: "x, __func__, ##__VA_ARGS__);		       \
+	dev_dbg(dev, "[%s]: "x, __func__, ##__VA_ARGS__);		       \
 	if (glink_ilc)							       \
 		ipc_log_string(glink_ilc, "[%s]: "x, __func__, ##__VA_ARGS__); \
 } while (0)
@@ -459,7 +459,7 @@ static int __init glink_probe_init(void)
 
 	ret = platform_driver_register(&glink_probe_driver);
 	if (ret) {
-		pr_err("%s: glink_probe register failed %d\n",
+		pr_debug("%s: glink_probe register failed %d\n",
 			__func__, ret);
 		return ret;
 	}

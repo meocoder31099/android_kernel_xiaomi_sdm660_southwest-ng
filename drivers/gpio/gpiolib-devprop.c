@@ -39,7 +39,7 @@ void devprop_gpiochip_set_names(struct gpio_chip *chip,
 		return;
 
 	if (ret != gdev->ngpio) {
-		dev_warn(&gdev->dev,
+		dev_dbg(&gdev->dev,
 			 "names %d do not match number of GPIOs %d\n", ret,
 			 gdev->ngpio);
 		return;
@@ -52,7 +52,7 @@ void devprop_gpiochip_set_names(struct gpio_chip *chip,
 	ret = fwnode_property_read_string_array(fwnode, "gpio-line-names",
 						names, gdev->ngpio);
 	if (ret < 0) {
-		dev_warn(&gdev->dev, "failed to read GPIO line names\n");
+		dev_dbg(&gdev->dev, "failed to read GPIO line names\n");
 		kfree(names);
 		return;
 	}

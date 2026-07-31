@@ -301,7 +301,7 @@ static int subsys_notifier_test_call(struct notifier_block *this,
 	switch (code) {
 
 	default:
-		pr_warn("%s: Notification %s from subsystem %pK\n",
+		pr_debug("%s: Notification %s from subsystem %pK\n",
 			__func__, notif_to_string(code), data);
 	break;
 
@@ -318,7 +318,7 @@ static void subsys_notif_reg_test_notifier(const char *subsys_name)
 {
 	void *handle = subsys_notif_register_notifier(subsys_name, &nb);
 
-	pr_warn("%s: Registered test notifier, handle=%pK",
+	pr_debug("%s: Registered test notifier, handle=%pK",
 			__func__, handle);
 }
 #endif

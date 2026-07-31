@@ -79,7 +79,7 @@ int logic_pio_register_range(struct logic_pio_hwaddr *new_range)
 				goto end_register;
 			}
 			new_range->size = SZ_64K;
-			pr_warn("Requested IO range too big, new size set to 64K\n");
+			pr_debug("Requested IO range too big, new size set to 64K\n");
 		}
 		new_range->io_start = mmio_end;
 	} else if (new_range->flags == LOGIC_PIO_INDIRECT) {
@@ -154,7 +154,7 @@ static struct logic_pio_hwaddr *find_io_range(unsigned long pio)
 	rcu_read_unlock();
 
 	if (!found_range)
-		pr_err("PIO entry token 0x%lx invalid\n", pio);
+		pr_debug("PIO entry token 0x%lx invalid\n", pio);
 
 	return found_range;
 }
@@ -194,11 +194,11 @@ unsigned long logic_pio_trans_hwaddr(struct fwnode_handle *fwnode,
 
 	range = find_io_range_by_fwnode(fwnode);
 	if (!range || range->flags == LOGIC_PIO_CPU_MMIO) {
-		pr_err("IO range not found or invalid\n");
+		pr_debug("IO range not found or invalid\n");
 		return ~0UL;
 	}
 	if (range->size < size) {
-		pr_err("resource size %pa cannot fit in IO range size %pa\n",
+		pr_debug("resource size %pa cannot fit in IO range size %pa\n",
 		       &size, &range->size);
 		return ~0UL;
 	}
@@ -224,7 +224,7 @@ unsigned long logic_pio_trans_cpuaddr(resource_size_t addr)
 	}
 	rcu_read_unlock();
 
-	pr_err("addr %pa not registered in io_range_list\n", &addr);
+	pr_debug("addr %pa not registered in io_range_list\n", &addr);
 
 	return ~0UL;
 }

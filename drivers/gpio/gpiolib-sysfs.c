@@ -472,13 +472,13 @@ static ssize_t export_store(struct class *class,
 	desc = gpio_to_valid_desc(gpio);
 	/* reject invalid GPIOs */
 	if (!desc) {
-		pr_warn("%s: invalid GPIO %ld\n", __func__, gpio);
+		pr_debug("%s: invalid GPIO %ld\n", __func__, gpio);
 		return -EINVAL;
 	}
 	gc = desc->gdev->chip;
 	offset = gpio_chip_hwgpio(desc);
 	if (!gpiochip_line_is_valid(gc, offset)) {
-		pr_warn("%s: GPIO %ld masked\n", __func__, gpio);
+		pr_debug("%s: GPIO %ld masked\n", __func__, gpio);
 		return -EINVAL;
 	}
 
@@ -528,7 +528,7 @@ static ssize_t unexport_store(struct class *class,
 	desc = gpio_to_valid_desc(gpio);
 	/* reject bogus commands (gpio_unexport ignores them) */
 	if (!desc) {
-		pr_warn("%s: invalid GPIO %ld\n", __func__, gpio);
+		pr_debug("%s: invalid GPIO %ld\n", __func__, gpio);
 		return -EINVAL;
 	}
 
@@ -689,7 +689,7 @@ int gpiod_export_link(struct device *dev, const char *name,
 	int ret;
 
 	if (!desc) {
-		pr_warn("%s: invalid GPIO\n", __func__);
+		pr_debug("%s: invalid GPIO\n", __func__);
 		return -EINVAL;
 	}
 
@@ -716,7 +716,7 @@ void gpiod_unexport(struct gpio_desc *desc)
 	struct device *dev;
 
 	if (!desc) {
-		pr_warn("%s: invalid GPIO\n", __func__);
+		pr_debug("%s: invalid GPIO\n", __func__);
 		return;
 	}
 

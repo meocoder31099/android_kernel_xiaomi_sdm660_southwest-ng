@@ -539,7 +539,7 @@ static int arm_smmu_restore_sec_cfg(struct arm_smmu_device *smmu, u32 cb)
 
 	ret = scm_restore_sec_cfg(smmu->sec_id, cb, &scm_ret);
 	if (ret || scm_ret) {
-		pr_err("scm call IOMMU_SECURE_CFG failed\n");
+		pr_debug("scm call IOMMU_SECURE_CFG failed\n");
 		return -EINVAL;
 	}
 
@@ -633,7 +633,7 @@ static irqreturn_t arm_smmu_cf_selftest(int irq, void *cb_base)
 	irq_count++;
 	if (irq_data)
 		hwirq = irq_data->hwirq;
-	pr_info("Interrupt (irq:%d hwirq:%ld) received, fsr:0x%x\n",
+	pr_debug("Interrupt (irq:%d hwirq:%ld) received, fsr:0x%x\n",
 				irq, hwirq, fsr);
 
 	writel_relaxed(fsr, cb_base + ARM_SMMU_CB_FSR);
@@ -675,7 +675,7 @@ static void arm_smmu_interrupt_selftest(struct arm_smmu_device *smmu)
 				IRQF_ONESHOT | IRQF_SHARED,
 				"arm-smmu-context-fault", cb_base);
 		if (ret < 0) {
-			dev_err(smmu->dev,
+			dev_dbg(smmu->dev,
 				"Failed to request cntx IRQ %d (%u)\n",
 				cb, irq);
 			continue;
@@ -688,7 +688,7 @@ static void arm_smmu_interrupt_selftest(struct arm_smmu_device *smmu)
 		reg = reg_orig | SCTLR_CFIE | SCTLR_CFRE;
 
 		writel_relaxed(reg, cb_base + ARM_SMMU_CB_SCTLR);
-		dev_info(smmu->dev, "Testing cntx %d irq %d\n", cb, irq);
+		dev_dbg(smmu->dev, "Testing cntx %d irq %d\n", cb, irq);
 
 		/* Make sure ARM_SMMU_CB_SCTLR is configured */
 		wmb();
@@ -703,9 +703,9 @@ static void arm_smmu_interrupt_selftest(struct arm_smmu_device *smmu)
 		devm_free_irq(smmu->dev, irq, cb_base);
 	}
 
-	dev_info(smmu->dev,
+	dev_dbg(smmu->dev,
 			"Interrupt selftest completed...\n");
-	dev_info(smmu->dev,
+	dev_dbg(smmu->dev,
 			"Tested %d contexts, received %d interrupts\n",
 			cb_count, irq_count);
 	WARN_ON(cb_count != irq_count);
@@ -724,7 +724,7 @@ static int arm_smmu_run_atos(struct device *dev)
 
 	page = alloc_page(GFP_KERNEL);
 	if (!page) {
-		dev_err(dev, "Unable to allocate memory\n");
+		dev_dbg(dev, "Unable to allocate memory\n");
 		return -ENOMEM;
 	}
 	phys = page_to_phys(page);
@@ -735,17 +735,17 @@ static int arm_smmu_run_atos(struct device *dev)
 	iova = 0x1000;
 	if (iommu_map(domain, iova, phys, SZ_4K,
 		      IOMMU_READ | IOMMU_WRITE)) {
-		dev_err(dev, "Mapping failed\n");
+		dev_dbg(dev, "Mapping failed\n");
 		goto out_detach;
 	}
 
 	output = iommu_iova_to_phys_hard(domain, iova, IOMMU_TRANS_DEFAULT);
 	if (!output || output != phys) {
 		phys_soft = arm_smmu_iova_to_phys(domain, iova);
-		dev_err(dev, "atos is failed, output : %pa\n", &output);
-		dev_err(dev, "soft iova-to-phys : %pa\n", &phys_soft);
+		dev_dbg(dev, "atos is failed, output : %pa\n", &output);
+		dev_dbg(dev, "soft iova-to-phys : %pa\n", &phys_soft);
 	} else
-		dev_err(dev, "atos succeeded, output : %pa\n", &output);
+		dev_dbg(dev, "atos succeeded, output : %pa\n", &output);
 
 	iommu_unmap(domain, iova, SZ_4K);
 out_detach:
@@ -766,7 +766,7 @@ static int of_iommu_do_atos(struct device *dev, struct sme_pair *sme,
 
 		smr = &sme->smrs[i];
 		if (!smr->valid) {
-			dev_info(dev, "Can't run atos smr idx %d\n", i);
+			dev_dbg(dev, "Can't run atos smr idx %d\n", i);
 			continue;
 		}
 
@@ -778,7 +778,7 @@ static int of_iommu_do_atos(struct device *dev, struct sme_pair *sme,
 
 		err = of_iommu_fill_fwspec(dev, iommu_spec);
 		if (err) {
-			dev_err(dev, "Failed to do the of_iommu_xlate\n");
+			dev_dbg(dev, "Failed to do the of_iommu_xlate\n");
 			break;
 		}
 
@@ -791,7 +791,7 @@ static int of_iommu_do_atos(struct device *dev, struct sme_pair *sme,
 		if (ops && ops->add_device && dev->bus && !dev->iommu_group)
 			err = ops->add_device(dev);
 		if (err)  {
-			dev_err(dev, "Adding to IOMMU failed: %d\n", err);
+			dev_dbg(dev, "Adding to IOMMU failed: %d\n", err);
 			return err;
 		}
 
@@ -844,7 +844,7 @@ static int get_atos_selftest_sids(struct arm_smmu_device *smmu,
 			kstrtoint(strsep(&buf, ","), 0, &sid_count);
 
 			if (sid_count <= 0) {
-				dev_err(smmu->dev, "Invalid sid_count : %d\n",
+				dev_dbg(smmu->dev, "Invalid sid_count : %d\n",
 					sid_count);
 				goto out;
 			}
@@ -882,7 +882,7 @@ static int get_atos_selftest_sids(struct arm_smmu_device *smmu,
 					selftest_smrs[i].valid = false;
 				} else if ((idx >= 0) && smrs &&
 						(smrs[idx].valid)) {
-					dev_err(dev,
+					dev_dbg(dev,
 						"sid : 0x%x is already present at idx = %d choose a different sid\n",
 						selftest_smrs[i].id, idx);
 					selftest_smrs[i].valid = false;
@@ -899,14 +899,14 @@ static int get_atos_selftest_sids(struct arm_smmu_device *smmu,
 				case QCOM_SMMUV500:
 					tbu = qsmmuv500_find_tbu(smmu,
 							selftest_smrs[i].id);
-					dev_info(tbu->dev, "idx = %d valid: %d, sid : 0x%x, mask: 0x%x\n",
+					dev_dbg(tbu->dev, "idx = %d valid: %d, sid : 0x%x, mask: 0x%x\n",
 							idx,
 							selftest_smrs[i].valid,
 							selftest_smrs[i].id,
 							selftest_smrs[i].mask);
 					break;
 				case QCOM_SMMUV2:
-					dev_info(smmu->dev, "idx = %d valid: %d, sid : 0x%x, mask: 0x%x\n",
+					dev_dbg(smmu->dev, "idx = %d valid: %d, sid : 0x%x, mask: 0x%x\n",
 							idx,
 							selftest_smrs[i].valid,
 							selftest_smrs[i].id,
@@ -923,7 +923,7 @@ static int get_atos_selftest_sids(struct arm_smmu_device *smmu,
 	goto out;
 
 invalid_format:
-	dev_err(smmu->dev, "Invalid Format : <%s> Expected Format : <smmu_name,sid_count,sid:mask>\n",
+	dev_dbg(smmu->dev, "Invalid Format : <%s> Expected Format : <smmu_name,sid_count,sid:mask>\n",
 		selftestsids);
 	kfree(sme->smrs);
 out:
@@ -942,17 +942,17 @@ static void arm_smmu_atos_selftest(struct arm_smmu_device *smmu)
 	if (!selftest)
 		return;
 
-	dev_notice(smmu_dev, "ATOS Self test started\n");
+	dev_dbg(smmu_dev, "ATOS Self test started\n");
 	ret = get_atos_selftest_sids(smmu, &sme);
 	if (ret <= 0) {
-		dev_err(smmu_dev, "ATOS Self test failed ret %d!!\n", ret);
+		dev_dbg(smmu_dev, "ATOS Self test failed ret %d!!\n", ret);
 		return;
 	}
 
 	pdev = platform_device_register_simple("atos_test_device",
 					       -1, NULL, 0);
 	if (!pdev) {
-		dev_err(smmu_dev, "Unable to create a atos test device\n");
+		dev_dbg(smmu_dev, "Unable to create a atos test device\n");
 		return;
 	}
 
@@ -965,7 +965,7 @@ static void arm_smmu_atos_selftest(struct arm_smmu_device *smmu)
 	selftest_running = true;
 	of_iommu_do_atos(atos_dev, &sme, &iommu_spec);
 	selftest_running = false;
-	dev_notice(smmu_dev, "ATOS Self test complete\n");
+	dev_dbg(smmu_dev, "ATOS Self test complete\n");
 	kfree(sme.smrs);
 	of_node_put(iommu_spec.np);
 	platform_device_unregister(pdev);
@@ -1179,7 +1179,7 @@ static int arm_smmu_prepare_clocks(struct arm_smmu_power_resources *pwr)
 	for (i = 0; i < pwr->num_clocks; ++i) {
 		ret = clk_prepare(pwr->clocks[i]);
 		if (ret) {
-			dev_err(pwr->dev, "Couldn't prepare clock #%d\n", i);
+			dev_dbg(pwr->dev, "Couldn't prepare clock #%d\n", i);
 			while (i--)
 				clk_unprepare(pwr->clocks[i]);
 			break;
@@ -1203,7 +1203,7 @@ static int arm_smmu_enable_clocks(struct arm_smmu_power_resources *pwr)
 	for (i = 0; i < pwr->num_clocks; ++i) {
 		ret = clk_enable(pwr->clocks[i]);
 		if (ret) {
-			dev_err(pwr->dev, "Couldn't enable clock #%d\n", i);
+			dev_dbg(pwr->dev, "Couldn't enable clock #%d\n", i);
 			while (i--)
 				clk_disable(pwr->clocks[i]);
 			break;
@@ -1275,11 +1275,11 @@ static int arm_smmu_disable_regulators(struct arm_smmu_power_resources *pwr)
 	return 0;
 
 err:
-	pr_err("Failed to disable %s: %d\n", consumers[i].supply, ret);
+	pr_debug("Failed to disable %s: %d\n", consumers[i].supply, ret);
 	for (++i; i < num_consumers; ++i) {
 		r = regulator_enable(consumers[i].consumer);
 		if (r != 0)
-			pr_err("Failed to rename %s: %d\n",
+			pr_debug("Failed to rename %s: %d\n",
 			       consumers[i].supply, r);
 	}
 
@@ -1481,7 +1481,7 @@ static void __arm_smmu_tlb_sync_timeout_SMMUV2(struct arm_smmu_device *smmu)
 				      DEFAULT_RATELIMIT_INTERVAL,
 				      DEFAULT_RATELIMIT_BURST);
 	if (__ratelimit(&_rs))
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 			"TLB sync timed out -- SMMUV2 may be deadlocked\n");
 }
 
@@ -1530,16 +1530,16 @@ static void __arm_smmu_tlb_sync_timeout_SMMUV500(struct arm_smmu_device *smmu)
 	if (__ratelimit(&_rs)) {
 		unsigned long tbu_id, tbus_t = tbu_ids;
 
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 			"TLB sync timed out -- SMMUV500 may be deadlocked\n"
 			"TBU ACK 0x%x TBU PWR 0x%x TCU sync_inv 0x%x\n",
 			sync_inv_ack, tbu_pwr_status, sync_inv_progress);
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 			"TCU invalidation %s, TCU sync %s\n",
 			tcu_inv_pending?"pending":"completed",
 			tcu_sync_pending?"pending":"completed");
 
-		dev_err(smmu->dev, "TBU PWR status 0x%x\n", tbu_pwr_status);
+		dev_dbg(smmu->dev, "TBU PWR status 0x%x\n", tbu_pwr_status);
 
 		while (tbus_t) {
 			struct qsmmuv500_tbu_device *tbu;
@@ -1549,7 +1549,7 @@ static void __arm_smmu_tlb_sync_timeout_SMMUV500(struct arm_smmu_device *smmu)
 			tbu = qsmmuv500_find_tbu(smmu,
 						 (u16)(tbu_id << TBUID_SHIFT));
 			if (tbu) {
-				dev_err(smmu->dev,
+				dev_dbg(smmu->dev,
 					"TBU %s ack pending for TBU %s, %s\n",
 					tbu_sync_pending?"sync" : "inv",
 					dev_name(tbu->dev),
@@ -1884,12 +1884,12 @@ static void print_ctx_regs(struct arm_smmu_device *smmu, struct arm_smmu_cfg
 
 	fsynr0 = readl_relaxed(cb_base + ARM_SMMU_CB_FSYNR0);
 
-	dev_err(smmu->dev, "FAR    = 0x%016llx\n",
+	dev_dbg(smmu->dev, "FAR    = 0x%016llx\n",
 		readq_relaxed(cb_base + ARM_SMMU_CB_FAR));
-	dev_err(smmu->dev, "PAR    = 0x%pK\n",
+	dev_dbg(smmu->dev, "PAR    = 0x%pK\n",
 		(void *) readq_relaxed(cb_base + ARM_SMMU_CB_PAR));
 
-	dev_err(smmu->dev,
+	dev_dbg(smmu->dev,
 		"FSR    = 0x%08x [%s%s%s%s%s%s%s%s%s%s]\n",
 		fsr,
 		(fsr & FSR_TF) ?  (fsynr0 & FSYNR0_WNR ?
@@ -1906,28 +1906,28 @@ static void print_ctx_regs(struct arm_smmu_device *smmu, struct arm_smmu_cfg
 		(fsr & FSR_MULTI) ? "MULTI " : "");
 
 	if (cfg->fmt == ARM_SMMU_CTX_FMT_AARCH32_S) {
-		dev_err(smmu->dev, "TTBR0  = 0x%pK\n",
+		dev_dbg(smmu->dev, "TTBR0  = 0x%pK\n",
 			(void *) (unsigned long)
 			readl_relaxed(cb_base + ARM_SMMU_CB_TTBR0));
-		dev_err(smmu->dev, "TTBR1  = 0x%pK\n",
+		dev_dbg(smmu->dev, "TTBR1  = 0x%pK\n",
 			(void *) (unsigned long)
 			readl_relaxed(cb_base + ARM_SMMU_CB_TTBR1));
 	} else {
-		dev_err(smmu->dev, "TTBR0  = 0x%pK\n",
+		dev_dbg(smmu->dev, "TTBR0  = 0x%pK\n",
 			(void *) readq_relaxed(cb_base + ARM_SMMU_CB_TTBR0));
 		if (stage1)
-			dev_err(smmu->dev, "TTBR1  = 0x%pK\n",
+			dev_dbg(smmu->dev, "TTBR1  = 0x%pK\n",
 				(void *) readq_relaxed(cb_base +
 					ARM_SMMU_CB_TTBR1));
 	}
 
 
-	dev_err(smmu->dev, "SCTLR  = 0x%08x ACTLR  = 0x%08x\n",
+	dev_dbg(smmu->dev, "SCTLR  = 0x%08x ACTLR  = 0x%08x\n",
 	       readl_relaxed(cb_base + ARM_SMMU_CB_SCTLR),
 	       readl_relaxed(cb_base + ARM_SMMU_CB_ACTLR));
-	dev_err(smmu->dev, "CBAR  = 0x%08x\n",
+	dev_dbg(smmu->dev, "CBAR  = 0x%08x\n",
 	       readl_relaxed(gr1_base + ARM_SMMU_GR1_CBAR(cfg->cbndx)));
-	dev_err(smmu->dev, "MAIR0   = 0x%08x MAIR1   = 0x%08x\n",
+	dev_dbg(smmu->dev, "MAIR0   = 0x%08x MAIR1   = 0x%08x\n",
 	       readl_relaxed(cb_base + ARM_SMMU_CB_S1_MAIR0),
 	       readl_relaxed(cb_base + ARM_SMMU_CB_S1_MAIR1));
 
@@ -1970,14 +1970,14 @@ static phys_addr_t arm_smmu_verify_fault(struct iommu_domain *domain,
 							     flags);
 
 	if (!phys_stimu && phys_hard_priv) {
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 			"ATOS results differed across access privileges...\n"
 			"Before: %pa After: %pa\n",
 			&phys_stimu, &phys_hard_priv);
 	}
 
 	if (phys_stimu != phys_stimu_post_tlbiall) {
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 			"ATOS results differed across TLBIALL...\n"
 			"Before: %pa After: %pa\n", &phys_stimu,
 						&phys_stimu_post_tlbiall);
@@ -2061,7 +2061,7 @@ static irqreturn_t arm_smmu_context_fault(int irq, void *dev)
 	}
 
 	if (fatal_asf && (fsr & FSR_ASF)) {
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 			"Took an address size fault.  Refusing to recover.\n");
 		BUG();
 	}
@@ -2103,36 +2103,36 @@ static irqreturn_t arm_smmu_context_fault(int irq, void *dev)
 			print_ctx_regs(smmu, cfg, fsr);
 			phys_atos = arm_smmu_verify_fault(domain, iova, fsr,
 							  fsynr0);
-			dev_err(smmu->dev,
+			dev_dbg(smmu->dev,
 				"Unhandled context fault: iova=0x%08lx, cb=%d, fsr=0x%x, fsynr0=0x%x, fsynr1=0x%x\n",
 				iova, cfg->cbndx, fsr, fsynr0, fsynr1);
-			dev_err(smmu->dev,
+			dev_dbg(smmu->dev,
 				"Client info: BID=0x%lx, PID=0x%lx, MID=0x%lx\n",
 				FIELD_GET(FSYNR1_BID, fsynr1),
 				FIELD_GET(FSYNR1_PID, fsynr1),
 				FIELD_GET(FSYNR1_MID, fsynr1));
 
-			dev_err(smmu->dev,
+			dev_dbg(smmu->dev,
 				"soft iova-to-phys=%pa\n", &phys_soft);
 			if (!phys_soft)
-				dev_err(smmu->dev,
+				dev_dbg(smmu->dev,
 					"SOFTWARE TABLE WALK FAILED! Looks like %s accessed an unmapped address!\n",
 					dev_name(smmu->dev));
 			else {
 				pte = arm_smmu_iova_to_pte(domain, iova);
-				dev_err(smmu->dev, "PTE = %016llx\n", pte);
+				dev_dbg(smmu->dev, "PTE = %016llx\n", pte);
 			}
 			if (phys_atos)
-				dev_err(smmu->dev, "hard iova-to-phys (ATOS)=%pa\n",
+				dev_dbg(smmu->dev, "hard iova-to-phys (ATOS)=%pa\n",
 					&phys_atos);
 			else
-				dev_err(smmu->dev, "hard iova-to-phys (ATOS) failed\n");
-			dev_err(smmu->dev, "SID=0x%x\n", frsynra);
+				dev_dbg(smmu->dev, "hard iova-to-phys (ATOS) failed\n");
+			dev_dbg(smmu->dev, "SID=0x%x\n", frsynra);
 		}
 		ret = IRQ_HANDLED;
 		resume = RESUME_TERMINATE;
 		if (!non_fatal_fault) {
-			dev_err(smmu->dev,
+			dev_dbg(smmu->dev,
 				"Unhandled arm-smmu context fault!\n");
 			BUG();
 		}
@@ -2421,7 +2421,7 @@ static int arm_smmu_init_asid(struct iommu_domain *domain,
 
 		mutex_unlock(&smmu->idr_mutex);
 		if (ret < 0) {
-			dev_err(smmu->dev, "dynamic ASID allocation failed: %d\n",
+			dev_dbg(smmu->dev, "dynamic ASID allocation failed: %d\n",
 				ret);
 			return ret;
 		}
@@ -2472,7 +2472,7 @@ static int arm_smmu_init_domain_context(struct iommu_domain *domain,
 	if (domain->type == IOMMU_DOMAIN_DMA) {
 		ret = arm_smmu_setup_default_domain(dev, domain);
 		if (ret) {
-			dev_err(dev, "%s: default domain setup failed\n",
+			dev_dbg(dev, "%s: default domain setup failed\n",
 				__func__);
 			goto out_logger;
 		}
@@ -2702,7 +2702,7 @@ static int arm_smmu_init_domain_context(struct iommu_domain *domain,
 			arm_smmu_context_fault, IRQF_ONESHOT | IRQF_SHARED,
 			"arm-smmu-context-fault", domain);
 		if (ret < 0) {
-			dev_err(smmu->dev, "failed to request context IRQ %d (%u)\n",
+			dev_dbg(smmu->dev, "failed to request context IRQ %d (%u)\n",
 				cfg->irptndx, irq);
 			cfg->irptndx = INVALID_IRPTNDX;
 			goto out_clear_smmu;
@@ -2928,7 +2928,7 @@ static void arm_smmu_test_smr_masks(struct arm_smmu_device *smmu)
 			break;
 	}
 	if (idx == size) {
-		dev_err(smmu->dev,
+		dev_dbg(smmu->dev,
 				"Unable to compute streamid_masks\n");
 		return;
 	}
@@ -3156,7 +3156,7 @@ static void arm_smmu_detach_dev(struct iommu_domain *domain,
 		return;
 
 	if (!smmu) {
-		dev_err(dev, "Domain not attached; cannot detach!\n");
+		dev_dbg(dev, "Domain not attached; cannot detach!\n");
 		return;
 	}
 
@@ -3414,12 +3414,12 @@ static int arm_smmu_setup_default_domain(struct device *dev,
 		naddr = of_n_addr_cells(np);
 		nsize = of_n_size_cells(np);
 		if (len < naddr + nsize) {
-			dev_err(dev, "Invalid length for qcom,iommu-geometry, expected %d cells\n",
+			dev_dbg(dev, "Invalid length for qcom,iommu-geometry, expected %d cells\n",
 				naddr + nsize);
 			return -EINVAL;
 		}
 		if (naddr == 0 || nsize == 0) {
-			dev_err(dev, "Invalid #address-cells %d or #size-cells %d\n",
+			dev_dbg(dev, "Invalid #address-cells %d or #size-cells %d\n",
 				naddr, nsize);
 			return -EINVAL;
 		}
@@ -3497,7 +3497,7 @@ static int arm_smmu_attach_dev(struct iommu_domain *domain, struct device *dev)
 	int atomic_domain = smmu_domain->attributes & (1 << DOMAIN_ATTR_ATOMIC);
 
 	if (!fwspec || fwspec->ops != &arm_smmu_ops) {
-		dev_err(dev, "cannot attach to SMMU, is it on the same bus?\n");
+		dev_dbg(dev, "cannot attach to SMMU, is it on the same bus?\n");
 		return -ENXIO;
 	}
 
@@ -3534,7 +3534,7 @@ static int arm_smmu_attach_dev(struct iommu_domain *domain, struct device *dev)
 	 * different SMMUs.
 	 */
 	if (smmu_domain->smmu != smmu) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"cannot attach to SMMU %s whilst already attached to domain on SMMU %s\n",
 			dev_name(smmu_domain->smmu->dev), dev_name(smmu->dev));
 		ret = -EINVAL;
@@ -3766,7 +3766,7 @@ static phys_addr_t __arm_smmu_iova_to_phys_hard(struct iommu_domain *domain,
 	if (readl_poll_timeout_atomic(cb_base + ARM_SMMU_CB_ATSR, tmp,
 				      !(tmp & ATSR_ACTIVE), 5, 50)) {
 		phys = ops->iova_to_phys(ops, iova);
-		dev_err(dev,
+		dev_dbg(dev,
 			"iova to phys timed out on %pad. software table walk result=%pa.\n",
 			&iova, &phys);
 		phys = 0;
@@ -3775,8 +3775,8 @@ static phys_addr_t __arm_smmu_iova_to_phys_hard(struct iommu_domain *domain,
 
 	phys = readq_relaxed(cb_base + ARM_SMMU_CB_PAR);
 	if (phys & CB_PAR_F) {
-		dev_err(dev, "translation fault!\n");
-		dev_err(dev, "PAR = 0x%llx\n", phys);
+		dev_dbg(dev, "translation fault!\n");
+		dev_dbg(dev, "PAR = 0x%llx\n", phys);
 		phys = 0;
 	} else {
 		phys = (phys & (PHYS_MASK & ~0xfffULL)) | (iova & 0xfff);
@@ -4020,12 +4020,12 @@ cont:
 		u16 mask = fwspec->ids[i] >> SMR_MASK_SHIFT;
 
 		if (sid & ~smmu->streamid_mask) {
-			dev_err(dev, "stream ID 0x%x out of range for SMMU (0x%x)\n",
+			dev_dbg(dev, "stream ID 0x%x out of range for SMMU (0x%x)\n",
 				sid, smmu->streamid_mask);
 			goto out_pwr_off;
 		}
 		if (mask & ~smmu->smr_mask_mask) {
-			dev_err(dev, "SMR mask 0x%x out of range for SMMU (0x%x)\n",
+			dev_dbg(dev, "SMR mask 0x%x out of range for SMMU (0x%x)\n",
 				mask, smmu->smr_mask_mask);
 			goto out_pwr_off;
 		}
@@ -4044,7 +4044,7 @@ cont:
 
 	link = device_link_add(dev, smmu->dev, DL_FLAG_STATELESS);
 	if (!link) {
-		dev_err(dev, "error in device link creation between %s & %s\n",
+		dev_dbg(dev, "error in device link creation between %s & %s\n",
 				dev_name(smmu->dev), dev_name(dev));
 		ret = -ENODEV;
 		goto out_cfg_free;
@@ -4106,7 +4106,7 @@ static struct iommu_group *arm_smmu_device_group(struct device *dev)
 	for_each_cfg_sme(fwspec, i, idx) {
 		if (group && smmu->s2crs[idx].group &&
 		    group != smmu->s2crs[idx].group) {
-			dev_err(dev, "ID:%x IDX:%x is already in a group!\n",
+			dev_dbg(dev, "ID:%x IDX:%x is already in a group!\n",
 				fwspec->ids[i], idx);
 			return ERR_PTR(-EINVAL);
 		}
@@ -4295,7 +4295,7 @@ static int __arm_smmu_domain_set_attr(struct iommu_domain *domain,
 		break;
 	case DOMAIN_ATTR_PROCID:
 		if (smmu_domain->smmu != NULL) {
-			dev_err(smmu_domain->smmu->dev,
+			dev_dbg(smmu_domain->smmu->dev,
 			  "cannot change procid attribute while attached\n");
 			ret = -EBUSY;
 			break;
@@ -4307,7 +4307,7 @@ static int __arm_smmu_domain_set_attr(struct iommu_domain *domain,
 		int dynamic = *((int *)data);
 
 		if (smmu_domain->smmu != NULL) {
-			dev_err(smmu_domain->smmu->dev,
+			dev_dbg(smmu_domain->smmu->dev,
 			  "cannot change dynamic attribute while attached\n");
 			ret = -EBUSY;
 			break;
@@ -4470,7 +4470,7 @@ static int __arm_smmu_domain_set_attr2(struct iommu_domain *domain,
 		int force_coherent = *((int *)data);
 
 		if (smmu_domain->smmu != NULL) {
-			dev_err(smmu_domain->smmu->dev,
+			dev_dbg(smmu_domain->smmu->dev,
 			  "cannot change force coherent attribute while attached\n");
 			ret = -EBUSY;
 			break;
@@ -4492,7 +4492,7 @@ static int __arm_smmu_domain_set_attr2(struct iommu_domain *domain,
 				(struct iommu_domain_geometry *)data;
 
 		if (smmu_domain->smmu != NULL) {
-			dev_err(smmu_domain->smmu->dev,
+			dev_dbg(smmu_domain->smmu->dev,
 			  "cannot set geometry attribute while attached\n");
 			ret = -EBUSY;
 			break;
@@ -4500,7 +4500,7 @@ static int __arm_smmu_domain_set_attr2(struct iommu_domain *domain,
 
 		if (geometry->aperture_start >= SZ_1G * 4ULL ||
 		    geometry->aperture_end >= SZ_1G * 4ULL) {
-			pr_err("fastmap does not support IOVAs >= 4GB\n");
+			pr_debug("fastmap does not support IOVAs >= 4GB\n");
 			ret = -EINVAL;
 			break;
 		}
@@ -4631,7 +4631,7 @@ static void arm_smmu_trigger_fault(struct iommu_domain *domain,
 	void __iomem *cb_base;
 
 	if (!smmu_domain->smmu) {
-		pr_err("Can't trigger faults on non-attached domains\n");
+		pr_debug("Can't trigger faults on non-attached domains\n");
 		return;
 	}
 
@@ -4640,7 +4640,7 @@ static void arm_smmu_trigger_fault(struct iommu_domain *domain,
 		return;
 
 	cb_base = ARM_SMMU_CB(smmu, cfg->cbndx);
-	dev_err(smmu->dev, "Writing 0x%lx to FSRRESTORE on cb %d\n",
+	dev_dbg(smmu->dev, "Writing 0x%lx to FSRRESTORE on cb %d\n",
 		flags, cfg->cbndx);
 	writel_relaxed(flags, cb_base + ARM_SMMU_CB_FSRRESTORE);
 	/* give the interrupt time to fire... */
@@ -4704,7 +4704,7 @@ static int qsmmuv2_wait_for_halt(struct arm_smmu_device *smmu)
 	if (readl_poll_timeout_atomic(impl_def1_base + IMPL_DEF1_MICRO_MMU_CTRL,
 					tmp, (tmp & MICRO_MMU_CTRL_IDLE),
 					0, 30000)) {
-		dev_err(smmu->dev, "Couldn't halt SMMU!\n");
+		dev_dbg(smmu->dev, "Couldn't halt SMMU!\n");
 		return -EBUSY;
 	}
 
@@ -5084,7 +5084,7 @@ static int arm_smmu_parse_impl_def_registers(struct arm_smmu_device *smmu)
 
 	ntuples /= sizeof(u32);
 	if (ntuples % 2) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"Invalid number of attach-impl-defs registers: %d\n",
 			ntuples);
 		return -EINVAL;
@@ -5147,7 +5147,7 @@ static int arm_smmu_init_clocks(struct arm_smmu_power_resources *pwr)
 		struct clk *c = devm_clk_get(dev, cname);
 
 		if (IS_ERR(c)) {
-			dev_err(dev, "Couldn't get clock: %s",
+			dev_dbg(dev, "Couldn't get clock: %s",
 				cname);
 			return PTR_ERR(c);
 		}
@@ -5213,7 +5213,7 @@ static int register_regulator_notifier(struct arm_smmu_device *smmu)
 	consumers = pwr->gdscs;
 
 	if (!num_consumers) {
-		dev_info(dev, "no regulator info exist for %s\n",
+		dev_dbg(dev, "no regulator info exist for %s\n",
 			 dev_name(dev));
 		goto out;
 	}
@@ -5225,7 +5225,7 @@ static int register_regulator_notifier(struct arm_smmu_device *smmu)
 	ret = regulator_register_notifier(consumers[0].consumer,
 					  &smmu->regulator_nb);
 	if (ret)
-		dev_err(dev, "Regulator notifier request failed\n");
+		dev_dbg(dev, "Regulator notifier request failed\n");
 out:
 	return ret;
 }
@@ -5254,7 +5254,7 @@ static int arm_smmu_init_regulators(struct arm_smmu_power_resources *pwr)
 	if (!of_property_read_u32(dev->of_node,
 				  "qcom,deferred-regulator-disable-delay",
 				  &(pwr->regulator_defer)))
-		dev_info(dev, "regulator defer delay %d\n",
+		dev_dbg(dev, "regulator defer delay %d\n",
 			pwr->regulator_defer);
 
 	i = 0;
@@ -5278,13 +5278,13 @@ static int arm_smmu_init_bus_scaling(struct arm_smmu_power_resources *pwr)
 
 	pwr->bus_dt_data = msm_bus_cl_get_pdata(pwr->pdev);
 	if (!pwr->bus_dt_data) {
-		dev_err(dev, "Unable to read bus-scaling from devicetree\n");
+		dev_dbg(dev, "Unable to read bus-scaling from devicetree\n");
 		return -EINVAL;
 	}
 
 	pwr->bus_client = msm_bus_scale_register_client(pwr->bus_dt_data);
 	if (!pwr->bus_client) {
-		dev_err(dev, "Bus client registration failed\n");
+		dev_dbg(dev, "Bus client registration failed\n");
 		return -EPROBE_DEFER;
 	}
 
@@ -5373,7 +5373,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 
 	if (!(smmu->features &
 		(ARM_SMMU_FEAT_TRANS_S1 | ARM_SMMU_FEAT_TRANS_S2))) {
-		dev_err(smmu->dev, "\tno translation support!\n");
+		dev_dbg(smmu->dev, "\tno translation support!\n");
 		return -ENODEV;
 	}
 
@@ -5391,10 +5391,10 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 	 */
 	cttw_reg = !!(id & ID0_CTTW);
 	if (cttw_fw || cttw_reg)
-		dev_notice(smmu->dev, "\t%scoherent table walk\n",
+		dev_dbg(smmu->dev, "\t%scoherent table walk\n",
 			   cttw_fw ? "" : "non-");
 	if (cttw_fw != cttw_reg)
-		dev_notice(smmu->dev,
+		dev_dbg(smmu->dev,
 			   "\t(IDR0.CTTW overridden by FW configuration)\n");
 
 	/* Max. number of entries we have for stream matching/indexing */
@@ -5410,7 +5410,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 		smmu->features |= ARM_SMMU_FEAT_STREAM_MATCH;
 		size = (id >> ID0_NUMSMRG_SHIFT) & ID0_NUMSMRG_MASK;
 		if (size == 0) {
-			dev_err(smmu->dev,
+			dev_dbg(smmu->dev,
 				"stream-matching supported, but no SMRs present!\n");
 			return -ENODEV;
 		}
@@ -5421,7 +5421,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 		if (!smmu->smrs)
 			return -ENOMEM;
 
-		dev_notice(smmu->dev,
+		dev_dbg(smmu->dev,
 			   "\tstream matching with %lu register groups", size);
 	}
 	/* s2cr->type == 0 means translation, so initialise explicitly */
@@ -5452,7 +5452,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 				ID1_NUMPAGENDXB_MASK) + 1);
 	size <<= smmu->pgshift;
 	if (smmu->cb_base != gr0_base + size)
-		dev_warn(smmu->dev,
+		dev_dbg(smmu->dev,
 			"SMMU address space size (0x%lx) differs from mapped region size (0x%tx)!\n",
 			size * 2, (smmu->cb_base - gr0_base) * 2);
 
@@ -5460,7 +5460,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 					& ID1_NUMS2CB_MASK;
 	smmu->num_context_banks = (id >> ID1_NUMCB_SHIFT) & ID1_NUMCB_MASK;
 	if (smmu->num_s2_context_banks > smmu->num_context_banks) {
-		dev_err(smmu->dev, "impossible number of S2 context banks!\n");
+		dev_dbg(smmu->dev, "impossible number of S2 context banks!\n");
 		return -ENODEV;
 	}
 	dev_dbg(smmu->dev, "\t%u context banks (%u stage-2 only)\n",
@@ -5475,7 +5475,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 			atomic_add_return(smmu->num_context_banks,
 					  &cavium_smmu_context_count);
 		smmu->cavium_id_base -= smmu->num_context_banks;
-		dev_notice(smmu->dev, "\tenabling workaround for Cavium erratum 27704\n");
+		dev_dbg(smmu->dev, "\tenabling workaround for Cavium erratum 27704\n");
 	}
 	smmu->cbs = devm_kcalloc(smmu->dev, smmu->num_context_banks,
 				 sizeof(*smmu->cbs), GFP_KERNEL);
@@ -5500,7 +5500,7 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
 	 * and b) it can vary per context bank, this will have to do...
 	 */
 	if (dma_set_mask_and_coherent(smmu->dev, DMA_BIT_MASK(size)))
-		dev_warn(smmu->dev,
+		dev_dbg(smmu->dev,
 			 "failed to set DMA mask for table walker\n");
 
 	if (smmu->version < ARM_SMMU_V2) {
@@ -5699,12 +5699,12 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 	legacy_binding = of_find_property(dev->of_node, "mmu-masters", NULL);
 	if (legacy_binding && !using_generic_binding) {
 		if (!using_legacy_binding)
-			pr_notice("deprecated \"mmu-masters\" DT property in use; DMA API support unavailable\n");
+			pr_debug("deprecated \"mmu-masters\" DT property in use; DMA API support unavailable\n");
 		using_legacy_binding = true;
 	} else if (!legacy_binding && !using_legacy_binding) {
 		using_generic_binding = true;
 	} else {
-		dev_err(dev, "not probing due to mismatched DT properties\n");
+		dev_dbg(dev, "not probing due to mismatched DT properties\n");
 		return -ENODEV;
 	}
 
@@ -5727,7 +5727,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (res == NULL) {
-		dev_err(dev, "no MEM resource info\n");
+		dev_dbg(dev, "no MEM resource info\n");
 		return -EINVAL;
 	}
 
@@ -5740,7 +5740,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 
 	if (of_property_read_u32(dev->of_node, "#global-interrupts",
 				 &smmu->num_global_irqs)) {
-		dev_err(dev, "missing #global-interrupts property\n");
+		dev_dbg(dev, "missing #global-interrupts property\n");
 		return -ENODEV;
 	}
 
@@ -5752,7 +5752,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 	}
 
 	if (!smmu->num_context_irqs) {
-		dev_err(dev, "found %d interrupts but expected at least %d\n",
+		dev_dbg(dev, "found %d interrupts but expected at least %d\n",
 			num_irqs, smmu->num_global_irqs + 1);
 		return -ENODEV;
 	}
@@ -5766,7 +5766,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 		int irq = platform_get_irq(pdev, i);
 
 		if (irq < 0) {
-			dev_err(dev, "failed to get irq index %d\n", i);
+			dev_dbg(dev, "failed to get irq index %d\n", i);
 			return -ENODEV;
 		}
 		smmu->irqs[i] = irq;
@@ -5797,7 +5797,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 
 	if (smmu->version == ARM_SMMU_V2) {
 		if (smmu->num_context_banks > smmu->num_context_irqs) {
-		dev_err(dev,
+		dev_dbg(dev,
 			"found %d context interrupt(s) but have %d context banks. assuming %d context interrupts.\n",
 			smmu->num_context_irqs, smmu->num_context_banks,
 			smmu->num_context_banks);
@@ -5813,7 +5813,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 					IRQF_ONESHOT | IRQF_SHARED,
 					"arm-smmu global fault", smmu);
 		if (err) {
-			dev_err(dev, "failed to request global IRQ %d (%u)\n",
+			dev_dbg(dev, "failed to request global IRQ %d (%u)\n",
 				i, smmu->irqs[i]);
 			goto out_power_off;
 		}
@@ -5829,7 +5829,7 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev)
 	err = iommu_device_register(&smmu->iommu);
 
 	if (err) {
-		dev_err(dev, "Failed to register iommu\n");
+		dev_dbg(dev, "Failed to register iommu\n");
 		return err;
 	}
 	platform_set_drvdata(pdev, smmu);
@@ -5890,7 +5890,7 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
 
 	if (!bitmap_empty(smmu->context_map, ARM_SMMU_MAX_CBS) ||
 	    !bitmap_empty(smmu->secure_context_map, ARM_SMMU_MAX_CBS))
-		dev_err(&pdev->dev, "removing device with active domains!\n");
+		dev_dbg(&pdev->dev, "removing device with active domains!\n");
 
 	idr_destroy(&smmu->asid_idr);
 
@@ -6037,7 +6037,7 @@ static int qsmmuv500_tbu_halt(struct qsmmuv500_tbu_device *tbu,
 
 	if (of_property_read_bool(tbu->dev->of_node,
 						"qcom,opt-out-tbu-halting")) {
-		dev_notice(tbu->dev, "TBU opted-out for halting!\n");
+		dev_dbg(tbu->dev, "TBU opted-out for halting!\n");
 		return -EBUSY;
 	}
 
@@ -6082,7 +6082,7 @@ static int qsmmuv500_tbu_halt(struct qsmmuv500_tbu_device *tbu,
 	if (readl_poll_timeout_atomic(tbu_base + DEBUG_SR_HALT_ACK_REG, status,
 					(status & DEBUG_SR_HALT_ACK_VAL),
 					0, TBU_DBG_TIMEOUT_US)) {
-		dev_err(tbu->dev, "Couldn't halt TBU!\n");
+		dev_dbg(tbu->dev, "Couldn't halt TBU!\n");
 
 		halt = readl_relaxed(tbu_base + DEBUG_SID_HALT_REG);
 		halt &= ~DEBUG_SID_HALT_VAL;
@@ -6140,7 +6140,7 @@ static int qsmmuv500_ecats_lock(struct arm_smmu_domain *smmu_domain,
 	if (readl_poll_timeout_atomic(tbu->status_reg,
 					val, (val == 0x1), 0,
 					TBU_DBG_TIMEOUT_US)) {
-		dev_err(tbu->dev, "ECATS hw busy!\n");
+		dev_dbg(tbu->dev, "ECATS hw busy!\n");
 		spin_unlock_irqrestore(&smmu->atos_lock, *flags);
 		return  -ETIMEDOUT;
 	}
@@ -6275,7 +6275,7 @@ redo:
 		if (val & FSR_FAULT)
 			break;
 		if (ktime_compare(ktime_get(), timeout) > 0) {
-			dev_err(tbu->dev, "ECATS translation timed out!\n");
+			dev_dbg(tbu->dev, "ECATS translation timed out!\n");
 			ret = -ETIMEDOUT;
 			break;
 		}
@@ -6284,10 +6284,10 @@ redo:
 	val = readq_relaxed(tbu->base + DEBUG_PAR_REG);
 	fsr = readl_relaxed(cb_base + ARM_SMMU_CB_FSR);
 	if (val & DEBUG_PAR_FAULT_VAL) {
-		dev_err(tbu->dev, "ECATS generated a fault interrupt! FSR = %llx, SID=0x%x\n",
+		dev_dbg(tbu->dev, "ECATS generated a fault interrupt! FSR = %llx, SID=0x%x\n",
 			fsr, sid);
 
-		dev_err(tbu->dev, "ECATS translation failed! PAR = %llx\n",
+		dev_dbg(tbu->dev, "ECATS translation failed! PAR = %llx\n",
 			val);
 		/* Clear pending interrupts */
 		writel_relaxed(fsr, cb_base + ARM_SMMU_CB_FSR);
@@ -6448,7 +6448,7 @@ static int qsmmuv500_tbu_register(struct device *dev, void *cookie)
 	struct qsmmuv500_archdata *data = get_qsmmuv500_archdata(smmu);
 
 	if (!dev->driver) {
-		dev_err(dev, "TBU failed probe, QSMMUV500 cannot continue!\n");
+		dev_dbg(dev, "TBU failed probe, QSMMUV500 cannot continue!\n");
 		return -EINVAL;
 	}
 
@@ -7052,18 +7052,18 @@ static irqreturn_t arm_smmu_debug_capture_bus_match(int irq, void *dev)
 	arm_smmu_power_off(tbu->pwr);
 	arm_smmu_power_off(smmu->pwr);
 
-	dev_info(tbu->dev, "TNX_TCR_CNTL : 0x%0x\n", val);
+	dev_dbg(tbu->dev, "TNX_TCR_CNTL : 0x%0x\n", val);
 
 	for (i = 0; i < NO_OF_MASK_AND_MATCH; ++i) {
-		dev_info(tbu->dev,
+		dev_dbg(tbu->dev,
 				"Mask_%d : 0x%0llx\n", i+1, mask[i]);
-		dev_info(tbu->dev,
+		dev_dbg(tbu->dev,
 				"Match_%d : 0x%0llx\n", i+1, match[i]);
 	}
 
 	for (i = 0; i < NO_OF_CAPTURE_POINTS ; ++i) {
 		for (j = 0; j < REGS_PER_CAPTURE_POINT; ++j) {
-			dev_info(tbu->dev,
+			dev_dbg(tbu->dev,
 					"Capture_%d_Snapshot_%d : 0x%0llx\n",
 					i+1, j+1, snapshot[i][j]);
 		}
@@ -7091,7 +7091,7 @@ static int qsmmuv500_arch_init(struct arm_smmu_device *smmu)
 	pdev = container_of(dev, struct platform_device, dev);
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "tcu-base");
 	if (!res) {
-		dev_err(dev, "Unable to get the tcu-base\n");
+		dev_dbg(dev, "Unable to get the tcu-base\n");
 		return -EINVAL;
 	}
 	data->tcu_base = devm_ioremap(dev, res->start, resource_size(res));
@@ -7195,7 +7195,7 @@ static int qsmmuv500_tbu_probe(struct platform_device *pdev)
 		int irq = platform_get_irq(pdev, i);
 
 		if (irq < 0) {
-			dev_err(dev, "failed to get irq index %d\n", i);
+			dev_dbg(dev, "failed to get irq index %d\n", i);
 			return -ENODEV;
 		}
 		tbu->irqs[i] = irq;
@@ -7205,7 +7205,7 @@ static int qsmmuv500_tbu_probe(struct platform_device *pdev)
 					IRQF_ONESHOT | IRQF_SHARED,
 					"capture bus", tbu);
 		if (err) {
-			dev_err(dev, "failed to request capture bus irq%d (%u)\n",
+			dev_dbg(dev, "failed to request capture bus irq%d (%u)\n",
 				i, tbu->irqs[i]);
 			return err;
 		}

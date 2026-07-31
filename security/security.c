@@ -61,7 +61,7 @@ static __initdata bool debug;
 #define init_debug(...)						\
 	do {							\
 		if (debug)					\
-			pr_info(__VA_ARGS__);			\
+			pr_debug(__VA_ARGS__);			\
 	} while (0)
 
 static bool __init is_enabled(struct lsm_info *lsm)
@@ -333,7 +333,7 @@ int __init security_init(void)
 	int i;
 	struct hlist_head *list = (struct hlist_head *) &security_hook_heads;
 
-	pr_info("Security Framework initializing\n");
+	pr_debug("Security Framework initializing\n");
 
 	for (i = 0; i < sizeof(security_hook_heads) / sizeof(struct hlist_head);
 	     i++)

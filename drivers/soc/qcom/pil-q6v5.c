@@ -100,64 +100,64 @@ int pil_q6v5_make_proxy_votes(struct pil_desc *pil)
 
 	ret = of_property_read_u32(pil->dev->of_node, "vdd_cx-voltage", &uv);
 	if (ret) {
-		dev_err(pil->dev, "missing vdd_cx-voltage property(rc:%d)\n",
+		dev_dbg(pil->dev, "missing vdd_cx-voltage property(rc:%d)\n",
 								ret);
 		return ret;
 	}
 
 	ret = clk_prepare_enable(drv->xo);
 	if (ret) {
-		dev_err(pil->dev, "Failed to vote for XO(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to vote for XO(rc:%d)\n", ret);
 		goto out;
 	}
 
 	ret = clk_prepare_enable(drv->pnoc_clk);
 	if (ret) {
-		dev_err(pil->dev, "Failed to vote for pnoc(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to vote for pnoc(rc:%d)\n", ret);
 		goto err_pnoc_vote;
 	}
 
 	ret = clk_prepare_enable(drv->qdss_clk);
 	if (ret) {
-		dev_err(pil->dev, "Failed to vote for qdss(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to vote for qdss(rc:%d)\n", ret);
 		goto err_qdss_vote;
 	}
 
 	ret = clk_prepare_enable(drv->prng_clk);
 	if (ret) {
-		dev_err(pil->dev, "Failed to vote for prng(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to vote for prng(rc:%d)\n", ret);
 		goto err_prng_vote;
 	}
 
 	ret = clk_prepare_enable(drv->axis2_clk);
 	if (ret) {
-		dev_err(pil->dev, "Failed to vote for axis2(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to vote for axis2(rc:%d)\n", ret);
 		goto err_axis2_vote;
 	}
 
 	ret = regulator_set_voltage(drv->vreg_cx, uv, INT_MAX);
 	if (ret) {
-		dev_err(pil->dev, "Failed to request vdd_cx voltage(rc:%d)\n",
+		dev_dbg(pil->dev, "Failed to request vdd_cx voltage(rc:%d)\n",
 								ret);
 		goto err_cx_voltage;
 	}
 
 	ret = regulator_set_load(drv->vreg_cx, 100000);
 	if (ret < 0) {
-		dev_err(pil->dev, "Failed to set vdd_cx mode(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to set vdd_cx mode(rc:%d)\n", ret);
 		goto err_cx_mode;
 	}
 
 	ret = regulator_enable(drv->vreg_cx);
 	if (ret) {
-		dev_err(pil->dev, "Failed to vote for vdd_cx(rc:%d)\n", ret);
+		dev_dbg(pil->dev, "Failed to vote for vdd_cx(rc:%d)\n", ret);
 		goto err_cx_enable;
 	}
 
 	if (drv->vreg_pll) {
 		ret = regulator_enable(drv->vreg_pll);
 		if (ret) {
-			dev_err(pil->dev, "Failed to vote for vdd_pll(rc:%d)\n",
+			dev_dbg(pil->dev, "Failed to vote for vdd_pll(rc:%d)\n",
 									ret);
 			goto err_vreg_pll;
 		}
@@ -193,7 +193,7 @@ void pil_q6v5_remove_proxy_votes(struct pil_desc *pil)
 
 	ret = of_property_read_u32(pil->dev->of_node, "vdd_cx-voltage", &uv);
 	if (ret) {
-		dev_err(pil->dev, "missing vdd_cx-voltage property(rc:%d)\n",
+		dev_dbg(pil->dev, "missing vdd_cx-voltage property(rc:%d)\n",
 									ret);
 		return;
 	}
@@ -225,9 +225,9 @@ void pil_q6v5_halt_axi_port(struct pil_desc *pil, void __iomem *halt_base)
 	ret = readl_poll_timeout(halt_base + AXI_HALTACK,
 		status, status != 0, 50, HALT_ACK_TIMEOUT_US);
 	if (ret)
-		dev_warn(pil->dev, "Port %pK halt timeout\n", halt_base);
+		dev_dbg(pil->dev, "Port %pK halt timeout\n", halt_base);
 	else if (!readl_relaxed(halt_base + AXI_IDLE))
-		dev_warn(pil->dev, "Port %pK halt failed\n", halt_base);
+		dev_dbg(pil->dev, "Port %pK halt failed\n", halt_base);
 
 	/* Clear halt request (port will remain halted until reset) */
 	writel_relaxed(0, halt_base + AXI_HALTREQ);
@@ -380,7 +380,7 @@ static int q6v55_branch_clk_enable(struct q6v5_data *drv)
 		udelay(1);
 	}
 
-	dev_err(drv->desc.dev, "Failed to enable xo branch clock.\n");
+	dev_dbg(drv->desc.dev, "Failed to enable xo branch clock.\n");
 	return -EINVAL;
 }
 
@@ -401,7 +401,7 @@ static int __pil_q6v65_reset(struct pil_desc *pil)
 	}
 
 	if (!count) {
-		dev_err(drv->desc.dev, "Sleep clock did not come on in time\n");
+		dev_dbg(drv->desc.dev, "Sleep clock did not come on in time\n");
 		return -ETIMEDOUT;
 	}
 
@@ -417,7 +417,7 @@ static int __pil_q6v65_reset(struct pil_desc *pil)
 			(val & BIT(0)) != 0, 10, BOOT_FSM_TIMEOUT);
 
 	if (ret) {
-		dev_err(drv->desc.dev, "Boot FSM failed to complete.\n");
+		dev_dbg(drv->desc.dev, "Boot FSM failed to complete.\n");
 		/* Reset the modem so that boot FSM is in reset state */
 		pil_mss_assert_resets(drv);
 		/* Wait 6 32kHz sleep cycles for reset */
@@ -473,7 +473,7 @@ static int __pil_q6v55_reset(struct pil_desc *pil)
 			udelay(1);
 		}
 		if (!i) {
-			pr_err("%s: BHS_EN_REST_ACK not set!\n", __func__);
+			pr_debug("%s: BHS_EN_REST_ACK not set!\n", __func__);
 			return -ETIMEDOUT;
 		}
 	}
@@ -486,7 +486,7 @@ static int __pil_q6v55_reset(struct pil_desc *pil)
 			udelay(1);
 		}
 		if (!i) {
-			pr_err("%s: BHS_EN_REST_ACK not set!\n", __func__);
+			pr_debug("%s: BHS_EN_REST_ACK not set!\n", __func__);
 			return -ETIMEDOUT;
 		}
 	}
@@ -681,7 +681,7 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 		drv->axi_halt_base = devm_ioremap(&pdev->dev, res->start,
 							resource_size(res));
 		if (!drv->axi_halt_base) {
-			dev_err(&pdev->dev, "Failed to map axi_halt_base.\n");
+			dev_dbg(&pdev->dev, "Failed to map axi_halt_base.\n");
 			return ERR_PTR(-ENOMEM);
 		}
 	}
@@ -693,7 +693,7 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 			drv->axi_halt_q6 = devm_ioremap(&pdev->dev,
 					res->start, resource_size(res));
 			if (!drv->axi_halt_q6) {
-				dev_err(&pdev->dev, "Failed to map axi_halt_q6.\n");
+				dev_dbg(&pdev->dev, "Failed to map axi_halt_q6.\n");
 				return ERR_PTR(-ENOMEM);
 			}
 		}
@@ -704,7 +704,7 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 			drv->axi_halt_mss = devm_ioremap(&pdev->dev,
 					res->start, resource_size(res));
 			if (!drv->axi_halt_mss) {
-				dev_err(&pdev->dev, "Failed to map axi_halt_mss.\n");
+				dev_dbg(&pdev->dev, "Failed to map axi_halt_mss.\n");
 				return ERR_PTR(-ENOMEM);
 			}
 		}
@@ -715,7 +715,7 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 			drv->axi_halt_nc = devm_ioremap(&pdev->dev,
 					res->start, resource_size(res));
 			if (!drv->axi_halt_nc) {
-				dev_err(&pdev->dev, "Failed to map axi_halt_nc.\n");
+				dev_dbg(&pdev->dev, "Failed to map axi_halt_nc.\n");
 				return ERR_PTR(-ENOMEM);
 			}
 		}
@@ -723,7 +723,7 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 
 	if (!(drv->axi_halt_base || (drv->axi_halt_q6 && drv->axi_halt_mss
 					&& drv->axi_halt_nc))) {
-		dev_err(&pdev->dev, "halt bases for Q6 are not defined.\n");
+		dev_dbg(&pdev->dev, "halt bases for Q6 are not defined.\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -816,7 +816,7 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 		return ERR_CAST(drv->vreg_cx);
 	prop = of_find_property(pdev->dev.of_node, "vdd_cx-voltage", NULL);
 	if (!prop) {
-		dev_err(&pdev->dev, "Missing vdd_cx-voltage property\n");
+		dev_dbg(&pdev->dev, "Missing vdd_cx-voltage property\n");
 		return ERR_CAST(prop);
 	}
 
@@ -828,14 +828,14 @@ struct q6v5_data *pil_q6v5_init(struct platform_device *pdev)
 			ret = regulator_set_voltage(drv->vreg_pll, vdd_pll,
 							vdd_pll);
 			if (ret) {
-				dev_err(&pdev->dev, "Failed to set vdd_pll voltage(rc:%d)\n",
+				dev_dbg(&pdev->dev, "Failed to set vdd_pll voltage(rc:%d)\n",
 									ret);
 				return ERR_PTR(ret);
 			}
 
 			ret = regulator_set_load(drv->vreg_pll, 10000);
 			if (ret < 0) {
-				dev_err(&pdev->dev, "Failed to set vdd_pll mode(rc:%d)\n",
+				dev_dbg(&pdev->dev, "Failed to set vdd_pll mode(rc:%d)\n",
 									ret);
 				return ERR_PTR(ret);
 			}

@@ -193,7 +193,7 @@ static int snd_usbmidi_submit_urb(struct urb *urb, gfp_t flags)
 {
 	int err = usb_submit_urb(urb, flags);
 	if (err < 0 && err != -ENODEV)
-		dev_err(&urb->dev->dev, "usb_submit_urb: %d\n", err);
+		dev_dbg(&urb->dev->dev, "usb_submit_urb: %d\n", err);
 	return err;
 }
 
@@ -215,7 +215,7 @@ static int snd_usbmidi_urb_error(const struct urb *urb)
 	case -EILSEQ:
 		return -EIO;
 	default:
-		dev_err(&urb->dev->dev, "urb status %d\n", urb->status);
+		dev_dbg(&urb->dev->dev, "urb status %d\n", urb->status);
 		return 0; /* continue */
 	}
 }
@@ -242,8 +242,8 @@ static void dump_urb(const char *type, const u8 *data, int length)
 {
 	snd_printk(KERN_DEBUG "%s packet: [", type);
 	for (; length > 0; ++data, --length)
-		printk(KERN_CONT " %02x", *data);
-	printk(KERN_CONT " ]\n");
+		no_printk(KERN_CONT " %02x", *data);
+	no_printk(KERN_CONT " ]\n");
 }
 #else
 #define dump_urb(type, data, length) /* nothing */
@@ -1389,7 +1389,7 @@ static int snd_usbmidi_in_endpoint_create(struct snd_usb_midi *umidi,
 		ep->urbs[i]->transfer_flags = URB_NO_TRANSFER_DMA_MAP;
 		err = usb_urb_ep_type_check(ep->urbs[i]);
 		if (err < 0) {
-			dev_err(&umidi->dev->dev, "invalid MIDI in EP %x\n",
+			dev_dbg(&umidi->dev->dev, "invalid MIDI in EP %x\n",
 				ep_info->in_ep);
 			goto error;
 		}
@@ -1501,7 +1501,7 @@ static int snd_usbmidi_out_endpoint_create(struct snd_usb_midi *umidi,
 					  &ep->urbs[i]);
 		err = usb_urb_ep_type_check(ep->urbs[i].urb);
 		if (err < 0) {
-			dev_err(&umidi->dev->dev, "invalid MIDI out EP %x\n",
+			dev_dbg(&umidi->dev->dev, "invalid MIDI out EP %x\n",
 				ep_info->out_ep);
 			goto error;
 		}
@@ -1834,7 +1834,7 @@ static void snd_usbmidi_init_substream(struct snd_usb_midi *umidi,
 	struct snd_rawmidi_substream *substream =
 		snd_usbmidi_find_substream(umidi, stream, number);
 	if (!substream) {
-		dev_err(&umidi->dev->dev, "substream %d:%d not found\n", stream,
+		dev_dbg(&umidi->dev->dev, "substream %d:%d not found\n", stream,
 			number);
 		return;
 	}
@@ -1947,7 +1947,7 @@ static int snd_usbmidi_get_ms_info(struct snd_usb_midi *umidi,
 		dev_dbg(&umidi->dev->dev, "MIDIStreaming version %02x.%02x\n",
 			    ms_header->bcdMSC[1], ms_header->bcdMSC[0]);
 	else
-		dev_warn(&umidi->dev->dev,
+		dev_dbg(&umidi->dev->dev,
 			 "MIDIStreaming interface descriptor not found\n");
 
 	epidx = 0;
@@ -1968,7 +1968,7 @@ static int snd_usbmidi_get_ms_info(struct snd_usb_midi *umidi,
 		if (usb_endpoint_dir_out(ep)) {
 			if (endpoints[epidx].out_ep) {
 				if (++epidx >= MIDI_MAX_ENDPOINTS) {
-					dev_warn(&umidi->dev->dev,
+					dev_dbg(&umidi->dev->dev,
 						 "too many endpoints\n");
 					break;
 				}
@@ -1990,7 +1990,7 @@ static int snd_usbmidi_get_ms_info(struct snd_usb_midi *umidi,
 		} else {
 			if (endpoints[epidx].in_ep) {
 				if (++epidx >= MIDI_MAX_ENDPOINTS) {
-					dev_warn(&umidi->dev->dev,
+					dev_dbg(&umidi->dev->dev,
 						 "too many endpoints\n");
 					break;
 				}
@@ -2555,7 +2555,7 @@ int __snd_usbmidi_create(struct snd_card *card,
 		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
 		break;
 	default:
-		dev_err(&umidi->dev->dev, "invalid quirk type %d\n",
+		dev_dbg(&umidi->dev->dev, "invalid quirk type %d\n",
 			quirk->type);
 		err = -ENXIO;
 		break;

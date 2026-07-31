@@ -205,19 +205,19 @@ static struct hdmi_tx_ctrl *hdmi_tx_get_data(struct platform_device *pdev)
 	void *audio_data;
 
 	if (!pdev) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return ERR_PTR(-ENODEV);
 	}
 
 	ext_data = platform_get_drvdata(pdev);
 	if (!ext_data) {
-		pr_err("invalid ext disp data\n");
+		pr_debug("invalid ext disp data\n");
 		return ERR_PTR(-EINVAL);
 	}
 
 	audio_data = ext_data->intf_data;
 	if (!audio_data) {
-		pr_err("invalid intf data\n");
+		pr_debug("invalid intf data\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -444,7 +444,7 @@ static inline void hdmi_tx_audio_notify(
 	struct msm_ext_disp_init_data *ext;
 
 	if (!hdmi_ctrl) {
-		pr_err("invalid hdmi_ctrl data\n");
+		pr_debug("invalid hdmi_ctrl data\n");
 		return;
 	}
 
@@ -452,7 +452,7 @@ static inline void hdmi_tx_audio_notify(
 
 	if (!ext || !ext->intf_ops.audio_config ||
 			!ext->intf_ops.audio_notify) {
-		pr_err("invalid ext audio ops\n");
+		pr_debug("invalid ext audio ops\n");
 		return;
 	}
 
@@ -657,7 +657,7 @@ static ssize_t edid_store(struct device *dev,
 
 		ret = kstrtoint(t, 16, &d);
 		if (ret) {
-			pr_err("kstrtoint error %d\n", ret);
+			pr_debug("kstrtoint error %d\n", ret);
 			goto end;
 		}
 
@@ -722,7 +722,7 @@ static int hdmi_tx_update_pixel_clk(struct hdmi_tx_ctrl *hdmi_ctrl)
 	int rc = 0;
 
 	if (!hdmi_ctrl) {
-		pr_err("invalid hdmi ctrl data\n");
+		pr_debug("invalid hdmi ctrl data\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -731,7 +731,7 @@ static int hdmi_tx_update_pixel_clk(struct hdmi_tx_ctrl *hdmi_ctrl)
 
 	power_data = &hdmi_ctrl->pdata.power_data[HDMI_TX_CORE_PM];
 	if (!power_data) {
-		pr_err("Error: invalid power data\n");
+		pr_debug("Error: invalid power data\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -748,7 +748,7 @@ static int hdmi_tx_update_pixel_clk(struct hdmi_tx_ctrl *hdmi_ctrl)
 
 	rc = msm_dss_clk_set_rate(power_data->clk_config, power_data->num_clk);
 	if (rc < 0)
-		pr_err("failed to set clock rate %lu\n",
+		pr_debug("failed to set clock rate %lu\n",
 			power_data->clk_config->rate);
 end:
 	return rc;
@@ -1558,10 +1558,10 @@ static void hdmi_tx_hdcp_cb_work(struct work_struct *work)
 				rc = hdmi_ctrl->hdcp_ops->reauthenticate(
 				hdmi_ctrl->hdcp_data);
 			if (rc)
-				pr_err("%s: HDCP reauth failed. rc=%d\n",
+				pr_debug("%s: HDCP reauth failed. rc=%d\n",
 					__func__, rc);
 			} else
-				pr_err("%s: NULL HDCP Ops and Data\n",
+				pr_debug("%s: NULL HDCP Ops and Data\n",
 					__func__);
 		} else {
 			pr_debug("%s: Not reauthenticating. Cable not conn\n",
@@ -1953,7 +1953,7 @@ static int hdmi_tx_get_intf_id(struct platform_device *pdev)
 	struct hdmi_tx_ctrl *hdmi_ctrl = hdmi_tx_get_data(pdev);
 
 	if (!hdmi_ctrl) {
-		pr_err("%s: invalid hdmi ctrl data\n", __func__);
+		pr_debug("%s: invalid hdmi ctrl data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1965,7 +1965,7 @@ static void hdmi_tx_audio_teardown_done(struct platform_device *pdev)
 	struct hdmi_tx_ctrl *hdmi_ctrl = hdmi_tx_get_data(pdev);
 
 	if (!hdmi_ctrl) {
-		pr_err("%s: invalid hdmi ctrl data\n", __func__);
+		pr_debug("%s: invalid hdmi ctrl data\n", __func__);
 		return;
 	}
 
@@ -1982,7 +1982,7 @@ static int hdmi_tx_audio_ack_done(struct platform_device *pdev, u32 ack)
 	struct hdmi_tx_ctrl *hdmi_ctrl = hdmi_tx_get_data(pdev);
 
 	if (!hdmi_ctrl) {
-		pr_err("%s: invalid hdmi ctrl data\n", __func__);
+		pr_debug("%s: invalid hdmi ctrl data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1997,7 +1997,7 @@ static int hdmi_tx_audio_codec_ready(struct platform_device *pdev)
 	struct hdmi_tx_ctrl *hdmi_ctrl = hdmi_tx_get_data(pdev);
 
 	if (!hdmi_ctrl) {
-		pr_err("%s: invalid hdmi ctrl data\n", __func__);
+		pr_debug("%s: invalid hdmi ctrl data\n", __func__);
 		return -ENODEV;
 	}
 
@@ -2013,7 +2013,7 @@ static int hdmi_tx_init_ext_disp(struct hdmi_tx_ctrl *hdmi_ctrl)
 	const char *phandle = "qcom,msm_ext_disp";
 
 	if (!hdmi_ctrl) {
-		pr_err("%s: invalid hdmi ctrl data\n", __func__);
+		pr_debug("%s: invalid hdmi ctrl data\n", __func__);
 		ret = -ENODEV;
 		goto end;
 	}
@@ -2036,28 +2036,28 @@ static int hdmi_tx_init_ext_disp(struct hdmi_tx_ctrl *hdmi_ctrl)
 	ops->ready              = hdmi_tx_audio_codec_ready;
 
 	if (!hdmi_ctrl->pdev->dev.of_node) {
-		pr_err("%s cannot find hdmi_ctrl dev.of_node\n", __func__);
+		pr_debug("%s cannot find hdmi_ctrl dev.of_node\n", __func__);
 		ret = -ENODEV;
 		goto end;
 	}
 
 	pd_np = of_parse_phandle(hdmi_ctrl->pdev->dev.of_node, phandle, 0);
 	if (!pd_np) {
-		pr_err("%s cannot find %s dev\n", __func__, phandle);
+		pr_debug("%s cannot find %s dev\n", __func__, phandle);
 		ret = -ENODEV;
 		goto end;
 	}
 
 	hdmi_ctrl->ext_pdev = of_find_device_by_node(pd_np);
 	if (!hdmi_ctrl->ext_pdev) {
-		pr_err("%s cannot find %s pdev\n", __func__, phandle);
+		pr_debug("%s cannot find %s pdev\n", __func__, phandle);
 		ret = -ENODEV;
 		goto end;
 	}
 
 	ret = msm_ext_disp_register_intf(hdmi_ctrl->ext_pdev, ext);
 	if (ret)
-		pr_err("%s: failed to register disp\n", __func__);
+		pr_debug("%s: failed to register disp\n", __func__);
 
 end:
 	return ret;
@@ -2597,11 +2597,11 @@ static int hdmi_tx_pinctrl_set_state(struct hdmi_tx_ctrl *hdmi_ctrl,
 		rc = pinctrl_select_state(hdmi_ctrl->pin_res.pinctrl,
 				pin_state);
 		if (rc)
-			pr_err("%s: cannot set pins\n", __func__);
+			pr_debug("%s: cannot set pins\n", __func__);
 		else
 			hdmi_ctrl->pdata.pin_states = cur_pin_states;
 	} else {
-		pr_err("%s: pinstate not found\n", __func__);
+		pr_debug("%s: pinstate not found\n", __func__);
 	}
 
 	return rc;
@@ -2619,7 +2619,7 @@ static int hdmi_tx_pinctrl_init(struct platform_device *pdev)
 
 	hdmi_ctrl->pin_res.pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR_OR_NULL(hdmi_ctrl->pin_res.pinctrl)) {
-		pr_err("%s: failed to get pinctrl\n", __func__);
+		pr_debug("%s: failed to get pinctrl\n", __func__);
 		return PTR_ERR(hdmi_ctrl->pin_res.pinctrl);
 	}
 
@@ -2693,7 +2693,7 @@ static int hdmi_tx_config_power(struct hdmi_tx_ctrl *hdmi_ctrl,
 		hdmi_ctrl->pdata.reg_bus_clt[module] =
 			mdss_reg_bus_vote_client_create(name);
 		if (IS_ERR(hdmi_ctrl->pdata.reg_bus_clt[module])) {
-			pr_err("reg bus client create failed\n");
+			pr_debug("reg bus client create failed\n");
 			msm_dss_config_vreg(&hdmi_ctrl->pdev->dev,
 			power_data->vreg_config, power_data->num_vreg, 0);
 			rc = PTR_ERR(hdmi_ctrl->pdata.reg_bus_clt[module]);
@@ -2854,7 +2854,7 @@ static int hdmi_tx_core_on(struct hdmi_tx_ctrl *hdmi_ctrl)
 		rc = clk_set_parent(hdmi_ctrl->pdata.hdmi_pclk_rcg,
 				hdmi_ctrl->pdata.ext_hdmi_pixel_clk);
 		if (rc) {
-			pr_err("%s: set_parent for hdmi pclk failed. rc=%d\n",
+			pr_debug("%s: set_parent for hdmi pclk failed. rc=%d\n",
 					__func__, rc);
 			return -EINVAL;
 		}
@@ -3958,7 +3958,7 @@ static int hdmi_tx_event_handler(struct mdss_panel_data *panel_data,
 	if (handler) {
 		rc = handler(hdmi_ctrl);
 		if (rc) {
-			pr_err("pre handler failed: event = %s, rc = %d\n",
+			pr_debug("pre handler failed: event = %s, rc = %d\n",
 				mdss_panel_intf_event_to_string(event), rc);
 		return rc;
 	}
@@ -3970,7 +3970,7 @@ static int hdmi_tx_event_handler(struct mdss_panel_data *panel_data,
 	if (handler) {
 		rc = handler(hdmi_ctrl);
 		if (rc) {
-			pr_err("handler failed: event = %s, rc = %d\n",
+			pr_debug("handler failed: event = %s, rc = %d\n",
 				mdss_panel_intf_event_to_string(event), rc);
 			mutex_unlock(&hdmi_ctrl->tx_lock);
 			return rc;
@@ -3984,7 +3984,7 @@ static int hdmi_tx_event_handler(struct mdss_panel_data *panel_data,
 	if (handler) {
 		rc = handler(hdmi_ctrl);
 		if (rc)
-			pr_err("post handler failed: event = %s, rc = %d\n",
+			pr_debug("post handler failed: event = %s, rc = %d\n",
 				mdss_panel_intf_event_to_string(event), rc);
 	}
 
@@ -4142,7 +4142,7 @@ static int hdmi_tx_init_power_data(struct device *dev,
 	num_clk = of_property_count_strings(dev->of_node,
 			"clock-names");
 	if (num_clk <= 0) {
-		pr_err("%s: no clocks are defined\n", __func__);
+		pr_debug("%s: no clocks are defined\n", __func__);
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -4162,7 +4162,7 @@ static int hdmi_tx_init_power_data(struct device *dev,
 
 	/* Initialize the HPD power module */
 	if (hpd_clk_count <= 0) {
-		pr_err("%s: no hpd clocks are defined\n", __func__);
+		pr_debug("%s: no hpd clocks are defined\n", __func__);
 		rc = -EINVAL;
 		goto exit;
 		}
@@ -4177,7 +4177,7 @@ static int hdmi_tx_init_power_data(struct device *dev,
 
 	/* Initialize the CORE power module */
 	if (core_clk_count <= 0) {
-		pr_err("%s: no core clocks are defined\n", __func__);
+		pr_debug("%s: no core clocks are defined\n", __func__);
 		rc = -EINVAL;
 		goto core_clock_error;
 	}
@@ -4211,20 +4211,20 @@ static int hdmi_tx_get_dt_clk_data(struct device *dev,
 	struct dss_module_power *core_power_data = NULL;
 
 	if (!dev) {
-		pr_err("%s: invalid device\n", __func__);
+		pr_debug("%s: invalid device\n", __func__);
 		rc = -EINVAL;
 		goto exit;
 	}
 
 	if (!pdata) {
-		pr_err("%s: invalid platform data\n", __func__);
+		pr_debug("%s: invalid platform data\n", __func__);
 		rc = -EINVAL;
 		goto exit;
 	}
 
 	rc =  hdmi_tx_init_power_data(dev, pdata);
 	if (rc) {
-		pr_err("%s: failed to initialize power data\n", __func__);
+		pr_debug("%s: failed to initialize power data\n", __func__);
 		rc = -EINVAL;
 		goto exit;
 	}
@@ -4666,7 +4666,7 @@ static int hdmi_tx_get_dt_data(struct platform_device *pdev,
 
 	data = of_get_property(pdev->dev.of_node, "qcom,display-id", &len);
 	if (!data || len <= 0)
-		pr_err("%s:%d Unable to read qcom,display-id, data=%pK,len=%d\n",
+		pr_debug("%s:%d Unable to read qcom,display-id, data=%pK,len=%d\n",
 			__func__, __LINE__, data, len);
 	else
 		snprintf(hdmi_ctrl->panel_data.panel_info.display_id,
@@ -4735,7 +4735,7 @@ static int hdmi_tx_probe(struct platform_device *pdev)
 
 	hdmi_ctrl->mdss_util = mdss_get_util_intf();
 	if (hdmi_ctrl->mdss_util == NULL) {
-		pr_err("Failed to get mdss utility functions\n");
+		pr_debug("Failed to get mdss utility functions\n");
 		rc = -ENODEV;
 		goto failed_dt_data;
 	}
@@ -4764,7 +4764,7 @@ static int hdmi_tx_probe(struct platform_device *pdev)
 
 	hdmi_tx_hw.irq_info = mdss_intr_line();
 	if (hdmi_tx_hw.irq_info == NULL) {
-		pr_err("Failed to get mdss irq information\n");
+		pr_debug("Failed to get mdss irq information\n");
 		return -ENODEV;
 	}
 

@@ -223,7 +223,7 @@ static int pmic_gpio_read(struct pmic_gpio_state *state,
 
 	ret = regmap_read(state->map, pad->base + addr, &val);
 	if (ret < 0)
-		dev_err(state->dev, "read 0x%x failed\n", addr);
+		dev_dbg(state->dev, "read 0x%x failed\n", addr);
 	else
 		ret = val;
 
@@ -238,7 +238,7 @@ static int pmic_gpio_write(struct pmic_gpio_state *state,
 
 	ret = regmap_write(state->map, pad->base + addr, val);
 	if (ret < 0)
-		dev_err(state->dev, "write 0x%x failed\n", addr);
+		dev_dbg(state->dev, "write 0x%x failed\n", addr);
 
 	return ret;
 }
@@ -303,7 +303,7 @@ static int pmic_gpio_set_mux(struct pinctrl_dev *pctldev, unsigned function,
 	int ret;
 
 	if (function > PMIC_GPIO_FUNC_INDEX_DTEST4) {
-		pr_err("function: %d is not defined\n", function);
+		pr_debug("function: %d is not defined\n", function);
 		return -EINVAL;
 	}
 
@@ -315,7 +315,7 @@ static int pmic_gpio_set_mux(struct pinctrl_dev *pctldev, unsigned function,
 	if (!pad->lv_mv_type) {
 		if (function == PMIC_GPIO_FUNC_INDEX_FUNC3 ||
 				function == PMIC_GPIO_FUNC_INDEX_FUNC4) {
-			pr_err("LV/MV subtype doesn't have func3/func4\n");
+			pr_debug("LV/MV subtype doesn't have func3/func4\n");
 			return -EINVAL;
 		}
 		if (function >= PMIC_GPIO_FUNC_INDEX_DTEST1)
@@ -772,7 +772,7 @@ static int pmic_gpio_of_xlate(struct gpio_chip *chip,
 		}
 	}
 
-	dev_err(state->dev, "Couldn't find pin for gpio %d\n",
+	dev_dbg(state->dev, "Couldn't find pin for gpio %d\n",
 				gpio_desc->args[0]);
 	return -ENODEV;
 }
@@ -820,7 +820,7 @@ static int pmic_gpio_populate(struct pmic_gpio_state *state,
 		return type;
 
 	if (type != PMIC_GPIO_TYPE) {
-		dev_err(state->dev, "incorrect block type 0x%x at 0x%x\n",
+		dev_dbg(state->dev, "incorrect block type 0x%x at 0x%x\n",
 			type, pad->base);
 		return -ENODEV;
 	}
@@ -851,7 +851,7 @@ static int pmic_gpio_populate(struct pmic_gpio_state *state,
 		pad->lv_mv_type = true;
 		break;
 	default:
-		dev_err(state->dev, "unknown GPIO type 0x%x\n", subtype);
+		dev_dbg(state->dev, "unknown GPIO type 0x%x\n", subtype);
 		return -ENODEV;
 	}
 
@@ -901,7 +901,7 @@ static int pmic_gpio_populate(struct pmic_gpio_state *state,
 		pad->analog_pass = true;
 		break;
 	default:
-		dev_err(state->dev, "unknown GPIO direction\n");
+		dev_dbg(state->dev, "unknown GPIO direction\n");
 		return -ENODEV;
 	}
 
@@ -968,7 +968,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32_array(dev->of_node, "reg", reg, 2);
 	if (ret < 0) {
-		dev_err(dev, "reg property reading failed\n");
+		dev_dbg(dev, "reg property reading failed\n");
 		return ret;
 	}
 	start = reg[0];
@@ -976,12 +976,12 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 
 	ngpios = size / PMIC_GPIO_ADDRESS_RANGE;
 	if (ngpios == 0) {
-		dev_err(dev, "no gpios assigned\n");
+		dev_dbg(dev, "no gpios assigned\n");
 		return -ENODEV;
 	}
 
 	if (ngpios > ARRAY_SIZE(pmic_gpio_groups)) {
-		dev_err(dev, "reg property defines %d gpios, but only %d are allowed\n",
+		dev_dbg(dev, "reg property defines %d gpios, but only %d are allowed\n",
 				ngpios, (int)ARRAY_SIZE(pmic_gpio_groups));
 		return -EINVAL;
 	}
@@ -990,7 +990,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 					&disallowed_count)) {
 		disallowed_count /= sizeof(u32);
 		if (disallowed_count == 0) {
-			dev_err(dev, "No data in gpios-disallowed\n");
+			dev_dbg(dev, "No data in gpios-disallowed\n");
 			return -EINVAL;
 		}
 
@@ -1002,7 +1002,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 				"qcom,gpios-disallowed",
 				disallowed, disallowed_count);
 		if (ret < 0) {
-			dev_err(dev, "qcom,gpios-disallowed property reading failed, ret=%d\n",
+			dev_dbg(dev, "qcom,gpios-disallowed property reading failed, ret=%d\n",
 								ret);
 			goto err_free;
 		}
@@ -1010,7 +1010,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 		for (i = 0; i < disallowed_count; i++) {
 			if (disallowed[i] >= ngpios + PMIC_GPIO_PHYSICAL_OFFSET
 				|| disallowed[i] < PMIC_GPIO_PHYSICAL_OFFSET) {
-				dev_err(dev, "invalid gpio = %d specified in qcom,gpios-disallowed, supported values: %d to %d\n",
+				dev_dbg(dev, "invalid gpio = %d specified in qcom,gpios-disallowed, supported values: %d to %d\n",
 					disallowed[i],
 					PMIC_GPIO_PHYSICAL_OFFSET,
 					ngpios - 1 + PMIC_GPIO_PHYSICAL_OFFSET);
@@ -1019,7 +1019,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 			}
 			for (j = 0; j < i; j++) {
 				if (disallowed[i] == disallowed[j]) {
-					dev_err(dev, "duplicate gpio = %d listed in qcom,gpios-disallowed\n",
+					dev_dbg(dev, "duplicate gpio = %d listed in qcom,gpios-disallowed\n",
 							disallowed[i]);
 					ret = -EINVAL;
 					goto err_free;
@@ -1033,12 +1033,12 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 
 	npins = ngpios - disallowed_count;
 	if (npins <= 0) {
-		dev_err(dev, "No pins assigned\n");
+		dev_dbg(dev, "No pins assigned\n");
 		ret = -ENODEV;
 		goto err_free;
 	}
 	if (platform_irq_count(pdev) != npins) {
-		dev_err(dev, "%d IRQs defined but %d expected\n",
+		dev_dbg(dev, "%d IRQs defined but %d expected\n",
 				platform_irq_count(pdev), npins);
 		ret = -EINVAL;
 		goto err_free;
@@ -1108,7 +1108,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 		pad->gpio_idx = i + PMIC_GPIO_PHYSICAL_OFFSET;
 		pad->irq = platform_get_irq(pdev, pin_idx);
 		if (pad->irq < 0) {
-			dev_err(state->dev,
+			dev_dbg(state->dev,
 				"failed to get irq for gpio %d (pin %d), ret=%d\n",
 					pad->gpio_idx, pin_idx, pad->irq);
 			ret = pad->irq;
@@ -1121,7 +1121,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 
 		ret = pmic_gpio_populate(state, pad);
 		if (ret < 0) {
-			dev_err(state->dev,
+			dev_dbg(state->dev,
 				"failed to populate gpio %d, ret=%d\n",
 							i, ret);
 			goto err_free;
@@ -1141,14 +1141,14 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 	state->ctrl = devm_pinctrl_register(dev, pctrldesc, state);
 	if (IS_ERR(state->ctrl)) {
 		ret = PTR_ERR(state->ctrl);
-		dev_err(state->dev, "failed to register pinctrl device, ret=%d\n",
+		dev_dbg(state->dev, "failed to register pinctrl device, ret=%d\n",
 							ret);
 		goto err_free;
 	}
 
 	ret = gpiochip_add_data(&state->chip, state);
 	if (ret) {
-		dev_err(state->dev, "can't add gpio chip, ret=%d\n", ret);
+		dev_dbg(state->dev, "can't add gpio chip, ret=%d\n", ret);
 		goto err_free;
 	}
 
@@ -1166,7 +1166,7 @@ static int pmic_gpio_probe(struct platform_device *pdev)
 		ret = gpiochip_add_pin_range(&state->chip, dev_name(dev), 0, 0,
 					     npins);
 		if (ret) {
-			dev_err(dev, "failed to add pin range\n");
+			dev_dbg(dev, "failed to add pin range\n");
 			gpiochip_remove(&state->chip);
 			goto err_free;
 		}

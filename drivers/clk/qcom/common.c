@@ -216,7 +216,7 @@ static struct clk_hw *qcom_cc_clk_hw_get(struct of_phandle_args *clkspec,
 	unsigned int idx = clkspec->args[0];
 
 	if (idx >= cc->num_rclks + cc->num_hwclks) {
-		pr_err("invalid index %u\n", idx);
+		pr_debug("invalid index %u\n", idx);
 		return ERR_PTR(-EINVAL);
 	}
 

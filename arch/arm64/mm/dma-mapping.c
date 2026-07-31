@@ -518,7 +518,7 @@ static int __init atomic_pool_init(void)
 				  gen_pool_first_fit_order_align,
 				  NULL);
 
-		pr_info("DMA: preallocated %zu KiB pool for atomic allocations\n",
+		pr_debug("DMA: preallocated %zu KiB pool for atomic allocations\n",
 			atomic_pool_size / 1024);
 		return 0;
 	}
@@ -533,7 +533,7 @@ free_page:
 	if (!dma_release_from_contiguous(NULL, page, nr_pages))
 		__free_pages(page, pool_size_order);
 out:
-	pr_err("DMA: failed to allocate %zu KiB pool for atomic coherent allocation\n",
+	pr_debug("DMA: failed to allocate %zu KiB pool for atomic coherent allocation\n",
 		atomic_pool_size / 1024);
 	return -ENOMEM;
 }
@@ -1035,14 +1035,14 @@ iommu_init_mapping(struct device *dev, struct dma_iommu_mapping *mapping)
 	if (own_cookie) {
 		ret = iommu_get_dma_cookie(domain);
 		if (ret) {
-			dev_err(dev, "iommu_get_dma_cookie failed: %d\n", ret);
+			dev_dbg(dev, "iommu_get_dma_cookie failed: %d\n", ret);
 			return ret;
 		}
 	}
 
 	ret = iommu_dma_init_domain(domain, dma_base, size, dev);
 	if (ret) {
-		dev_err(dev, "iommu_dma_init_domain failed: %d\n", ret);
+		dev_dbg(dev, "iommu_dma_init_domain failed: %d\n", ret);
 		if (own_cookie)
 			iommu_put_dma_cookie(domain);
 		return ret;
@@ -1101,12 +1101,12 @@ static void arm_iommu_get_dma_window(struct device *dev, u64 *dma_addr,
 	naddr = of_n_addr_cells(np);
 	nsize = of_n_size_cells(np);
 	if (len < naddr + nsize) {
-		dev_err(dev, "Invalid length for qcom,iommu-dma-addr-pool, expected %d cells\n",
+		dev_dbg(dev, "Invalid length for qcom,iommu-dma-addr-pool, expected %d cells\n",
 			naddr + nsize);
 		return;
 	}
 	if (naddr == 0 || nsize == 0) {
-		dev_err(dev, "Invalid #address-cells %d or #size-cells %d\n",
+		dev_dbg(dev, "Invalid #address-cells %d or #size-cells %d\n",
 			naddr, nsize);
 		return;
 	}
@@ -1134,7 +1134,7 @@ static void arm_iommu_setup_dma_ops(struct device *dev, u64 dma_base, u64 size)
 	/* Allow iommu-debug to call arch_setup_dma_ops to reconfigure itself */
 	if (domain->type != IOMMU_DOMAIN_DMA &&
 	    !of_device_is_compatible(dev->of_node, "iommu-debug-test")) {
-		dev_err(dev, "Invalid iommu domain type!\n");
+		dev_dbg(dev, "Invalid iommu domain type!\n");
 		return;
 	}
 
@@ -1143,7 +1143,7 @@ static void arm_iommu_setup_dma_ops(struct device *dev, u64 dma_base, u64 size)
 	mapping.domain = domain;
 
 	if (arm_iommu_get_dma_cookie(dev, &mapping)) {
-		dev_err(dev, "Failed to get dma cookie\n");
+		dev_dbg(dev, "Failed to get dma cookie\n");
 		return;
 	}
 

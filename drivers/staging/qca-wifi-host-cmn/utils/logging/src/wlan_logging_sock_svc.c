@@ -326,19 +326,19 @@ log_to_console(QDF_TRACE_LEVEL level, const char *timestamp, const char *msg)
 {
 	switch (level) {
 	case QDF_TRACE_LEVEL_FATAL:
-		pr_alert("%s %s\n", timestamp, msg);
+		pr_debug("%s %s\n", timestamp, msg);
 		assert_on_excessive_logging();
 		break;
 	case QDF_TRACE_LEVEL_ERROR:
-		pr_err("%s %s\n", timestamp, msg);
+		pr_debug("%s %s\n", timestamp, msg);
 		assert_on_excessive_logging();
 		break;
 	case QDF_TRACE_LEVEL_WARN:
-		pr_warn("%s %s\n", timestamp, msg);
+		pr_debug("%s %s\n", timestamp, msg);
 		assert_on_excessive_logging();
 		break;
 	case QDF_TRACE_LEVEL_INFO:
-		pr_info("%s %s\n", timestamp, msg);
+		pr_debug("%s %s\n", timestamp, msg);
 		assert_on_excessive_logging();
 		break;
 	case QDF_TRACE_LEVEL_INFO_HIGH:
@@ -476,7 +476,7 @@ static int pkt_stats_fill_headers(struct sk_buff *skb)
 				cds_pkt_size);
 
 	if (unlikely(skb_headroom(skb) < cds_pkt_size)) {
-		pr_err("VPKT [%d]: Insufficient headroom, head[%pK], data[%pK], req[%zu]",
+		pr_debug("VPKT [%d]: Insufficient headroom, head[%pK], data[%pK], req[%zu]",
 			__LINE__, skb->head, skb->data, sizeof(msg_header));
 		return -EIO;
 	}
@@ -485,7 +485,7 @@ static int pkt_stats_fill_headers(struct sk_buff *skb)
 			&cds_pktlog, cds_pkt_size);
 
 	if (unlikely(skb_headroom(skb) < sizeof(int))) {
-		pr_err("VPKT [%d]: Insufficient headroom, head[%pK], data[%pK], req[%zu]",
+		pr_debug("VPKT [%d]: Insufficient headroom, head[%pK], data[%pK], req[%zu]",
 			__LINE__, skb->head, skb->data, sizeof(int));
 		return -EIO;
 	}
@@ -507,7 +507,7 @@ static int pkt_stats_fill_headers(struct sk_buff *skb)
 	msg_header.wmsg.length = cpu_to_be16(skb->len);
 
 	if (unlikely(skb_headroom(skb) < sizeof(msg_header))) {
-		pr_err("VPKT [%d]: Insufficient headroom, head[%pK], data[%pK], req[%zu]",
+		pr_debug("VPKT [%d]: Insufficient headroom, head[%pK], data[%pK], req[%zu]",
 			__LINE__, skb->head, skb->data, sizeof(msg_header));
 		return -EIO;
 	}
@@ -558,7 +558,7 @@ static int pktlog_send_per_pkt_stats_to_user(void)
 		skb_new = dev_alloc_skb(MAX_SKBMSG_LENGTH);
 		if (!skb_new) {
 			if (!rate_limit) {
-				pr_err("%s: dev_alloc_skb() failed for msg size[%d] drop count = %u\n",
+				pr_debug("%s: dev_alloc_skb() failed for msg size[%d] drop count = %u\n",
 					__func__, MAX_SKBMSG_LENGTH,
 					gwlan_logging.drop_count);
 			}
@@ -576,13 +576,13 @@ static int pktlog_send_per_pkt_stats_to_user(void)
 
 		ret = pkt_stats_fill_headers(pstats_msg->skb);
 		if (ret < 0) {
-			pr_err("%s failed to fill headers %d\n", __func__, ret);
+			pr_debug("%s failed to fill headers %d\n", __func__, ret);
 			free_old_skb = true;
 			goto err;
 		}
 		ret = nl_srv_bcast_diag(pstats_msg->skb);
 		if (ret < 0) {
-			pr_info("%s: Send Failed %d drop_count = %u\n",
+			pr_debug("%s: Send Failed %d drop_count = %u\n",
 				__func__, ret,
 				++gwlan_logging.pkt_stat_drop_cnt);
 		} else {
@@ -663,9 +663,9 @@ static int send_filled_buffers_to_user(void)
 			list_add_tail(&plog_msg->node,
 				      &gwlan_logging.free_list);
 			spin_unlock_irqrestore(&gwlan_logging.spin_lock, flags);
-			pr_err("%s: drop_count = %u\n", __func__,
+			pr_debug("%s: drop_count = %u\n", __func__,
 			       ++gwlan_logging.drop_count);
-			pr_err("%s: nlmsg_put() failed for msg size[%d]\n",
+			pr_debug("%s: nlmsg_put() failed for msg size[%d]\n",
 			       __func__, tot_msg_len);
 			dev_kfree_skb(skb);
 			skb = NULL;
@@ -685,7 +685,7 @@ static int send_filled_buffers_to_user(void)
 		ret = nl_srv_bcast_host_logs(skb);
 		/* print every 64th drop count */
 		if (ret < 0 && (!(gwlan_logging.drop_count % 0x40))) {
-			pr_err("%s: Send Failed %d drop_count = %u\n",
+			pr_debug("%s: Send Failed %d drop_count = %u\n",
 			       __func__, ret, ++gwlan_logging.drop_count);
 		}
 	}
@@ -929,7 +929,7 @@ int wlan_logging_sock_init_svc(void)
 	gwlan_logging.buffer_length = MAX_LOGMSG_LENGTH;
 
 	if (allocate_log_msg_buffer() != QDF_STATUS_SUCCESS) {
-		pr_err("%s: Could not allocate memory for log_msg\n",
+		pr_debug("%s: Could not allocate memory for log_msg\n",
 		       __func__);
 		return -ENOMEM;
 	}
@@ -951,7 +951,7 @@ int wlan_logging_sock_init_svc(void)
 	pkt_stats_size = sizeof(struct pkt_stats_msg);
 	gpkt_stats_buffers = vmalloc(MAX_PKTSTATS_BUFF * pkt_stats_size);
 	if (!gpkt_stats_buffers) {
-		pr_err("%s: Could not allocate memory for Pkt stats\n",
+		pr_debug("%s: Could not allocate memory for Pkt stats\n",
 			__func__);
 		goto err1;
 	}
@@ -968,7 +968,7 @@ int wlan_logging_sock_init_svc(void)
 	for (i = 0; i < MAX_PKTSTATS_BUFF; i++) {
 		gpkt_stats_buffers[i].skb = dev_alloc_skb(MAX_PKTSTATS_LENGTH);
 		if (!gpkt_stats_buffers[i].skb) {
-			pr_err("%s: Memory alloc failed for skb", __func__);
+			pr_debug("%s: Memory alloc failed for skb", __func__);
 			/* free previously allocated skb and return */
 			for (j = 0; j < i ; j++)
 				dev_kfree_skb(gpkt_stats_buffers[j].skb);
@@ -995,7 +995,7 @@ int wlan_logging_sock_init_svc(void)
 	gwlan_logging.thread = kthread_create(wlan_logging_thread, NULL,
 					      "wlan_logging_thread");
 	if (IS_ERR(gwlan_logging.thread)) {
-		pr_err("%s: Could not Create LogMsg Thread Controller",
+		pr_debug("%s: Could not Create LogMsg Thread Controller",
 		       __func__);
 		goto err3;
 	}
@@ -1136,7 +1136,7 @@ void wlan_flush_host_logs_for_fatal(void)
 	if (cds_is_log_report_in_progress()) {
 #endif
 		if (gwlan_logging.flush_timer_period == 0)
-			pr_info("%s:flush all host logs Setting HOST_LOG_POST_MASK\n",
+			pr_debug("%s:flush all host logs Setting HOST_LOG_POST_MASK\n",
 				__func__);
 		spin_lock_irqsave(&gwlan_logging.spin_lock, flags);
 		wlan_queue_logmsg_for_app();
@@ -1187,7 +1187,7 @@ static int wlan_get_pkt_stats_free_node(void)
 		if (
 			cds_is_multicast_logging() &&
 			(!(gwlan_logging.pkt_stat_drop_cnt % 0x40))) {
-			pr_err("%s: drop_count = %u\n",
+			pr_debug("%s: drop_count = %u\n",
 				__func__, gwlan_logging.pkt_stat_drop_cnt);
 		}
 		list_del_init(gwlan_logging.pkt_stat_filled_list.next);
@@ -1223,7 +1223,7 @@ void wlan_pkt_stats_to_logger_thread(void *pl_hdr, void *pkt_dump, void *data)
 	pktlog_hdr = (struct ath_pktlog_hdr *)pl_hdr;
 
 	if (!pktlog_hdr) {
-		pr_err("%s : Invalid pkt_stats_header\n", __func__);
+		pr_debug("%s : Invalid pkt_stats_header\n", __func__);
 		return;
 	}
 
@@ -1333,7 +1333,7 @@ static void send_packetdump(ol_txrx_soc_handle soc,
 	struct packet_dump pd_hdr = {0};
 
 	if (!netbuf) {
-		pr_err("%s: Invalid netbuf.\n", __func__);
+		pr_debug("%s: Invalid netbuf.\n", __func__);
 		return;
 	}
 

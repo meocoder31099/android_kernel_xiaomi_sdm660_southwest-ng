@@ -114,7 +114,7 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
 
 	if (devfreq->profile->freq_table
 		&& (devfreq_update_status(devfreq, freq)))
-		dev_err(&devfreq->dev,
+		dev_dbg(&devfreq->dev,
 			"Couldn't update frequency transition information.\n");
 
 	devfreq->previous_freq = freq;
@@ -200,7 +200,7 @@ static void __exit devfreq_passive_exit(void)
 
 	ret = devfreq_remove_governor(&devfreq_passive);
 	if (ret)
-		pr_err("%s: failed remove governor %d\n", __func__, ret);
+		pr_debug("%s: failed remove governor %d\n", __func__, ret);
 }
 module_exit(devfreq_passive_exit);
 

@@ -1819,7 +1819,7 @@ int wcd934x_regmap_register_patch(struct regmap *regmap, int revision)
 	int rc = 0;
 
 	if (!regmap) {
-		pr_err("%s: regmap struct is NULL\n", __func__);
+		pr_debug("%s: regmap struct is NULL\n", __func__);
 		return -EINVAL;
 	}
 

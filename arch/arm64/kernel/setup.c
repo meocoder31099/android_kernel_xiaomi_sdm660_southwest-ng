@@ -114,7 +114,7 @@ void __init smp_setup_processor_id(void)
 	 * access percpu variable inside lock_release
 	 */
 	set_my_cpu_offset(0);
-	pr_info("Booting Linux on physical CPU 0x%010lx [0x%08x]\n",
+	pr_debug("Booting Linux on physical CPU 0x%010lx [0x%08x]\n",
 		(unsigned long)mpidr, read_cpuid_id());
 }
 
@@ -186,7 +186,7 @@ static void __init smp_build_mpidr_hash(void)
 	 * than expected on most systems.
 	 */
 	if (mpidr_hash_size() > 4 * num_possible_cpus())
-		pr_warn("Large number of MPIDR hash buckets detected\n");
+		pr_debug("Large number of MPIDR hash buckets detected\n");
 }
 
 static void __init setup_machine_fdt(phys_addr_t dt_phys)
@@ -199,7 +199,7 @@ static void __init setup_machine_fdt(phys_addr_t dt_phys)
 		memblock_reserve(dt_phys, size);
 
 	if (!dt_virt || !early_init_dt_scan(dt_virt)) {
-		pr_crit("\n"
+		pr_debug("\n"
 			"Error: invalid device tree blob at physical address %pa (virtual address 0x%p)\n"
 			"The dtb must be 8-byte aligned and must not exceed 2 MB in size\n"
 			"\nPlease check your bootloader.",
@@ -216,7 +216,7 @@ static void __init setup_machine_fdt(phys_addr_t dt_phys)
 	if (!name)
 		return;
 
-	pr_info("Machine model: %s\n", name);
+	pr_debug("Machine model: %s\n", name);
 	dump_stack_set_arch_desc("%s (DT)", name);
 }
 
@@ -381,7 +381,7 @@ void __init setup_arch(char **cmdline_p)
 #endif
 #endif
 	if (boot_args[1] || boot_args[2] || boot_args[3]) {
-		pr_err("WARNING: x1-x3 nonzero in violation of boot protocol:\n"
+		pr_debug("WARNING: x1-x3 nonzero in violation of boot protocol:\n"
 			"\tx1: %016llx\n\tx2: %016llx\n\tx3: %016llx\n"
 			"This indicates a broken bootloader or old kernel\n",
 			boot_args[1], boot_args[2], boot_args[3]);
@@ -416,10 +416,10 @@ static int dump_kernel_offset(struct notifier_block *self, unsigned long v,
 	const unsigned long offset = kaslr_offset();
 
 	if (IS_ENABLED(CONFIG_RANDOMIZE_BASE) && offset > 0) {
-		pr_emerg("Kernel Offset: 0x%lx from 0x%lx\n",
+		pr_debug("Kernel Offset: 0x%lx from 0x%lx\n",
 			 offset, KIMAGE_VADDR);
 	} else {
-		pr_emerg("Kernel Offset: disabled\n");
+		pr_debug("Kernel Offset: disabled\n");
 	}
 	return 0;
 }

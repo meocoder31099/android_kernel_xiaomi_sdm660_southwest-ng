@@ -254,7 +254,7 @@ int msm_fd_hw_get_face_count(struct msm_fd_device *fd)
 
 	value = reg & MSM_FD_RESULT_CNT_MASK;
 	if (value > MSM_FD_MAX_FACES_DETECTED) {
-		dev_warn(fd->dev, "Face count %d out of limit\n", value);
+		dev_dbg(fd->dev, "Face count %d out of limit\n", value);
 		value = MSM_FD_MAX_FACES_DETECTED;
 	}
 
@@ -461,7 +461,7 @@ void msm_fd_hw_get_result_angle_pose(struct msm_fd_device *fd, int idx,
 		*pose = MSM_FD_POSE_LEFT;
 		break;
 	default:
-		dev_err(fd->dev, "Invalid pose from the engine\n");
+		dev_dbg(fd->dev, "Invalid pose from the engine\n");
 		*pose = MSM_FD_POSE_FRONT;
 		break;
 	}
@@ -492,7 +492,7 @@ static void msm_fd_hw_halt(struct msm_fd_device *fd)
 		time = wait_for_completion_timeout(&fd->hw_halt_completion,
 			msecs_to_jiffies(MSM_FD_HALT_TIMEOUT_MS));
 		if (!time)
-			dev_err(fd->dev, "Face detection halt timeout\n");
+			dev_dbg(fd->dev, "Face detection halt timeout\n");
 
 		/* Reset sequence after halt */
 		msm_fd_hw_write_reg(fd, MSM_FD_IOMEM_MISC, MSM_FD_MISC_SW_RESET,
@@ -517,7 +517,7 @@ static irqreturn_t msm_fd_hw_core_irq(int irq, void *dev_id)
 	if (msm_fd_hw_is_finished(fd))
 		queue_work(fd->work_queue, &fd->work);
 	else
-		dev_err(fd->dev, "Something wrong! FD still running\n");
+		dev_dbg(fd->dev, "Something wrong! FD still running\n");
 
 	return IRQ_HANDLED;
 }
@@ -555,7 +555,7 @@ int msm_fd_hw_request_irq(struct platform_device *pdev,
 
 	fd->irq = msm_camera_get_irq(pdev, "fd");
 	if (fd->irq_num < 0) {
-		dev_err(fd->dev, "Can not get fd core irq resource\n");
+		dev_dbg(fd->dev, "Can not get fd core irq resource\n");
 		ret = -ENODEV;
 		goto error_irq;
 	}
@@ -566,7 +566,7 @@ int msm_fd_hw_request_irq(struct platform_device *pdev,
 				fd->irq, msm_fd_hw_misc_irq,
 				IRQF_TRIGGER_RISING, "fd", fd);
 		if (ret) {
-			dev_err(fd->dev, "Can not claim wrapper IRQ\n");
+			dev_dbg(fd->dev, "Can not claim wrapper IRQ\n");
 			goto error_irq;
 		}
 	} else {
@@ -574,7 +574,7 @@ int msm_fd_hw_request_irq(struct platform_device *pdev,
 				fd->irq, msm_fd_hw_core_irq,
 				IRQF_TRIGGER_RISING, "fd", fd);
 		if (ret) {
-			dev_err(&pdev->dev, "Can not claim core IRQ\n");
+			dev_dbg(&pdev->dev, "Can not claim core IRQ\n");
 			goto error_irq;
 		}
 
@@ -583,7 +583,7 @@ int msm_fd_hw_request_irq(struct platform_device *pdev,
 	fd->work_queue = alloc_workqueue(MSM_FD_WORQUEUE_NAME,
 		WQ_HIGHPRI | WQ_UNBOUND, 0);
 	if (!fd->work_queue) {
-		dev_err(fd->dev, "Can not register workqueue\n");
+		dev_dbg(fd->dev, "Can not register workqueue\n");
 		ret = -ENOMEM;
 		goto error_alloc_workqueue;
 	}
@@ -636,11 +636,11 @@ static int32_t msm_fd_hw_set_dt_parms_by_name(struct msm_fd_device *fd,
 	pr_debug("%s:%d E\n", __func__, __LINE__);
 
 	if (!of_get_property(of_node, dt_prop_name, &dt_count)) {
-		pr_err("%s: Error property does not exist\n", __func__);
+		pr_debug("%s: Error property does not exist\n", __func__);
 		return -ENOENT;
 	}
 	if (dt_count % (sizeof(int32_t) * MSM_FD_REG_LAST_IDX)) {
-		pr_err("%s: Error invalid entries\n", __func__);
+		pr_debug("%s: Error invalid entries\n", __func__);
 		return -EINVAL;
 	}
 	dt_count /= sizeof(int32_t);
@@ -657,7 +657,7 @@ static int32_t msm_fd_hw_set_dt_parms_by_name(struct msm_fd_device *fd,
 				dt_reg_settings,
 				dt_count);
 		if (rc < 0) {
-			pr_err("%s: No reg info\n", __func__);
+			pr_debug("%s: No reg info\n", __func__);
 			kfree(dt_reg_settings);
 			return -EINVAL;
 		}
@@ -707,7 +707,7 @@ static int msm_fd_hw_set_dt_parms(struct msm_fd_device *fd)
 				dt_prop_name[dt_prop_cnt]);
 			rc = 0;
 		} else if (rc < 0) {
-			pr_err("%s: %s params set fail\n", __func__,
+			pr_debug("%s: %s params set fail\n", __func__,
 				dt_prop_name[dt_prop_cnt]);
 			return rc;
 		}
@@ -745,7 +745,7 @@ int msm_fd_hw_get_mem_resources(struct platform_device *pdev,
 	fd->iomem_base[MSM_FD_IOMEM_CORE] =
 		msm_camera_get_reg_base(pdev, "fd_core", true);
 	if (!fd->iomem_base[MSM_FD_IOMEM_CORE]) {
-		dev_err(fd->dev, "%s can not map fd_core region\n", __func__);
+		dev_dbg(fd->dev, "%s can not map fd_core region\n", __func__);
 		ret = -ENODEV;
 		goto fd_core_base_failed;
 	}
@@ -753,7 +753,7 @@ int msm_fd_hw_get_mem_resources(struct platform_device *pdev,
 	fd->iomem_base[MSM_FD_IOMEM_MISC] =
 		msm_camera_get_reg_base(pdev, "fd_misc", true);
 	if (!fd->iomem_base[MSM_FD_IOMEM_MISC]) {
-		dev_err(fd->dev, "%s can not map fd_misc region\n", __func__);
+		dev_dbg(fd->dev, "%s can not map fd_misc region\n", __func__);
 		ret = -ENODEV;
 		goto fd_misc_base_failed;
 	}
@@ -761,7 +761,7 @@ int msm_fd_hw_get_mem_resources(struct platform_device *pdev,
 	fd->iomem_base[MSM_FD_IOMEM_VBIF] =
 		msm_camera_get_reg_base(pdev, "fd_vbif", false);
 	if (!fd->iomem_base[MSM_FD_IOMEM_VBIF]) {
-		dev_err(fd->dev, "%s can not map fd_vbif region\n", __func__);
+		dev_dbg(fd->dev, "%s can not map fd_vbif region\n", __func__);
 		ret = -ENODEV;
 		goto fd_vbif_base_failed;
 	}
@@ -788,7 +788,7 @@ static int msm_fd_hw_bus_request(struct msm_fd_device *fd, unsigned int idx)
 
 	ret = msm_camera_update_bus_vector(CAM_BUS_CLIENT_FD, idx);
 	if (ret < 0) {
-		dev_err(fd->dev, "Fail bus scale update %d\n", ret);
+		dev_dbg(fd->dev, "Fail bus scale update %d\n", ret);
 		return -EINVAL;
 	}
 
@@ -807,7 +807,7 @@ static int msm_fd_hw_set_clock_rate_idx(struct msm_fd_device *fd,
 	int i;
 
 	if (idx >= fd->clk_rates_num) {
-		dev_err(fd->dev, "Invalid clock index %u\n", idx);
+		dev_dbg(fd->dev, "Invalid clock index %u\n", idx);
 		return -EINVAL;
 	}
 
@@ -815,7 +815,7 @@ static int msm_fd_hw_set_clock_rate_idx(struct msm_fd_device *fd,
 		ret = msm_camera_clk_set_rate(&fd->pdev->dev,
 			fd->clk[i], fd->clk_rates[idx][i]);
 		if (ret < 0) {
-			dev_err(fd->dev, "fail set rate on idx[%u][%u]\n",
+			dev_dbg(fd->dev, "fail set rate on idx[%u][%u]\n",
 				idx, i);
 			return -EINVAL;
 		}
@@ -845,14 +845,14 @@ static int msm_fd_hw_update_settings(struct msm_fd_device *fd,
 	if (fd->bus_client) {
 		ret = msm_fd_hw_bus_request(fd, clk_rate_idx);
 		if (ret < 0) {
-			dev_err(fd->dev, "Fail bus scale update %d\n", ret);
+			dev_dbg(fd->dev, "Fail bus scale update %d\n", ret);
 			return -EINVAL;
 		}
 	}
 
 	ret = msm_fd_hw_set_clock_rate_idx(fd, clk_rate_idx);
 	if (ret < 0) {
-		dev_err(fd->dev, "Fail to set clock rate idx\n");
+		dev_dbg(fd->dev, "Fail to set clock rate idx\n");
 		goto end;
 	}
 	dev_dbg(fd->dev, "set clk %d %d", fd->clk_rate_idx, clk_rate_idx);
@@ -881,24 +881,24 @@ int msm_fd_hw_get(struct msm_fd_device *fd, unsigned int clock_rate_idx)
 			msm_camera_regulator_enable(fd->vdd_info,
 				fd->num_reg, true);
 		if (ret < 0) {
-			dev_err(fd->dev, "Fail to enable vdd\n");
+			dev_dbg(fd->dev, "Fail to enable vdd\n");
 			goto error;
 		}
 
 		ret = msm_fd_hw_bus_request(fd, clock_rate_idx);
 		if (ret < 0) {
-			dev_err(fd->dev, "Fail bus request\n");
+			dev_dbg(fd->dev, "Fail bus request\n");
 			goto error_bus_request;
 		}
 		ret = msm_fd_hw_set_clock_rate_idx(fd, clock_rate_idx);
 		if (ret < 0) {
-			dev_err(fd->dev, "Fail to set clock rate idx\n");
+			dev_dbg(fd->dev, "Fail to set clock rate idx\n");
 			goto error_clocks;
 		}
 		ret = msm_camera_clk_enable(&fd->pdev->dev, fd->clk_info,
 				fd->clk, fd->clk_num, true);
 		if (ret < 0) {
-			dev_err(fd->dev, "Fail clk enable request\n");
+			dev_dbg(fd->dev, "Fail clk enable request\n");
 			goto error_clocks;
 		}
 
@@ -973,20 +973,20 @@ static int msm_fd_hw_attach_iommu(struct msm_fd_device *fd)
 	mutex_lock(&fd->lock);
 
 	if (fd->iommu_attached_cnt == UINT_MAX) {
-		dev_err(fd->dev, "Max count reached! can not attach iommu\n");
+		dev_dbg(fd->dev, "Max count reached! can not attach iommu\n");
 		goto error;
 	}
 
 	if (fd->iommu_attached_cnt == 0) {
 		ret = cam_smmu_get_handle(MSM_FD_SMMU_CB_NAME, &fd->iommu_hdl);
 		if (ret < 0) {
-			dev_err(fd->dev, "get handle failed\n");
+			dev_dbg(fd->dev, "get handle failed\n");
 			ret = -ENOMEM;
 			goto error;
 		}
 		ret = cam_smmu_ops(fd->iommu_hdl, CAM_SMMU_ATTACH);
 		if (ret < 0) {
-			dev_err(fd->dev, "Can not attach iommu domain.\n");
+			dev_dbg(fd->dev, "Can not attach iommu domain.\n");
 			goto error_attach;
 		}
 	}
@@ -1013,7 +1013,7 @@ static void msm_fd_hw_detach_iommu(struct msm_fd_device *fd)
 {
 	mutex_lock(&fd->lock);
 	if (fd->iommu_attached_cnt == 0) {
-		dev_err(fd->dev, "There is no attached device\n");
+		dev_dbg(fd->dev, "There is no attached device\n");
 		mutex_unlock(&fd->lock);
 		return;
 	}
@@ -1050,7 +1050,7 @@ int msm_fd_hw_map_buffer(struct msm_fd_mem_pool *pool, int fd,
 			buf->fd, CAM_SMMU_MAP_RW,
 			&buf->addr, &buf->size);
 	if (ret < 0) {
-		pr_err("Error: cannot get phy addr\n");
+		pr_debug("Error: cannot get phy addr\n");
 		return -ENOMEM;
 	}
 	return buf->size;
@@ -1087,7 +1087,7 @@ static int msm_fd_hw_enable(struct msm_fd_device *fd,
 		buffer->vb_v4l2_buf.vb2_buf.planes[0].mem_priv;
 
 	if (msm_fd_hw_is_runnig(fd)) {
-		dev_err(fd->dev, "Device is busy we can not enable\n");
+		dev_dbg(fd->dev, "Device is busy we can not enable\n");
 		return 0;
 	}
 
@@ -1103,7 +1103,7 @@ static int msm_fd_hw_enable(struct msm_fd_device *fd,
 		buffer->settings.angle_index);
 	msm_fd_hw_run(fd);
 	if (fd->recovery_mode)
-		dev_err(fd->dev, "Scheduled buffer in recovery mode\n");
+		dev_dbg(fd->dev, "Scheduled buffer in recovery mode\n");
 	return 1;
 }
 
@@ -1211,7 +1211,7 @@ void msm_fd_hw_remove_buffers_from_queue(struct msm_fd_device *fd,
 				/* Schedule if other buffers are present */
 				msm_fd_hw_schedule_next_buffer(fd, 0);
 			} else {
-				dev_err(fd->dev, "activ buf no longer active\n");
+				dev_dbg(fd->dev, "activ buf no longer active\n");
 			}
 		}
 		fd->state = MSM_FD_DEVICE_IDLE;
@@ -1295,7 +1295,7 @@ int msm_fd_hw_schedule_next_buffer(struct msm_fd_device *fd, u8 lock_flag)
 
 		/* We can schedule next buffer only in running state */
 		if (fd->state != MSM_FD_DEVICE_RUNNING) {
-			dev_err(fd->dev, "Can not schedule next buffer\n");
+			dev_dbg(fd->dev, "Can not schedule next buffer\n");
 			MSM_FD_SPIN_UNLOCK(fd->slock, 1);
 			return -EBUSY;
 		}
@@ -1305,20 +1305,20 @@ int msm_fd_hw_schedule_next_buffer(struct msm_fd_device *fd, u8 lock_flag)
 			ret = msm_fd_hw_try_enable(fd, buf,
 				MSM_FD_DEVICE_RUNNING);
 			if (ret == 0) {
-				dev_err(fd->dev, "Can not process next buffer\n");
+				dev_dbg(fd->dev, "Can not process next buffer\n");
 				MSM_FD_SPIN_UNLOCK(fd->slock, 1);
 				return -EBUSY;
 			}
 		} else {
 			fd->state = MSM_FD_DEVICE_IDLE;
 			if (fd->recovery_mode)
-				dev_err(fd->dev, "No Buffer in recovery mode.Device Idle\n");
+				dev_dbg(fd->dev, "No Buffer in recovery mode.Device Idle\n");
 		}
 		MSM_FD_SPIN_UNLOCK(fd->slock, 1);
 	} else {
 		/* We can schedule next buffer only in running state */
 		if (fd->state != MSM_FD_DEVICE_RUNNING) {
-			dev_err(fd->dev, "Can not schedule next buffer\n");
+			dev_dbg(fd->dev, "Can not schedule next buffer\n");
 			return -EBUSY;
 		}
 
@@ -1327,13 +1327,13 @@ int msm_fd_hw_schedule_next_buffer(struct msm_fd_device *fd, u8 lock_flag)
 			ret = msm_fd_hw_try_enable(fd, buf,
 				MSM_FD_DEVICE_RUNNING);
 			if (ret == 0) {
-				dev_err(fd->dev, "Can not process next buffer\n");
+				dev_dbg(fd->dev, "Can not process next buffer\n");
 				return -EBUSY;
 			}
 		} else {
 			fd->state = MSM_FD_DEVICE_IDLE;
 			if (fd->recovery_mode)
-				dev_err(fd->dev, "No Buffer in recovery mode.Device Idle\n");
+				dev_dbg(fd->dev, "No Buffer in recovery mode.Device Idle\n");
 		}
 	}
 

@@ -48,25 +48,25 @@ static struct mdss_dba_utils_data *mdss_dba_utils_get_data(
 	struct mdss_dba_utils_data *udata = NULL;
 
 	if (!device) {
-		pr_err("Invalid device data\n");
+		pr_debug("Invalid device data\n");
 		goto end;
 	}
 
 	fbi = dev_get_drvdata(device);
 	if (!fbi) {
-		pr_err("Invalid fbi data\n");
+		pr_debug("Invalid fbi data\n");
 		goto end;
 	}
 
 	mfd = (struct msm_fb_data_type *)fbi->par;
 	if (!mfd) {
-		pr_err("Invalid mfd data\n");
+		pr_debug("Invalid mfd data\n");
 		goto end;
 	}
 
 	pinfo = mfd->panel_info;
 	if (!pinfo) {
-		pr_err("Invalid pinfo data\n");
+		pr_debug("Invalid pinfo data\n");
 		goto end;
 	}
 
@@ -81,12 +81,12 @@ static void mdss_dba_utils_notify_display(
 	int state = 0;
 
 	if (!udata) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
 	if (!udata->display_switch_registered) {
-		pr_err("display switch not registered\n");
+		pr_debug("display switch not registered\n");
 		return;
 	}
 
@@ -106,12 +106,12 @@ static void mdss_dba_utils_notify_audio(
 	int state = 0;
 
 	if (!udata) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
 	if (!udata->audio_switch_registered) {
-		pr_err("audio switch not registered\n");
+		pr_debug("audio switch not registered\n");
 		return;
 	}
 
@@ -132,14 +132,14 @@ static ssize_t connected_show(struct device *dev,
 	struct mdss_dba_utils_data *udata = NULL;
 
 	if (!dev) {
-		pr_err("invalid device\n");
+		pr_debug("invalid device\n");
 		return -EINVAL;
 	}
 
 	udata = mdss_dba_utils_get_data(dev);
 
 	if (!udata) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -256,13 +256,13 @@ static int mdss_dba_utils_sysfs_create(struct kobject *kobj)
 	int rc;
 
 	if (!kobj) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -ENODEV;
 	}
 
 	rc = sysfs_create_group(kobj, &mdss_dba_utils_fs_attrs_group);
 	if (rc) {
-		pr_err("failed, rc=%d\n", rc);
+		pr_debug("failed, rc=%d\n", rc);
 		return rc;
 	}
 
@@ -272,7 +272,7 @@ static int mdss_dba_utils_sysfs_create(struct kobject *kobj)
 static void mdss_dba_utils_sysfs_remove(struct kobject *kobj)
 {
 	if (!kobj) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
@@ -316,7 +316,7 @@ static void mdss_dba_utils_dba_cb(void *data, enum msm_dba_callback_event event)
 	struct msm_ext_disp_audio_edid_blk blk;
 
 	if (!udata) {
-		pr_err("Invalid data\n");
+		pr_debug("Invalid data\n");
 		return;
 	}
 
@@ -347,7 +347,7 @@ static void mdss_dba_utils_dba_cb(void *data, enum msm_dba_callback_event event)
 							sizeof(blk), &blk);
 				}
 			} else {
-				pr_err("failed to get edid%d\n", ret);
+				pr_debug("failed to get edid%d\n", ret);
 			}
 		}
 
@@ -384,7 +384,7 @@ static void mdss_dba_utils_dba_cb(void *data, enum msm_dba_callback_event event)
 				udata->cec_buf, 0);
 
 			if (ret || !size || size > CEC_BUF_SIZE) {
-				pr_err("%s: cec read failed\n", __func__);
+				pr_debug("%s: cec read failed\n", __func__);
 				return;
 			}
 		}
@@ -408,7 +408,7 @@ static void mdss_dba_utils_dba_cb(void *data, enum msm_dba_callback_event event)
 
 		ret = udata->ccbs.msg_recv_notify(udata->ccbs.data, &msg);
 		if (ret)
-			pr_err("%s: failed to notify cec msg\n", __func__);
+			pr_debug("%s: failed to notify cec msg\n", __func__);
 		break;
 
 	default:
@@ -422,7 +422,7 @@ static int mdss_dba_utils_cec_enable(void *data, bool enable)
 	struct mdss_dba_utils_data *udata = data;
 
 	if (!udata) {
-		pr_err("%s: Invalid data\n", __func__);
+		pr_debug("%s: Invalid data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -441,7 +441,7 @@ static int mdss_dba_utils_send_cec_msg(void *data, struct cec_msg *msg)
 	u8 buf[MAX_CEC_FRAME_SIZE];
 
 	if (!udata || !msg) {
-		pr_err("%s: Invalid data\n", __func__);
+		pr_debug("%s: Invalid data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -465,7 +465,7 @@ static int mdss_dba_utils_init_switch_dev(struct mdss_dba_utils_data *udata,
 	int rc = -EINVAL, ret;
 
 	if (!udata) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		goto end;
 	}
 
@@ -473,7 +473,7 @@ static int mdss_dba_utils_init_switch_dev(struct mdss_dba_utils_data *udata,
 	udata->sdev_display.name = "hdmi";
 	rc = extcon_dev_register(&udata->sdev_display);
 	if (rc) {
-		pr_err("display switch registration failed\n");
+		pr_debug("display switch registration failed\n");
 		goto end;
 	}
 
@@ -483,7 +483,7 @@ static int mdss_dba_utils_init_switch_dev(struct mdss_dba_utils_data *udata,
 	udata->sdev_audio.name = "hdmi_audio";
 	ret = extcon_dev_register(&udata->sdev_audio);
 	if (ret) {
-		pr_err("audio switch registration failed\n");
+		pr_debug("audio switch registration failed\n");
 		goto end;
 	}
 
@@ -500,7 +500,7 @@ static int mdss_dba_get_vic_panel_info(struct mdss_dba_utils_data *udata,
 	u32 h_total, v_total, vic = 0;
 
 	if (!udata || !pinfo) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return 0;
 	}
 
@@ -548,7 +548,7 @@ int mdss_dba_utils_video_on(void *data, struct mdss_panel_info *pinfo)
 	int ret = -EINVAL;
 
 	if (!ud || !pinfo) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		goto end;
 	}
 
@@ -603,7 +603,7 @@ int mdss_dba_utils_video_off(void *data)
 	int ret = -EINVAL;
 
 	if (!ud) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		goto end;
 	}
 
@@ -627,7 +627,7 @@ void mdss_dba_utils_hdcp_enable(void *data, bool enable)
 	struct mdss_dba_utils_data *ud = data;
 
 	if (!ud) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
@@ -658,7 +658,7 @@ void *mdss_dba_utils_init(struct mdss_dba_utils_init_data *uid)
 	int ret = 0;
 
 	if (!uid) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		ret = -EINVAL;
 		goto error;
 	}
@@ -683,12 +683,12 @@ void *mdss_dba_utils_init(struct mdss_dba_utils_init_data *uid)
 	if (IS_ENABLED(CONFIG_MSM_DBA)) {
 		udata->dba_data = msm_dba_register_client(&info, &udata->ops);
 		if (IS_ERR_OR_NULL(udata->dba_data)) {
-			pr_err("ds not configured\n");
+			pr_debug("ds not configured\n");
 			ret = PTR_ERR(udata->dba_data);
 			goto error;
 		}
 	} else {
-		pr_err("DBA not enabled\n");
+		pr_debug("DBA not enabled\n");
 		ret = -ENODEV;
 		goto error;
 	}
@@ -696,7 +696,7 @@ void *mdss_dba_utils_init(struct mdss_dba_utils_init_data *uid)
 	/* create sysfs nodes for other modules to intract with utils */
 	ret = mdss_dba_utils_sysfs_create(uid->kobj);
 	if (ret) {
-		pr_err("sysfs creation failed\n");
+		pr_debug("sysfs creation failed\n");
 		goto error;
 	}
 
@@ -713,7 +713,7 @@ void *mdss_dba_utils_init(struct mdss_dba_utils_init_data *uid)
 	/* register with edid module for parsing edid buffer */
 	udata->edid_data = hdmi_edid_init(&edid_init_data);
 	if (!udata->edid_data) {
-		pr_err("edid parser init failed\n");
+		pr_debug("edid parser init failed\n");
 		ret = -ENODEV;
 		goto error;
 	}
@@ -742,7 +742,7 @@ void *mdss_dba_utils_init(struct mdss_dba_utils_init_data *uid)
 
 	udata->cec_abst_data = cec_abstract_init(&cec_abst_init_data);
 	if (IS_ERR_OR_NULL(udata->cec_abst_data)) {
-		pr_err("error initializing cec abstract module\n");
+		pr_debug("error initializing cec abstract module\n");
 		ret = PTR_ERR(cec_abst_data);
 		goto error;
 	}
@@ -768,7 +768,7 @@ void *mdss_dba_utils_init(struct mdss_dba_utils_init_data *uid)
 			ret = mdss_dba_utils_init_switch_dev(udata,
 				uid->fb_node);
 			if (ret) {
-				pr_err("switch dev registration failed\n");
+				pr_debug("switch dev registration failed\n");
 				goto error;
 			}
 		}
@@ -793,7 +793,7 @@ void mdss_dba_utils_deinit(void *data)
 	struct mdss_dba_utils_data *udata = data;
 
 	if (!udata) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 

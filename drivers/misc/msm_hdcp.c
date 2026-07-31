@@ -40,13 +40,13 @@ void msm_hdcp_register_cb(struct device *dev, void *ctx,
 	struct msm_hdcp *hdcp = NULL;
 
 	if (!dev) {
-		pr_err("invalid device pointer\n");
+		pr_debug("invalid device pointer\n");
 		return;
 	}
 
 	hdcp = dev_get_drvdata(dev);
 	if (!hdcp) {
-		pr_err("invalid driver pointer\n");
+		pr_debug("invalid driver pointer\n");
 		return;
 	}
 
@@ -62,13 +62,13 @@ void msm_hdcp_notify_topology(struct device *dev)
 	struct msm_hdcp *hdcp = NULL;
 
 	if (!dev) {
-		pr_err("invalid device pointer\n");
+		pr_debug("invalid device pointer\n");
 		return;
 	}
 
 	hdcp = dev_get_drvdata(dev);
 	if (!hdcp) {
-		pr_err("invalid driver pointer\n");
+		pr_debug("invalid driver pointer\n");
 		return;
 	}
 
@@ -89,13 +89,13 @@ void msm_hdcp_cache_repeater_topology(struct device *dev,
 	struct msm_hdcp *hdcp = NULL;
 
 	if (!dev || !tp) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return;
 	}
 
 	hdcp = dev_get_drvdata(dev);
 	if (!hdcp) {
-		pr_err("invalid driver pointer\n");
+		pr_debug("invalid driver pointer\n");
 		return;
 	}
 
@@ -110,13 +110,13 @@ static ssize_t tp_show(struct device *dev, struct device_attribute *attr,
 	struct msm_hdcp *hdcp = NULL;
 
 	if (!dev) {
-		pr_err("invalid device pointer\n");
+		pr_debug("invalid device pointer\n");
 		return -ENODEV;
 	}
 
 	hdcp = dev_get_drvdata(dev);
 	if (!hdcp) {
-		pr_err("invalid driver pointer\n");
+		pr_debug("invalid driver pointer\n");
 		return -ENODEV;
 	}
 
@@ -150,13 +150,13 @@ static ssize_t tp_store(struct device *dev, struct device_attribute *attr,
 	struct msm_hdcp *hdcp = NULL;
 
 	if (!dev) {
-		pr_err("invalid device pointer\n");
+		pr_debug("invalid device pointer\n");
 		return -ENODEV;
 	}
 
 	hdcp = dev_get_drvdata(dev);
 	if (!hdcp) {
-		pr_err("invalid driver pointer\n");
+		pr_debug("invalid driver pointer\n");
 		return -ENODEV;
 	}
 
@@ -183,19 +183,19 @@ static ssize_t min_level_change_store(struct device *dev,
 	struct msm_hdcp *hdcp = NULL;
 
 	if (!dev) {
-		pr_err("invalid device pointer\n");
+		pr_debug("invalid device pointer\n");
 		return -ENODEV;
 	}
 
 	hdcp = dev_get_drvdata(dev);
 	if (!hdcp) {
-		pr_err("invalid driver pointer\n");
+		pr_debug("invalid driver pointer\n");
 		return -ENODEV;
 	}
 
 	rc = kstrtoint(buf, 10, &min_enc_lvl);
 	if (rc) {
-		pr_err("kstrtoint failed. rc=%d\n", rc);
+		pr_debug("kstrtoint failed. rc=%d\n", rc);
 		return -EINVAL;
 	}
 
@@ -259,14 +259,14 @@ static int msm_hdcp_probe(struct platform_device *pdev)
 
 	ret = alloc_chrdev_region(&hdcp->dev_num, 0, 1, DRIVER_NAME);
 	if (ret  < 0) {
-		pr_err("alloc_chrdev_region failed ret = %d\n", ret);
+		pr_debug("alloc_chrdev_region failed ret = %d\n", ret);
 		goto error_get_dev_num;
 	}
 
 	hdcp->class = class_create(THIS_MODULE, CLASS_NAME);
 	if (IS_ERR(hdcp->class)) {
 		ret = PTR_ERR(hdcp->class);
-		pr_err("couldn't create class rc = %d\n", ret);
+		pr_debug("couldn't create class rc = %d\n", ret);
 		goto error_class_create;
 	}
 
@@ -274,20 +274,20 @@ static int msm_hdcp_probe(struct platform_device *pdev)
 		hdcp->dev_num, hdcp, DRIVER_NAME);
 	if (IS_ERR(hdcp->device)) {
 		ret = PTR_ERR(hdcp->device);
-		pr_err("device_create failed %d\n", ret);
+		pr_debug("device_create failed %d\n", ret);
 		goto error_class_device_create;
 	}
 
 	cdev_init(&hdcp->cdev, &msm_hdcp_fops);
 	ret = cdev_add(&hdcp->cdev, MKDEV(MAJOR(hdcp->dev_num), 0), 1);
 	if (ret < 0) {
-		pr_err("cdev_add failed %d\n", ret);
+		pr_debug("cdev_add failed %d\n", ret);
 		goto error_cdev_add;
 	}
 
 	ret = sysfs_create_group(&hdcp->device->kobj, &msm_hdcp_fs_attr_group);
 	if (ret)
-		pr_err("unable to register msm_hdcp sysfs nodes\n");
+		pr_debug("unable to register msm_hdcp sysfs nodes\n");
 
 	return 0;
 error_cdev_add:

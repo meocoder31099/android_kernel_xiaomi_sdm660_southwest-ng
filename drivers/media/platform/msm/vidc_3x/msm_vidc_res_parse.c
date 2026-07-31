@@ -500,7 +500,7 @@ static void clock_override(struct platform_device *pdev,
 	}
 	base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
 	if (!base) {
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Unable to ioremap efuse reg address. Defaulting to 0.\n");
 		return;
 	}

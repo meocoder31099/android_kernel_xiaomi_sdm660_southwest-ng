@@ -70,7 +70,7 @@ of_get_fixed_voltage_config(struct device *dev,
 	if (init_data->constraints.min_uV == init_data->constraints.max_uV) {
 		config->microvolts = init_data->constraints.min_uV;
 	} else {
-		dev_err(dev,
+		dev_dbg(dev,
 			 "Fixed regulator specified with variable voltages\n");
 		return ERR_PTR(-EINVAL);
 	}
@@ -125,7 +125,7 @@ static int reg_fixed_voltage_probe(struct platform_device *pdev)
 					  config->supply_name,
 					  GFP_KERNEL);
 	if (drvdata->desc.name == NULL) {
-		dev_err(&pdev->dev, "Failed to allocate supply name\n");
+		dev_dbg(&pdev->dev, "Failed to allocate supply name\n");
 		return -ENOMEM;
 	}
 	drvdata->desc.type = REGULATOR_VOLTAGE;
@@ -139,7 +139,7 @@ static int reg_fixed_voltage_probe(struct platform_device *pdev)
 					    config->input_supply,
 					    GFP_KERNEL);
 		if (!drvdata->desc.supply_name) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Failed to allocate input supply\n");
 			return -ENOMEM;
 		}

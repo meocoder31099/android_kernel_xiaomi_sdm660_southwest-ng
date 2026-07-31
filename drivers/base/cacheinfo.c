@@ -167,12 +167,12 @@ static int cache_setup_of_node(unsigned int cpu)
 	}
 
 	if (!cpu_dev) {
-		pr_err("No cpu device for CPU %d\n", cpu);
+		pr_debug("No cpu device for CPU %d\n", cpu);
 		return -ENODEV;
 	}
 	np = cpu_dev->of_node;
 	if (!np) {
-		pr_err("Failed to find cpu%d device node\n", cpu);
+		pr_debug("Failed to find cpu%d device node\n", cpu);
 		return -ENOENT;
 	}
 
@@ -330,7 +330,7 @@ static int detect_cache_attributes(unsigned int cpu)
 	 */
 	ret = cache_shared_cpu_map_setup(cpu);
 	if (ret) {
-		pr_warn("Unable to detect cache hierarchy for CPU %d\n", cpu);
+		pr_debug("Unable to detect cache hierarchy for CPU %d\n", cpu);
 		goto free_ci;
 	}
 

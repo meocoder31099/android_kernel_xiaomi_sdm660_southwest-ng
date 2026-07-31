@@ -143,7 +143,7 @@ static ssize_t power_supply_show_usb_type(struct device *dev,
 	}
 
 	if (!match) {
-		dev_warn(dev, "driver reporting unsupported connected type\n");
+		dev_dbg(dev, "driver reporting unsupported connected type\n");
 		return -EINVAL;
 	}
 

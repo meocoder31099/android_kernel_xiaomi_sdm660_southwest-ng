@@ -132,7 +132,7 @@ static ssize_t firmware_name_show(struct device *dev,
 	int ret;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -153,7 +153,7 @@ static ssize_t test_fuse_state_show(struct device *dev,
 	int ret;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -185,7 +185,7 @@ static ssize_t spss_debug_reg_show(struct device *dev,
 	u32 val1, val2;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -194,7 +194,7 @@ static ssize_t spss_debug_reg_show(struct device *dev,
 	spss_debug_reg = ioremap_nocache(spss_debug_reg_addr, sizeof(u32)*2);
 
 	if (!spss_debug_reg) {
-		pr_err("can't map debug reg addr\n");
+		pr_debug("can't map debug reg addr\n");
 		return -EINVAL;
 	}
 
@@ -218,7 +218,7 @@ static ssize_t cmac_buf_show(struct device *dev,
 	int ret = 0;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -237,7 +237,7 @@ static ssize_t iar_state_show(struct device *dev,
 	int ret = 0;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -256,7 +256,7 @@ static ssize_t iar_enabled_show(struct device *dev,
 	int ret = 0;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -274,7 +274,7 @@ static ssize_t pbl_cmac_show(struct device *dev,
 	int ret = 0;
 
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -293,7 +293,7 @@ static ssize_t apps_cmac_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
 	if (!dev || !attr || !buf) {
-		pr_err("invalid param.\n");
+		pr_debug("invalid param.\n");
 		return -EINVAL;
 	}
 
@@ -314,49 +314,49 @@ static int spss_create_sysfs(struct device *dev)
 
 	ret = device_create_file(dev, &dev_attr_firmware_name);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for firmware_name.\n");
+		pr_debug("failed to create sysfs file for firmware_name.\n");
 		return ret;
 	}
 
 	ret = device_create_file(dev, &dev_attr_test_fuse_state);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for test_fuse_state.\n");
+		pr_debug("failed to create sysfs file for test_fuse_state.\n");
 		goto remove_firmware_name;
 	}
 
 	ret = device_create_file(dev, &dev_attr_spss_debug_reg);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for spss_debug_reg.\n");
+		pr_debug("failed to create sysfs file for spss_debug_reg.\n");
 		goto remove_test_fuse_state;
 	}
 
 	ret = device_create_file(dev, &dev_attr_cmac_buf);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for cmac_buf.\n");
+		pr_debug("failed to create sysfs file for cmac_buf.\n");
 		goto remove_spss_debug_reg;
 	}
 
 	ret = device_create_file(dev, &dev_attr_iar_state);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for iar_state.\n");
+		pr_debug("failed to create sysfs file for iar_state.\n");
 		goto remove_cmac_buf;
 	}
 
 	ret = device_create_file(dev, &dev_attr_iar_enabled);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for iar_enabled.\n");
+		pr_debug("failed to create sysfs file for iar_enabled.\n");
 		goto remove_iar_state;
 	}
 
 	ret = device_create_file(dev, &dev_attr_pbl_cmac);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for pbl_cmac.\n");
+		pr_debug("failed to create sysfs file for pbl_cmac.\n");
 		goto remove_iar_enabled;
 	}
 
 	ret = device_create_file(dev, &dev_attr_apps_cmac);
 	if (ret < 0) {
-		pr_err("failed to create sysfs file for apps_cmac.\n");
+		pr_debug("failed to create sysfs file for apps_cmac.\n");
 		goto remove_pbl_cmac;
 	}
 
@@ -395,7 +395,7 @@ static int spss_wait_for_event(struct spss_ioc_wait_for_event *req)
 	timeout_sec = req->timeout_sec;
 
 	if (event_id >= SPSS_NUM_EVENTS) {
-		pr_err("event_id [%d] invalid\n", event_id);
+		pr_debug("event_id [%d] invalid\n", event_id);
 		return -EINVAL;
 	}
 
@@ -415,11 +415,11 @@ static int spss_wait_for_event(struct spss_ioc_wait_for_event *req)
 	}
 
 	if (timeleft == 0) {
-		pr_err("wait for event [%d] timeout [%d] sec expired\n",
+		pr_debug("wait for event [%d] timeout [%d] sec expired\n",
 			event_id, timeout_sec);
 		req->status = EVENT_STATUS_TIMEOUT;
 	} else if (ret < 0) {
-		pr_err("wait for event [%d] interrupted. ret [%d]\n",
+		pr_debug("wait for event [%d] interrupted. ret [%d]\n",
 			event_id, ret);
 		req->status = EVENT_STATUS_ABORTED;
 		if (ret == -ERESTARTSYS)	/* handle LPM event */
@@ -441,13 +441,13 @@ static int spss_signal_event(struct spss_ioc_signal_event *req)
 	event_id = req->event_id;
 
 	if (event_id >= SPSS_NUM_EVENTS) {
-		pr_err("event_id [%d] invalid\n", event_id);
+		pr_debug("event_id [%d] invalid\n", event_id);
 		mutex_unlock(&event_lock);
 		return -EINVAL;
 	}
 
 	if (spss_events_signaled[event_id]) {
-		pr_err("event_id [%d] already signaled\n", event_id);
+		pr_debug("event_id [%d] already signaled\n", event_id);
 		mutex_unlock(&event_lock);
 		return -EINVAL;
 	}
@@ -471,7 +471,7 @@ static int spss_is_event_signaled(struct spss_ioc_is_signaled *req)
 	event_id = req->event_id;
 
 	if (event_id >= SPSS_NUM_EVENTS) {
-		pr_err("event_id [%d] invalid\n", event_id);
+		pr_debug("event_id [%d] invalid\n", event_id);
 		mutex_unlock(&event_lock);
 		return -EINVAL;
 	}
@@ -499,20 +499,20 @@ static long spss_utils_ioctl(struct file *file,
 	void *req = (void *) data;
 
 	if (buf == NULL) {
-		pr_err("invalid ioctl arg\n");
+		pr_debug("invalid ioctl arg\n");
 		return -EINVAL;
 	}
 
 	size = _IOC_SIZE(cmd);
 	if (size && (cmd & IOC_IN)) {
 		if (size > sizeof(data)) {
-			pr_err("cmd [0x%x] size [0x%lx] too large\n",
+			pr_debug("cmd [0x%x] size [0x%lx] too large\n",
 				cmd, size);
 			return -EINVAL;
 		}
 
 		if (copy_from_user(data, (void __user *)arg, size)) {
-			pr_err("copy_from_user() failed, cmd [0x%x]\n",
+			pr_debug("copy_from_user() failed, cmd [0x%x]\n",
 				cmd);
 			return -EFAULT;
 		}
@@ -521,7 +521,7 @@ static long spss_utils_ioctl(struct file *file,
 	switch (cmd) {
 	case SPSS_IOC_SET_FW_CMAC:
 		if (size != sizeof(fw_and_apps_cmacs)) {
-			pr_err("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
+			pr_debug("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
 			return -EINVAL;
 		}
 
@@ -554,7 +554,7 @@ static long spss_utils_ioctl(struct file *file,
 	case SPSS_IOC_WAIT_FOR_EVENT:
 		/* check input params */
 		if (size != sizeof(struct spss_ioc_wait_for_event)) {
-			pr_err("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
+			pr_debug("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
 			return -EINVAL;
 		}
 		ret = spss_wait_for_event(req);
@@ -566,7 +566,7 @@ static long spss_utils_ioctl(struct file *file,
 	case SPSS_IOC_SIGNAL_EVENT:
 		/* check input params */
 		if (size != sizeof(struct spss_ioc_signal_event)) {
-			pr_err("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
+			pr_debug("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
 			return -EINVAL;
 		}
 		ret = spss_signal_event(req);
@@ -578,7 +578,7 @@ static long spss_utils_ioctl(struct file *file,
 	case SPSS_IOC_IS_EVENT_SIGNALED:
 		/* check input params */
 		if (size != sizeof(struct spss_ioc_is_signaled)) {
-			pr_err("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
+			pr_debug("cmd [0x%x] invalid size [0x%lx]\n", cmd, size);
 			return -EINVAL;
 		}
 		ret = spss_is_event_signaled(req);
@@ -588,7 +588,7 @@ static long spss_utils_ioctl(struct file *file,
 		break;
 
 	default:
-		pr_err("invalid ioctl cmd [0x%x]\n", cmd);
+		pr_debug("invalid ioctl cmd [0x%x]\n", cmd);
 		return -EINVAL;
 	}
 
@@ -617,14 +617,14 @@ static int spss_utils_create_chardev(struct device *dev)
 	ret = alloc_chrdev_region(&spss_utils_dev->device_no, baseminor, count,
 				 DEVICE_NAME);
 	if (ret < 0) {
-		pr_err("alloc_chrdev_region failed %d\n", ret);
+		pr_debug("alloc_chrdev_region failed %d\n", ret);
 		return ret;
 	}
 
 	spss_utils_dev->driver_class = class_create(THIS_MODULE, DEVICE_NAME);
 	if (IS_ERR(spss_utils_dev->driver_class)) {
 		ret = -ENOMEM;
-		pr_err("class_create failed %d\n", ret);
+		pr_debug("class_create failed %d\n", ret);
 		goto exit_unreg_chrdev_region;
 	}
 
@@ -634,7 +634,7 @@ static int spss_utils_create_chardev(struct device *dev)
 				  DEVICE_NAME);
 
 	if (IS_ERR(spss_utils_dev->class_dev)) {
-		pr_err("class_device_create failed %d\n", ret);
+		pr_debug("class_device_create failed %d\n", ret);
 		ret = -ENOMEM;
 		goto exit_destroy_class;
 	}
@@ -646,7 +646,7 @@ static int spss_utils_create_chardev(struct device *dev)
 		       MKDEV(MAJOR(spss_utils_dev->device_no), 0),
 		       1);
 	if (ret < 0) {
-		pr_err("cdev_add failed %d\n", ret);
+		pr_debug("cdev_add failed %d\n", ret);
 		goto exit_destroy_device;
 	}
 
@@ -700,49 +700,49 @@ static int spss_parse_dt(struct device_node *node)
 	ret = of_property_read_string(node, "qcom,spss-dev-firmware-name",
 		&dev_firmware_name);
 	if (ret < 0) {
-		pr_err("can't get dev fw name\n");
+		pr_debug("can't get dev fw name\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_string(node, "qcom,spss-test-firmware-name",
 		&test_firmware_name);
 	if (ret < 0) {
-		pr_err("can't get test fw name\n");
+		pr_debug("can't get test fw name\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_string(node, "qcom,spss-prod-firmware-name",
 		&prod_firmware_name);
 	if (ret < 0) {
-		pr_err("can't get prod fw name\n");
+		pr_debug("can't get prod fw name\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse1-addr",
 		&spss_fuse1_addr);
 	if (ret < 0) {
-		pr_err("can't get fuse1 addr\n");
+		pr_debug("can't get fuse1 addr\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse2-addr",
 		&spss_fuse2_addr);
 	if (ret < 0) {
-		pr_err("can't get fuse2 addr\n");
+		pr_debug("can't get fuse2 addr\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse1-bit",
 		&spss_fuse1_bit);
 	if (ret < 0) {
-		pr_err("can't get fuse1 bit\n");
+		pr_debug("can't get fuse1 bit\n");
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse2-bit",
 		&spss_fuse2_bit);
 	if (ret < 0) {
-		pr_err("can't get fuse2 bit\n");
+		pr_debug("can't get fuse2 bit\n");
 		return -EINVAL;
 	}
 
@@ -758,7 +758,7 @@ static int spss_parse_dt(struct device_node *node)
 	spss_fuse1_reg = ioremap_nocache(spss_fuse1_addr, sizeof(u32));
 
 	if (!spss_fuse1_reg) {
-		pr_err("can't map fuse1 addr\n");
+		pr_debug("can't map fuse1 addr\n");
 		return -EINVAL;
 	}
 
@@ -766,7 +766,7 @@ static int spss_parse_dt(struct device_node *node)
 
 	if (!spss_fuse2_reg) {
 		iounmap(spss_fuse1_reg);
-		pr_err("can't map fuse2 addr\n");
+		pr_debug("can't map fuse2 addr\n");
 		return -EINVAL;
 	}
 
@@ -798,21 +798,21 @@ static int spss_parse_dt(struct device_node *node)
 	ret = of_property_read_u32(node, "qcom,spss-debug-reg-addr",
 		&spss_debug_reg_addr);
 	if (ret < 0) {
-		pr_err("can't get debug regs addr\n");
+		pr_debug("can't get debug regs addr\n");
 		return ret;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-emul-type-reg-addr",
 			     &spss_emul_type_reg_addr);
 	if (ret < 0) {
-		pr_err("can't get spss-emulation-type-reg addr\n");
+		pr_debug("can't get spss-emulation-type-reg addr\n");
 		return -EINVAL;
 	}
 
 	spss_emul_type_reg = ioremap_nocache(spss_emul_type_reg_addr,
 					     sizeof(u32));
 	if (!spss_emul_type_reg) {
-		pr_err("can't map soc-emulation-type reg addr\n");
+		pr_debug("can't map soc-emulation-type reg addr\n");
 		return -EINVAL;
 	}
 
@@ -829,11 +829,11 @@ static int spss_parse_dt(struct device_node *node)
 	/* PIL-SPSS area */
 	np = of_parse_phandle(node, "pil-mem", 0);
 	if (!np) {
-		pr_err("no pil-mem entry, check pil-addr\n");
+		pr_debug("no pil-mem entry, check pil-addr\n");
 		ret = of_property_read_u32(node, "qcom,pil-addr",
 			&pil_addr);
 		if (ret < 0) {
-			pr_err("can't get pil_addr\n");
+			pr_debug("can't get pil_addr\n");
 			return -EFAULT;
 		}
 	} else {
@@ -847,7 +847,7 @@ static int spss_parse_dt(struct device_node *node)
 	ret = of_property_read_u32(node, "qcom,pil-size",
 		&pil_size);
 	if (ret < 0) {
-		pr_err("can't get pil_size\n");
+		pr_debug("can't get pil_size\n");
 		return -EFAULT;
 	}
 
@@ -856,26 +856,26 @@ static int spss_parse_dt(struct device_node *node)
 
 	/* cmac buffer after spss firmware end */
 	cmac_mem_addr = pil_addr + pil_size;
-	pr_info("iar_buf_addr [0x%08llx].\n", cmac_mem_addr);
+	pr_debug("iar_buf_addr [0x%08llx].\n", cmac_mem_addr);
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse3-addr",
 		&spss_fuse3_addr);
 	if (ret < 0) {
-		pr_err("can't get fuse3 addr.\n");
+		pr_debug("can't get fuse3 addr.\n");
 		return -EFAULT;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse3-bit",
 		&spss_fuse3_bit);
 	if (ret < 0) {
-		pr_err("can't get fuse3 bit.\n");
+		pr_debug("can't get fuse3 bit.\n");
 		return -EFAULT;
 	}
 
 	spss_fuse3_reg = ioremap_nocache(spss_fuse3_addr, sizeof(u32));
 
 	if (!spss_fuse3_reg) {
-		pr_err("can't map fuse3 addr.\n");
+		pr_debug("can't map fuse3 addr.\n");
 		return -EFAULT;
 	}
 
@@ -894,21 +894,21 @@ static int spss_parse_dt(struct device_node *node)
 	ret = of_property_read_u32(node, "qcom,spss-fuse4-addr",
 		&spss_fuse4_addr);
 	if (ret < 0) {
-		pr_err("can't get fuse4 addr.\n");
+		pr_debug("can't get fuse4 addr.\n");
 		return -EFAULT;
 	}
 
 	ret = of_property_read_u32(node, "qcom,spss-fuse4-bit",
 		&spss_fuse4_bit);
 	if (ret < 0) {
-		pr_err("can't get fuse4 bit.\n");
+		pr_debug("can't get fuse4 bit.\n");
 		return -EFAULT;
 	}
 
 	spss_fuse4_reg = ioremap_nocache(spss_fuse4_addr, sizeof(u32));
 
 	if (!spss_fuse4_reg) {
-		pr_err("can't map fuse4 addr.\n");
+		pr_debug("can't map fuse4 addr.\n");
 		return -EFAULT;
 	}
 
@@ -933,7 +933,7 @@ static int spss_set_fw_cmac(u32 *cmac, size_t cmac_size)
 	if (cmac_mem == NULL) {
 		cmac_mem = ioremap_nocache(cmac_mem_addr, cmac_mem_size);
 		if (!cmac_mem) {
-			pr_err("can't map cmac_mem.\n");
+			pr_debug("can't map cmac_mem.\n");
 			return -EFAULT;
 		}
 	}
@@ -1122,7 +1122,7 @@ static int spss_utils_pil_callback(struct notifier_block *nb,
 		spss_set_saved_uefi_apps_cmac();
 		break;
 	default:
-		pr_err("unknown code [0x%x] .\n", (int) code);
+		pr_debug("unknown code [0x%x] .\n", (int) code);
 		break;
 
 	}
@@ -1141,13 +1141,13 @@ static int spss_probe(struct platform_device *pdev)
 	struct device *dev = NULL;
 
 	if (!pdev) {
-		pr_err("invalid pdev.\n");
+		pr_debug("invalid pdev.\n");
 		return -ENODEV;
 	}
 
 	np = pdev->dev.of_node;
 	if (!np) {
-		pr_err("invalid DT node.\n");
+		pr_debug("invalid DT node.\n");
 		return -EINVAL;
 	}
 
@@ -1159,7 +1159,7 @@ static int spss_probe(struct platform_device *pdev)
 	spss_dev = dev;
 
 	if (dev == NULL) {
-		pr_err("invalid dev.\n");
+		pr_debug("invalid dev.\n");
 		return -EINVAL;
 	}
 
@@ -1183,14 +1183,14 @@ static int spss_probe(struct platform_device *pdev)
 		firmware_name = none_firmware_name;
 		break;
 	default:
-		pr_err("invalid firmware type %d, sysfs entry not created\n",
+		pr_debug("invalid firmware type %d, sysfs entry not created\n",
 			firmware_type);
 		return -EINVAL;
 	}
 
 	ret = subsystem_set_fwname("spss", firmware_name);
 	if (ret < 0) {
-		pr_err("fail to set fw name\n");
+		pr_debug("fail to set fw name\n");
 		return -EINVAL;
 	}
 
@@ -1202,7 +1202,7 @@ static int spss_probe(struct platform_device *pdev)
 	if (ret < 0)
 		return ret;
 
-	pr_info("Initialization completed ok, firmware_name [%s].\n",
+	pr_debug("Initialization completed ok, firmware_name [%s].\n",
 		firmware_name);
 
 	iar_nb = kzalloc(sizeof(*iar_nb), GFP_KERNEL);
@@ -1213,7 +1213,7 @@ static int spss_probe(struct platform_device *pdev)
 
 	iar_notif_handle = subsys_notif_register_notifier("spss", iar_nb);
 	if (IS_ERR_OR_NULL(iar_notif_handle)) {
-		pr_err("register fail for IAR notifier\n");
+		pr_debug("register fail for IAR notifier\n");
 		kfree(iar_nb);
 	}
 
@@ -1248,7 +1248,7 @@ static int __init spss_init(void)
 
 	ret = platform_driver_register(&spss_driver);
 	if (ret)
-		pr_err("register platform driver failed, ret [%d]\n", ret);
+		pr_debug("register platform driver failed, ret [%d]\n", ret);
 
 	return ret;
 }

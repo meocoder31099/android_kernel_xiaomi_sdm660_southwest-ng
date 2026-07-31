@@ -171,13 +171,13 @@ static int audio_notifer_reg_service(int service, int domain)
 			curr_state = AUDIO_NOTIFIER_SERVICE_DOWN;
 		break;
 	default:
-		pr_err("%s: Invalid service %d\n",
+		pr_debug("%s: Invalid service %d\n",
 			__func__, service);
 		ret = -EINVAL;
 		goto done;
 	}
 	if (IS_ERR_OR_NULL(handle)) {
-		pr_err("%s: handle is incorrect for service %s\n",
+		pr_debug("%s: handle is incorrect for service %s\n",
 			__func__, service_data[service][domain].name);
 		ret = -EINVAL;
 		goto done;
@@ -185,7 +185,7 @@ static int audio_notifer_reg_service(int service, int domain)
 	service_data[service][domain].state = curr_state;
 	service_data[service][domain].handle = handle;
 
-	pr_info("%s: service %s is in use\n",
+	pr_debug("%s: service %s is in use\n",
 		__func__, service_data[service][domain].name);
 	pr_debug("%s: service %s has current state %d, handle 0x%pK\n",
 		__func__, service_data[service][domain].name,
@@ -211,13 +211,13 @@ static int audio_notifer_dereg_service(int service, int domain)
 			service_data[service][domain].nb);
 		break;
 	default:
-		pr_err("%s: Invalid service %d\n",
+		pr_debug("%s: Invalid service %d\n",
 			__func__, service);
 		ret = -EINVAL;
 		goto done;
 	}
 	if (ret < 0) {
-		pr_err("%s: deregister failed for service %s, ret %d\n",
+		pr_debug("%s: deregister failed for service %s, ret %d\n",
 			__func__, service_data[service][domain].name, ret);
 		goto done;
 	}
@@ -246,14 +246,14 @@ static int audio_notifer_reg_client_service(struct client_data *client_data,
 			ret = audio_notifer_reg_service(service, domain);
 		break;
 	default:
-		pr_err("%s: Invalid service for client %s, service %d, domain %d\n",
+		pr_debug("%s: Invalid service for client %s, service %d, domain %d\n",
 			__func__, client_data->client_name, service, domain);
 		ret = -EINVAL;
 		goto done;
 	}
 
 	if (ret < 0) {
-		pr_err("%s: service registration failed on service %s for client %s\n",
+		pr_debug("%s: service registration failed on service %s for client %s\n",
 			__func__, service_data[service][domain].name,
 			client_data->client_name);
 		goto done;
@@ -292,7 +292,7 @@ static int audio_notifer_reg_client(struct client_data *client_data)
 
 	service = audio_notifer_get_default_service(domain);
 	if (service < 0) {
-		pr_err("%s: service %d is incorrect\n", __func__, service);
+		pr_debug("%s: service %d is incorrect\n", __func__, service);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -322,7 +322,7 @@ static int audio_notifer_reg_client(struct client_data *client_data)
 
 		ret = audio_notifer_reg_client_service(client_data, service);
 		if (ret < 0)
-			pr_err("%s: client %s failed to register on service %s",
+			pr_debug("%s: client %s failed to register on service %s",
 				__func__, client_data->client_name,
 				service_data[service][domain].name);
 	}
@@ -346,7 +346,7 @@ static int audio_notifer_dereg_client(struct client_data *client_data)
 	case NO_SERVICE:
 		goto done;
 	default:
-		pr_err("%s: Invalid service for client %s, service %d\n",
+		pr_debug("%s: Invalid service for client %s, service %d\n",
 			__func__, client_data->client_name,
 			client_data->service);
 		ret = -EINVAL;
@@ -354,7 +354,7 @@ static int audio_notifer_dereg_client(struct client_data *client_data)
 	}
 
 	if (ret < 0) {
-		pr_err("%s: deregister failed for client %s on service %s, ret %d\n",
+		pr_debug("%s: deregister failed for client %s on service %s, ret %d\n",
 			__func__, client_data->client_name,
 			service_data[service][domain].name, ret);
 		goto done;
@@ -363,7 +363,7 @@ static int audio_notifer_dereg_client(struct client_data *client_data)
 	ret = srcu_notifier_chain_unregister(&service_data[service][domain].
 					     client_nb_list, client_data->nb);
 	if (ret < 0) {
-		pr_err("%s: srcu_notifier_chain_unregister failed, ret %d\n",
+		pr_debug("%s: srcu_notifier_chain_unregister failed, ret %d\n",
 			__func__, ret);
 		goto done;
 	}
@@ -390,7 +390,7 @@ static void audio_notifer_reg_all_clients(void)
 
 		ret = audio_notifer_reg_client(client_data);
 		if (ret < 0)
-			pr_err("%s: audio_notifer_reg_client failed for client %s, ret %d\n",
+			pr_debug("%s: audio_notifer_reg_client failed for client %s, ret %d\n",
 				__func__, client_data->client_name,
 				ret);
 	}
@@ -461,7 +461,7 @@ static int audio_notifer_service_cb(unsigned long opcode,
 	ret = srcu_notifier_call_chain(&service_data[service][domain].
 		client_nb_list, notifier_opcode, &data);
 	if (ret < 0)
-		pr_err("%s: srcu_notifier_call_chain returned %d, service %s, opcode 0x%lx\n",
+		pr_debug("%s: srcu_notifier_call_chain returned %d, service %s, opcode 0x%lx\n",
 			__func__, ret, service_data[service][domain].name,
 			notifier_opcode);
 
@@ -502,7 +502,7 @@ int audio_notifier_deregister(char *client_name)
 	struct client_data *client_data = NULL;
 
 	if (client_name == NULL) {
-		pr_err("%s: client_name is NULL\n", __func__);
+		pr_debug("%s: client_name is NULL\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -512,7 +512,7 @@ int audio_notifier_deregister(char *client_name)
 		if (!strcmp(client_name, client_data->client_name)) {
 			ret2 = audio_notifer_dereg_client(client_data);
 			if (ret2 < 0) {
-				pr_err("%s: audio_notifer_dereg_client failed, ret %d\n, service %d, domain %d",
+				pr_debug("%s: audio_notifer_dereg_client failed, ret %d\n, service %d, domain %d",
 					__func__, ret2, client_data->service,
 					client_data->domain);
 				ret = ret2;
@@ -535,11 +535,11 @@ int audio_notifier_register(char *client_name, int domain,
 	struct client_data *client_data;
 
 	if (client_name == NULL) {
-		pr_err("%s: client_name is NULL\n", __func__);
+		pr_debug("%s: client_name is NULL\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	} else if (nb == NULL) {
-		pr_err("%s: Notifier block is NULL\n", __func__);
+		pr_debug("%s: Notifier block is NULL\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -560,7 +560,7 @@ int audio_notifier_register(char *client_name, int domain,
 	ret = audio_notifer_reg_client(client_data);
 	if (ret < 0) {
 		mutex_unlock(&notifier_mutex);
-		pr_err("%s: audio_notifer_reg_client for client %s failed ret = %d\n",
+		pr_debug("%s: audio_notifer_reg_client for client %s failed ret = %d\n",
 			__func__, client_data->client_name,
 			ret);
 		kfree(client_data);
@@ -615,7 +615,7 @@ static int __init audio_notifier_init(void)
 
 	ret = audio_pdr_register(&pdr_nb);
 	if (ret < 0) {
-		pr_err("%s: PDR register failed, ret = %d, disable service\n",
+		pr_debug("%s: PDR register failed, ret = %d, disable service\n",
 			__func__, ret);
 		audio_notifer_disable_service(AUDIO_NOTIFIER_PDR_SERVICE);
 	}

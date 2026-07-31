@@ -3933,7 +3933,7 @@ void ipa2_bam_reg_dump(void)
 
 	if (__ratelimit(&_rs)) {
 		IPA_ACTIVE_CLIENTS_INC_SIMPLE();
-		pr_err("IPA BAM START\n");
+		pr_debug("IPA BAM START\n");
 		if (ipa_ctx->ipa_hw_type < IPA_HW_v2_0) {
 			sps_get_bam_debug_info(ipa_ctx->bam_handle, 5,
 			511950, 0, 0);

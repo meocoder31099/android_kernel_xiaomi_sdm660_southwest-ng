@@ -182,7 +182,7 @@ static int wcd_measure_adc_once(struct wcd_mbhc *mbhc, int mux_ctl)
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_ADC_EN, adc_en);
 
 	if (retry <= 0) {
-		pr_err("%s: adc complete: %d, adc timeout: %d\n",
+		pr_debug("%s: adc complete: %d, adc timeout: %d\n",
 			__func__, adc_complete, adc_timeout);
 		ret = -EINVAL;
 	} else {
@@ -335,7 +335,7 @@ static int wcd_check_cross_conn(struct wcd_mbhc *mbhc)
 	/* Get adc result for HPH L */
 	hphl_adc_res = wcd_measure_adc_once(mbhc, MUX_CTL_HPH_L);
 	if (hphl_adc_res < 0) {
-		pr_err("%s: hphl_adc_res adc measurement failed\n", __func__);
+		pr_debug("%s: hphl_adc_res adc measurement failed\n", __func__);
 		ret = hphl_adc_res;
 		goto done;
 	}
@@ -343,7 +343,7 @@ static int wcd_check_cross_conn(struct wcd_mbhc *mbhc)
 	/* Get adc result for HPH R in mV */
 	hphr_adc_res = wcd_measure_adc_once(mbhc, MUX_CTL_HPH_R);
 	if (hphr_adc_res < 0) {
-		pr_err("%s: hphr_adc_res adc measurement failed\n", __func__);
+		pr_debug("%s: hphr_adc_res adc measurement failed\n", __func__);
 		ret = hphr_adc_res;
 		goto done;
 	}
@@ -522,7 +522,7 @@ static bool wcd_is_special_headset(struct wcd_mbhc *mbhc)
 		ret = mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic(mbhc->component,
 							MIC_BIAS_2, true);
 		if (ret) {
-			pr_err("%s: mbhc_micb_ctrl_thr_mic failed, ret: %d\n",
+			pr_debug("%s: mbhc_micb_ctrl_thr_mic failed, ret: %d\n",
 				__func__, ret);
 			return false;
 		}
@@ -633,7 +633,7 @@ static void wcd_mbhc_adc_detect_plug_type(struct wcd_mbhc *mbhc)
 		mbhc->mbhc_cb->mbhc_micbias_control(component, MIC_BIAS_2,
 						    MICB_ENABLE);
 	} else {
-		pr_err("%s: Mic Bias is not enabled\n", __func__);
+		pr_debug("%s: Mic Bias is not enabled\n", __func__);
 		return;
 	}
 
@@ -1191,7 +1191,7 @@ static struct wcd_mbhc_fn mbhc_fn = {
 void wcd_mbhc_adc_init(struct wcd_mbhc *mbhc)
 {
 	if (!mbhc) {
-		pr_err("%s: mbhc is NULL\n", __func__);
+		pr_debug("%s: mbhc is NULL\n", __func__);
 		return;
 	}
 	mbhc->mbhc_fn = &mbhc_fn;

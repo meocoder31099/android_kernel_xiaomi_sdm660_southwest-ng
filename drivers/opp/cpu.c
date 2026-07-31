@@ -118,7 +118,7 @@ void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of)
 	for_each_cpu(cpu, cpumask) {
 		cpu_dev = get_cpu_device(cpu);
 		if (!cpu_dev) {
-			pr_err("%s: failed to get cpu%d device\n", __func__,
+			pr_debug("%s: failed to get cpu%d device\n", __func__,
 			       cpu);
 			continue;
 		}
@@ -172,14 +172,14 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
 
 		dev = get_cpu_device(cpu);
 		if (!dev) {
-			dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
+			dev_dbg(cpu_dev, "%s: failed to get cpu%d device\n",
 				__func__, cpu);
 			continue;
 		}
 
 		opp_dev = _add_opp_dev(dev, opp_table);
 		if (!opp_dev) {
-			dev_err(dev, "%s: failed to add opp-dev for cpu%d device\n",
+			dev_dbg(dev, "%s: failed to add opp-dev for cpu%d device\n",
 				__func__, cpu);
 			continue;
 		}

@@ -1239,7 +1239,7 @@ static ssize_t alsa_show(struct device *dev,
 	struct f_midi *midi;
 
 	if (!fi_midi->f)
-		dev_warn(dev, "f_midi: function not set\n");
+		dev_dbg(dev, "f_midi: function not set\n");
 
 	if (fi_midi && fi_midi->f) {
 		midi = func_to_midi(fi_midi->f);

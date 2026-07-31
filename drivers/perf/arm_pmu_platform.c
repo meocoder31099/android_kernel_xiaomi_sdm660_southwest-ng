@@ -29,7 +29,7 @@ static int probe_current_pmu(struct arm_pmu *pmu,
 	unsigned int cpuid = read_cpuid_id();
 	int ret = -ENODEV;
 
-	pr_info("probing PMU on CPU %d\n", cpu);
+	pr_debug("probing PMU on CPU %d\n", cpu);
 
 	for (; info->init != NULL; info++) {
 		if ((cpuid & info->mask) != info->cpuid)
@@ -77,14 +77,14 @@ static int pmu_parse_irq_affinity(struct device_node *node, int i)
 
 	dn = of_parse_phandle(node, "interrupt-affinity", i);
 	if (!dn) {
-		pr_warn("failed to parse interrupt-affinity[%d] for %s\n",
+		pr_debug("failed to parse interrupt-affinity[%d] for %s\n",
 			i, node->name);
 		return -EINVAL;
 	}
 
 	cpu = of_cpu_node_to_id(dn);
 	if (cpu < 0) {
-		pr_warn("failed to find logical CPU for %s\n", dn->name);
+		pr_debug("failed to find logical CPU for %s\n", dn->name);
 		cpu = nr_cpu_ids;
 	}
 
@@ -101,7 +101,7 @@ static int pmu_parse_irqs(struct arm_pmu *pmu)
 
 	num_irqs = platform_irq_count(pdev);
 	if (num_irqs < 0) {
-		pr_err("unable to count PMU IRQs\n");
+		pr_debug("unable to count PMU IRQs\n");
 		return num_irqs;
 	}
 
@@ -110,7 +110,7 @@ static int pmu_parse_irqs(struct arm_pmu *pmu)
 	 * To match our prior behaviour, we assume all CPUs in this case.
 	 */
 	if (num_irqs == 0) {
-		pr_warn("no irqs for PMU, sampling events not supported\n");
+		pr_debug("no irqs for PMU, sampling events not supported\n");
 		pmu->pmu.capabilities |= PERF_PMU_CAP_NO_INTERRUPT;
 		cpumask_setall(&pmu->supported_cpus);
 		return 0;
@@ -123,7 +123,7 @@ static int pmu_parse_irqs(struct arm_pmu *pmu)
 	}
 
 	if (nr_cpu_ids != 1 && !pmu_has_irq_affinity(pdev->dev.of_node)) {
-		pr_warn("no interrupt-affinity property for %pOF, guessing.\n",
+		pr_debug("no interrupt-affinity property for %pOF, guessing.\n",
 			pdev->dev.of_node);
 	}
 
@@ -135,7 +135,7 @@ static int pmu_parse_irqs(struct arm_pmu *pmu)
 			continue;
 
 		if (irq_is_percpu_devid(irq)) {
-			pr_warn("multiple PPIs or mismatched SPI/PPI detected\n");
+			pr_debug("multiple PPIs or mismatched SPI/PPI detected\n");
 			return -EINVAL;
 		}
 
@@ -146,7 +146,7 @@ static int pmu_parse_irqs(struct arm_pmu *pmu)
 			continue;
 
 		if (per_cpu(hw_events->irq, cpu)) {
-			pr_warn("multiple PMU IRQs for the same CPU detected\n");
+			pr_debug("multiple PMU IRQs for the same CPU detected\n");
 			return -EINVAL;
 		}
 
@@ -215,7 +215,7 @@ int arm_pmu_device_probe(struct platform_device *pdev,
 
 		/* arm64 systems boot only as non-secure */
 		if (IS_ENABLED(CONFIG_ARM64) && pmu->secure_access) {
-			pr_warn("ignoring \"secure-reg-access\" property for arm64\n");
+			pr_debug("ignoring \"secure-reg-access\" property for arm64\n");
 			pmu->secure_access = false;
 		}
 
@@ -226,7 +226,7 @@ int arm_pmu_device_probe(struct platform_device *pdev,
 	}
 
 	if (ret) {
-		pr_info("%pOF: failed to probe PMU!\n", node);
+		pr_debug("%pOF: failed to probe PMU!\n", node);
 		goto out_free;
 	}
 
@@ -243,7 +243,7 @@ int arm_pmu_device_probe(struct platform_device *pdev,
 out_free_irqs:
 	armpmu_free_irqs(pmu);
 out_free:
-	pr_info("%pOF: failed to register PMU devices!\n", node);
+	pr_debug("%pOF: failed to register PMU devices!\n", node);
 	armpmu_free(pmu);
 	return ret;
 }

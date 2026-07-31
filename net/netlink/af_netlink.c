@@ -218,7 +218,7 @@ static int __netlink_remove_tap(struct netlink_tap *nt)
 		}
 	}
 
-	pr_warn("__netlink_remove_tap: %p not found\n", nt);
+	pr_debug("__netlink_remove_tap: %p not found\n", nt);
 out:
 	mutex_unlock(&nn->netlink_tap_lock);
 
@@ -396,7 +396,7 @@ static void netlink_sock_destruct(struct sock *sk)
 	skb_queue_purge(&sk->sk_receive_queue);
 
 	if (!sock_flag(sk, SOCK_DEAD)) {
-		printk(KERN_ERR "Freeing alive netlink socket %p\n", sk);
+		no_printk(KERN_ERR "Freeing alive netlink socket %p\n", sk);
 		return;
 	}
 

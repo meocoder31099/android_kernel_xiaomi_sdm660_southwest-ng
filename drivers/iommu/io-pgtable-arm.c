@@ -331,7 +331,7 @@ static void *__arm_lpae_alloc_pages(size_t size, gfp_t gfp,
 	return pages;
 
 out_unmap:
-	dev_err(dev, "Cannot accommodate DMA translation for IOMMU page tables\n");
+	dev_dbg(dev, "Cannot accommodate DMA translation for IOMMU page tables\n");
 	dma_unmap_single(dev, dma, size, DMA_TO_DEVICE);
 out_free:
 	io_pgtable_free_pages_exact(cfg, cookie, pages, size);
@@ -1073,7 +1073,7 @@ arm_lpae_alloc_pgtable(struct io_pgtable_cfg *cfg)
 		return NULL;
 
 	if (!selftest_running && cfg->iommu_dev->dma_pfn_offset) {
-		dev_err(cfg->iommu_dev, "Cannot accommodate DMA offset for IOMMU page tables\n");
+		dev_dbg(cfg->iommu_dev, "Cannot accommodate DMA offset for IOMMU page tables\n");
 		return NULL;
 	}
 
@@ -1413,9 +1413,9 @@ static void __init arm_lpae_dump_ops(struct io_pgtable_ops *ops)
 	struct arm_lpae_io_pgtable *data = io_pgtable_ops_to_data(ops);
 	struct io_pgtable_cfg *cfg = &data->iop.cfg;
 
-	pr_err("cfg: pgsize_bitmap 0x%lx, ias %u-bit\n",
+	pr_debug("cfg: pgsize_bitmap 0x%lx, ias %u-bit\n",
 		cfg->pgsize_bitmap, cfg->ias);
-	pr_err("data: %d levels, 0x%zx pgd_size, %lu pg_shift, %lu bits_per_level, pgd @ %p\n",
+	pr_debug("data: %d levels, 0x%zx pgd_size, %lu pg_shift, %lu bits_per_level, pgd @ %p\n",
 		data->levels, data->pgd_size, data->pg_shift,
 		data->bits_per_level, data->pgd);
 }
@@ -1484,7 +1484,7 @@ static int __init arm_lpae_run_tests(struct io_pgtable_cfg *cfg)
 		cfg_cookie = cfg;
 		ops = alloc_io_pgtable_ops(fmts[i], cfg, cfg);
 		if (!ops) {
-			pr_err("selftest: failed to allocate io pgtable ops\n");
+			pr_debug("selftest: failed to allocate io pgtable ops\n");
 			return -ENOMEM;
 		}
 
@@ -1682,7 +1682,7 @@ static int __init arm_lpae_do_selftests(void)
 		for (j = 0; j < ARRAY_SIZE(ias); ++j) {
 			cfg.pgsize_bitmap = pgsize[i];
 			cfg.ias = ias[j];
-			pr_info("selftest: pgsize_bitmap 0x%08lx, IAS %u\n",
+			pr_debug("selftest: pgsize_bitmap 0x%08lx, IAS %u\n",
 				pgsize[i], ias[j]);
 			if (arm_lpae_run_tests(&cfg))
 				fail++;
@@ -1691,7 +1691,7 @@ static int __init arm_lpae_do_selftests(void)
 		}
 	}
 
-	pr_info("selftest: completed with %d PASS %d FAIL\n", pass, fail);
+	pr_debug("selftest: completed with %d PASS %d FAIL\n", pass, fail);
 	return fail ? -EFAULT : 0;
 }
 subsys_initcall(arm_lpae_do_selftests);

@@ -477,7 +477,7 @@ static int spi_qup_do_dma(struct spi_device *spi, struct spi_transfer *xfer,
 		/* before issuing the descriptors, set the QUP to run */
 		ret = spi_qup_set_state(qup, QUP_STATE_RUN);
 		if (ret) {
-			dev_warn(qup->dev, "cannot set RUN state\n");
+			dev_dbg(qup->dev, "cannot set RUN state\n");
 			return ret;
 		}
 		if (rx_sgl) {
@@ -547,13 +547,13 @@ static int spi_qup_do_pio(struct spi_device *spi, struct spi_transfer *xfer,
 
 		ret = spi_qup_set_state(qup, QUP_STATE_RUN);
 		if (ret) {
-			dev_warn(qup->dev, "cannot set RUN state\n");
+			dev_dbg(qup->dev, "cannot set RUN state\n");
 			return ret;
 		}
 
 		ret = spi_qup_set_state(qup, QUP_STATE_PAUSE);
 		if (ret) {
-			dev_warn(qup->dev, "cannot set PAUSE state\n");
+			dev_dbg(qup->dev, "cannot set PAUSE state\n");
 			return ret;
 		}
 
@@ -562,7 +562,7 @@ static int spi_qup_do_pio(struct spi_device *spi, struct spi_transfer *xfer,
 
 		ret = spi_qup_set_state(qup, QUP_STATE_RUN);
 		if (ret) {
-			dev_warn(qup->dev, "cannot set RUN state\n");
+			dev_dbg(qup->dev, "cannot set RUN state\n");
 			return ret;
 		}
 
@@ -590,22 +590,22 @@ static irqreturn_t spi_qup_qup_irq(int irq, void *dev_id)
 
 	if (qup_err) {
 		if (qup_err & QUP_ERROR_OUTPUT_OVER_RUN)
-			dev_warn(controller->dev, "OUTPUT_OVER_RUN\n");
+			dev_dbg(controller->dev, "OUTPUT_OVER_RUN\n");
 		if (qup_err & QUP_ERROR_INPUT_UNDER_RUN)
-			dev_warn(controller->dev, "INPUT_UNDER_RUN\n");
+			dev_dbg(controller->dev, "INPUT_UNDER_RUN\n");
 		if (qup_err & QUP_ERROR_OUTPUT_UNDER_RUN)
-			dev_warn(controller->dev, "OUTPUT_UNDER_RUN\n");
+			dev_dbg(controller->dev, "OUTPUT_UNDER_RUN\n");
 		if (qup_err & QUP_ERROR_INPUT_OVER_RUN)
-			dev_warn(controller->dev, "INPUT_OVER_RUN\n");
+			dev_dbg(controller->dev, "INPUT_OVER_RUN\n");
 
 		error = -EIO;
 	}
 
 	if (spi_err) {
 		if (spi_err & SPI_ERROR_CLK_OVER_RUN)
-			dev_warn(controller->dev, "CLK_OVER_RUN\n");
+			dev_dbg(controller->dev, "CLK_OVER_RUN\n");
 		if (spi_err & SPI_ERROR_CLK_UNDER_RUN)
-			dev_warn(controller->dev, "CLK_UNDER_RUN\n");
+			dev_dbg(controller->dev, "CLK_UNDER_RUN\n");
 
 		error = -EIO;
 	}
@@ -633,14 +633,14 @@ static int spi_qup_io_prep(struct spi_device *spi, struct spi_transfer *xfer)
 	int ret;
 
 	if (spi->mode & SPI_LOOP && xfer->len > controller->in_fifo_sz) {
-		dev_err(controller->dev, "too big size for loopback %d > %d\n",
+		dev_dbg(controller->dev, "too big size for loopback %d > %d\n",
 			xfer->len, controller->in_fifo_sz);
 		return -EIO;
 	}
 
 	ret = clk_set_rate(controller->cclk, xfer->speed_hz);
 	if (ret) {
-		dev_err(controller->dev, "fail to set frequency %d",
+		dev_dbg(controller->dev, "fail to set frequency %d",
 			xfer->speed_hz);
 		return -EIO;
 	}
@@ -676,7 +676,7 @@ static int spi_qup_io_config(struct spi_device *spi, struct spi_transfer *xfer)
 
 
 	if (spi_qup_set_state(controller, QUP_STATE_RESET)) {
-		dev_err(controller->dev, "cannot set RESET state\n");
+		dev_dbg(controller->dev, "cannot set RESET state\n");
 		return -EIO;
 	}
 
@@ -728,7 +728,7 @@ static int spi_qup_io_config(struct spi_device *spi, struct spi_transfer *xfer)
 		writel_relaxed(0, controller->base + QUP_MX_WRITE_CNT);
 		break;
 	default:
-		dev_err(controller->dev, "unknown mode = %d\n",
+		dev_dbg(controller->dev, "unknown mode = %d\n",
 				controller->mode);
 		return -EIO;
 	}
@@ -928,13 +928,13 @@ static int spi_qup_init_dma(struct spi_master *master, resource_size_t base)
 
 	ret = dmaengine_slave_config(master->dma_rx, rx_conf);
 	if (ret) {
-		dev_err(dev, "failed to configure RX channel\n");
+		dev_dbg(dev, "failed to configure RX channel\n");
 		goto err;
 	}
 
 	ret = dmaengine_slave_config(master->dma_tx, tx_conf);
 	if (ret) {
-		dev_err(dev, "failed to configure TX channel\n");
+		dev_dbg(dev, "failed to configure TX channel\n");
 		goto err;
 	}
 
@@ -999,13 +999,13 @@ static int spi_qup_probe(struct platform_device *pdev)
 		max_freq = SPI_MAX_RATE;
 
 	if (!max_freq || max_freq > SPI_MAX_RATE) {
-		dev_err(dev, "invalid clock frequency %d\n", max_freq);
+		dev_dbg(dev, "invalid clock frequency %d\n", max_freq);
 		return -ENXIO;
 	}
 
 	master = spi_alloc_master(dev, sizeof(struct spi_qup));
 	if (!master) {
-		dev_err(dev, "cannot allocate master\n");
+		dev_dbg(dev, "cannot allocate master\n");
 		return -ENOMEM;
 	}
 
@@ -1052,14 +1052,14 @@ static int spi_qup_probe(struct platform_device *pdev)
 
 	ret = clk_prepare_enable(cclk);
 	if (ret) {
-		dev_err(dev, "cannot enable core clock\n");
+		dev_dbg(dev, "cannot enable core clock\n");
 		goto error_dma;
 	}
 
 	ret = clk_prepare_enable(iclk);
 	if (ret) {
 		clk_disable_unprepare(cclk);
-		dev_err(dev, "cannot enable iface clock\n");
+		dev_dbg(dev, "cannot enable iface clock\n");
 		goto error_dma;
 	}
 
@@ -1083,7 +1083,7 @@ static int spi_qup_probe(struct platform_device *pdev)
 	size = QUP_IO_M_INPUT_FIFO_SIZE(iomode);
 	controller->in_fifo_sz = controller->in_blk_sz * (2 << size);
 
-	dev_info(dev, "IN:block:%d, fifo:%d, OUT:block:%d, fifo:%d\n",
+	dev_dbg(dev, "IN:block:%d, fifo:%d, OUT:block:%d, fifo:%d\n",
 		 controller->in_blk_sz, controller->in_fifo_sz,
 		 controller->out_blk_sz, controller->out_fifo_sz);
 
@@ -1091,7 +1091,7 @@ static int spi_qup_probe(struct platform_device *pdev)
 
 	ret = spi_qup_set_state(controller, QUP_STATE_RESET);
 	if (ret) {
-		dev_err(dev, "cannot set RESET state\n");
+		dev_dbg(dev, "cannot set RESET state\n");
 		goto error_clk;
 	}
 
@@ -1253,13 +1253,13 @@ static int spi_qup_remove(struct platform_device *pdev)
 	if (ret >= 0) {
 		ret = spi_qup_set_state(controller, QUP_STATE_RESET);
 		if (ret)
-			dev_warn(&pdev->dev, "failed to reset controller (%pe)\n",
+			dev_dbg(&pdev->dev, "failed to reset controller (%pe)\n",
 				 ERR_PTR(ret));
 
 		clk_disable_unprepare(controller->cclk);
 		clk_disable_unprepare(controller->iclk);
 	} else {
-		dev_warn(&pdev->dev, "failed to resume, skip hw disable (%pe)\n",
+		dev_dbg(&pdev->dev, "failed to resume, skip hw disable (%pe)\n",
 			 ERR_PTR(ret));
 	}
 

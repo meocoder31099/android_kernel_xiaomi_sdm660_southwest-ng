@@ -104,6 +104,6 @@ int32_t elliptic_data_io_write(uint32_t message_id, const char *data,
 int32_t elliptic_data_io_transact(uint32_t message_id, const char *data,
 	size_t data_size, char *output_data, size_t output_data_size)
 {
-	pr_err("%s : unimplemented\n", __func__);
+	pr_debug("%s : unimplemented\n", __func__);
 	return -EINVAL;
 }

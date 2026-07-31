@@ -297,7 +297,7 @@ static void scsi_strcpy_devinfo(char *name, char *to, size_t to_length,
 		memset(&to[from_length], ' ', to_length - from_length);
 	}
 	if (from_length > to_length)
-		 printk(KERN_WARNING "%s: %s string '%s' is too long\n",
+		 no_printk(KERN_WARNING "%s: %s string '%s' is too long\n",
 			__func__, name, from);
 }
 
@@ -356,7 +356,7 @@ int scsi_dev_info_list_add_keyed(int compatible, char *vendor, char *model,
 
 	devinfo = kmalloc(sizeof(*devinfo), GFP_KERNEL);
 	if (!devinfo) {
-		printk(KERN_ERR "%s: no memory\n", __func__);
+		no_printk(KERN_ERR "%s: no memory\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -376,7 +376,7 @@ int scsi_dev_info_list_add_keyed(int compatible, char *vendor, char *model,
 		flags = (__force blist_flags_t)val;
 	}
 	if (flags & __BLIST_UNUSED_MASK) {
-		pr_err("scsi_devinfo (%s:%s): unsupported flags 0x%llx",
+		pr_debug("scsi_devinfo (%s:%s): unsupported flags 0x%llx",
 		       vendor, model, flags & __BLIST_UNUSED_MASK);
 		kfree(devinfo);
 		return -EINVAL;
@@ -546,7 +546,7 @@ static int scsi_dev_info_list_add_str(char *dev_list)
 		if (model)
 			strflags = strsep(&next, next_check);
 		if (!model || !strflags) {
-			printk(KERN_ERR "%s: bad dev info string '%s' '%s'"
+			no_printk(KERN_ERR "%s: bad dev info string '%s' '%s'"
 			       " '%s'\n", __func__, vendor, model,
 			       strflags);
 			res = -EINVAL;

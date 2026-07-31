@@ -727,10 +727,10 @@ static struct fib6_node *fib6_add_1(struct net *net,
 				if (replace_required) {
 					NL_SET_ERR_MSG(extack,
 						       "Can not replace route - no match found");
-					pr_warn("Can't replace route, no match found\n");
+					pr_debug("Can't replace route, no match found\n");
 					return ERR_PTR(-ENOENT);
 				}
-				pr_warn("NLM_F_CREATE should be set when creating new route\n");
+				pr_debug("NLM_F_CREATE should be set when creating new route\n");
 			}
 			goto insert_above;
 		}
@@ -781,10 +781,10 @@ static struct fib6_node *fib6_add_1(struct net *net,
 		if (replace_required) {
 			NL_SET_ERR_MSG(extack,
 				       "Can not replace route - no match found");
-			pr_warn("Can't replace route, no match found\n");
+			pr_debug("Can't replace route, no match found\n");
 			return ERR_PTR(-ENOENT);
 		}
-		pr_warn("NLM_F_CREATE should be set when creating new route\n");
+		pr_debug("NLM_F_CREATE should be set when creating new route\n");
 	}
 	/*
 	 *	We walked to the bottom of tree.
@@ -1137,7 +1137,7 @@ next_iter:
 	 */
 	if (!replace) {
 		if (!add)
-			pr_warn("NLM_F_CREATE should be set when creating new route\n");
+			pr_debug("NLM_F_CREATE should be set when creating new route\n");
 
 add:
 		nlflags |= NLM_F_CREATE;
@@ -1185,7 +1185,7 @@ add:
 		if (!found) {
 			if (add)
 				goto add;
-			pr_warn("NLM_F_REPLACE set, but no existing node found!\n");
+			pr_debug("NLM_F_REPLACE set, but no existing node found!\n");
 			return -ENOENT;
 		}
 
@@ -1314,7 +1314,7 @@ int fib6_add(struct fib6_node *root, struct fib6_info *rt,
 			replace_required = 1;
 	}
 	if (!allow_create && !replace_required)
-		pr_warn("RTM_NEWROUTE with no NLM_F_CREATE or NLM_F_REPLACE\n");
+		pr_debug("RTM_NEWROUTE with no NLM_F_CREATE or NLM_F_REPLACE\n");
 
 	fn = fib6_add_1(info->nl_net, table, root,
 			&rt->fib6_dst.addr, rt->fib6_dst.plen,

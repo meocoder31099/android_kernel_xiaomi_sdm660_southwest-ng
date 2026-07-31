@@ -209,7 +209,7 @@ struct unicode_map *utf8_load(const char *version)
 		unicode_version = UNICODE_AGE(maj, min, rev);
 	} else {
 		unicode_version = utf8version_latest();
-		printk(KERN_WARNING"UTF-8 version not specified. "
+		no_printk(KERN_WARNING"UTF-8 version not specified. "
 		       "Assuming latest supported version (%d.%d.%d).",
 		       (unicode_version >> 16) & 0xff,
 		       (unicode_version >> 8) & 0xff,

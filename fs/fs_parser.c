@@ -308,24 +308,24 @@ bool validate_constant_table(const struct constant_table *tbl, size_t tbl_size,
 	bool good = true;
 
 	if (tbl_size == 0) {
-		pr_warn("VALIDATE C-TBL: Empty\n");
+		pr_debug("VALIDATE C-TBL: Empty\n");
 		return true;
 	}
 
 	for (i = 0; i < tbl_size; i++) {
 		if (!tbl[i].name) {
-			pr_err("VALIDATE C-TBL[%zu]: Null\n", i);
+			pr_debug("VALIDATE C-TBL[%zu]: Null\n", i);
 			good = false;
 		} else if (i > 0 && tbl[i - 1].name) {
 			int c = strcmp(tbl[i-1].name, tbl[i].name);
 
 			if (c == 0) {
-				pr_err("VALIDATE C-TBL[%zu]: Duplicate %s\n",
+				pr_debug("VALIDATE C-TBL[%zu]: Duplicate %s\n",
 				       i, tbl[i].name);
 				good = false;
 			}
 			if (c > 0) {
-				pr_err("VALIDATE C-TBL[%zu]: Missorted %s>=%s\n",
+				pr_debug("VALIDATE C-TBL[%zu]: Missorted %s>=%s\n",
 				       i, tbl[i-1].name, tbl[i].name);
 				good = false;
 			}
@@ -333,7 +333,7 @@ bool validate_constant_table(const struct constant_table *tbl, size_t tbl_size,
 
 		if (tbl[i].value != special &&
 		    (tbl[i].value < low || tbl[i].value > high)) {
-			pr_err("VALIDATE C-TBL[%zu]: %s->%d const out of range (%d-%d)\n",
+			pr_debug("VALIDATE C-TBL[%zu]: %s->%d const out of range (%d-%d)\n",
 			       i, tbl[i].name, tbl[i].value, low, high);
 			good = false;
 		}
@@ -354,10 +354,10 @@ bool fs_validate_description(const struct fs_parameter_description *desc)
 	unsigned int nr_params = 0;
 	bool good = true, enums = false;
 
-	pr_notice("*** VALIDATE %s ***\n", name);
+	pr_debug("*** VALIDATE %s ***\n", name);
 
 	if (!name[0]) {
-		pr_err("VALIDATE Parser: No name\n");
+		pr_debug("VALIDATE Parser: No name\n");
 		name = "Unknown";
 		good = false;
 	}
@@ -369,7 +369,7 @@ bool fs_validate_description(const struct fs_parameter_description *desc)
 			/* Check that the type is in range */
 			if (t == __fs_param_wasnt_defined ||
 			    t >= nr__fs_parameter_type) {
-				pr_err("VALIDATE %s: PARAM[%s] Bad type %u\n",
+				pr_debug("VALIDATE %s: PARAM[%s] Bad type %u\n",
 				       name, param->name, t);
 				good = false;
 			} else if (t == fs_param_is_enum) {
@@ -379,7 +379,7 @@ bool fs_validate_description(const struct fs_parameter_description *desc)
 			/* Check for duplicate parameter names */
 			for (p2 = desc->specs; p2 < param; p2++) {
 				if (strcmp(param->name, p2->name) == 0) {
-					pr_err("VALIDATE %s: PARAM[%s]: Duplicate\n",
+					pr_debug("VALIDATE %s: PARAM[%s]: Duplicate\n",
 					       name, param->name);
 					good = false;
 				}
@@ -391,13 +391,13 @@ bool fs_validate_description(const struct fs_parameter_description *desc)
 
 	if (desc->enums) {
 		if (!nr_params) {
-			pr_err("VALIDATE %s: Enum table but no parameters\n",
+			pr_debug("VALIDATE %s: Enum table but no parameters\n",
 			       name);
 			good = false;
 			goto no_enums;
 		}
 		if (!enums) {
-			pr_err("VALIDATE %s: Enum table but no enum-type values\n",
+			pr_debug("VALIDATE %s: Enum table but no enum-type values\n",
 			       name);
 			good = false;
 			goto no_enums;
@@ -410,7 +410,7 @@ bool fs_validate_description(const struct fs_parameter_description *desc)
 			for (param = desc->specs; param->name; param++) {
 				if (param->opt == e->opt &&
 				    param->type != fs_param_is_enum) {
-					pr_err("VALIDATE %s: e[%tu] enum val for %s\n",
+					pr_debug("VALIDATE %s: e[%tu] enum val for %s\n",
 					       name, e - desc->enums, param->name);
 					good = false;
 				}
@@ -427,14 +427,14 @@ bool fs_validate_description(const struct fs_parameter_description *desc)
 				if (e->opt == param->opt)
 					break;
 			if (!e->name[0]) {
-				pr_err("VALIDATE %s: PARAM[%s] enum with no values\n",
+				pr_debug("VALIDATE %s: PARAM[%s] enum with no values\n",
 				       name, param->name);
 				good = false;
 			}
 		}
 	} else {
 		if (enums) {
-			pr_err("VALIDATE %s: enum-type values, but no enum table\n",
+			pr_debug("VALIDATE %s: enum-type values, but no enum table\n",
 			       name);
 			good = false;
 			goto no_enums;

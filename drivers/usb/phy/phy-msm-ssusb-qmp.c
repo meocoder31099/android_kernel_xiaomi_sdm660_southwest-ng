@@ -249,14 +249,14 @@ static int msm_ssusb_qmp_ldo_enable(struct msm_ssphy_qmp *phy, int on)
 
 	rc = regulator_set_load(phy->vdd, phy->vdd_max_uA);
 	if (rc < 0) {
-		dev_err(phy->phy.dev, "Unable to set HPM of %s\n", "vdd");
+		dev_dbg(phy->phy.dev, "Unable to set HPM of %s\n", "vdd");
 		return rc;
 	}
 
 	rc = regulator_set_voltage(phy->vdd, phy->vdd_levels[min],
 				    phy->vdd_levels[2]);
 	if (rc) {
-		dev_err(phy->phy.dev, "Unable to set voltage for %s\n", "vdd");
+		dev_dbg(phy->phy.dev, "Unable to set voltage for %s\n", "vdd");
 		goto put_vdd_lpm;
 	}
 
@@ -265,13 +265,13 @@ static int msm_ssusb_qmp_ldo_enable(struct msm_ssphy_qmp *phy, int on)
 
 	rc = regulator_enable(phy->vdd);
 	if (rc) {
-		dev_err(phy->phy.dev, "Unable to enable %s\n", "vdd");
+		dev_dbg(phy->phy.dev, "Unable to enable %s\n", "vdd");
 		goto unconfig_vdd;
 	}
 
 	rc = regulator_set_load(phy->core_ldo, phy->core_max_uA);
 	if (rc < 0) {
-		dev_err(phy->phy.dev, "Unable to set HPM of %s\n", "core_ldo");
+		dev_dbg(phy->phy.dev, "Unable to set HPM of %s\n", "core_ldo");
 		goto disable_vdd;
 	}
 
@@ -279,14 +279,14 @@ static int msm_ssusb_qmp_ldo_enable(struct msm_ssphy_qmp *phy, int on)
 			phy->core_voltage_levels[CORE_LEVEL_MIN],
 			phy->core_voltage_levels[CORE_LEVEL_MAX]);
 	if (rc) {
-		dev_err(phy->phy.dev, "Unable to set voltage for %s\n",
+		dev_dbg(phy->phy.dev, "Unable to set voltage for %s\n",
 				"core_ldo");
 		goto put_core_ldo_lpm;
 	}
 
 	rc = regulator_enable(phy->core_ldo);
 	if (rc) {
-		dev_err(phy->phy.dev, "Unable to enable %s\n", "core_ldo");
+		dev_dbg(phy->phy.dev, "Unable to enable %s\n", "core_ldo");
 		goto unset_core_ldo;
 	}
 
@@ -295,36 +295,36 @@ static int msm_ssusb_qmp_ldo_enable(struct msm_ssphy_qmp *phy, int on)
 disable_regulators:
 	rc = regulator_disable(phy->core_ldo);
 	if (rc)
-		dev_err(phy->phy.dev, "Unable to disable %s\n", "core_ldo");
+		dev_dbg(phy->phy.dev, "Unable to disable %s\n", "core_ldo");
 
 unset_core_ldo:
 	rc = regulator_set_voltage(phy->core_ldo,
 			phy->core_voltage_levels[CORE_LEVEL_NONE],
 			phy->core_voltage_levels[CORE_LEVEL_MAX]);
 	if (rc)
-		dev_err(phy->phy.dev, "Unable to set voltage for %s\n",
+		dev_dbg(phy->phy.dev, "Unable to set voltage for %s\n",
 				"core_ldo");
 
 put_core_ldo_lpm:
 	rc = regulator_set_load(phy->core_ldo, 0);
 	if (rc < 0)
-		dev_err(phy->phy.dev, "Unable to set LPM of %s\n", "core_ldo");
+		dev_dbg(phy->phy.dev, "Unable to set LPM of %s\n", "core_ldo");
 
 disable_vdd:
 	rc = regulator_disable(phy->vdd);
 	if (rc)
-		dev_err(phy->phy.dev, "Unable to disable %s\n", "vdd");
+		dev_dbg(phy->phy.dev, "Unable to disable %s\n", "vdd");
 
 unconfig_vdd:
 	rc = regulator_set_voltage(phy->vdd, phy->vdd_levels[min],
 				    phy->vdd_levels[2]);
 	if (rc)
-		dev_err(phy->phy.dev, "Unable to set voltage for %s\n", "vdd");
+		dev_dbg(phy->phy.dev, "Unable to set voltage for %s\n", "vdd");
 
 put_vdd_lpm:
 	rc = regulator_set_load(phy->vdd, 0);
 	if (rc < 0)
-		dev_err(phy->phy.dev, "Unable to set LPM of %s\n", "vdd");
+		dev_dbg(phy->phy.dev, "Unable to set LPM of %s\n", "vdd");
 
 	return rc < 0 ? rc : 0;
 }
@@ -336,7 +336,7 @@ static int configure_phy_regs(struct usb_phy *uphy,
 					phy);
 
 	if (!reg) {
-		dev_err(uphy->dev, "NULL PHY configuration\n");
+		dev_dbg(uphy->dev, "NULL PHY configuration\n");
 		return -EINVAL;
 	}
 
@@ -386,7 +386,7 @@ static void usb_qmp_update_portselect_phymode(struct msm_ssphy_qmp *phy)
 
 		/* update port select */
 		if (val > 0) {
-			dev_err(phy->phy.dev,
+			dev_dbg(phy->phy.dev,
 				"USB DP QMP PHY: Update TYPEC CTRL(%d)\n", val);
 			writel_relaxed(val, phy->base +
 				phy->phy_reg[USB3_DP_COM_TYPEC_CTRL]);
@@ -402,7 +402,7 @@ static void usb_qmp_update_portselect_phymode(struct msm_ssphy_qmp *phy)
 		break;
 	case  USB_PHY_TYPE_USB3_OR_DP:
 		if (val > 0) {
-			dev_err(phy->phy.dev,
+			dev_dbg(phy->phy.dev,
 				"USB QMP PHY: Update TYPEC CTRL(%d)\n", val);
 			writel_relaxed(val, phy->base +
 				phy->phy_reg[USB3_PHY_PCS_MISC_TYPEC_CTRL]);
@@ -441,7 +441,7 @@ static void usb_qmp_powerup_phy(struct msm_ssphy_qmp *phy)
 			phy->base + phy->phy_reg[USB3_PHY_POWER_DOWN_CONTROL]);
 		break;
 	default:
-		dev_err(phy->phy.dev, "phy_powerup: Unknown USB QMP PHY type\n");
+		dev_dbg(phy->phy.dev, "phy_powerup: Unknown USB QMP PHY type\n");
 		break;
 	}
 
@@ -462,7 +462,7 @@ static int msm_ssphy_qmp_init(struct usb_phy *uphy)
 
 	ret = msm_ssusb_qmp_ldo_enable(phy, 1);
 	if (ret) {
-		dev_err(phy->phy.dev,
+		dev_dbg(phy->phy.dev,
 		"msm_ssusb_qmp_ldo_enable(1) failed, ret=%d\n",
 		ret);
 		return ret;
@@ -481,7 +481,7 @@ static int msm_ssphy_qmp_init(struct usb_phy *uphy)
 	/* Main configuration */
 	ret = configure_phy_regs(uphy, reg);
 	if (ret) {
-		dev_err(uphy->dev, "Failed the main PHY configuration\n");
+		dev_dbg(uphy->dev, "Failed the main PHY configuration\n");
 		goto fail;
 	}
 
@@ -509,8 +509,8 @@ static int msm_ssphy_qmp_init(struct usb_phy *uphy)
 	} while (--init_timeout_usec);
 
 	if (!init_timeout_usec) {
-		dev_err(uphy->dev, "QMP PHY initialization timeout\n");
-		dev_err(uphy->dev, "USB3_PHY_PCS_STATUS:%x\n",
+		dev_dbg(uphy->dev, "QMP PHY initialization timeout\n");
+		dev_dbg(uphy->dev, "USB3_PHY_PCS_STATUS:%x\n",
 				readl_relaxed(phy->base +
 					phy->phy_reg[USB3_PHY_PCS_STATUS]));
 		ret = -EBUSY;
@@ -540,14 +540,14 @@ static int msm_ssphy_qmp_dp_combo_reset(struct usb_phy *uphy)
 		/* Assert USB3 PHY CSR reset */
 		ret = reset_control_assert(phy->phy_reset);
 		if (ret) {
-			dev_err(uphy->dev, "phy_reset assert failed\n");
+			dev_dbg(uphy->dev, "phy_reset assert failed\n");
 			goto exit;
 		}
 
 		/* Deassert USB3 PHY CSR reset */
 		ret = reset_control_deassert(phy->phy_reset);
 		if (ret) {
-			dev_err(uphy->dev, "phy_reset deassert failed\n");
+			dev_dbg(uphy->dev, "phy_reset deassert failed\n");
 			goto exit;
 		}
 		return 0;
@@ -557,26 +557,26 @@ static int msm_ssphy_qmp_dp_combo_reset(struct usb_phy *uphy)
 	/* Assert global PHY reset */
 	ret = reset_control_assert(phy->global_phy_reset);
 	if (ret) {
-		dev_err(uphy->dev, "global_phy_reset assert failed\n");
+		dev_dbg(uphy->dev, "global_phy_reset assert failed\n");
 		goto exit;
 	}
 
 	/* Assert QMP USB PHY reset */
 	ret = reset_control_assert(phy->phy_reset);
 	if (ret) {
-		dev_err(uphy->dev, "phy_reset assert failed\n");
+		dev_dbg(uphy->dev, "phy_reset assert failed\n");
 		goto exit;
 	}
 
 	/* De-Assert QMP USB PHY reset */
 	ret = reset_control_deassert(phy->phy_reset);
 	if (ret)
-		dev_err(uphy->dev, "phy_reset deassert failed\n");
+		dev_dbg(uphy->dev, "phy_reset deassert failed\n");
 
 	/* De-Assert global PHY reset */
 	ret = reset_control_deassert(phy->global_phy_reset);
 	if (ret)
-		dev_err(uphy->dev, "global_phy_reset deassert failed\n");
+		dev_dbg(uphy->dev, "global_phy_reset deassert failed\n");
 
 exit:
 	return ret;
@@ -593,14 +593,14 @@ static int msm_ssphy_qmp_reset(struct usb_phy *uphy)
 	/* Assert USB3 PHY reset */
 	ret = reset_control_assert(phy->phy_phy_reset);
 	if (ret) {
-		dev_err(uphy->dev, "phy_phy_reset assert failed\n");
+		dev_dbg(uphy->dev, "phy_phy_reset assert failed\n");
 		goto exit;
 	}
 
 	/* Assert USB3 PHY CSR reset */
 	ret = reset_control_assert(phy->phy_reset);
 	if (ret) {
-		dev_err(uphy->dev, "phy_reset assert failed\n");
+		dev_dbg(uphy->dev, "phy_reset assert failed\n");
 		goto deassert_phy_phy_reset;
 	}
 
@@ -611,14 +611,14 @@ static int msm_ssphy_qmp_reset(struct usb_phy *uphy)
 	/* Deassert USB3 PHY CSR reset */
 	ret = reset_control_deassert(phy->phy_reset);
 	if (ret) {
-		dev_err(uphy->dev, "phy_reset deassert failed\n");
+		dev_dbg(uphy->dev, "phy_reset deassert failed\n");
 		goto deassert_phy_phy_reset;
 	}
 
 	/* Deassert USB3 PHY reset */
 	ret = reset_control_deassert(phy->phy_phy_reset);
 	if (ret) {
-		dev_err(uphy->dev, "phy_phy_reset deassert failed\n");
+		dev_dbg(uphy->dev, "phy_phy_reset deassert failed\n");
 		goto exit;
 	}
 
@@ -627,7 +627,7 @@ static int msm_ssphy_qmp_reset(struct usb_phy *uphy)
 deassert_phy_phy_reset:
 	ret = reset_control_deassert(phy->phy_phy_reset);
 	if (ret)
-		dev_err(uphy->dev, "phy_phy_reset deassert failed\n");
+		dev_dbg(uphy->dev, "phy_phy_reset deassert failed\n");
 exit:
 	phy->in_suspend = false;
 
@@ -647,13 +647,13 @@ static int msm_ssphy_power_enable(struct msm_ssphy_qmp *phy, bool on)
 		if (on) {
 			ret = msm_ssusb_qmp_ldo_enable(phy, 1);
 			if (ret)
-				dev_err(phy->phy.dev,
+				dev_dbg(phy->phy.dev,
 				"msm_ssusb_qmp_ldo_enable(1) failed, ret=%d\n",
 				ret);
 		} else {
 			ret = msm_ssusb_qmp_ldo_enable(phy, 0);
 			if (ret)
-				dev_err(phy->phy.dev,
+				dev_dbg(phy->phy.dev,
 					"msm_ssusb_qmp_ldo_enable(0) failed, ret=%d\n",
 					ret);
 		}
@@ -784,7 +784,7 @@ static int msm_ssphy_qmp_extcon_register(struct msm_ssphy_qmp *phy,
 
 	edev = extcon_get_edev_by_phandle(dev, 0);
 	if (IS_ERR(edev)) {
-		dev_err(dev, "failed to get phandle for msm_ssphy_qmp\n");
+		dev_dbg(dev, "failed to get phandle for msm_ssphy_qmp\n");
 		return PTR_ERR(edev);
 	}
 
@@ -794,7 +794,7 @@ static int msm_ssphy_qmp_extcon_register(struct msm_ssphy_qmp *phy,
 	ret = extcon_register_blocking_notifier(edev, EXTCON_DISP_DP,
 								&phy->dp_nb);
 	if (ret < 0) {
-		dev_err(dev, "failed to register blocking notifier\n");
+		dev_dbg(dev, "failed to register blocking notifier\n");
 		return ret;
 	}
 
@@ -810,7 +810,7 @@ static int msm_ssphy_qmp_get_clks(struct msm_ssphy_qmp *phy, struct device *dev)
 		ret = PTR_ERR(phy->aux_clk);
 		phy->aux_clk = NULL;
 		if (ret != -EPROBE_DEFER)
-			dev_err(dev, "failed to get aux_clk\n");
+			dev_dbg(dev, "failed to get aux_clk\n");
 		goto err;
 	}
 	clk_set_rate(phy->aux_clk, clk_round_rate(phy->aux_clk, ULONG_MAX));
@@ -821,7 +821,7 @@ static int msm_ssphy_qmp_get_clks(struct msm_ssphy_qmp *phy, struct device *dev)
 		if (IS_ERR(phy->cfg_ahb_clk)) {
 			ret = PTR_ERR(phy->cfg_ahb_clk);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev,
+				dev_dbg(dev,
 				"failed to get cfg_ahb_clk ret %d\n", ret);
 			goto err;
 		}
@@ -832,7 +832,7 @@ static int msm_ssphy_qmp_get_clks(struct msm_ssphy_qmp *phy, struct device *dev)
 		ret = PTR_ERR(phy->pipe_clk);
 		phy->pipe_clk = NULL;
 		if (ret != -EPROBE_DEFER)
-			dev_err(dev, "failed to get pipe_clk\n");
+			dev_dbg(dev, "failed to get pipe_clk\n");
 		goto err;
 	}
 
@@ -858,7 +858,7 @@ static int msm_ssphy_qmp_get_clks(struct msm_ssphy_qmp *phy, struct device *dev)
 		if (IS_ERR(phy->com_aux_clk)) {
 			ret = PTR_ERR(phy->com_aux_clk);
 			if (ret != -EPROBE_DEFER)
-				dev_err(dev,
+				dev_dbg(dev,
 				"failed to get com_aux_clk ret %d\n", ret);
 			goto err;
 		}
@@ -971,7 +971,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 		if (phy->phy_reg) {
 			phy->reg_offset_cnt = (size / sizeof(*phy->phy_reg));
 			if (phy->reg_offset_cnt > USB3_PHY_REG_MAX) {
-				dev_err(dev, "invalid reg offset count\n");
+				dev_dbg(dev, "invalid reg offset count\n");
 				return -EINVAL;
 			}
 
@@ -979,18 +979,18 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 				"qcom,qmp-phy-reg-offset",
 				phy->phy_reg, phy->reg_offset_cnt);
 		} else {
-			dev_err(dev, "err mem alloc for qmp_phy_reg_offset\n");
+			dev_dbg(dev, "err mem alloc for qmp_phy_reg_offset\n");
 			return -ENOMEM;
 		}
 	} else {
-		dev_err(dev, "err provide qcom,qmp-phy-reg-offset\n");
+		dev_dbg(dev, "err provide qcom,qmp-phy-reg-offset\n");
 		return -EINVAL;
 	}
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 						"qmp_phy_base");
 	if (!res) {
-		dev_err(dev, "failed getting qmp_phy_base\n");
+		dev_dbg(dev, "failed getting qmp_phy_base\n");
 		return -ENODEV;
 	}
 
@@ -1009,7 +1009,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 	if (res) {
 		phy->vls_clamp_reg = devm_ioremap_resource(dev, res);
 		if (IS_ERR(phy->vls_clamp_reg)) {
-			dev_err(dev, "err getting vls_clamp_reg address\n");
+			dev_dbg(dev, "err getting vls_clamp_reg address\n");
 			return PTR_ERR(phy->vls_clamp_reg);
 		}
 	}
@@ -1019,7 +1019,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 	if (res) {
 		phy->pcs_clamp_enable_reg = devm_ioremap_resource(dev, res);
 		if (IS_ERR(phy->pcs_clamp_enable_reg)) {
-			dev_err(dev, "err getting pcs_clamp_enable_reg address.\n");
+			dev_dbg(dev, "err getting pcs_clamp_enable_reg address.\n");
 			return PTR_ERR(phy->pcs_clamp_enable_reg);
 		}
 	}
@@ -1029,7 +1029,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 	if (res) {
 		phy->tcsr_usb3_dp_phymode = devm_ioremap_resource(dev, res);
 		if (IS_ERR(phy->tcsr_usb3_dp_phymode)) {
-			dev_err(dev, "err getting tcsr_usb3_dp_phymode addr\n");
+			dev_dbg(dev, "err getting tcsr_usb3_dp_phymode addr\n");
 			return PTR_ERR(phy->tcsr_usb3_dp_phymode);
 		}
 	}
@@ -1037,7 +1037,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 	of_get_property(dev->of_node, "qcom,qmp-phy-init-seq", &size);
 	if (size) {
 		if (size % sizeof(*phy->qmp_phy_init_seq)) {
-			dev_err(dev, "invalid init_seq_len\n");
+			dev_dbg(dev, "invalid init_seq_len\n");
 			return -EINVAL;
 		}
 
@@ -1051,7 +1051,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 				phy->qmp_phy_init_seq,
 				phy->init_seq_len);
 	} else {
-		dev_err(dev, "error need qmp-phy-init-seq\n");
+		dev_dbg(dev, "error need qmp-phy-init-seq\n");
 		return -EINVAL;
 	}
 
@@ -1067,7 +1067,7 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 				(u32 *)phy->core_voltage_levels,
 				len / sizeof(u32));
 		if (ret) {
-			dev_err(dev, "err qcom,core-voltage-level property\n");
+			dev_dbg(dev, "err qcom,core-voltage-level property\n");
 			goto err;
 		}
 	}
@@ -1083,12 +1083,12 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 				(u32 *) phy->vdd_levels,
 				len / sizeof(u32));
 		if (ret) {
-			dev_err(dev, "err qcom,vdd-voltage-level property\n");
+			dev_dbg(dev, "err qcom,vdd-voltage-level property\n");
 			goto err;
 		}
 	} else {
 		ret = -EINVAL;
-		dev_err(dev, "error invalid inputs for vdd-voltage-level\n");
+		dev_dbg(dev, "error invalid inputs for vdd-voltage-level\n");
 		goto err;
 	}
 
@@ -1098,14 +1098,14 @@ static int msm_ssphy_qmp_probe(struct platform_device *pdev)
 
 	phy->vdd = devm_regulator_get(dev, "vdd");
 	if (IS_ERR(phy->vdd)) {
-		dev_err(dev, "unable to get vdd supply\n");
+		dev_dbg(dev, "unable to get vdd supply\n");
 		ret = PTR_ERR(phy->vdd);
 		goto err;
 	}
 
 	phy->core_ldo = devm_regulator_get(dev, "core");
 	if (IS_ERR(phy->core_ldo)) {
-		dev_err(dev, "unable to get core ldo supply\n");
+		dev_dbg(dev, "unable to get core ldo supply\n");
 		ret = PTR_ERR(phy->core_ldo);
 		goto err;
 	}

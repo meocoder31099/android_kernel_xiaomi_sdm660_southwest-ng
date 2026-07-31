@@ -176,7 +176,7 @@ static int __power_supply_populate_supplied_from(struct device *dev,
 			break;
 
 		if (np == epsy->of_node) {
-			dev_info(&psy->dev, "%s: Found supply : %s\n",
+			dev_dbg(&psy->dev, "%s: Found supply : %s\n",
 				psy->desc->name, epsy->desc->name);
 			psy->supplied_from[i-1] = (char *)epsy->desc->name;
 			psy->num_supplies++;
@@ -591,7 +591,7 @@ int power_supply_get_battery_info(struct power_supply *psy,
 	info->constant_charge_voltage_max_uv = -EINVAL;
 
 	if (!psy->of_node) {
-		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
+		dev_dbg(&psy->dev, "%s currently only supports devicetree\n",
 			 __func__);
 		return -ENXIO;
 	}
@@ -869,7 +869,7 @@ __power_supply_register(struct device *parent,
 	int i, rc;
 
 	if (!parent)
-		pr_warn("%s: Expected proper parent device for '%s'\n",
+		pr_debug("%s: Expected proper parent device for '%s'\n",
 			__func__, desc->name);
 
 	if (!desc || !desc->name || !desc->properties || !desc->num_properties)
@@ -913,7 +913,7 @@ __power_supply_register(struct device *parent,
 
 	rc = power_supply_check_supplies(psy);
 	if (rc) {
-		dev_info(dev, "Not all required supplies found, defer probe\n");
+		dev_dbg(dev, "Not all required supplies found, defer probe\n");
 		goto check_supplies_failed;
 	}
 

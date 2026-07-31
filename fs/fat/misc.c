@@ -51,7 +51,7 @@ void fat_msg(struct super_block *sb, const char *level, const char *fmt, ...)
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	printk("%sFAT-fs (%s): %pV\n", level, sb->s_id, &vaf);
+	no_printk("%sFAT-fs (%s): %pV\n", level, sb->s_id, &vaf);
 	va_end(args);
 }
 

@@ -297,10 +297,10 @@ static int usb_probe_interface(struct device *dev)
 		return error;
 
 	if (udev->authorized == 0) {
-		dev_err(&intf->dev, "Device is not authorized for usage\n");
+		dev_dbg(&intf->dev, "Device is not authorized for usage\n");
 		return error;
 	} else if (intf->authorized == 0) {
-		dev_err(&intf->dev, "Interface %d is not authorized for usage\n",
+		dev_dbg(&intf->dev, "Interface %d is not authorized for usage\n",
 				intf->altsetting->desc.bInterfaceNumber);
 		return error;
 	}
@@ -342,7 +342,7 @@ static int usb_probe_interface(struct device *dev)
 	if (driver->disable_hub_initiated_lpm) {
 		lpm_disable_error = usb_unlocked_disable_lpm(udev);
 		if (lpm_disable_error) {
-			dev_err(&intf->dev, "%s Failed to disable LPM for driver %s\n",
+			dev_dbg(&intf->dev, "%s Failed to disable LPM for driver %s\n",
 				__func__, driver->name);
 			error = lpm_disable_error;
 			goto err;
@@ -899,10 +899,10 @@ int usb_register_device_driver(struct usb_device_driver *new_udriver,
 	retval = driver_register(&new_udriver->drvwrap.driver);
 
 	if (!retval)
-		pr_info("%s: registered new device driver %s\n",
+		pr_debug("%s: registered new device driver %s\n",
 			usbcore_name, new_udriver->name);
 	else
-		printk(KERN_ERR "%s: error %d registering device "
+		no_printk(KERN_ERR "%s: error %d registering device "
 			"	driver %s\n",
 			usbcore_name, retval, new_udriver->name);
 
@@ -919,7 +919,7 @@ EXPORT_SYMBOL_GPL(usb_register_device_driver);
  */
 void usb_deregister_device_driver(struct usb_device_driver *udriver)
 {
-	pr_info("%s: deregistering device driver %s\n",
+	pr_debug("%s: deregistering device driver %s\n",
 			usbcore_name, udriver->name);
 
 	driver_unregister(&udriver->drvwrap.driver);
@@ -968,7 +968,7 @@ int usb_register_driver(struct usb_driver *new_driver, struct module *owner,
 	if (retval)
 		goto out_newid;
 
-	pr_info("%s: registered new interface driver %s\n",
+	pr_debug("%s: registered new interface driver %s\n",
 			usbcore_name, new_driver->name);
 
 out:
@@ -977,7 +977,7 @@ out:
 out_newid:
 	driver_unregister(&new_driver->drvwrap.driver);
 
-	printk(KERN_ERR "%s: error %d registering interface "
+	no_printk(KERN_ERR "%s: error %d registering interface "
 			"	driver %s\n",
 			usbcore_name, retval, new_driver->name);
 	goto out;
@@ -997,7 +997,7 @@ EXPORT_SYMBOL_GPL(usb_register_driver);
  */
 void usb_deregister(struct usb_driver *driver)
 {
-	pr_info("%s: deregistering interface driver %s\n",
+	pr_debug("%s: deregistering interface driver %s\n",
 			usbcore_name, driver->name);
 
 	usb_remove_newid_files(driver);
@@ -1066,7 +1066,7 @@ static void usb_rebind_intf(struct usb_interface *intf)
 		intf->needs_binding = 0;
 		rc = device_attach(&intf->dev);
 		if (rc < 0 && rc != -EPROBE_DEFER)
-			dev_warn(&intf->dev, "rebind failed: %d\n", rc);
+			dev_dbg(&intf->dev, "rebind failed: %d\n", rc);
 	}
 }
 
@@ -1203,7 +1203,7 @@ static int usb_suspend_interface(struct usb_device *udev,
 	/* at this time we know the driver supports suspend */
 	status = driver->suspend(intf, msg);
 	if (status && !PMSG_IS_AUTO(msg))
-		dev_err(&intf->dev, "suspend error %d\n", status);
+		dev_dbg(&intf->dev, "suspend error %d\n", status);
 
  done:
 	dev_vdbg(&intf->dev, "%s: status %d\n", __func__, status);
@@ -1244,7 +1244,7 @@ static int usb_resume_interface(struct usb_device *udev,
 		if (driver->reset_resume) {
 			status = driver->reset_resume(intf);
 			if (status)
-				dev_err(&intf->dev, "%s error %d\n",
+				dev_dbg(&intf->dev, "%s error %d\n",
 						"reset_resume", status);
 		} else {
 			intf->needs_binding = 1;
@@ -1254,7 +1254,7 @@ static int usb_resume_interface(struct usb_device *udev,
 	} else {
 		status = driver->resume(intf);
 		if (status)
-			dev_err(&intf->dev, "resume error %d\n", status);
+			dev_dbg(&intf->dev, "resume error %d\n", status);
 	}
 
 done:
@@ -1338,7 +1338,7 @@ static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
 			err = usb_get_std_status(udev, USB_RECIP_DEVICE, 0,
 						 &devstat);
 			if (err) {
-				dev_err(&udev->dev,
+				dev_dbg(&udev->dev,
 					"Failed to suspend device, error %d\n",
 					status);
 				goto done;

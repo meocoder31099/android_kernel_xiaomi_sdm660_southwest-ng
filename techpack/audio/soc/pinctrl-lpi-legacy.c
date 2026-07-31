@@ -136,7 +136,7 @@ static int lpi_gpio_read(struct lpi_gpio_pad *pad, unsigned int addr)
 
 	ret = ioread32(pad->base + pad->offset + addr);
 	if (ret < 0)
-		pr_err("%s: read 0x%x failed\n", __func__, addr);
+		pr_debug("%s: read 0x%x failed\n", __func__, addr);
 
 	pm_runtime_mark_last_busy(lpi_dev);
 	pm_runtime_put_autosuspend(lpi_dev);
@@ -543,7 +543,7 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(dev->of_node, "reg", &reg);
 	if (ret < 0) {
-		dev_err(dev, "missing base address\n");
+		dev_dbg(dev, "missing base address\n");
 		return ret;
 	}
 
@@ -556,7 +556,7 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(dev->of_node, "qcom,lpi-offset-tbl",
 					 lpi_offset, npins);
 	if (ret < 0) {
-		dev_err(dev, "error in reading lpi offset table: %d\n", ret);
+		dev_dbg(dev, "error in reading lpi offset table: %d\n", ret);
 		return ret;
 	}
 
@@ -590,7 +590,7 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 
 	lpi_base = devm_ioremap(dev, reg, LPI_ADDRESS_SIZE);
 	if (lpi_base == NULL) {
-		dev_err(dev, "%s devm_ioremap failed\n", __func__);
+		dev_dbg(dev, "%s devm_ioremap failed\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -620,13 +620,13 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 
 	ret = gpiochip_add_data(&state->chip, state);
 	if (ret) {
-		dev_err(state->dev, "can't add gpio chip\n");
+		dev_dbg(state->dev, "can't add gpio chip\n");
 		goto err_chip;
 	}
 
 	ret = gpiochip_add_pin_range(&state->chip, dev_name(dev), 0, 0, npins);
 	if (ret) {
-		dev_err(dev, "failed to add pin range\n");
+		dev_dbg(dev, "failed to add pin range\n");
 		goto err_range;
 	}
 
@@ -635,7 +635,7 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 	ret = audio_notifier_register("lpi_tlmm", AUDIO_NOTIFIER_ADSP_DOMAIN,
 				      &service_nb);
 	if (ret < 0) {
-		pr_err("%s: Audio notifier register failed ret = %d\n",
+		pr_debug("%s: Audio notifier register failed ret = %d\n",
 			__func__, ret);
 		goto err_range;
 	}
@@ -644,7 +644,7 @@ static int lpi_pinctrl_probe(struct platform_device *pdev)
 	if (!ret) {
 		snd_event_notify(dev, SND_EVENT_UP);
 	} else {
-		dev_err(dev, "%s: snd_event registration failed, ret [%d]\n",
+		dev_dbg(dev, "%s: snd_event registration failed, ret [%d]\n",
 			__func__, ret);
 		goto err_snd_evt;
 	}
@@ -707,7 +707,7 @@ static int lpi_pinctrl_runtime_resume(struct device *dev)
 
 	ret = clk_prepare_enable(state->lpass_core_hw_vote);
 	if (ret < 0)
-		dev_err(dev, "%s: lpass core hw enable failed\n",
+		dev_dbg(dev, "%s: lpass core hw enable failed\n",
 			__func__);
 	else
 		state->core_hw_vote_status = true;

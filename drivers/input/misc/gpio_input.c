@@ -68,7 +68,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 	key_entry = kp->keys_info->keymap;
 	key_state = kp->key_state;
 	for (i = 0; i < nkeys; i++, key_entry++, key_state++)
-		pr_info("gpio_read_detect_status %d %d\n", key_entry->gpio,
+		pr_debug("gpio_read_detect_status %d %d\n", key_entry->gpio,
 			gpio_read_detect_status(key_entry->gpio));
 #endif
 	key_entry = ds->info->keymap;
@@ -83,7 +83,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 			debounce = key_state->debounce = DEBOUNCE_UNKNOWN;
 			enable_irq(gpio_to_irq(key_entry->gpio));
 			if (gpio_flags & GPIOEDF_PRINT_KEY_UNSTABLE)
-				pr_info("gpio_keys_scan_keys: key %x-%x, %d "
+				pr_debug("gpio_keys_scan_keys: key %x-%x, %d "
 					"(%d) continue debounce\n",
 					ds->info->type, key_entry->code,
 					i, key_entry->gpio);
@@ -95,7 +95,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 				ds->debounce_count++;
 				key_state->debounce = DEBOUNCE_UNKNOWN;
 				if (gpio_flags & GPIOEDF_PRINT_KEY_DEBOUNCE)
-					pr_info("gpio_keys_scan_keys: key %x-"
+					pr_debug("gpio_keys_scan_keys: key %x-"
 						"%x, %d (%d) start debounce\n",
 						ds->info->type, key_entry->code,
 						i, key_entry->gpio);
@@ -104,7 +104,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 		}
 		if (pressed && (debounce & DEBOUNCE_NOTPRESSED)) {
 			if (gpio_flags & GPIOEDF_PRINT_KEY_DEBOUNCE)
-				pr_info("gpio_keys_scan_keys: key %x-%x, %d "
+				pr_debug("gpio_keys_scan_keys: key %x-%x, %d "
 					"(%d) debounce pressed 1\n",
 					ds->info->type, key_entry->code,
 					i, key_entry->gpio);
@@ -113,7 +113,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 		}
 		if (!pressed && (debounce & DEBOUNCE_PRESSED)) {
 			if (gpio_flags & GPIOEDF_PRINT_KEY_DEBOUNCE)
-				pr_info("gpio_keys_scan_keys: key %x-%x, %d "
+				pr_debug("gpio_keys_scan_keys: key %x-%x, %d "
 					"(%d) debounce pressed 0\n",
 					ds->info->type, key_entry->code,
 					i, key_entry->gpio);
@@ -127,7 +127,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 		else
 			key_state->debounce |= DEBOUNCE_POLL;
 		if (gpio_flags & GPIOEDF_PRINT_KEYS)
-			pr_info("gpio_keys_scan_keys: key %x-%x, %d (%d) "
+			pr_debug("gpio_keys_scan_keys: key %x-%x, %d (%d) "
 				"changed to %d\n", ds->info->type,
 				key_entry->code, i, key_entry->gpio, pressed);
 		input_event(ds->input_devs->dev[key_entry->dev], ds->info->type,
@@ -143,7 +143,7 @@ static enum hrtimer_restart gpio_event_input_timer_func(struct hrtimer *timer)
 	key_entry = kp->keys_info->keymap;
 	key_state = kp->key_state;
 	for (i = 0; i < nkeys; i++, key_entry++, key_state++) {
-		pr_info("gpio_read_detect_status %d %d\n", key_entry->gpio,
+		pr_debug("gpio_read_detect_status %d %d\n", key_entry->gpio,
 			gpio_read_detect_status(key_entry->gpio));
 	}
 #endif
@@ -185,7 +185,7 @@ static irqreturn_t gpio_event_input_irq_handler(int irq, void *dev_id)
 					HRTIMER_MODE_REL);
 			}
 			if (ds->info->flags & GPIOEDF_PRINT_KEY_DEBOUNCE)
-				pr_info("gpio_event_input_irq_handler: "
+				pr_debug("gpio_event_input_irq_handler: "
 					"key %x-%x, %d (%d) start debounce\n",
 					ds->info->type, key_entry->code,
 					keymap_index, key_entry->gpio);
@@ -198,7 +198,7 @@ static irqreturn_t gpio_event_input_irq_handler(int irq, void *dev_id)
 		pressed = gpio_get_value(key_entry->gpio) ^
 			!(ds->info->flags & GPIOEDF_ACTIVE_HIGH);
 		if (ds->info->flags & GPIOEDF_PRINT_KEYS)
-			pr_info("gpio_event_input_irq_handler: key %x-%x, %d "
+			pr_debug("gpio_event_input_irq_handler: key %x-%x, %d "
 				"(%d) changed to %d\n",
 				ds->info->type, key_entry->code, keymap_index,
 				key_entry->gpio, pressed);
@@ -223,7 +223,7 @@ static int gpio_event_input_request_irqs(struct gpio_input_state *ds)
 		err = request_irq(irq, gpio_event_input_irq_handler,
 				  req_flags, "gpio_keys", &ds->key_state[i]);
 		if (err) {
-			pr_err("gpio_event_input_request_irqs: request_irq "
+			pr_debug("gpio_event_input_request_irqs: request_irq "
 				"failed for input %d, irq %d\n",
 				ds->info->keymap[i].gpio, irq);
 			goto err_request_irq_failed;
@@ -231,7 +231,7 @@ static int gpio_event_input_request_irqs(struct gpio_input_state *ds)
 		if (ds->info->info.no_suspend) {
 			err = enable_irq_wake(irq);
 			if (err) {
-				pr_err("gpio_event_input_request_irqs: "
+				pr_debug("gpio_event_input_request_irqs: "
 					"enable_irq_wake failed for input %d, "
 					"irq %d\n",
 					ds->info->keymap[i].gpio, irq);
@@ -291,7 +291,7 @@ int gpio_event_input_func(struct gpio_event_input_devs *input_devs,
 					di->keymap_size, GFP_KERNEL);
 		if (ds == NULL) {
 			ret = -ENOMEM;
-			pr_err("gpio_event_input_func: "
+			pr_debug("gpio_event_input_func: "
 				"Failed to allocate private data\n");
 			goto err_ds_alloc_failed;
 		}
@@ -307,7 +307,7 @@ int gpio_event_input_func(struct gpio_event_input_devs *input_devs,
 		kfree(wlname);
 		if (!ds->ws) {
 			ret = -ENOMEM;
-			pr_err("gpio_event_input_func: "
+			pr_debug("gpio_event_input_func: "
 				"Failed to allocate wakeup source\n");
 			goto err_ws_failed;
 		}
@@ -317,7 +317,7 @@ int gpio_event_input_func(struct gpio_event_input_devs *input_devs,
 		for (i = 0; i < di->keymap_size; i++) {
 			int dev = di->keymap[i].dev;
 			if (dev >= input_devs->count) {
-				pr_err("gpio_event_input_func: bad device "
+				pr_debug("gpio_event_input_func: bad device "
 					"index %d >= %d for key code %d\n",
 					dev, input_devs->count,
 					di->keymap[i].code);
@@ -333,13 +333,13 @@ int gpio_event_input_func(struct gpio_event_input_devs *input_devs,
 		for (i = 0; i < di->keymap_size; i++) {
 			ret = gpio_request(di->keymap[i].gpio, "gpio_kp_in");
 			if (ret) {
-				pr_err("gpio_event_input_func: gpio_request "
+				pr_debug("gpio_event_input_func: gpio_request "
 					"failed for %d\n", di->keymap[i].gpio);
 				goto err_gpio_request_failed;
 			}
 			ret = gpio_direction_input(di->keymap[i].gpio);
 			if (ret) {
-				pr_err("gpio_event_input_func: "
+				pr_debug("gpio_event_input_func: "
 					"gpio_direction_input failed for %d\n",
 					di->keymap[i].gpio);
 				goto err_gpio_configure_failed;
@@ -351,7 +351,7 @@ int gpio_event_input_func(struct gpio_event_input_devs *input_devs,
 		spin_lock_irqsave(&ds->irq_lock, irqflags);
 		ds->use_irq = ret == 0;
 
-		pr_info("GPIO Input Driver: Start gpio inputs for %s%s in %s "
+		pr_debug("GPIO Input Driver: Start gpio inputs for %s%s in %s "
 			"mode\n", input_devs->dev[0]->name,
 			(input_devs->count > 1) ? "..." : "",
 			ret == 0 ? "interrupt" : "polling");

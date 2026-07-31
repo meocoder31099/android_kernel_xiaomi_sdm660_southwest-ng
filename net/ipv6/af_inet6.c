@@ -716,11 +716,11 @@ out:
 	return ret;
 
 out_permanent:
-	pr_err("Attempt to override permanent protocol %d\n", protocol);
+	pr_debug("Attempt to override permanent protocol %d\n", protocol);
 	goto out;
 
 out_illegal:
-	pr_err("Ignoring attempt to register invalid socket type %d\n",
+	pr_debug("Ignoring attempt to register invalid socket type %d\n",
 	       p->type);
 	goto out;
 }
@@ -730,7 +730,7 @@ void
 inet6_unregister_protosw(struct inet_protosw *p)
 {
 	if (INET_PROTOSW_PERMANENT & p->flags) {
-		pr_err("Attempt to unregister permanent protocol %d\n",
+		pr_debug("Attempt to unregister permanent protocol %d\n",
 		       p->protocol);
 	} else {
 		spin_lock_bh(&inetsw6_lock);
@@ -970,7 +970,7 @@ static int __init inet6_init(void)
 		INIT_LIST_HEAD(r);
 
 	if (disable_ipv6_mod) {
-		pr_info("Loaded, but administratively disabled, reboot required to enable\n");
+		pr_debug("Loaded, but administratively disabled, reboot required to enable\n");
 		goto out;
 	}
 

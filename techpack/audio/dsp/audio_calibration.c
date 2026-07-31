@@ -62,12 +62,12 @@ int audio_cal_deregister(int num_cal_types,
 	pr_debug("%s\n", __func__);
 
 	if (reg_data == NULL) {
-		pr_err("%s: reg_data is NULL!\n", __func__);
+		pr_debug("%s: reg_data is NULL!\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	} else if ((num_cal_types <= 0) ||
 		(num_cal_types > MAX_CAL_TYPES)) {
-		pr_err("%s: num_cal_types of %d is Invalid!\n",
+		pr_debug("%s: num_cal_types of %d is Invalid!\n",
 			__func__, num_cal_types);
 		ret = -EINVAL;
 		goto done;
@@ -76,7 +76,7 @@ int audio_cal_deregister(int num_cal_types,
 	for (; i < num_cal_types; i++) {
 		if ((reg_data[i].cal_type < 0) ||
 			(reg_data[i].cal_type >= MAX_CAL_TYPES)) {
-			pr_err("%s: cal type %d at index %d is Invalid!\n",
+			pr_debug("%s: cal type %d at index %d is Invalid!\n",
 				__func__, reg_data[i].cal_type, i);
 			ret = -EINVAL;
 			continue;
@@ -116,12 +116,12 @@ int audio_cal_register(int num_cal_types,
 	pr_debug("%s\n", __func__);
 
 	if (reg_data == NULL) {
-		pr_err("%s: callbacks are NULL!\n", __func__);
+		pr_debug("%s: callbacks are NULL!\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	} else if ((num_cal_types <= 0) ||
 		(num_cal_types > MAX_CAL_TYPES)) {
-		pr_err("%s: num_cal_types of %d is Invalid!\n",
+		pr_debug("%s: num_cal_types of %d is Invalid!\n",
 			__func__, num_cal_types);
 		ret = -EINVAL;
 		goto done;
@@ -130,7 +130,7 @@ int audio_cal_register(int num_cal_types,
 	for (; i < num_cal_types; i++) {
 		if ((reg_data[i].cal_type < 0) ||
 			(reg_data[i].cal_type >= MAX_CAL_TYPES)) {
-			pr_err("%s: cal type %d at index %d is Invalid!\n",
+			pr_debug("%s: cal type %d at index %d is Invalid!\n",
 				__func__, reg_data[i].cal_type, i);
 			ret = -EINVAL;
 			goto err;
@@ -189,7 +189,7 @@ static int call_allocs(int32_t cal_type,
 		ret2 = client_info_node->callbacks->
 			alloc(cal_type, cal_type_size, data);
 		if (ret2 < 0) {
-			pr_err("%s: alloc failed!\n", __func__);
+			pr_debug("%s: alloc failed!\n", __func__);
 			ret = ret2;
 		}
 	}
@@ -218,7 +218,7 @@ static int call_deallocs(int32_t cal_type,
 		ret2 = client_info_node->callbacks->
 			dealloc(cal_type, cal_type_size, data);
 		if (ret2 < 0) {
-			pr_err("%s: dealloc failed!\n", __func__);
+			pr_debug("%s: dealloc failed!\n", __func__);
 			ret = ret2;
 		}
 	}
@@ -247,7 +247,7 @@ static int call_pre_cals(int32_t cal_type,
 		ret2 = client_info_node->callbacks->
 			pre_cal(cal_type, cal_type_size, data);
 		if (ret2 < 0) {
-			pr_err("%s: pre_cal failed!\n", __func__);
+			pr_debug("%s: pre_cal failed!\n", __func__);
 			ret = ret2;
 		}
 	}
@@ -276,7 +276,7 @@ static int call_post_cals(int32_t cal_type,
 		ret2 = client_info_node->callbacks->
 			post_cal(cal_type, cal_type_size, data);
 		if (ret2 < 0) {
-			pr_err("%s: post_cal failed!\n", __func__);
+			pr_debug("%s: post_cal failed!\n", __func__);
 			ret = ret2;
 		}
 	}
@@ -305,7 +305,7 @@ static int call_set_cals(int32_t cal_type,
 		ret2 = client_info_node->callbacks->
 			set_cal(cal_type, cal_type_size, data);
 		if (ret2 < 0) {
-			pr_err("%s: set_cal failed!\n", __func__);
+			pr_debug("%s: set_cal failed!\n", __func__);
 			ret = ret2;
 		}
 	}
@@ -334,7 +334,7 @@ static int call_get_cals(int32_t cal_type,
 		ret2 = client_info_node->callbacks->
 			get_cal(cal_type, cal_type_size, data);
 		if (ret2 < 0) {
-			pr_err("%s: get_cal failed!\n", __func__);
+			pr_debug("%s: get_cal failed!\n", __func__);
 			ret = ret2;
 		}
 	}
@@ -404,18 +404,18 @@ static long audio_cal_shared_ioctl(struct file *file, unsigned int cmd,
 	case AUDIO_POST_CALIBRATION:
 		break;
 	default:
-		pr_err("%s: ioctl not found!\n", __func__);
+		pr_debug("%s: ioctl not found!\n", __func__);
 		ret = -EFAULT;
 		goto done;
 	}
 
 	if (copy_from_user(&size, (void *)arg, sizeof(size))) {
-		pr_err("%s: Could not copy size value from user\n", __func__);
+		pr_debug("%s: Could not copy size value from user\n", __func__);
 		ret = -EFAULT;
 		goto done;
 	} else if ((size < sizeof(struct audio_cal_basic))
 		|| (size > MAX_IOCTL_CMD_SIZE)) {
-		pr_err("%s: Invalid size sent to driver: %d, max size is %d, min size is %zd\n",
+		pr_debug("%s: Invalid size sent to driver: %d, max size is %d, min size is %zd\n",
 			__func__, size, MAX_IOCTL_CMD_SIZE,
 			sizeof(struct audio_cal_basic));
 		ret = -EINVAL;
@@ -427,13 +427,13 @@ static long audio_cal_shared_ioctl(struct file *file, unsigned int cmd,
 		ret = -ENOMEM;
 		goto done;
 	} else if (copy_from_user(data, (void *)arg, size)) {
-		pr_err("%s: Could not copy data from user\n",
+		pr_debug("%s: Could not copy data from user\n",
 			__func__);
 		ret = -EFAULT;
 		goto done;
 	} else if ((data->hdr.cal_type < 0) ||
 		(data->hdr.cal_type >= MAX_CAL_TYPES)) {
-		pr_err("%s: cal type %d is Invalid!\n",
+		pr_debug("%s: cal type %d is Invalid!\n",
 			__func__, data->hdr.cal_type);
 		ret = -EINVAL;
 		goto done;
@@ -441,19 +441,19 @@ static long audio_cal_shared_ioctl(struct file *file, unsigned int cmd,
 		sizeof(struct audio_cal_type_basic)) ||
 		(data->hdr.cal_type_size >
 		get_user_cal_type_size(data->hdr.cal_type))) {
-		pr_err("%s: cal type size %d is Invalid! Max is %zd!\n",
+		pr_debug("%s: cal type size %d is Invalid! Max is %zd!\n",
 			__func__, data->hdr.cal_type_size,
 			get_user_cal_type_size(data->hdr.cal_type));
 		ret = -EINVAL;
 		goto done;
 	} else if (data->cal_type.cal_hdr.buffer_number < 0) {
-		pr_err("%s: cal type %d Invalid buffer number %d!\n",
+		pr_debug("%s: cal type %d Invalid buffer number %d!\n",
 			__func__, data->hdr.cal_type,
 			data->cal_type.cal_hdr.buffer_number);
 		ret = -EINVAL;
 		goto done;
 	} else if ((data->hdr.cal_type_size + sizeof(data->hdr)) > size) {
-		pr_err("%s: cal type hdr size %zd + cal type size %d is greater than user buffer size %d\n",
+		pr_debug("%s: cal type hdr size %zd + cal type size %d is greater than user buffer size %d\n",
 			__func__, sizeof(data->hdr), data->hdr.cal_type_size,
 			size);
 		ret = -EFAULT;
@@ -497,7 +497,7 @@ static long audio_cal_shared_ioctl(struct file *file, unsigned int cmd,
 			goto unlock;
 		if (copy_to_user(arg, data,
 			sizeof(data->hdr) + data->hdr.cal_type_size)) {
-			pr_err("%s: Could not copy cal type to user\n",
+			pr_debug("%s: Could not copy cal type to user\n",
 				__func__);
 			ret = -EFAULT;
 			goto unlock;
@@ -558,7 +558,7 @@ static long audio_cal_compat_ioctl(struct file *f,
 		cmd64 = AUDIO_POST_CALIBRATION;
 		break;
 	default:
-		pr_err("%s: ioctl not found!\n", __func__);
+		pr_debug("%s: ioctl not found!\n", __func__);
 		ret = -EFAULT;
 		goto done;
 	}

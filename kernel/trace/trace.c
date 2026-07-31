@@ -1513,12 +1513,12 @@ static int run_tracer_selftest(struct tracer *type)
 #endif
 
 	/* the test is responsible for initializing and enabling */
-	pr_info("Testing tracer %s: ", type->name);
+	pr_debug("Testing tracer %s: ", type->name);
 	ret = type->selftest(type, tr);
 	/* the test is responsible for resetting too */
 	tr->current_trace = saved_tracer;
 	if (ret) {
-		printk(KERN_CONT "FAILED!\n");
+		no_printk(KERN_CONT "FAILED!\n");
 		/* Add the warning after printing 'FAILED' */
 		WARN_ON(1);
 		return -1;
@@ -1537,7 +1537,7 @@ static int run_tracer_selftest(struct tracer *type)
 	}
 #endif
 
-	printk(KERN_CONT "PASSED\n");
+	no_printk(KERN_CONT "PASSED\n");
 	return 0;
 }
 
@@ -1554,7 +1554,7 @@ static __init int init_trace_selftests(void)
 	if (list_empty(&postponed_selftests))
 		goto out;
 
-	pr_info("Running postponed tracer tests:\n");
+	pr_debug("Running postponed tracer tests:\n");
 
 	tracing_selftest_running = true;
 	list_for_each_entry_safe(p, n, &postponed_selftests, list) {
@@ -1606,12 +1606,12 @@ int __init register_tracer(struct tracer *type)
 	int ret = 0;
 
 	if (!type->name) {
-		pr_info("Tracer must have a name\n");
+		pr_debug("Tracer must have a name\n");
 		return -1;
 	}
 
 	if (strlen(type->name) >= MAX_TRACER_SIZE) {
-		pr_info("Tracer has a name longer than %d\n", MAX_TRACER_SIZE);
+		pr_debug("Tracer has a name longer than %d\n", MAX_TRACER_SIZE);
 		return -1;
 	}
 
@@ -1622,7 +1622,7 @@ int __init register_tracer(struct tracer *type)
 	for (t = trace_types; t; t = t->next) {
 		if (strcmp(type->name, t->name) == 0) {
 			/* already found */
-			pr_info("Tracer %s already registered\n",
+			pr_debug("Tracer %s already registered\n",
 				type->name);
 			ret = -1;
 			goto out;
@@ -1665,7 +1665,7 @@ int __init register_tracer(struct tracer *type)
 	if (strncmp(default_bootup_tracer, type->name, MAX_TRACER_SIZE))
 		goto out_unlock;
 
-	printk(KERN_INFO "Starting tracer '%s'\n", type->name);
+	no_printk(KERN_INFO "Starting tracer '%s'\n", type->name);
 	/* Do we want this tracer to start on bootup? */
 	tracing_set_tracer(&global_trace, type->name);
 	default_bootup_tracer = NULL;
@@ -1675,7 +1675,7 @@ int __init register_tracer(struct tracer *type)
 	/* disable other selftests, since this will break it. */
 	tracing_selftest_disabled = true;
 #ifdef CONFIG_FTRACE_STARTUP_TEST
-	printk(KERN_INFO "Disabling FTRACE selftests due to running tracer '%s'\n",
+	no_printk(KERN_INFO "Disabling FTRACE selftests due to running tracer '%s'\n",
 	       type->name);
 #endif
 
@@ -2212,7 +2212,7 @@ void trace_buffered_event_enable(void)
 					GFP_KERNEL | __GFP_NORETRY, 0);
 		/* This is just an optimization and can handle failures */
 		if (!page) {
-			pr_err("Failed to allocate event buffer\n");
+			pr_debug("Failed to allocate event buffer\n");
 			break;
 		}
 
@@ -2357,7 +2357,7 @@ static void output_printk(struct trace_event_buffer *fbuffer)
 	iter->ent = fbuffer->entry;
 	event_call->event.funcs->trace(iter, 0, event);
 	trace_seq_putc(&iter->seq, 0);
-	printk("%s", iter->seq.buffer);
+	no_printk("%s", iter->seq.buffer);
 
 	raw_spin_unlock_irqrestore(&tracepoint_iter_lock, flags);
 }
@@ -2873,20 +2873,20 @@ void trace_printk_init_buffers(void)
 
 	/* trace_printk() is for debug use only. Don't use it in production. */
 
-	pr_warn("\n");
-	pr_warn("**********************************************************\n");
-	pr_warn("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** trace_printk() being used. Allocating extra memory.  **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** This means that this is a DEBUG kernel and it is     **\n");
-	pr_warn("** unsafe for production use.                           **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** If you see this message and you are not debugging    **\n");
-	pr_warn("** the kernel, report this immediately to your vendor!  **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warn("**********************************************************\n");
+	pr_debug("\n");
+	pr_debug("**********************************************************\n");
+	pr_debug("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** trace_printk() being used. Allocating extra memory.  **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** This means that this is a DEBUG kernel and it is     **\n");
+	pr_debug("** unsafe for production use.                           **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** If you see this message and you are not debugging    **\n");
+	pr_debug("** the kernel, report this immediately to your vendor!  **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
+	pr_debug("**********************************************************\n");
 
 	/* Expand the buffers to set size */
 	tracing_update_buffers();
@@ -5161,7 +5161,7 @@ trace_insert_eval_map_file(struct module *mod, struct trace_eval_map **start,
 	 */
 	map_array = kmalloc_array(len + 2, sizeof(*map_array), GFP_KERNEL);
 	if (!map_array) {
-		pr_warn("Unable to allocate trace eval mapping\n");
+		pr_debug("Unable to allocate trace eval mapping\n");
 		return;
 	}
 
@@ -5459,7 +5459,7 @@ static int tracing_set_tracer(struct trace_array *tr, const char *buf)
 
 	/* Some tracers won't work on kernel command line */
 	if (system_state < SYSTEM_RUNNING && t->noboot) {
-		pr_warn("Tracer '%s' is not allowed on command line, ignored\n",
+		pr_debug("Tracer '%s' is not allowed on command line, ignored\n",
 			t->name);
 		goto out;
 	}
@@ -7398,7 +7398,7 @@ tracing_init_tracefs_percpu(struct trace_array *tr, long cpu)
 	snprintf(cpu_dir, 30, "cpu%ld", cpu);
 	d_cpu = tracefs_create_dir(cpu_dir, d_percpu);
 	if (!d_cpu) {
-		pr_warn("Could not create tracefs '%s' entry\n", cpu_dir);
+		pr_debug("Could not create tracefs '%s' entry\n", cpu_dir);
 		return;
 	}
 
@@ -7587,7 +7587,7 @@ struct dentry *trace_create_file(const char *name,
 
 	ret = tracefs_create_file(name, mode, parent, data, fops);
 	if (!ret)
-		pr_warn("Could not create tracefs '%s' entry\n", name);
+		pr_debug("Could not create tracefs '%s' entry\n", name);
 
 	return ret;
 }
@@ -7606,7 +7606,7 @@ static struct dentry *trace_options_init_dentry(struct trace_array *tr)
 
 	tr->options = tracefs_create_dir("options", d_tracer);
 	if (!tr->options) {
-		pr_warn("Could not create tracefs directory 'options'\n");
+		pr_debug("Could not create tracefs directory 'options'\n");
 		return NULL;
 	}
 
@@ -8381,7 +8381,7 @@ trace_printk_seq(struct trace_seq *s)
 	/* should be zero ended, but we are paranoid. */
 	s->buffer[s->seq.len] = 0;
 
-	printk(KERN_TRACE "%s", s->buffer);
+	no_printk(KERN_TRACE "%s", s->buffer);
 
 	trace_seq_init(s);
 }
@@ -8456,16 +8456,16 @@ void ftrace_dump(enum ftrace_dump_mode oops_dump_mode)
 	case DUMP_NONE:
 		goto out_enable;
 	default:
-		printk(KERN_TRACE "Bad dumping mode, switching to all CPUs dump\n");
+		no_printk(KERN_TRACE "Bad dumping mode, switching to all CPUs dump\n");
 		iter.cpu_file = RING_BUFFER_ALL_CPUS;
 	}
 
-	printk(KERN_TRACE "Dumping ftrace buffer:\n");
+	no_printk(KERN_TRACE "Dumping ftrace buffer:\n");
 
 	/* Did function tracer already get disabled? */
 	if (ftrace_is_dead()) {
-		printk("# WARNING: FUNCTION TRACING IS CORRUPTED\n");
-		printk("#          MAY BE MISSING FUNCTION EVENTS\n");
+		no_printk("# WARNING: FUNCTION TRACING IS CORRUPTED\n");
+		no_printk("#          MAY BE MISSING FUNCTION EVENTS\n");
 	}
 
 	/*
@@ -8478,7 +8478,7 @@ void ftrace_dump(enum ftrace_dump_mode oops_dump_mode)
 	while (!trace_empty(&iter)) {
 
 		if (!cnt)
-			printk(KERN_TRACE "---------------------------------\n");
+			no_printk(KERN_TRACE "---------------------------------\n");
 
 		cnt++;
 
@@ -8498,9 +8498,9 @@ void ftrace_dump(enum ftrace_dump_mode oops_dump_mode)
 	}
 
 	if (!cnt)
-		printk(KERN_TRACE "   (ftrace buffer empty)\n");
+		no_printk(KERN_TRACE "   (ftrace buffer empty)\n");
 	else
-		printk(KERN_TRACE "---------------------------------\n");
+		no_printk(KERN_TRACE "---------------------------------\n");
 
  out_enable:
 	tr->trace_flags |= old_userobj;
@@ -8571,7 +8571,7 @@ ssize_t trace_parse_run_command(struct file *file, const char __user *buffer,
 					if (buf != kbuf)
 						break;
 					/* This can accept WRITE_BUFSIZE - 2 ('\n' + '\0') */
-					pr_warn("Line length is too long: Should be less than %d\n",
+					pr_debug("Line length is too long: Should be less than %d\n",
 						WRITE_BUFSIZE - 2);
 					ret = -EINVAL;
 					goto out;
@@ -8655,7 +8655,7 @@ __init static int tracer_alloc_buffers(void)
 
 	/* TODO: make the number of buffers hot pluggable with CPUS */
 	if (allocate_trace_buffers(&global_trace, ring_buf_size) < 0) {
-		printk(KERN_ERR "tracer: failed to allocate ring buffer!\n");
+		no_printk(KERN_ERR "tracer: failed to allocate ring buffer!\n");
 		WARN_ON(1);
 		goto out_free_savedcmd;
 	}
@@ -8666,7 +8666,7 @@ __init static int tracer_alloc_buffers(void)
 	if (trace_boot_clock) {
 		ret = tracing_set_clock(&global_trace, trace_boot_clock);
 		if (ret < 0)
-			pr_warn("Trace clock %s not defined, going back to default\n",
+			pr_debug("Trace clock %s not defined, going back to default\n",
 				trace_boot_clock);
 	}
 
@@ -8755,7 +8755,7 @@ __init static int clear_boot_tracer(void)
 	if (!default_bootup_tracer)
 		return 0;
 
-	printk(KERN_INFO "ftrace bootup tracer '%s' not registered.\n",
+	no_printk(KERN_INFO "ftrace bootup tracer '%s' not registered.\n",
 	       default_bootup_tracer);
 	default_bootup_tracer = NULL;
 
@@ -8770,7 +8770,7 @@ __init static int tracing_set_default_clock(void)
 {
 	/* sched_clock_stable() is determined in late_initcall */
 	if (!trace_boot_clock && !sched_clock_stable()) {
-		printk(KERN_WARNING
+		no_printk(KERN_WARNING
 		       "Unstable clock detected, switching default tracing clock to \"global\"\n"
 		       "If you want to keep using the local clock, then add:\n"
 		       "  \"trace_clock=local\"\n"

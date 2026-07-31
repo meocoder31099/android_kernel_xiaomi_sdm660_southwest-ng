@@ -65,7 +65,7 @@ static int q6usm_memory_map(phys_addr_t buf_add, int dir, uint32_t bufsz,
 	int rc = 0;
 
 	if (this_mmap.apr == NULL) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -86,7 +86,7 @@ static int q6usm_memory_map(phys_addr_t buf_add, int dir, uint32_t bufsz,
 
 	rc = apr_send_pkt(this_mmap.apr, (uint32_t *) &mem_region_map);
 	if (rc < 0) {
-		pr_err("%s: mem_map op[0x%x]rc[%d]\n",
+		pr_debug("%s: mem_map op[0x%x]rc[%d]\n",
 		       __func__, mem_region_map.hdr.opcode, rc);
 		rc = -EINVAL;
 		goto fail_cmd;
@@ -97,7 +97,7 @@ static int q6usm_memory_map(phys_addr_t buf_add, int dir, uint32_t bufsz,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: timeout. waited for memory_map\n", __func__);
+		pr_debug("%s: timeout. waited for memory_map\n", __func__);
 	} else {
 		*mem_handle = this_mmap.mem_handle;
 		rc = 0;
@@ -113,7 +113,7 @@ int q6usm_memory_unmap(phys_addr_t buf_add, int dir, uint32_t session,
 	int rc = 0;
 
 	if (this_mmap.apr == NULL) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -125,7 +125,7 @@ int q6usm_memory_unmap(phys_addr_t buf_add, int dir, uint32_t session,
 
 	rc = apr_send_pkt(this_mmap.apr, (uint32_t *) &mem_unmap);
 	if (rc < 0) {
-		pr_err("%s: mem_unmap op[0x%x] rc[%d]\n",
+		pr_debug("%s: mem_unmap op[0x%x] rc[%d]\n",
 		       __func__, mem_unmap.hdr.opcode, rc);
 		goto fail_cmd;
 	}
@@ -135,7 +135,7 @@ int q6usm_memory_unmap(phys_addr_t buf_add, int dir, uint32_t session,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: timeout. waited for memory_unmap\n", __func__);
+		pr_debug("%s: timeout. waited for memory_unmap\n", __func__);
 	} else
 		rc = 0;
 fail_cmd:
@@ -276,7 +276,7 @@ void q6usm_us_client_free(struct us_client *usc)
 	pr_debug("%s: APR De-Register\n", __func__);
 
 	if (atomic_read(&this_mmap.ref_cnt) <= 0) {
-		pr_err("%s: APR Common Port Already Closed\n", __func__);
+		pr_debug("%s: APR Common Port Already Closed\n", __func__);
 		goto done;
 	}
 
@@ -324,7 +324,7 @@ struct us_client *q6usm_us_client_alloc(
 				usc);
 
 	if (usc->apr == NULL) {
-		pr_err("%s: Registration with APR failed\n", __func__);
+		pr_debug("%s: Registration with APR failed\n", __func__);
 		goto fail;
 	}
 	pr_debug("%s: Registering the common port with APR\n", __func__);
@@ -333,7 +333,7 @@ struct us_client *q6usm_us_client_alloc(
 					     (apr_fn)q6usm_mmapcallback,
 					     0x0FFFFFFFF, &this_mmap);
 		if (this_mmap.apr == NULL) {
-			pr_err("%s: USM port registration failed\n",
+			pr_debug("%s: USM port registration failed\n",
 			       __func__);
 			goto fail;
 		}
@@ -347,7 +347,7 @@ struct us_client *q6usm_us_client_alloc(
 		spin_lock_init(&usc->port[lcnt].dsp_lock);
 		usc->port[lcnt].ext = (void *)p_mem_handle++;
 		usc->port[lcnt].param_buf_mem_handle = (void *)p_mem_handle++;
-		pr_err("%s: usc->port[%d].ext=%pK;\n",
+		pr_debug("%s: usc->port[%d].ext=%pK;\n",
 		       __func__, lcnt, usc->port[lcnt].ext);
 	}
 	atomic_set(&usc->cmd_state, 0);
@@ -376,7 +376,7 @@ int q6usm_us_client_buf_alloc(unsigned int dir,
 	if ((usc == NULL) ||
 	    ((dir != IN) && (dir != OUT)) || (size == 0) ||
 	    (usc->session <= 0 || usc->session > USM_SESSION_MAX)) {
-		pr_err("%s: wrong parameters: size=%d; bufcnt=%d\n",
+		pr_debug("%s: wrong parameters: size=%d; bufcnt=%d\n",
 		       __func__, size, bufcnt);
 		return -EINVAL;
 	}
@@ -393,7 +393,7 @@ int q6usm_us_client_buf_alloc(unsigned int dir,
 		&len, &port->data);
 
 	if (rc) {
-		pr_err("%s: US ION allocation failed, rc = %d\n",
+		pr_debug("%s: US ION allocation failed, rc = %d\n",
 			__func__, rc);
 		mutex_unlock(&usc->cmd_lock);
 		return -ENOMEM;
@@ -409,7 +409,7 @@ int q6usm_us_client_buf_alloc(unsigned int dir,
 	rc = q6usm_memory_map(port->phys, dir, size, 1, usc->session,
 				(uint32_t *)port->ext);
 	if (rc < 0) {
-		pr_err("%s: CMD Memory_map failed\n", __func__);
+		pr_debug("%s: CMD Memory_map failed\n", __func__);
 		mutex_unlock(&usc->cmd_lock);
 		q6usm_us_client_buf_free(dir, usc);
 		q6usm_us_param_buf_free(dir, usc);
@@ -433,7 +433,7 @@ int q6usm_us_param_buf_alloc(unsigned int dir,
 	if ((usc == NULL) ||
 		((dir != IN) && (dir != OUT)) ||
 		(usc->session <= 0 || usc->session > USM_SESSION_MAX)) {
-		pr_err("%s: wrong parameters: direction=%d, bufsz=%d\n",
+		pr_debug("%s: wrong parameters: direction=%d, bufsz=%d\n",
 			__func__, dir, bufsz);
 		return -EINVAL;
 	}
@@ -458,7 +458,7 @@ int q6usm_us_param_buf_alloc(unsigned int dir,
 		&len, &port->param_buf);
 
 	if (rc) {
-		pr_err("%s: US ION allocation failed, rc = %d\n",
+		pr_debug("%s: US ION allocation failed, rc = %d\n",
 			__func__, rc);
 		mutex_unlock(&usc->cmd_lock);
 		return -ENOMEM;
@@ -473,7 +473,7 @@ int q6usm_us_param_buf_alloc(unsigned int dir,
 	rc = q6usm_memory_map(port->param_phys, (IN | OUT), size, 1,
 			usc->session, (uint32_t *)port->param_buf_mem_handle);
 	if (rc < 0) {
-		pr_err("%s: CMD Memory_map failed\n", __func__);
+		pr_debug("%s: CMD Memory_map failed\n", __func__);
 		mutex_unlock(&usc->cmd_lock);
 		q6usm_us_client_buf_free(dir, usc);
 		q6usm_us_param_buf_free(dir, usc);
@@ -491,7 +491,7 @@ static int32_t q6usm_mmapcallback(struct apr_client_data *data, void *priv)
 	uint32_t *payload = data->payload;
 
 	if (data->payload_size < (2 * sizeof(uint32_t))) {
-		pr_err("%s: payload has invalid size[%d]\n", __func__,
+		pr_debug("%s: payload has invalid size[%d]\n", __func__,
 		       data->payload_size);
 		return -EINVAL;
 	}
@@ -504,7 +504,7 @@ static int32_t q6usm_mmapcallback(struct apr_client_data *data, void *priv)
 	if (data->opcode == APR_BASIC_RSP_RESULT) {
 		/* status field check */
 		if (payload[1]) {
-			pr_err("%s: wrong response[%d] on cmd [%d]\n",
+			pr_debug("%s: wrong response[%d] on cmd [%d]\n",
 			       __func__, payload[1], payload[0]);
 		} else {
 			token = data->token;
@@ -551,19 +551,19 @@ static int32_t q6usm_callback(struct apr_client_data *data, void *priv)
 	uint32_t opcode = Q6USM_EVENT_UNDEF;
 
 	if (usc == NULL) {
-		pr_err("%s: client info is NULL\n", __func__);
+		pr_debug("%s: client info is NULL\n", __func__);
 		return -EINVAL;
 	}
 
 	if (data->opcode == APR_BASIC_RSP_RESULT) {
 		if (data->payload_size < (2 * sizeof(uint32_t))) {
-			pr_err("%s: payload has invalid size[%d]\n", __func__,
+			pr_debug("%s: payload has invalid size[%d]\n", __func__,
 			       data->payload_size);
 			return -EINVAL;
 		}
 		/* status field check */
 		if (payload[1]) {
-			pr_err("%s: wrong response[%d] on cmd [%d]\n",
+			pr_debug("%s: wrong response[%d] on cmd [%d]\n",
 			       __func__, payload[1], payload[0]);
 			if (usc->cb)
 				usc->cb(data->opcode, token,
@@ -573,7 +573,7 @@ static int32_t q6usm_callback(struct apr_client_data *data, void *priv)
 			case USM_SESSION_CMD_RUN:
 			case USM_STREAM_CMD_CLOSE:
 				if (token != usc->session) {
-					pr_err("%s: wrong token[%d]",
+					pr_debug("%s: wrong token[%d]",
 					       __func__, token);
 					break;
 				}
@@ -602,7 +602,7 @@ static int32_t q6usm_callback(struct apr_client_data *data, void *priv)
 
 	switch (data->opcode) {
 	case RESET_EVENTS: {
-		pr_err("%s: Reset event is received: %d %d\n",
+		pr_debug("%s: Reset event is received: %d %d\n",
 				__func__,
 				data->reset_event,
 				data->reset_proc);
@@ -626,14 +626,14 @@ static int32_t q6usm_callback(struct apr_client_data *data, void *priv)
 		spin_lock_irqsave(&port->dsp_lock, dsp_flags);
 		if (data->payload_size <
 		    (sizeof(uint32_t)*(READDONE_IDX_STATUS + 1))) {
-			pr_err("%s: Invalid payload size for READDONE[%d]\n",
+			pr_debug("%s: Invalid payload size for READDONE[%d]\n",
 			       __func__, data->payload_size);
 			spin_unlock_irqrestore(&port->dsp_lock,
 					       dsp_flags);
 			return -EINVAL;
 		}
 		if (payload[READDONE_IDX_STATUS]) {
-			pr_err("%s: wrong READDONE[%d]; token[%d]\n",
+			pr_debug("%s: wrong READDONE[%d]; token[%d]\n",
 			       __func__,
 			       payload[READDONE_IDX_STATUS],
 			       token);
@@ -646,7 +646,7 @@ static int32_t q6usm_callback(struct apr_client_data *data, void *priv)
 		if (port->expected_token != token) {
 			u32 cpu_buf = port->cpu_buf;
 
-			pr_err("%s: expected[%d] != token[%d]\n",
+			pr_debug("%s: expected[%d] != token[%d]\n",
 				__func__, port->expected_token, token);
 			pr_debug("%s: dsp_buf=%d; cpu_buf=%d;\n",
 				__func__,   port->dsp_buf, cpu_buf);
@@ -680,12 +680,12 @@ static int32_t q6usm_callback(struct apr_client_data *data, void *priv)
 		opcode = Q6USM_EVENT_WRITE_DONE;
 		if (data->payload_size <
 		    (sizeof(uint32_t)*(WRITEDONE_IDX_STATUS + 1))) {
-			pr_err("%s: Invalid payload size for WRITEDONE[%d]\n",
+			pr_debug("%s: Invalid payload size for WRITEDONE[%d]\n",
 			       __func__, data->payload_size);
 			return -EINVAL;
 		}
 		if (payload[WRITEDONE_IDX_STATUS]) {
-			pr_err("%s: wrong WRITEDONE_IDX_STATUS[%d]\n",
+			pr_debug("%s: wrong WRITEDONE_IDX_STATUS[%d]\n",
 			       __func__,
 			       payload[WRITEDONE_IDX_STATUS]);
 			break;
@@ -787,7 +787,7 @@ static uint32_t q6usm_ext2int_format(uint32_t ext_format)
 		int_format = US_RAW_SYNC_FORMAT;
 		break;
 	default:
-		pr_err("%s: Invalid format[%d]\n", __func__, ext_format);
+		pr_debug("%s: Invalid format[%d]\n", __func__, ext_format);
 		break;
 	}
 
@@ -802,7 +802,7 @@ int q6usm_open_read(struct us_client *usc,
 	struct usm_stream_cmd_open_read open;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: client or its apr is NULL\n", __func__);
+		pr_debug("%s: client or its apr is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -822,7 +822,7 @@ int q6usm_open_read(struct us_client *usc,
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *) &open);
 	if (rc < 0) {
-		pr_err("%s: open failed op[0x%x]rc[%d]\n",
+		pr_debug("%s: open failed op[0x%x]rc[%d]\n",
 		       __func__, open.hdr.opcode, rc);
 		goto fail_cmd;
 	}
@@ -831,7 +831,7 @@ int q6usm_open_read(struct us_client *usc,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: timeout, waited for OPEN_READ rc[%d]\n",
+		pr_debug("%s: timeout, waited for OPEN_READ rc[%d]\n",
 		       __func__, rc);
 		goto fail_cmd;
 	} else
@@ -854,13 +854,13 @@ int q6usm_enc_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 
 
 	if ((usc == NULL) || (us_cfg == NULL)) {
-		pr_err("%s: wrong input", __func__);
+		pr_debug("%s: wrong input", __func__);
 		return -EINVAL;
 	}
 
 	int_format = q6usm_ext2int_format(us_cfg->format_id);
 	if (int_format == INVALID_FORMAT) {
-		pr_err("%s: wrong input format[%d]",
+		pr_debug("%s: wrong input format[%d]",
 		       __func__, us_cfg->format_id);
 		return -EINVAL;
 	}
@@ -875,7 +875,7 @@ int q6usm_enc_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 		total_cfg_size += round_params_size;
 		enc_cfg = kzalloc(total_cfg_size, GFP_KERNEL);
 		if (enc_cfg == NULL) {
-			pr_err("%s: enc_cfg[%d] allocation failed\n",
+			pr_debug("%s: enc_cfg[%d] allocation failed\n",
 			       __func__, total_cfg_size);
 			return -ENOMEM;
 		}
@@ -932,7 +932,7 @@ int q6usm_enc_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *) enc_cfg);
 	if (rc < 0) {
-		pr_err("%s:Comamnd open failed\n", __func__);
+		pr_debug("%s:Comamnd open failed\n", __func__);
 		rc = -EINVAL;
 		goto fail_cmd;
 	}
@@ -941,7 +941,7 @@ int q6usm_enc_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: timeout opcode[0x%x]\n",
+		pr_debug("%s: timeout opcode[0x%x]\n",
 		       __func__, enc_cfg->hdr.opcode);
 	} else
 		rc = 0;
@@ -967,13 +967,13 @@ int q6usm_dec_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 
 
 	if ((usc == NULL) || (us_cfg == NULL)) {
-		pr_err("%s: wrong input", __func__);
+		pr_debug("%s: wrong input", __func__);
 		return -EINVAL;
 	}
 
 	int_format = q6usm_ext2int_format(us_cfg->format_id);
 	if (int_format == INVALID_FORMAT) {
-		pr_err("%s: wrong input format[%d]",
+		pr_debug("%s: wrong input format[%d]",
 		       __func__, us_cfg->format_id);
 		return -EINVAL;
 	}
@@ -988,7 +988,7 @@ int q6usm_dec_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 		total_cfg_size += round_params_size;
 		dec_cfg = kzalloc(total_cfg_size, GFP_KERNEL);
 		if (dec_cfg == NULL) {
-			pr_err("%s:dec_cfg[%d] allocation failed\n",
+			pr_debug("%s:dec_cfg[%d] allocation failed\n",
 			       __func__, total_cfg_size);
 			return -ENOMEM;
 		}
@@ -1020,7 +1020,7 @@ int q6usm_dec_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *) dec_cfg);
 	if (rc < 0) {
-		pr_err("%s:Comamnd open failed\n", __func__);
+		pr_debug("%s:Comamnd open failed\n", __func__);
 		rc = -EINVAL;
 		goto fail_cmd;
 	}
@@ -1029,7 +1029,7 @@ int q6usm_dec_cfg_blk(struct us_client *usc, struct us_encdec_cfg *us_cfg)
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: timeout opcode[0x%x]\n",
+		pr_debug("%s: timeout opcode[0x%x]\n",
 		       __func__, dec_cfg->hdr.opcode);
 	} else
 		rc = 0;
@@ -1049,7 +1049,7 @@ int q6usm_open_write(struct us_client *usc,
 	struct usm_stream_cmd_open_write open;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1060,7 +1060,7 @@ int q6usm_open_write(struct us_client *usc,
 
 	int_format = q6usm_ext2int_format(format);
 	if (int_format == INVALID_FORMAT) {
-		pr_err("%s: wrong format[%d]", __func__, format);
+		pr_debug("%s: wrong format[%d]", __func__, format);
 		return -EINVAL;
 	}
 
@@ -1068,7 +1068,7 @@ int q6usm_open_write(struct us_client *usc,
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *) &open);
 	if (rc < 0) {
-		pr_err("%s:open failed op[0x%x]rc[%d]\n",
+		pr_debug("%s:open failed op[0x%x]rc[%d]\n",
 		       __func__, open.hdr.opcode, rc);
 		goto fail_cmd;
 	}
@@ -1077,7 +1077,7 @@ int q6usm_open_write(struct us_client *usc,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s:timeout. waited for OPEN_WRITR rc[%d]\n",
+		pr_debug("%s:timeout. waited for OPEN_WRITR rc[%d]\n",
 		       __func__, rc);
 		goto fail_cmd;
 	} else
@@ -1094,7 +1094,7 @@ int q6usm_run(struct us_client *usc, uint32_t flags,
 	int rc = 0;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 	q6usm_add_hdr(usc, &run.hdr, sizeof(run), true);
@@ -1106,7 +1106,7 @@ int q6usm_run(struct us_client *usc, uint32_t flags,
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *) &run);
 	if (rc < 0) {
-		pr_err("%s: Commmand run failed[%d]\n", __func__, rc);
+		pr_debug("%s: Commmand run failed[%d]\n", __func__, rc);
 		goto fail_cmd;
 	}
 
@@ -1115,7 +1115,7 @@ int q6usm_run(struct us_client *usc, uint32_t flags,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: timeout. waited for run success rc[%d]\n",
+		pr_debug("%s: timeout. waited for run success rc[%d]\n",
 		       __func__, rc);
 	} else
 		rc = 0;
@@ -1136,18 +1136,18 @@ int q6usm_read(struct us_client *usc, uint32_t read_ind)
 	u64 buf_addr = 0;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 	port = &usc->port[OUT];
 
 	if (read_ind > port->buf_cnt) {
-		pr_err("%s: wrong read_ind[%d]\n",
+		pr_debug("%s: wrong read_ind[%d]\n",
 		       __func__, read_ind);
 		return -EINVAL;
 	}
 	if (read_ind == port->cpu_buf) {
-		pr_err("%s: no free region\n", __func__);
+		pr_debug("%s: no free region\n", __func__);
 		return 0;
 	}
 
@@ -1186,7 +1186,7 @@ int q6usm_read(struct us_client *usc, uint32_t read_ind)
 		if (rc < 0) {
 			port->cpu_buf = temp_cpu_buf;
 
-			pr_err("%s:read op[0x%x]rc[%d]\n",
+			pr_debug("%s:read op[0x%x]rc[%d]\n",
 			       __func__, read.hdr.opcode, rc);
 			break;
 		}
@@ -1206,7 +1206,7 @@ int q6usm_write(struct us_client *usc, uint32_t write_ind)
 	u64 buf_addr = 0;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 	port = &usc->port[IN];
@@ -1218,7 +1218,7 @@ int q6usm_write(struct us_client *usc, uint32_t write_ind)
 		/* 2 -part free region, including empty buffer */
 		if ((write_ind <= port->cpu_buf)  &&
 		    (write_ind > current_dsp_buf)) {
-			pr_err("%s: wrong w_ind[%d]; d_buf=%d; c_buf=%d\n",
+			pr_debug("%s: wrong w_ind[%d]; d_buf=%d; c_buf=%d\n",
 			       __func__, write_ind,
 			       current_dsp_buf, port->cpu_buf);
 			return -EINVAL;
@@ -1227,7 +1227,7 @@ int q6usm_write(struct us_client *usc, uint32_t write_ind)
 		/* 1 -part free region */
 		if ((write_ind <= port->cpu_buf)  ||
 		    (write_ind > current_dsp_buf)) {
-			pr_err("%s: wrong w_ind[%d]; d_buf=%d; c_buf=%d\n",
+			pr_debug("%s: wrong w_ind[%d]; d_buf=%d; c_buf=%d\n",
 			       __func__, write_ind,
 			       current_dsp_buf, port->cpu_buf);
 			return -EINVAL;
@@ -1265,7 +1265,7 @@ int q6usm_write(struct us_client *usc, uint32_t write_ind)
 
 		if (rc < 0) {
 			port->cpu_buf = temp_cpu_buf;
-			pr_err("%s:write op[0x%x];rc[%d];cpu_buf[%d]\n",
+			pr_debug("%s:write op[0x%x];rc[%d];cpu_buf[%d]\n",
 			       __func__, cmd_write.hdr.opcode,
 			       rc, port->cpu_buf);
 			break;
@@ -1283,7 +1283,7 @@ bool q6usm_is_write_buf_full(struct us_client *usc, uint32_t *free_region)
 	u32 cpu_buf = 0;
 
 	if ((usc == NULL) || !free_region) {
-		pr_err("%s: input data wrong\n", __func__);
+		pr_debug("%s: input data wrong\n", __func__);
 		return false;
 	}
 	port = &usc->port[IN];
@@ -1303,7 +1303,7 @@ int q6usm_cmd(struct us_client *usc, int cmd)
 	atomic_t *state;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 	q6usm_add_hdr(usc, &hdr, sizeof(hdr), true);
@@ -1314,20 +1314,20 @@ int q6usm_cmd(struct us_client *usc, int cmd)
 		break;
 
 	default:
-		pr_err("%s:Invalid format[%d]\n", __func__, cmd);
+		pr_debug("%s:Invalid format[%d]\n", __func__, cmd);
 		goto fail_cmd;
 	}
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *) &hdr);
 	if (rc < 0) {
-		pr_err("%s: Command 0x%x failed\n", __func__, hdr.opcode);
+		pr_debug("%s: Command 0x%x failed\n", __func__, hdr.opcode);
 		goto fail_cmd;
 	}
 	rc = wait_event_timeout(usc->cmd_wait, (atomic_read(state) == 0),
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s:timeout. waited for response opcode[0x%x]\n",
+		pr_debug("%s:timeout. waited for response opcode[0x%x]\n",
 		       __func__, hdr.opcode);
 	} else
 		rc = 0;
@@ -1344,7 +1344,7 @@ int q6usm_set_us_detection(struct us_client *usc,
 	if ((usc == NULL) ||
 	    (detect_info_size == 0) ||
 	    (detect_info == NULL)) {
-		pr_err("%s: wrong input: usc=0x%pK, inf_size=%d; info=0x%pK",
+		pr_debug("%s: wrong input: usc=0x%pK, inf_size=%d; info=0x%pK",
 		       __func__,
 		       usc,
 		       detect_info_size,
@@ -1358,7 +1358,7 @@ int q6usm_set_us_detection(struct us_client *usc,
 
 	rc = apr_send_pkt(usc->apr, (uint32_t *)detect_info);
 	if (rc < 0) {
-		pr_err("%s:Comamnd signal detect failed\n", __func__);
+		pr_debug("%s:Comamnd signal detect failed\n", __func__);
 		return -EINVAL;
 	}
 	rc = wait_event_timeout(usc->cmd_wait,
@@ -1366,7 +1366,7 @@ int q6usm_set_us_detection(struct us_client *usc,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: CMD_SIGNAL_DETECT_MODE: timeout=%d\n",
+		pr_debug("%s: CMD_SIGNAL_DETECT_MODE: timeout=%d\n",
 		       __func__, Q6USM_TIMEOUT_JIFFIES);
 	} else
 		rc = 0;
@@ -1382,7 +1382,7 @@ int q6usm_set_us_stream_param(int dir, struct us_client *usc,
 	struct us_port_data *port = NULL;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 	port = &usc->port[dir];
@@ -1403,7 +1403,7 @@ int q6usm_set_us_stream_param(int dir, struct us_client *usc,
 	rc = apr_send_pkt(usc->apr, (uint32_t *) &cmd_set_param);
 
 	if (rc < 0) {
-		pr_err("%s:write op[0x%x];rc[%d]\n",
+		pr_debug("%s:write op[0x%x];rc[%d]\n",
 			__func__, cmd_set_param.hdr.opcode, rc);
 	}
 
@@ -1412,7 +1412,7 @@ int q6usm_set_us_stream_param(int dir, struct us_client *usc,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: CMD_SET_PARAM: timeout=%d\n",
+		pr_debug("%s: CMD_SET_PARAM: timeout=%d\n",
 			__func__, Q6USM_TIMEOUT_JIFFIES);
 	} else
 		rc = 0;
@@ -1428,7 +1428,7 @@ int q6usm_get_us_stream_param(int dir, struct us_client *usc,
 	struct us_port_data *port = NULL;
 
 	if ((usc == NULL) || (usc->apr == NULL)) {
-		pr_err("%s: APR handle NULL\n", __func__);
+		pr_debug("%s: APR handle NULL\n", __func__);
 		return -EINVAL;
 	}
 	port = &usc->port[dir];
@@ -1449,7 +1449,7 @@ int q6usm_get_us_stream_param(int dir, struct us_client *usc,
 	rc = apr_send_pkt(usc->apr, (uint32_t *) &cmd_get_param);
 
 	if (rc < 0) {
-		pr_err("%s:write op[0x%x];rc[%d]\n",
+		pr_debug("%s:write op[0x%x];rc[%d]\n",
 			__func__, cmd_get_param.hdr.opcode, rc);
 	}
 
@@ -1458,7 +1458,7 @@ int q6usm_get_us_stream_param(int dir, struct us_client *usc,
 				Q6USM_TIMEOUT_JIFFIES);
 	if (!rc) {
 		rc = -ETIME;
-		pr_err("%s: CMD_GET_PARAM: timeout=%d\n",
+		pr_debug("%s: CMD_GET_PARAM: timeout=%d\n",
 			__func__, Q6USM_TIMEOUT_JIFFIES);
 	} else
 		rc = 0;

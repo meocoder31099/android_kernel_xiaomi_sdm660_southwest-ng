@@ -31,7 +31,7 @@ static int rpm_vreg_debug_mask;
 
 
 #define vreg_err(req, fmt, ...) \
-	pr_err("%s: " fmt, req->rdesc.name, ##__VA_ARGS__)
+	pr_debug("%s: " fmt, req->rdesc.name, ##__VA_ARGS__)
 
 /* RPM regulator request types */
 enum rpm_regulator_type {
@@ -421,7 +421,7 @@ static void rpm_regulator_req(struct rpm_regulator *regulator, int set,
 	}
 
 	pos += scnprintf(buf + pos, buflen - pos, "\n");
-	pr_info("%s\n", buf);
+	pr_debug("%s\n", buf);
 }
 
 #define RPM_VREG_SET_PARAM(_regulator, _param, _val) \
@@ -1167,7 +1167,7 @@ static int rpm_vreg_configure_pin_control_enable(struct rpm_regulator *reg,
 
 		reg->use_pin_ctrl_for_enable = true;
 	} else {
-		pr_warn("%s: regulator type=%d does not support device tree property: qcom,enable-with-pin-ctrl\n",
+		pr_debug("%s: regulator type=%d does not support device tree property: qcom,enable-with-pin-ctrl\n",
 			reg->rdesc.name, reg->rpm_vreg->regulator_type);
 	}
 
@@ -1193,7 +1193,7 @@ struct rpm_regulator *rpm_regulator_get(struct device *dev, const char *supply)
 
 	regulator = regulator_get(dev, supply);
 	if (IS_ERR(regulator)) {
-		pr_err("could not find regulator for: dev=%s, supply=%s, rc=%ld\n",
+		pr_debug("could not find regulator for: dev=%s, supply=%s, rc=%ld\n",
 			(dev ? dev_name(dev) : ""), (supply ? supply : ""),
 			PTR_ERR(regulator));
 		return ERR_CAST(regulator);
@@ -1201,7 +1201,7 @@ struct rpm_regulator *rpm_regulator_get(struct device *dev, const char *supply)
 
 	framework_reg = regulator_get_drvdata(regulator);
 	if (framework_reg == NULL) {
-		pr_err("regulator structure not found\n");
+		pr_debug("regulator structure not found\n");
 		regulator_put(regulator);
 		return ERR_PTR(-ENODEV);
 	}
@@ -1244,7 +1244,7 @@ EXPORT_SYMBOL(rpm_regulator_get);
 static int rpm_regulator_check_input(struct rpm_regulator *regulator)
 {
 	if (IS_ERR_OR_NULL(regulator) || regulator->rpm_vreg == NULL) {
-		pr_err("invalid rpm_regulator pointer\n");
+		pr_debug("invalid rpm_regulator pointer\n");
 		return -EINVAL;
 	}
 
@@ -1530,7 +1530,7 @@ static int rpm_vreg_device_remove(struct platform_device *pdev)
 		kfree(reg);
 		rpm_vreg_unlock(rpm_vreg);
 	} else {
-		dev_err(dev, "%s: drvdata missing\n", __func__);
+		dev_dbg(dev, "%s: drvdata missing\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1556,7 +1556,7 @@ static int rpm_vreg_resource_remove(struct platform_device *pdev)
 				kfree(reg->rdev);
 				kfree(reg);
 			} else {
-				dev_err(dev, "%s: not all child devices have been removed\n",
+				dev_dbg(dev, "%s: not all child devices have been removed\n",
 					__func__);
 			}
 		}
@@ -1567,7 +1567,7 @@ static int rpm_vreg_resource_remove(struct platform_device *pdev)
 
 		kfree(rpm_vreg);
 	} else {
-		dev_err(dev, "%s: drvdata missing\n", __func__);
+		dev_dbg(dev, "%s: drvdata missing\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1605,7 +1605,7 @@ static int rpm_vreg_set_smps_ldo_voltage_index(struct device *dev,
 	}
 
 	if (chosen > 1) {
-		dev_err(dev, "only one qcom,use-voltage-* may be specified\n");
+		dev_dbg(dev, "only one qcom,use-voltage-* may be specified\n");
 		return -EINVAL;
 	}
 
@@ -1634,7 +1634,7 @@ static int rpm_vreg_set_bob_voltage_index(struct device *dev,
 	}
 
 	if (chosen > 1) {
-		dev_err(dev, "only one qcom,use-pin-ctrl-voltage* may be specified\n");
+		dev_dbg(dev, "only one qcom,use-pin-ctrl-voltage* may be specified\n");
 		return -EINVAL;
 	}
 
@@ -1680,13 +1680,13 @@ static int rpm_vreg_device_probe(struct platform_device *pdev)
 	u32 val;
 
 	if (pdev->dev.parent == NULL) {
-		dev_err(dev, "%s: parent device missing\n", __func__);
+		dev_dbg(dev, "%s: parent device missing\n", __func__);
 		return -ENODEV;
 	}
 
 	rpm_vreg = dev_get_drvdata(pdev->dev.parent);
 	if (rpm_vreg == NULL) {
-		dev_err(dev, "%s: rpm_vreg not found in parent device\n",
+		dev_dbg(dev, "%s: rpm_vreg not found in parent device\n",
 			__func__);
 		return -ENODEV;
 	}
@@ -1717,11 +1717,11 @@ static int rpm_vreg_device_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(node, "qcom,set", &val);
 	if (rc) {
-		dev_err(dev, "%s: sleep set and/or active set must be configured via qcom,set property, rc=%d\n",
+		dev_dbg(dev, "%s: sleep set and/or active set must be configured via qcom,set property, rc=%d\n",
 			__func__, rc);
 		goto fail_free_reg;
 	} else if (!(val & RPM_SET_CONFIG_BOTH)) {
-		dev_err(dev, "%s: qcom,set=%u property is invalid\n", __func__,
+		dev_dbg(dev, "%s: qcom,set=%u property is invalid\n", __func__,
 			val);
 		rc = -EINVAL;
 		goto fail_free_reg;
@@ -1732,13 +1732,13 @@ static int rpm_vreg_device_probe(struct platform_device *pdev)
 
 	init_data = of_get_regulator_init_data(dev, node, &reg->rdesc);
 	if (init_data == NULL) {
-		dev_err(dev, "%s: failed to populate regulator_init_data\n",
+		dev_dbg(dev, "%s: failed to populate regulator_init_data\n",
 			__func__);
 		rc = -ENOMEM;
 		goto fail_free_reg;
 	}
 	if (init_data->constraints.name == NULL) {
-		dev_err(dev, "%s: regulator name not specified\n", __func__);
+		dev_dbg(dev, "%s: regulator name not specified\n", __func__);
 		rc = -EINVAL;
 		goto fail_free_reg;
 	}
@@ -1777,7 +1777,7 @@ static int rpm_vreg_device_probe(struct platform_device *pdev)
 					& BIT(regulator_type)) {
 				if (val < params[i].min
 						|| val > params[i].max) {
-					pr_warn("%s: device tree property: %s=%u is outsided allowed range [%u, %u]\n",
+					pr_debug("%s: device tree property: %s=%u is outsided allowed range [%u, %u]\n",
 						reg->rdesc.name,
 						params[i].property_name, val,
 						params[i].min, params[i].max);
@@ -1786,7 +1786,7 @@ static int rpm_vreg_device_probe(struct platform_device *pdev)
 				reg->req.param[i] = val;
 				reg->req.modified |= BIT(i);
 			} else {
-				pr_warn("%s: regulator type=%d does not support device tree property: %s\n",
+				pr_debug("%s: regulator type=%d does not support device tree property: %s\n",
 					reg->rdesc.name, regulator_type,
 					params[i].property_name);
 			}
@@ -1822,7 +1822,7 @@ static int rpm_vreg_device_probe(struct platform_device *pdev)
 	if (IS_ERR(reg->rdev)) {
 		rc = PTR_ERR(reg->rdev);
 		reg->rdev = NULL;
-		pr_err("regulator_register failed: %s, rc=%d\n",
+		pr_debug("regulator_register failed: %s, rc=%d\n",
 			reg->rdesc.name, rc);
 		goto fail_remove_from_list;
 	}
@@ -1869,7 +1869,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 	rc = of_property_read_string(node, "qcom,resource-name",
 			&rpm_vreg->resource_name);
 	if (rc) {
-		dev_err(dev, "%s: qcom,resource-name missing in DT node\n",
+		dev_dbg(dev, "%s: qcom,resource-name missing in DT node\n",
 			__func__);
 		goto fail_free_vreg;
 	}
@@ -1878,7 +1878,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 	rc = of_property_read_u32(node, "qcom,resource-id",
 			&rpm_vreg->resource_id);
 	if (rc) {
-		dev_err(dev, "%s: qcom,resource-id missing in DT node\n",
+		dev_dbg(dev, "%s: qcom,resource-id missing in DT node\n",
 			__func__);
 		goto fail_free_vreg;
 	}
@@ -1886,14 +1886,14 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 	rc = of_property_read_u32(node, "qcom,regulator-type",
 			&rpm_vreg->regulator_type);
 	if (rc) {
-		dev_err(dev, "%s: qcom,regulator-type missing in DT node\n",
+		dev_dbg(dev, "%s: qcom,regulator-type missing in DT node\n",
 			__func__);
 		goto fail_free_vreg;
 	}
 
 	if ((rpm_vreg->regulator_type < 0)
 	    || (rpm_vreg->regulator_type >= RPM_REGULATOR_TYPE_MAX)) {
-		dev_err(dev, "%s: invalid regulator type: %d\n", __func__,
+		dev_dbg(dev, "%s: invalid regulator type: %d\n", __func__,
 			rpm_vreg->regulator_type);
 		rc = -EINVAL;
 		goto fail_free_vreg;
@@ -1904,7 +1904,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 		rpm_vreg->regulator_hw_type = RPM_REGULATOR_HW_TYPE_UNKNOWN;
 		rc = of_property_read_string(node, prop, &type);
 		if (rc) {
-			dev_err(dev, "%s is missing in DT node rc=%d\n",
+			dev_dbg(dev, "%s is missing in DT node rc=%d\n",
 				prop, rc);
 			goto fail_free_vreg;
 		}
@@ -1916,7 +1916,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 			rpm_vreg->regulator_hw_type
 				= RPM_REGULATOR_HW_TYPE_PMIC5_LDO;
 		} else {
-			dev_err(dev, "unknown %s = %s\n",
+			dev_dbg(dev, "unknown %s = %s\n",
 				prop, type);
 			goto fail_free_vreg;
 		}
@@ -1938,7 +1938,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 	    || IS_ERR(rpm_vreg->handle_active)) {
 		rc = PTR_ERR(rpm_vreg->handle_active);
 		if (rc != -EPROBE_DEFER)
-			dev_err(dev, "%s: failed to create active RPM handle, rc=%d\n",
+			dev_dbg(dev, "%s: failed to create active RPM handle, rc=%d\n",
 				__func__, rc);
 		goto fail_free_vreg;
 	}
@@ -1948,7 +1948,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 	if (rpm_vreg->handle_sleep == NULL || IS_ERR(rpm_vreg->handle_sleep)) {
 		rc = PTR_ERR(rpm_vreg->handle_sleep);
 		if (rc != -EPROBE_DEFER)
-			dev_err(dev, "%s: failed to create sleep RPM handle, rc=%d\n",
+			dev_dbg(dev, "%s: failed to create sleep RPM handle, rc=%d\n",
 				__func__, rc);
 		goto fail_free_handle_active;
 	}
@@ -1964,7 +1964,7 @@ static int rpm_vreg_resource_probe(struct platform_device *pdev)
 
 	rc = of_platform_populate(node, NULL, NULL, dev);
 	if (rc) {
-		dev_err(dev, "%s: failed to add child nodes, rc=%d\n", __func__,
+		dev_dbg(dev, "%s: failed to add child nodes, rc=%d\n", __func__,
 			rc);
 		goto fail_unset_drvdata;
 	}

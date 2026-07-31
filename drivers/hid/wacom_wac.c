@@ -1202,7 +1202,7 @@ static int wacom_intuos_bt_irq(struct wacom_wac *wacom, size_t len)
 	switch (data[0]) {
 	case 0x04:
 		if (len < 32) {
-			dev_warn(wacom->pen_input->dev.parent,
+			dev_dbg(wacom->pen_input->dev.parent,
 				 "Report 0x04 too short: %zu bytes\n", len);
 			break;
 		}
@@ -1211,7 +1211,7 @@ static int wacom_intuos_bt_irq(struct wacom_wac *wacom, size_t len)
 		/* fall through */
 	case 0x03:
 		if (i == 1 && len < 22) {
-			dev_warn(wacom->pen_input->dev.parent,
+			dev_dbg(wacom->pen_input->dev.parent,
 				 "Report 0x03 too short: %zu bytes\n", len);
 			break;
 		}

@@ -54,7 +54,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 					true, /* use back channel map flavor */
 					NULL);
 			if (rc < 0) {
-				pr_err("pcm output block config failed\n");
+				pr_debug("pcm output block config failed\n");
 				break;
 			}
 		}
@@ -66,7 +66,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		(wmapro_config->formattag == 0x167)) {
 			wmapro_cfg.format_tag = wmapro_config->formattag;
 		} else {
-			pr_err("%s:AUDIO_START failed: formattag = %d\n",
+			pr_debug("%s:AUDIO_START failed: formattag = %d\n",
 				__func__, wmapro_config->formattag);
 			rc = -EINVAL;
 			break;
@@ -74,7 +74,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		if (wmapro_config->numchannels > 0) {
 			wmapro_cfg.ch_cfg = wmapro_config->numchannels;
 		} else {
-			pr_err("%s:AUDIO_START failed: channels = %d\n",
+			pr_debug("%s:AUDIO_START failed: channels = %d\n",
 				__func__, wmapro_config->numchannels);
 			rc = -EINVAL;
 			break;
@@ -82,7 +82,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		if (wmapro_config->samplingrate > 0) {
 			wmapro_cfg.sample_rate = wmapro_config->samplingrate;
 		} else {
-			pr_err("%s:AUDIO_START failed: sample_rate = %d\n",
+			pr_debug("%s:AUDIO_START failed: sample_rate = %d\n",
 				__func__, wmapro_config->samplingrate);
 			rc = -EINVAL;
 			break;
@@ -94,7 +94,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			wmapro_cfg.block_align =
 				wmapro_config->asfpacketlength;
 		} else {
-			pr_err("%s:AUDIO_START failed: block_align = %d\n",
+			pr_debug("%s:AUDIO_START failed: block_align = %d\n",
 				__func__, wmapro_config->asfpacketlength);
 			rc = -EINVAL;
 			break;
@@ -104,7 +104,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			wmapro_cfg.valid_bits_per_sample =
 				wmapro_config->validbitspersample;
 		} else {
-			pr_err("%s:AUDIO_START failed: bitspersample = %d\n",
+			pr_debug("%s:AUDIO_START failed: bitspersample = %d\n",
 				__func__, wmapro_config->validbitspersample);
 			rc = -EINVAL;
 			break;
@@ -119,7 +119,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		rc = q6asm_media_format_block_wmapro(audio->ac, &wmapro_cfg,
 				audio->ac->stream_id);
 		if (rc < 0) {
-			pr_err("cmd media format block failed\n");
+			pr_debug("cmd media format block failed\n");
 			break;
 		}
 		rc = audio_aio_enable(audio);
@@ -129,7 +129,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 			audio->enabled = 1;
 		} else {
 			audio->enabled = 0;
-			pr_err("Audio Start procedure failed rc=%d\n", rc);
+			pr_debug("Audio Start procedure failed rc=%d\n", rc);
 			break;
 		}
 		pr_debug("AUDIO_START success enable[%d]\n", audio->enabled);
@@ -138,7 +138,7 @@ static long audio_ioctl_shared(struct file *file, unsigned int cmd,
 		break;
 	}
 	default:
-		pr_err("%s: Unknown ioctl cmd %d\n", __func__, cmd);
+		pr_debug("%s: Unknown ioctl cmd %d\n", __func__, cmd);
 		rc = -EINVAL;
 		break;
 	}
@@ -154,7 +154,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_GET_WMAPRO_CONFIG: {
 		if (copy_to_user((void *)arg, audio->codec_cfg,
 			 sizeof(struct msm_audio_wmapro_config))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_WMAPRO_CONFIG failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_WMAPRO_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -163,7 +163,7 @@ static long audio_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case AUDIO_SET_WMAPRO_CONFIG: {
 		if (copy_from_user(audio->codec_cfg, (void *)arg,
 			sizeof(struct msm_audio_wmapro_config))) {
-			pr_err("%s: copy_from_user for AUDIO_SET_WMAPRO_CONFIG_V2 failed\n",
+			pr_debug("%s: copy_from_user for AUDIO_SET_WMAPRO_CONFIG_V2 failed\n",
 				__func__);
 			rc = -EFAULT;
 			break;
@@ -242,7 +242,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_to_user((void *)arg, &wmapro_config_32,
 			 sizeof(struct msm_audio_wmapro_config32))) {
-			pr_err("%s: copy_to_user for AUDIO_GET_WMAPRO_CONFIG_V2_32 failed\n",
+			pr_debug("%s: copy_to_user for AUDIO_GET_WMAPRO_CONFIG_V2_32 failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -254,7 +254,7 @@ static long audio_compat_ioctl(struct file *file, unsigned int cmd,
 
 		if (copy_from_user(&wmapro_config_32, (void *)arg,
 			sizeof(struct msm_audio_wmapro_config32))) {
-			pr_err(
+			pr_debug(
 				"%s: copy_from_user for AUDIO_SET_WMAPRO_CONFG_V2_32 failed\n",
 				__func__);
 			rc = -EFAULT;
@@ -329,7 +329,7 @@ static int audio_open(struct inode *inode, struct file *file)
 					     (void *)audio);
 
 	if (!audio->ac) {
-		pr_err("Could not allocate memory for audio client\n");
+		pr_debug("Could not allocate memory for audio client\n");
 		kfree(audio->codec_cfg);
 		kfree(audio);
 		return -ENOMEM;
@@ -346,7 +346,7 @@ static int audio_open(struct inode *inode, struct file *file)
 		rc = q6asm_open_read_write(audio->ac, FORMAT_LINEAR_PCM,
 					   FORMAT_WMA_V10PRO);
 		if (rc < 0) {
-			pr_err("NT mode Open failed rc=%d\n", rc);
+			pr_debug("NT mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
@@ -358,14 +358,14 @@ static int audio_open(struct inode *inode, struct file *file)
 			!(file->f_mode & FMODE_READ)) {
 		rc = q6asm_open_write(audio->ac, FORMAT_WMA_V10PRO);
 		if (rc < 0) {
-			pr_err("T mode Open failed rc=%d\n", rc);
+			pr_debug("T mode Open failed rc=%d\n", rc);
 			rc = -ENODEV;
 			goto fail;
 		}
 		audio->feedback = TUNNEL_MODE;
 		audio->buf_cfg.meta_info_enable = 0x00;
 	} else {
-		pr_err("Not supported mode\n");
+		pr_debug("Not supported mode\n");
 		rc = -EACCES;
 		goto fail;
 	}
@@ -379,7 +379,7 @@ static int audio_open(struct inode *inode, struct file *file)
 	if (IS_ERR(audio->dentry))
 		pr_debug("debugfs_create_file failed\n");
 #endif
-	pr_info("%s:wmapro decoder open success, session_id = %d\n", __func__,
+	pr_debug("%s:wmapro decoder open success, session_id = %d\n", __func__,
 				audio->ac->session);
 	return rc;
 fail:

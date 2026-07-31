@@ -1043,7 +1043,7 @@ static int qcom_vadc_scale_hw_calib_batt_therm_100(
 	const struct vadc_map_pt *lut;
 
 	if (lut_index >= ARRAY_SIZE(lut_table_100)) {
-		pr_err("LUT index out of range\n");
+		pr_debug("LUT index out of range\n");
 		return -EINVAL;
 	}
 	if (adc_code > VADC5_MAX_CODE)
@@ -1105,7 +1105,7 @@ static int qcom_vadc_scale_hw_calib_batt_therm_30(
 	const struct vadc_map_pt *lut;
 
 	if (lut_index >= ARRAY_SIZE(lut_table_30)) {
-		pr_err("LUT index out of range\n");
+		pr_debug("LUT index out of range\n");
 		return -EINVAL;
 	}
 	if (adc_code > VADC5_MAX_CODE)
@@ -1141,7 +1141,7 @@ static int qcom_vadc_scale_hw_calib_batt_therm_400(
 	const struct vadc_map_pt *lut;
 
 	if (lut_index >= ARRAY_SIZE(lut_table_400)) {
-		pr_err("LUT index out of range\n");
+		pr_debug("LUT index out of range\n");
 		return -EINVAL;
 	}
 	if (adc_code > VADC5_MAX_CODE)

@@ -1397,7 +1397,7 @@ static ssize_t dev_attr_show(struct kobject *kobj, struct attribute *attr,
 	if (dev_attr->show)
 		ret = dev_attr->show(dev, dev_attr, buf);
 	if (ret >= (ssize_t)PAGE_SIZE) {
-		printk("dev_attr_show: %pS returned bad count\n",
+		no_printk("dev_attr_show: %pS returned bad count\n",
 				dev_attr->show);
 	}
 	return ret;
@@ -1708,7 +1708,7 @@ static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 	rc = kobject_synth_uevent(&dev->kobj, buf, count);
 
 	if (rc) {
-		dev_err(dev, "uevent: failed to send synthetic uevent\n");
+		dev_dbg(dev, "uevent: failed to send synthetic uevent\n");
 		return rc;
 	}
 
@@ -2356,7 +2356,7 @@ static int device_add_class_symlinks(struct device *dev)
 	if (of_node && of_node_kobj(of_node)) {
 		error = sysfs_create_link(&dev->kobj, of_node_kobj(of_node), "of_node");
 		if (error)
-			dev_warn(dev, "Error %d creating of_node link\n",error);
+			dev_dbg(dev, "Error %d creating of_node link\n",error);
 		/* An error here doesn't warrant bringing down the device */
 	}
 
@@ -3641,16 +3641,16 @@ void device_shutdown(void)
 
 		if (dev->class && dev->class->shutdown_pre) {
 			if (initcall_debug)
-				dev_info(dev, "shutdown_pre\n");
+				dev_dbg(dev, "shutdown_pre\n");
 			dev->class->shutdown_pre(dev);
 		}
 		if (dev->bus && dev->bus->shutdown) {
 			if (initcall_debug)
-				dev_info(dev, "shutdown\n");
+				dev_dbg(dev, "shutdown\n");
 			dev->bus->shutdown(dev);
 		} else if (dev->driver && dev->driver->shutdown) {
 			if (initcall_debug)
-				dev_info(dev, "shutdown\n");
+				dev_dbg(dev, "shutdown\n");
 			dev->driver->shutdown(dev);
 		}
 
@@ -3762,7 +3762,7 @@ static void __dev_printk(const char *level, const struct device *dev,
 		dev_printk_emit(level[1] - '0', dev, "%s %s: %pV",
 				dev_driver_string(dev), dev_name(dev), vaf);
 	else
-		printk("%s(NULL device *): %pV", level, vaf);
+		no_printk("%s(NULL device *): %pV", level, vaf);
 }
 
 void dev_printk(const char *level, const struct device *dev,
@@ -3821,7 +3821,7 @@ define_dev_printk_level(_dev_info, KERN_INFO);
  * -EPROBE_DEFER and propagate error upwards.
  * It replaces code sequence::
  * 	if (err != -EPROBE_DEFER)
- * 		dev_err(dev, ...);
+ * 		dev_dbg(dev, ...);
  * 	else
  * 		dev_dbg(dev, ...);
  * 	return err;
@@ -3843,7 +3843,7 @@ int dev_err_probe(const struct device *dev, int err, const char *fmt, ...)
 	vaf.va = &args;
 
 	if (err != -EPROBE_DEFER)
-		dev_err(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
+		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
 	else
 		dev_dbg(dev, "error %pe: %pV", ERR_PTR(err), &vaf);
 

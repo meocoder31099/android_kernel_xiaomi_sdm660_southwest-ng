@@ -598,7 +598,7 @@ static int __init nf_conntrack_ftp_init(void)
 
 	ret = nf_conntrack_helpers_register(ftp, ports_c * 2);
 	if (ret < 0) {
-		pr_err("failed to register helpers\n");
+		pr_debug("failed to register helpers\n");
 		kfree(ftp_buffer);
 		return ret;
 	}

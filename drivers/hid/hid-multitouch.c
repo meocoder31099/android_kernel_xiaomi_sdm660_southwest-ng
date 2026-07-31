@@ -435,7 +435,7 @@ static void mt_get_feature(struct hid_device *hdev, struct hid_report *report)
 	ret = hid_hw_raw_request(hdev, report->id, buf, size,
 				 HID_FEATURE_REPORT, HID_REQ_GET_REPORT);
 	if (ret < 0) {
-		dev_warn(&hdev->dev, "failed to fetch feature %d\n",
+		dev_dbg(&hdev->dev, "failed to fetch feature %d\n",
 			 report->id);
 	} else {
 		/* The report ID in the request and the response should match */
@@ -447,7 +447,7 @@ static void mt_get_feature(struct hid_device *hdev, struct hid_report *report)
 		ret = hid_report_raw_event(hdev, HID_FEATURE_REPORT, buf,
 					   size, 0);
 		if (ret)
-			dev_warn(&hdev->dev, "failed to report feature\n");
+			dev_dbg(&hdev->dev, "failed to report feature\n");
 	}
 
 free:
@@ -474,7 +474,7 @@ static void mt_feature_mapping(struct hid_device *hdev,
 		break;
 	case HID_DG_BUTTONTYPE:
 		if (usage->usage_index >= field->report_count) {
-			dev_err(&hdev->dev, "HID_DG_BUTTONTYPE out of range\n");
+			dev_dbg(&hdev->dev, "HID_DG_BUTTONTYPE out of range\n");
 			break;
 		}
 
@@ -1698,7 +1698,7 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
 
 	td = devm_kzalloc(&hdev->dev, sizeof(struct mt_device), GFP_KERNEL);
 	if (!td) {
-		dev_err(&hdev->dev, "cannot allocate multitouch data\n");
+		dev_dbg(&hdev->dev, "cannot allocate multitouch data\n");
 		return -ENOMEM;
 	}
 	td->hdev = hdev;
@@ -1742,7 +1742,7 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
 
 	ret = sysfs_create_group(&hdev->dev.kobj, &mt_attribute_group);
 	if (ret)
-		dev_warn(&hdev->dev, "Cannot allocate sysfs group for %s\n",
+		dev_dbg(&hdev->dev, "Cannot allocate sysfs group for %s\n",
 				hdev->name);
 
 	mt_set_modes(hdev, HID_LATENCY_NORMAL, true, true);

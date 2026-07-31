@@ -271,7 +271,7 @@ static int tsens1xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_HI,
 				THERMAL_DEVICE_ENABLED);
 		if (rc) {
-			pr_err("trip high enable error :%d\n", rc);
+			pr_debug("trip high enable error :%d\n", rc);
 			goto fail;
 		}
 	} else {
@@ -279,7 +279,7 @@ static int tsens1xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_HI,
 				THERMAL_DEVICE_DISABLED);
 		if (rc) {
-			pr_err("trip high disable error :%d\n", rc);
+			pr_debug("trip high disable error :%d\n", rc);
 			goto fail;
 		}
 	}
@@ -289,7 +289,7 @@ static int tsens1xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_LOW,
 				THERMAL_DEVICE_ENABLED);
 		if (rc) {
-			pr_err("trip low enable activation error :%d\n", rc);
+			pr_debug("trip low enable activation error :%d\n", rc);
 			goto fail;
 		}
 	} else {
@@ -297,7 +297,7 @@ static int tsens1xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_LOW,
 				THERMAL_DEVICE_DISABLED);
 		if (rc) {
-			pr_err("trip low disable error :%d\n", rc);
+			pr_debug("trip low disable error :%d\n", rc);
 			goto fail;
 		}
 	}
@@ -355,7 +355,7 @@ static irqreturn_t tsens_irq_thread(int irq, void *data)
 						THERMAL_TRIP_CONFIGURABLE_HI,
 						THERMAL_DEVICE_ENABLED);
 				if (rc)
-					pr_err("high rearm failed\n");
+					pr_debug("high rearm failed\n");
 			} else {
 				upper_thr = true;
 				tm->sensor[i].thr_state.high_th_state =
@@ -377,7 +377,7 @@ static irqreturn_t tsens_irq_thread(int irq, void *data)
 						THERMAL_TRIP_CONFIGURABLE_LOW,
 						THERMAL_DEVICE_ENABLED);
 				if (rc)
-					pr_err("low rearm failed\n");
+					pr_debug("low rearm failed\n");
 			} else {
 				lower_thr = true;
 				tm->sensor[i].thr_state.low_th_state =
@@ -428,7 +428,7 @@ static int tsens1xxx_hw_init(struct tsens_device *tmdev)
 	srot_addr = TSENS_CTRL_ADDR(tmdev->tsens_srot_addr + 0x4);
 	srot_val = readl_relaxed(srot_addr);
 	if (!(srot_val & TSENS_EN)) {
-		pr_err("TSENS device is not enabled\n");
+		pr_debug("TSENS device is not enabled\n");
 		return -ENODEV;
 	}
 
@@ -463,7 +463,7 @@ static int tsens1xxx_register_interrupts(struct tsens_device *tmdev)
 
 		irq = platform_get_irq_byname(pdev, tsens1xxx_irqs[i].name);
 		if (irq < 0) {
-			dev_err(&pdev->dev, "failed to get irq %s\n",
+			dev_dbg(&pdev->dev, "failed to get irq %s\n",
 					tsens1xxx_irqs[i].name);
 			return irq;
 		}
@@ -473,7 +473,7 @@ static int tsens1xxx_register_interrupts(struct tsens_device *tmdev)
 				IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
 				tsens1xxx_irqs[i].name, tmdev);
 		if (rc) {
-			dev_err(&pdev->dev, "failed to get irq %s\n",
+			dev_dbg(&pdev->dev, "failed to get irq %s\n",
 					tsens1xxx_irqs[i].name);
 			return rc;
 		}

@@ -238,7 +238,7 @@ static void pp_gamut_clock_gating_en(char __iomem *base_addr);
 void *pp_get_driver_ops_v1_7(struct mdp_pp_driver_ops *ops)
 {
 	if (!ops) {
-		pr_err("PP driver ops invalid %pK\n", ops);
+		pr_debug("PP driver ops invalid %pK\n", ops);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -300,7 +300,7 @@ static void pp_opmode_config(int location, struct pp_sts_type *pp_sts,
 		u32 *opmode, int side)
 {
 	if (!pp_sts || !opmode) {
-		pr_err("Invalid pp_sts %pK or opmode %pK\n", pp_sts, opmode);
+		pr_debug("Invalid pp_sts %pK or opmode %pK\n", pp_sts, opmode);
 		return;
 	}
 	switch (location) {
@@ -337,7 +337,7 @@ static void pp_opmode_config(int location, struct pp_sts_type *pp_sts,
 			pr_debug("pgc in LM enabled\n");
 		break;
 	default:
-		pr_err("Invalid block type %d\n", location);
+		pr_debug("Invalid block type %d\n", location);
 		break;
 	}
 }
@@ -354,34 +354,34 @@ static int pp_hist_lut_get_config(char __iomem *base_addr, void *cfg_data,
 	struct mdp_hist_lut_data *lut_cfg_data = NULL;
 
 	if (!base_addr || !cfg_data) {
-		pr_err("invalid params base_addr %pK cfg_data %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK\n",
 		       base_addr, cfg_data);
 		return -EINVAL;
 	}
 
 	lut_cfg_data = (struct mdp_hist_lut_data *) cfg_data;
 	if (!(lut_cfg_data->ops & MDP_PP_OPS_READ)) {
-		pr_err("read ops not set for hist_lut %d\n", lut_cfg_data->ops);
+		pr_debug("read ops not set for hist_lut %d\n", lut_cfg_data->ops);
 		return 0;
 	}
 	if (lut_cfg_data->version != mdp_hist_lut_v1_7 ||
 		!lut_cfg_data->cfg_payload) {
-		pr_err("invalid hist_lut version %d payload %pK\n",
+		pr_debug("invalid hist_lut version %d payload %pK\n",
 		       lut_cfg_data->version, lut_cfg_data->cfg_payload);
 		return -EINVAL;
 	}
 	if (copy_from_user(lut_data, (void __user *) lut_cfg_data->cfg_payload,
 			sizeof(*lut_data))) {
-		pr_err("copy from user failed for lut_data\n");
+		pr_debug("copy from user failed for lut_data\n");
 		return -EFAULT;
 	}
 	if (lut_data->len != ENHIST_LUT_ENTRIES) {
-		pr_err("invalid hist_lut len %d\n", lut_data->len);
+		pr_debug("invalid hist_lut len %d\n", lut_data->len);
 		return -EINVAL;
 	}
 	sz = ENHIST_LUT_ENTRIES * sizeof(u32);
 	if (!access_ok(VERIFY_WRITE, lut_data->data, sz)) {
-		pr_err("invalid lut address for hist_lut sz %d\n", sz);
+		pr_debug("invalid lut address for hist_lut sz %d\n", sz);
 		return -EFAULT;
 	}
 
@@ -393,13 +393,13 @@ static int pp_hist_lut_get_config(char __iomem *base_addr, void *cfg_data,
 		hist_addr = base_addr + REG_DSPP_HIST_LUT_BASE;
 		break;
 	default:
-		pr_err("Invalid block type %d\n", block_type);
+		pr_debug("Invalid block type %d\n", block_type);
 		ret = -EINVAL;
 		break;
 	}
 
 	if (ret) {
-		pr_err("Failed to read hist_lut table ret %d\n", ret);
+		pr_debug("Failed to read hist_lut table ret %d\n", ret);
 		return ret;
 	}
 
@@ -415,7 +415,7 @@ static int pp_hist_lut_get_config(char __iomem *base_addr, void *cfg_data,
 		hist_addr += 4;
 	}
 	if (copy_to_user(lut_data->data, data, sz)) {
-		pr_err("failed to copy the hist_lut back to user\n");
+		pr_debug("failed to copy the hist_lut back to user\n");
 		ret = -EFAULT;
 	}
 	kfree(data);
@@ -433,14 +433,14 @@ static int pp_hist_lut_set_config(char __iomem *base_addr,
 	char __iomem *hist_addr = NULL, *swap_addr = NULL;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
 		      base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
 
 	lut_cfg_data = (struct mdp_hist_lut_data *) cfg_data;
 	if (lut_cfg_data->version != mdp_hist_lut_v1_7) {
-		pr_err("invalid hist_lut version %d\n", lut_cfg_data->version);
+		pr_debug("invalid hist_lut version %d\n", lut_cfg_data->version);
 		return -EINVAL;
 	}
 
@@ -450,7 +450,7 @@ static int pp_hist_lut_set_config(char __iomem *base_addr,
 	}
 
 	if (!(lut_cfg_data->ops & ~(MDP_PP_OPS_READ))) {
-		pr_err("only read ops set for lut\n");
+		pr_debug("only read ops set for lut\n");
 		return ret;
 	}
 	if (!(lut_cfg_data->ops & MDP_PP_OPS_WRITE)) {
@@ -459,12 +459,12 @@ static int pp_hist_lut_set_config(char __iomem *base_addr,
 	}
 	lut_data = lut_cfg_data->cfg_payload;
 	if (!lut_data) {
-		pr_err("invalid hist_lut cfg_payload %pK\n", lut_data);
+		pr_debug("invalid hist_lut cfg_payload %pK\n", lut_data);
 		return -EINVAL;
 	}
 
 	if (lut_data->len != ENHIST_LUT_ENTRIES || !lut_data->data) {
-		pr_err("invalid hist_lut len %d data %pK\n",
+		pr_debug("invalid hist_lut len %d data %pK\n",
 		       lut_data->len, lut_data->data);
 		return -EINVAL;
 	}
@@ -479,12 +479,12 @@ static int pp_hist_lut_set_config(char __iomem *base_addr,
 		swap_addr = base_addr + REG_DSPP_HIST_SWAP_BASE;
 		break;
 	default:
-		pr_err("Invalid block type %d\n", block_type);
+		pr_debug("Invalid block type %d\n", block_type);
 		ret = -EINVAL;
 		break;
 	}
 	if (ret) {
-		pr_err("hist_lut table not updated ret %d\n", ret);
+		pr_debug("hist_lut table not updated ret %d\n", ret);
 		return ret;
 	}
 	for (i = 0; i < ENHIST_LUT_ENTRIES; i += 2) {
@@ -514,7 +514,7 @@ bail_out:
 static int pp_dither_get_config(char __iomem *base_addr, void *cfg_data,
 			   u32 block_type, u32 disp_num)
 {
-	pr_err("Operation not supported\n");
+	pr_debug("Operation not supported\n");
 	return -ENOTSUPP;
 }
 
@@ -529,7 +529,7 @@ static int pp_dither_set_config(char __iomem *base_addr,
 	uint32_t *pdata = NULL;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
 		      base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
@@ -538,11 +538,11 @@ static int pp_dither_set_config(char __iomem *base_addr,
 	dither_cfg_data = (struct mdp_dither_cfg_data *) cfg_data;
 
 	if (dither_cfg_data->version != mdp_dither_v1_7) {
-		pr_err("invalid dither version %d\n", dither_cfg_data->version);
+		pr_debug("invalid dither version %d\n", dither_cfg_data->version);
 		return -EINVAL;
 	}
 	if (dither_cfg_data->flags & MDP_PP_OPS_READ) {
-		pr_err("Invalid context for read operation\n");
+		pr_debug("Invalid context for read operation\n");
 		return -EINVAL;
 	}
 	if (dither_cfg_data->flags & MDP_PP_OPS_DISABLE) {
@@ -557,7 +557,7 @@ static int pp_dither_set_config(char __iomem *base_addr,
 
 	dither_data = dither_cfg_data->cfg_payload;
 	if (!dither_data) {
-		pr_err("invalid payload for dither %pK\n", dither_data);
+		pr_debug("invalid payload for dither %pK\n", dither_data);
 		return -EINVAL;
 	}
 
@@ -565,7 +565,7 @@ static int pp_dither_set_config(char __iomem *base_addr,
 		(dither_data->b_cb_depth >= DITHER_DEPTH_MAP_INDEX) ||
 		(dither_data->r_cr_depth >= DITHER_DEPTH_MAP_INDEX) ||
 		(dither_data->len > DITHER_MATRIX_INDEX)) {
-		pr_err("invalid data for dither, g_y_depth %d y_cb_depth %d r_cr_depth %d\n len %d\n",
+		pr_debug("invalid data for dither, g_y_depth %d y_cb_depth %d r_cr_depth %d\n len %d\n",
 			dither_data->g_y_depth, dither_data->b_cb_depth,
 			dither_data->r_cr_depth, dither_data->len);
 		return -EINVAL;
@@ -605,7 +605,7 @@ static int pp_hist_get_config(char __iomem *base_addr, void *cfg_data,
 	struct pp_hist_col_info *hist_info = NULL;
 
 	if (!base_addr || !cfg_data) {
-		pr_err("invalid params base_addr %pK cfg_data %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK\n",
 		       base_addr, cfg_data);
 		return -EINVAL;
 	}
@@ -620,12 +620,12 @@ static int pp_hist_get_config(char __iomem *base_addr, void *cfg_data,
 		base_addr += HIST_DATA_OFF_DSPP_V1_7;
 		break;
 	default:
-		pr_err("Invalid block type %d\n", block_type);
+		pr_debug("Invalid block type %d\n", block_type);
 		ret = -EINVAL;
 		break;
 	}
 	if (ret) {
-		pr_err("Failed to read hist data ret %d\n", ret);
+		pr_debug("Failed to read hist data ret %d\n", ret);
 		return ret;
 	}
 
@@ -643,7 +643,7 @@ static int pp_get_hist_offset(u32 block, u32 *ctl_off)
 	int ret = 0;
 
 	if (!ctl_off) {
-		pr_err("invalid params ctl_off %pK\n", ctl_off);
+		pr_debug("invalid params ctl_off %pK\n", ctl_off);
 		return -EINVAL;
 	}
 	switch (block) {
@@ -654,7 +654,7 @@ static int pp_get_hist_offset(u32 block, u32 *ctl_off)
 		*ctl_off = HIST_CTL_OFF_DSPP_V1_7;
 		break;
 	default:
-		pr_err("Invalid block type %d\n", block);
+		pr_debug("Invalid block type %d\n", block);
 		ret = -EINVAL;
 		break;
 	}
@@ -664,7 +664,7 @@ static int pp_get_hist_offset(u32 block, u32 *ctl_off)
 static int pp_get_hist_isr(u32 *isr_mask)
 {
 	if (!isr_mask) {
-		pr_err("invalid params isr_mask %pK\n", isr_mask);
+		pr_debug("invalid params isr_mask %pK\n", isr_mask);
 		return -EINVAL;
 	}
 
@@ -690,18 +690,18 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 	u32 clk_gate_disable = 0;
 
 	if (!base_addr || !cfg_data) {
-		pr_err("invalid params base_addr %pK cfg_data %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK\n",
 		       base_addr, cfg_data);
 		return -EINVAL;
 	}
 	if (gamut_cfg->version != mdp_gamut_v1_7) {
-		pr_err("unsupported version of gamut %d\n",
+		pr_debug("unsupported version of gamut %d\n",
 		       gamut_cfg->version);
 		return -EINVAL;
 	}
 	if (copy_from_user(&gamut_data, gamut_cfg->cfg_payload,
 			   sizeof(gamut_data))) {
-		pr_err("copy from user failed for gamut_data\n");
+		pr_debug("copy from user failed for gamut_data\n");
 		return -EFAULT;
 	}
 	mode = readl_relaxed(base_addr + GAMUT_OP_MODE_OFF);
@@ -720,12 +720,12 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 	sz_scale = MDP_GAMUT_SCALE_OFF_SZ * sizeof(u32);
 	for (i = 0; i < MDP_GAMUT_TABLE_NUM_V1_7; i++) {
 		if (!access_ok(VERIFY_WRITE, gamut_data.c0_data[i], sz)) {
-			pr_err("invalid c0 address for sz %d table index %d\n",
+			pr_debug("invalid c0 address for sz %d table index %d\n",
 				sz, (i+1));
 			return -EFAULT;
 		}
 		if (!access_ok(VERIFY_WRITE, gamut_data.c1_c2_data[i], sz)) {
-			pr_err("invalid c1c2 address for sz %d table index %d\n",
+			pr_debug("invalid c1c2 address for sz %d table index %d\n",
 				sz, (i+1));
 			return -EFAULT;
 		}
@@ -733,7 +733,7 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 		if (i < MDP_GAMUT_SCALE_OFF_TABLE_NUM) {
 			if (!access_ok(VERIFY_WRITE,
 			     gamut_data.scale_off_data[i], sz_scale)) {
-				pr_err("invalid scale address for sz %d color c%d\n",
+				pr_debug("invalid scale address for sz %d color c%d\n",
 					sz_scale, i);
 				return -EFAULT;
 			}
@@ -762,13 +762,13 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 				      GAMUT_TABLE_UPPER_R);
 		}
 		if (copy_to_user(gamut_data.c0_data[i], gamut_c0, sz)) {
-			pr_err("copy to user failed for table %d c0 sz %d\n",
+			pr_debug("copy to user failed for table %d c0 sz %d\n",
 			       i, sz);
 			ret = -EFAULT;
 			goto bail_out;
 		}
 		if (copy_to_user(gamut_data.c1_c2_data[i], gamut_c1c2, sz)) {
-			pr_err("copy to user failed for table %d c1c2 sz %d\n",
+			pr_debug("copy to user failed for table %d c1c2 sz %d\n",
 			       i, sz);
 			ret = -EFAULT;
 			goto bail_out;
@@ -780,7 +780,7 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 		kfree(gamut_tbl);
 		gamut_tbl = kzalloc(sz_scale, GFP_KERNEL);
 		if (!gamut_tbl) {
-			pr_err("failed to alloc scale tbl size %d\n",
+			pr_debug("failed to alloc scale tbl size %d\n",
 			       sz_scale);
 			ret = -ENOMEM;
 			goto bail_out;
@@ -798,7 +798,7 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 		if (copy_to_user(gamut_data.scale_off_data[i],
 				 &gamut_c0[i * MDP_GAMUT_SCALE_OFF_SZ],
 				 (MDP_GAMUT_SCALE_OFF_SZ * sizeof(u32)))) {
-			pr_err("copy to user failed for scale color c%d\n",
+			pr_debug("copy to user failed for scale color c%d\n",
 			       i);
 			ret = -EFAULT;
 			goto bail_out;
@@ -806,7 +806,7 @@ static int pp_gamut_get_config(char __iomem *base_addr, void *cfg_data,
 	}
 	if (copy_to_user(gamut_cfg->cfg_payload, &gamut_data,
 			 sizeof(gamut_data))) {
-		pr_err("failed to copy the gamut info into payload\n");
+		pr_debug("failed to copy the gamut info into payload\n");
 		ret = -EFAULT;
 	}
 bail_out:
@@ -829,13 +829,13 @@ static int pp_gamut_set_config(char __iomem *base_addr,
 	uint64_t gamut_val;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
 		      base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
 	gamut_cfg_data = (struct mdp_gamut_cfg_data *) cfg_data;
 	if (gamut_cfg_data->version != mdp_gamut_v1_7) {
-		pr_err("invalid gamut version %d\n", gamut_cfg_data->version);
+		pr_debug("invalid gamut version %d\n", gamut_cfg_data->version);
 		return -EINVAL;
 	}
 	if (!(gamut_cfg_data->flags & ~(MDP_PP_OPS_READ))) {
@@ -851,13 +851,13 @@ static int pp_gamut_set_config(char __iomem *base_addr,
 	gamut_data = (struct mdp_gamut_data_v1_7 *)
 		      gamut_cfg_data->cfg_payload;
 	if (!gamut_data) {
-		pr_err("invalid payload for gamut %pK\n", gamut_data);
+		pr_debug("invalid payload for gamut %pK\n", gamut_data);
 		return -EINVAL;
 	}
 
 	if (gamut_data->mode != mdp_gamut_fine_mode &&
 	    gamut_data->mode != mdp_gamut_coarse_mode) {
-		pr_err("invalid gamut mode %d\n", gamut_data->mode);
+		pr_debug("invalid gamut mode %d\n", gamut_data->mode);
 		return -EINVAL;
 	}
 	index_start = (gamut_data->mode == mdp_gamut_fine_mode) ?
@@ -870,7 +870,7 @@ static int pp_gamut_set_config(char __iomem *base_addr,
 	for (i = 0; i < MDP_GAMUT_TABLE_NUM_V1_7; i++) {
 		if (!gamut_data->c0_data[i] || !gamut_data->c1_c2_data[i]
 		    || (gamut_data->tbl_size[i] != tbl_sz)) {
-			pr_err("invalid param for c0 %pK c1c2 %pK table %d size %d expected sz %d\n",
+			pr_debug("invalid param for c0 %pK c1c2 %pK table %d size %d expected sz %d\n",
 			       gamut_data->c0_data[i],
 			       gamut_data->c1_c2_data[i], i,
 			       gamut_data->tbl_size[i], tbl_sz);
@@ -881,7 +881,7 @@ static int pp_gamut_set_config(char __iomem *base_addr,
 		    (!gamut_data->scale_off_data[i] ||
 		    (gamut_data->tbl_scale_off_sz[i] !=
 		    MDP_GAMUT_SCALE_OFF_SZ))) {
-			pr_err("invalid param for scale table %pK for c%d size %d expected size%d\n",
+			pr_debug("invalid param for scale table %pK for c%d size %d expected size%d\n",
 				gamut_data->scale_off_data[i], i,
 				gamut_data->tbl_scale_off_sz[i],
 				MDP_GAMUT_SCALE_OFF_SZ);
@@ -952,22 +952,22 @@ static int pp_pcc_set_config(char __iomem *base_addr,
 	u32 opmode = 0;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts %pK\n",
 			base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
 	pcc_cfg_data = (struct mdp_pcc_cfg_data *) cfg_data;
 	if (pcc_cfg_data->version != mdp_pcc_v1_7) {
-		pr_err("invalid pcc version %d\n", pcc_cfg_data->version);
+		pr_debug("invalid pcc version %d\n", pcc_cfg_data->version);
 		return -EINVAL;
 	}
 	if (!(pcc_cfg_data->ops & ~(MDP_PP_OPS_READ))) {
-		pr_info("only read ops is set %d\n", pcc_cfg_data->ops);
+		pr_debug("only read ops is set %d\n", pcc_cfg_data->ops);
 		return 0;
 	}
 	pcc_data = pcc_cfg_data->cfg_payload;
 	if (!pcc_data) {
-		pr_err("invalid payload for pcc %pK\n", pcc_data);
+		pr_debug("invalid payload for pcc %pK\n", pcc_data);
 		return -EINVAL;
 	}
 
@@ -1037,14 +1037,14 @@ static int pp_pcc_get_config(char __iomem *base_addr, void *cfg_data,
 	struct mdp_pcc_data_v1_7 pcc_data;
 
 	if (!base_addr || !cfg_data) {
-		pr_err("invalid params base_addr %pK cfg_data %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK\n",
 		       base_addr, cfg_data);
 		return -EINVAL;
 	}
 
 	pcc_cfg = (struct mdp_pcc_cfg_data *) cfg_data;
 	if (pcc_cfg->version != mdp_pcc_v1_7) {
-		pr_err("unsupported version of pcc %d\n",
+		pr_debug("unsupported version of pcc %d\n",
 		       pcc_cfg->version);
 		return -EINVAL;
 	}
@@ -1091,7 +1091,7 @@ static int pp_pcc_get_config(char __iomem *base_addr, void *cfg_data,
 
 	if (copy_to_user(pcc_cfg->cfg_payload, &pcc_data,
 			 sizeof(pcc_data))) {
-		pr_err("failed to copy the pcc info into payload\n");
+		pr_debug("failed to copy the pcc info into payload\n");
 		return -EFAULT;
 	}
 
@@ -1235,7 +1235,7 @@ static void pp_pa_set_six_zone(char __iomem *base_addr,
 
 	if (!pa_data->six_zone_len || !pa_data->six_zone_curve_p0 ||
 	    !pa_data->six_zone_curve_p1) {
-		pr_err("Invalid six zone data: len %d curve_p0 %pK curve_p1 %pK\n",
+		pr_debug("Invalid six zone data: len %d curve_p0 %pK curve_p1 %pK\n",
 		       pa_data->six_zone_len,
 		       pa_data->six_zone_curve_p0,
 		       pa_data->six_zone_curve_p1);
@@ -1285,22 +1285,22 @@ static int pp_pa_set_config(char __iomem *base_addr,
 	int ret = 0;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
 		      base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
 	if ((block_type != DSPP) && (block_type != SSPP_VIG)) {
-		pr_err("Invalid block type %d\n", block_type);
+		pr_debug("Invalid block type %d\n", block_type);
 		return -EINVAL;
 	}
 
 	pa_cfg_data = (struct mdp_pa_v2_cfg_data *) cfg_data;
 	if (pa_cfg_data->version != mdp_pa_v1_7) {
-		pr_err("invalid pa version %d\n", pa_cfg_data->version);
+		pr_debug("invalid pa version %d\n", pa_cfg_data->version);
 		return -EINVAL;
 	}
 	if (!(pa_cfg_data->flags & ~(MDP_PP_OPS_READ))) {
-		pr_info("only read ops is set %d\n", pa_cfg_data->flags);
+		pr_debug("only read ops is set %d\n", pa_cfg_data->flags);
 		return 0;
 	}
 	if (pa_cfg_data->flags & MDP_PP_OPS_DISABLE) {
@@ -1310,12 +1310,12 @@ static int pp_pa_set_config(char __iomem *base_addr,
 
 	pa_data = pa_cfg_data->cfg_payload;
 	if (!pa_data) {
-		pr_err("invalid payload for pa %pK\n", pa_data);
+		pr_debug("invalid payload for pa %pK\n", pa_data);
 		return -EINVAL;
 	}
 
 	if (!(pa_cfg_data->flags & MDP_PP_OPS_WRITE)) {
-		pr_warn("No write flag enabled for PA flags %d\n",
+		pr_debug("No write flag enabled for PA flags %d\n",
 			pa_cfg_data->flags);
 		return 0;
 	}
@@ -1476,7 +1476,7 @@ static int pp_pa_get_six_zone(char __iomem *base_addr,
 	int ret = 0, i;
 
 	if (pa_data->six_zone_len != MDP_SIX_ZONE_LUT_SIZE) {
-		pr_err("Invalid six zone length %d\n",
+		pr_debug("Invalid six zone length %d\n",
 			pa_data->six_zone_len);
 		return -EINVAL;
 	}
@@ -1484,13 +1484,13 @@ static int pp_pa_get_six_zone(char __iomem *base_addr,
 
 	if (!access_ok(VERIFY_WRITE, pa_data->six_zone_curve_p0,
 			six_zone_sz)) {
-		pr_err("invalid six_zone_curve_p0 addr for sz %d\n",
+		pr_debug("invalid six_zone_curve_p0 addr for sz %d\n",
 			six_zone_sz);
 		return -EFAULT;
 	}
 	if (!access_ok(VERIFY_WRITE, pa_data->six_zone_curve_p1,
 			six_zone_sz)) {
-		pr_err("invalid six_zone_curve_p1 addr for sz %d\n",
+		pr_debug("invalid six_zone_curve_p1 addr for sz %d\n",
 			six_zone_sz);
 		return -EFAULT;
 	}
@@ -1498,7 +1498,7 @@ static int pp_pa_get_six_zone(char __iomem *base_addr,
 	six_zone_buf_sz = 2 * six_zone_sz;
 	six_zone_read_buf = kzalloc(six_zone_buf_sz, GFP_KERNEL);
 	if (!six_zone_read_buf) {
-		pr_err("allocation failed for six zone lut size %d\n",
+		pr_debug("allocation failed for six zone lut size %d\n",
 			six_zone_buf_sz);
 		ret = -ENOMEM;
 		goto six_zone_exit;
@@ -1527,13 +1527,13 @@ static int pp_pa_get_six_zone(char __iomem *base_addr,
 
 	if (copy_to_user(pa_data->six_zone_curve_p0, six_zone_p0,
 			 six_zone_sz)) {
-		pr_err("Failed to copy six zone p0 data\n");
+		pr_debug("Failed to copy six zone p0 data\n");
 		ret = -EFAULT;
 		goto six_zone_memory_exit;
 	}
 	if (copy_to_user(pa_data->six_zone_curve_p1, six_zone_p1,
 			 six_zone_sz)) {
-		pr_err("Failed to copy six zone p1 data\n");
+		pr_debug("Failed to copy six zone p1 data\n");
 		ret = -EFAULT;
 		goto six_zone_memory_exit;
 	}
@@ -1560,24 +1560,24 @@ static int pp_pa_get_config(char __iomem *base_addr, void *cfg_data,
 	char __iomem *pa_hold_addr = NULL;
 
 	if (!base_addr || !cfg_data) {
-		pr_err("invalid params base_addr %pK cfg_data %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK\n",
 		      base_addr, cfg_data);
 		return -EINVAL;
 	}
 	if ((block_type != DSPP) && (block_type != SSPP_VIG)) {
-		pr_err("Invalid block type %d\n", block_type);
+		pr_debug("Invalid block type %d\n", block_type);
 		return -EINVAL;
 	}
 
 	pa_cfg_data = (struct mdp_pa_v2_cfg_data *) cfg_data;
 	if (pa_cfg_data->version != mdp_pa_v1_7) {
-		pr_err("invalid pa version %d\n", pa_cfg_data->version);
+		pr_debug("invalid pa version %d\n", pa_cfg_data->version);
 		return -EINVAL;
 	}
 
 	if (copy_from_user(&pa_data, pa_cfg_data->cfg_payload,
 			sizeof(pa_data))) {
-		pr_err("copy from user failed for pa data\n");
+		pr_debug("copy from user failed for pa data\n");
 		return -EFAULT;
 	}
 
@@ -1594,7 +1594,7 @@ static int pp_pa_get_config(char __iomem *base_addr, void *cfg_data,
 				   pa_cfg_data->flags,
 				   pa_hold);
 		if (ret) {
-			pr_err("six zone read failed ret %d\n", ret);
+			pr_debug("six zone read failed ret %d\n", ret);
 			return ret;
 		}
 	}
@@ -1605,7 +1605,7 @@ static int pp_pa_get_config(char __iomem *base_addr, void *cfg_data,
 
 	ret = copy_to_user(pa_cfg_data->cfg_payload, &pa_data, sizeof(pa_data));
 	if (ret) {
-		pr_err("Failed to copy PA data to user\n");
+		pr_debug("Failed to copy PA data to user\n");
 		return -EFAULT;
 	}
 
@@ -1693,7 +1693,7 @@ static int pp_igc_set_config(char __iomem *base_addr,
 	u32 data;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
 		      base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
@@ -1706,11 +1706,11 @@ static int pp_igc_set_config(char __iomem *base_addr,
 		return -EINVAL;
 	}
 	if (!(lut_cfg_data->ops & ~(MDP_PP_OPS_READ))) {
-		pr_err("only read ops set for lut\n");
+		pr_debug("only read ops set for lut\n");
 		return ret;
 	}
 	if (lut_cfg_data->block > IGC_MASK_MAX) {
-		pr_err("invalid mask value for IGC %d\n", lut_cfg_data->block);
+		pr_debug("invalid mask value for IGC %d\n", lut_cfg_data->block);
 		return -EINVAL;
 	}
 	if (!(lut_cfg_data->ops & MDP_PP_OPS_WRITE)) {
@@ -1720,7 +1720,7 @@ static int pp_igc_set_config(char __iomem *base_addr,
 	lut_data = lut_cfg_data->cfg_payload;
 	if (lut_data->len != IGC_LUT_ENTRIES || !lut_data->c0_c1_data ||
 	    !lut_data->c2_data) {
-		pr_err("invalid lut len %d c0_c1_data %pK  c2_data %pK\n",
+		pr_debug("invalid lut len %d c0_c1_data %pK  c2_data %pK\n",
 		       lut_data->len, lut_data->c0_c1_data, lut_data->c2_data);
 		return -EINVAL;
 	}
@@ -1736,12 +1736,12 @@ static int pp_igc_set_config(char __iomem *base_addr,
 		c0 = base_addr + IGC_C0_LUT;
 		break;
 	default:
-		pr_err("Invalid block type %d\n", block_type);
+		pr_debug("Invalid block type %d\n", block_type);
 		ret = -EINVAL;
 		break;
 	}
 	if (ret) {
-		pr_err("igc table not updated ret %d\n", ret);
+		pr_debug("igc table not updated ret %d\n", ret);
 		return ret;
 	}
 	c1 = c0 + 4;
@@ -1788,19 +1788,19 @@ static int pp_igc_get_config(char __iomem *base_addr, void *cfg_data,
 	u32 data = 0, sz = 0;
 
 	if (!base_addr || !cfg_data || block_type != DSPP) {
-		pr_err("invalid params base_addr %pK cfg_data %pK block_type %d\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK block_type %d\n",
 		      base_addr, cfg_data, block_type);
 		return -EINVAL;
 	}
 	lut_cfg_data = (struct mdp_igc_lut_data *) cfg_data;
 	if (!(lut_cfg_data->ops & MDP_PP_OPS_READ)) {
-		pr_err("read ops not set for lut ops %d\n", lut_cfg_data->ops);
+		pr_debug("read ops not set for lut ops %d\n", lut_cfg_data->ops);
 		return ret;
 	}
 	if (lut_cfg_data->version != mdp_igc_v1_7 ||
 	    !lut_cfg_data->cfg_payload ||
 	    lut_cfg_data->block > IGC_MASK_MAX) {
-		pr_err("invalid igc version %d payload %pK block %d\n",
+		pr_debug("invalid igc version %d payload %pK block %d\n",
 		       lut_cfg_data->version, lut_cfg_data->cfg_payload,
 		       lut_cfg_data->block);
 		ret = -EINVAL;
@@ -1808,18 +1808,18 @@ static int pp_igc_get_config(char __iomem *base_addr, void *cfg_data,
 	}
 	if (copy_from_user(lut_data, (void __user *) lut_cfg_data->cfg_payload,
 			sizeof(*lut_data))) {
-		pr_err("copy from user failed for lut_data\n");
+		pr_debug("copy from user failed for lut_data\n");
 		return -EFAULT;
 	}
 	if (lut_data->len != IGC_LUT_ENTRIES) {
-		pr_err("invalid lut len %d\n", lut_data->len);
+		pr_debug("invalid lut len %d\n", lut_data->len);
 		ret = -EINVAL;
 		goto exit;
 	}
 	sz = IGC_LUT_ENTRIES * sizeof(u32);
 	if (!access_ok(VERIFY_WRITE, lut_data->c0_c1_data, sz) ||
 	    (!access_ok(VERIFY_WRITE, lut_data->c2_data, sz))) {
-		pr_err("invalid lut address for sz %d\n", sz);
+		pr_debug("invalid lut address for sz %d\n", sz);
 		ret = -EFAULT;
 		goto exit;
 	}
@@ -1845,11 +1845,11 @@ static int pp_igc_get_config(char __iomem *base_addr, void *cfg_data,
 		c2_data[i] = readl_relaxed(c2) & IGC_DATA_MASK;
 	}
 	if (copy_to_user(lut_data->c0_c1_data, c0c1_data, sz)) {
-		pr_err("failed to copy the c0c1 data\n");
+		pr_debug("failed to copy the c0c1 data\n");
 		ret = -EFAULT;
 	}
 	if (!ret && copy_to_user(lut_data->c2_data, c2_data, sz)) {
-		pr_err("failed to copy the c2 data\n");
+		pr_debug("failed to copy the c2 data\n");
 		ret = -EFAULT;
 	}
 	kfree(c0c1_data);
@@ -1868,18 +1868,18 @@ static int pp_pgc_set_config(char __iomem *base_addr,
 	struct mdp_pgc_lut_data_v1_7  *pgc_data_v17 = NULL;
 
 	if (!base_addr || !cfg_data || !pp_sts) {
-		pr_err("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK pp_sts_type %pK\n",
 		      base_addr, cfg_data, pp_sts);
 		return -EINVAL;
 	}
 	if (block_type != DSPP && block_type != LM) {
-		pr_err("invalid block type %d\n", block_type);
+		pr_debug("invalid block type %d\n", block_type);
 		return -EINVAL;
 	}
 	sts = (block_type == DSPP) ? &pp_sts->pgc_sts : &pp_sts->argc_sts;
 	pgc_data = (struct mdp_pgc_lut_data *) cfg_data;
 	if (pgc_data->version != mdp_pgc_v1_7) {
-		pr_err("invalid pgc version %d\n",
+		pr_debug("invalid pgc version %d\n",
 			pgc_data->version);
 		return -EINVAL;
 	}
@@ -1894,13 +1894,13 @@ static int pp_pgc_set_config(char __iomem *base_addr,
 
 	pgc_data_v17 = (struct mdp_pgc_lut_data_v1_7 *) pgc_data->cfg_payload;
 	if (!pgc_data_v17) {
-		pr_err("invalid payload for GC %pK\n", pgc_data_v17);
+		pr_debug("invalid payload for GC %pK\n", pgc_data_v17);
 		return -EINVAL;
 	}
 
 	if (pgc_data_v17->len != PGC_LUT_ENTRIES || !pgc_data_v17->c0_data ||
 	    !pgc_data_v17->c1_data || !pgc_data_v17->c2_data) {
-		pr_err("Invalid params entries %d c0_data %pK c1_data %pK c2_data %pK\n",
+		pr_debug("Invalid params entries %d c0_data %pK c1_data %pK c2_data %pK\n",
 			pgc_data_v17->len, pgc_data_v17->c0_data,
 			pgc_data_v17->c1_data, pgc_data_v17->c2_data);
 		return -EINVAL;
@@ -1957,30 +1957,30 @@ static int pp_pgc_get_config(char __iomem *base_addr, void *cfg_data,
 	struct mdp_pgc_lut_data_v1_7  *pgc_data_v17 = &pgc_lut_data_v17;
 
 	if (!base_addr || !cfg_data) {
-		pr_err("invalid params base_addr %pK cfg_data %pK block_type %d\n",
+		pr_debug("invalid params base_addr %pK cfg_data %pK block_type %d\n",
 		      base_addr, cfg_data, block_type);
 		return -EINVAL;
 	}
 	pgc_data = (struct mdp_pgc_lut_data *) cfg_data;
 	if (pgc_data->version != mdp_pgc_v1_7 || !pgc_data->cfg_payload) {
-		pr_err("invalid pgc version %d payload %pK\n",
+		pr_debug("invalid pgc version %d payload %pK\n",
 			pgc_data->version, pgc_data->cfg_payload);
 		return -EINVAL;
 	}
 	if (copy_from_user(pgc_data_v17, (void __user *) pgc_data->cfg_payload,
 			sizeof(*pgc_data_v17))) {
-		pr_err("copy from user failed for pgc lut data\n");
+		pr_debug("copy from user failed for pgc lut data\n");
 		return -EFAULT;
 	}
 	if (!(pgc_data->flags & MDP_PP_OPS_READ)) {
-		pr_info("read ops is not set %d\n", pgc_data->flags);
+		pr_debug("read ops is not set %d\n", pgc_data->flags);
 		return -EINVAL;
 	}
 	sz = PGC_LUT_ENTRIES * sizeof(u32);
 	if (!access_ok(VERIFY_WRITE, pgc_data_v17->c0_data, sz) ||
 	    !access_ok(VERIFY_WRITE, pgc_data_v17->c1_data, sz) ||
 	    !access_ok(VERIFY_WRITE, pgc_data_v17->c2_data, sz)) {
-		pr_err("incorrect payload for PGC read size %d\n",
+		pr_debug("incorrect payload for PGC read size %d\n",
 			PGC_LUT_ENTRIES);
 		return -EFAULT;
 	}
@@ -2009,15 +2009,15 @@ static int pp_pgc_get_config(char __iomem *base_addr, void *cfg_data,
 		c2_data[i + 1] = (val >> PGC_ODD_SHIFT) & PGC_DATA_MASK;
 	}
 	if (copy_to_user(pgc_data_v17->c0_data, c0_data, sz)) {
-		pr_err("failed to copyuser c0 data of sz %d\n", sz);
+		pr_debug("failed to copyuser c0 data of sz %d\n", sz);
 		ret = -EFAULT;
 	}
 	if (!ret && copy_to_user(pgc_data_v17->c1_data, c1_data, sz)) {
-		pr_err("failed to copyuser c1 data of sz %d\n", sz);
+		pr_debug("failed to copyuser c1 data of sz %d\n", sz);
 		ret = -EFAULT;
 	}
 	if (!ret && copy_to_user(pgc_data_v17->c2_data, c2_data, sz)) {
-		pr_err("failed to copyuser c2 data of sz %d\n", sz);
+		pr_debug("failed to copyuser c2 data of sz %d\n", sz);
 		ret = -EFAULT;
 	}
 	if (!ret)
@@ -2029,7 +2029,7 @@ static int pp_pgc_get_config(char __iomem *base_addr, void *cfg_data,
 static int pp_pcc_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_pcc_v1_7;
@@ -2039,7 +2039,7 @@ static int pp_pcc_get_version(u32 *version)
 static int pp_igc_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_igc_v1_7;
@@ -2049,7 +2049,7 @@ static int pp_igc_get_version(u32 *version)
 static int pp_pgc_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_pgc_v1_7;
@@ -2059,7 +2059,7 @@ static int pp_pgc_get_version(u32 *version)
 static int pp_pa_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_pa_v1_7;
@@ -2069,7 +2069,7 @@ static int pp_pa_get_version(u32 *version)
 static int pp_gamut_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_gamut_v1_7;
@@ -2079,7 +2079,7 @@ static int pp_gamut_get_version(u32 *version)
 static int pp_dither_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_dither_v1_7;
@@ -2089,7 +2089,7 @@ static int pp_dither_get_version(u32 *version)
 static int pp_hist_lut_get_version(u32 *version)
 {
 	if (!version) {
-		pr_err("invalid param version %pK\n", version);
+		pr_debug("invalid param version %pK\n", version);
 		return -EINVAL;
 	}
 	*version = mdp_hist_lut_v1_7;

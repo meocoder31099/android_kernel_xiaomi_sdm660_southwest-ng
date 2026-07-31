@@ -253,7 +253,7 @@ static void __release_child_resources(struct resource *r)
 		tmp->sibling = NULL;
 		__release_child_resources(tmp);
 
-		printk(KERN_DEBUG "release child resource %pR\n", tmp);
+		no_printk(KERN_DEBUG "release child resource %pR\n", tmp);
 		/* need to restore size, and keep flags */
 		size = resource_size(tmp);
 		tmp->start = 0;
@@ -881,7 +881,7 @@ void insert_resource_expand_to_fit(struct resource *root, struct resource *new)
 		if (conflict->end > new->end)
 			new->end = conflict->end;
 
-		printk("Expanded resource %s due to conflict with %s\n", new->name, conflict->name);
+		no_printk("Expanded resource %s due to conflict with %s\n", new->name, conflict->name);
 	}
 	write_unlock(&resource_lock);
 }
@@ -1040,7 +1040,7 @@ void __init reserve_region_with_split(struct resource *root,
 
 	write_lock(&resource_lock);
 	if (root->start > start || root->end < end) {
-		pr_err("requested range [0x%llx-0x%llx] not in root %pr\n",
+		pr_debug("requested range [0x%llx-0x%llx] not in root %pr\n",
 		       (unsigned long long)start, (unsigned long long)end,
 		       root);
 		if (start > root->end || end < root->start)
@@ -1050,7 +1050,7 @@ void __init reserve_region_with_split(struct resource *root,
 				end = root->end;
 			if (start < root->start)
 				start = root->start;
-			pr_err("fixing request to [0x%llx-0x%llx]\n",
+			pr_debug("fixing request to [0x%llx-0x%llx]\n",
 			       (unsigned long long)start,
 			       (unsigned long long)end);
 		}
@@ -1194,7 +1194,7 @@ void __release_region(struct resource *parent, resource_size_t start,
 
 	write_unlock(&resource_lock);
 
-	printk(KERN_WARNING "Trying to free nonexistent resource "
+	no_printk(KERN_WARNING "Trying to free nonexistent resource "
 		"<%016llx-%016llx>\n", (unsigned long long)start,
 		(unsigned long long)end);
 }
@@ -1345,7 +1345,7 @@ int devm_request_resource(struct device *dev, struct resource *root,
 
 	conflict = request_resource_conflict(root, new);
 	if (conflict) {
-		dev_err(dev, "resource collision: %pR conflicts with %s %pR\n",
+		dev_dbg(dev, "resource collision: %pR conflicts with %s %pR\n",
 			new, conflict->name, conflict);
 		devres_free(ptr);
 		return -EBUSY;
@@ -1513,7 +1513,7 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
 		if (p->flags & IORESOURCE_BUSY)
 			continue;
 
-		printk(KERN_WARNING "resource sanity check: requesting [mem %#010llx-%#010llx], which spans more than %s %pR\n",
+		no_printk(KERN_WARNING "resource sanity check: requesting [mem %#010llx-%#010llx], which spans more than %s %pR\n",
 		       (unsigned long long)addr,
 		       (unsigned long long)(addr + size - 1),
 		       p->name, p);

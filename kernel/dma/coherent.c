@@ -362,7 +362,7 @@ static int rmem_dma_device_init(struct reserved_mem *rmem, struct device *dev)
 					       rmem->size,
 					       DMA_MEMORY_EXCLUSIVE, &mem);
 		if (ret) {
-			pr_err("Reserved memory: failed to init DMA memory pool at %pa, size %ld MiB\n",
+			pr_debug("Reserved memory: failed to init DMA memory pool at %pa, size %ld MiB\n",
 				&rmem->base, (unsigned long)rmem->size / SZ_1M);
 			return ret;
 		}
@@ -396,7 +396,7 @@ static int __init rmem_dma_setup(struct reserved_mem *rmem)
 
 #ifdef CONFIG_ARM
 	if (!of_get_flat_dt_prop(node, "no-map", NULL)) {
-		pr_err("Reserved memory: regions without no-map are not yet supported\n");
+		pr_debug("Reserved memory: regions without no-map are not yet supported\n");
 		return -EINVAL;
 	}
 
@@ -408,7 +408,7 @@ static int __init rmem_dma_setup(struct reserved_mem *rmem)
 #endif
 
 	rmem->ops = &rmem_dma_ops;
-	pr_info("Reserved memory: created DMA memory pool at %pa, size %ld MiB\n",
+	pr_debug("Reserved memory: created DMA memory pool at %pa, size %ld MiB\n",
 		&rmem->base, (unsigned long)rmem->size / SZ_1M);
 	return 0;
 }
@@ -431,7 +431,7 @@ static int __init dma_init_reserved_memory(void)
 
 	if (!ret) {
 		dma_coherent_default_memory = dma_reserved_default_memory->priv;
-		pr_info("DMA: default coherent area is set\n");
+		pr_debug("DMA: default coherent area is set\n");
 	}
 
 	return ret;

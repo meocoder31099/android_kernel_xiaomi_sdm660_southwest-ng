@@ -255,7 +255,7 @@ static int pstore_compress(const void *in, void *out,
 
 	ret = crypto_comp_compress(tfm, in, inlen, out, &outlen);
 	if (ret) {
-		pr_err("crypto_comp_compress failed, ret = %d!\n", ret);
+		pr_debug("crypto_comp_compress failed, ret = %d!\n", ret);
 		return ret;
 	}
 
@@ -269,7 +269,7 @@ static int pstore_decompress(void *in, void *out,
 
 	ret = crypto_comp_decompress(tfm, in, inlen, out, &outlen);
 	if (ret) {
-		pr_err("crypto_comp_decompress failed, ret = %d!\n", ret);
+		pr_debug("crypto_comp_decompress failed, ret = %d!\n", ret);
 		return ret;
 	}
 
@@ -291,20 +291,20 @@ static void allocate_buf_for_compression(void)
 		return;
 
 	if (!crypto_has_comp(zbackend->name, 0, 0)) {
-		pr_err("Unknown compression: %s\n", zbackend->name);
+		pr_debug("Unknown compression: %s\n", zbackend->name);
 		return;
 	}
 
 	size = zbackend->zbufsize(psinfo->bufsize);
 	if (size <= 0) {
-		pr_err("Invalid compression size for %s: %d\n",
+		pr_debug("Invalid compression size for %s: %d\n",
 		       zbackend->name, size);
 		return;
 	}
 
 	buf = kmalloc(size, GFP_KERNEL);
 	if (!buf) {
-		pr_err("Failed %d byte compression buffer allocation for: %s\n",
+		pr_debug("Failed %d byte compression buffer allocation for: %s\n",
 		       size, zbackend->name);
 		return;
 	}
@@ -312,7 +312,7 @@ static void allocate_buf_for_compression(void)
 	ctx = crypto_alloc_comp(zbackend->name, 0, 0);
 	if (IS_ERR_OR_NULL(ctx)) {
 		kfree(buf);
-		pr_err("crypto_alloc_comp('%s') failed: %ld\n", zbackend->name,
+		pr_debug("crypto_alloc_comp('%s') failed: %ld\n", zbackend->name,
 		       PTR_ERR(ctx));
 		return;
 	}
@@ -322,7 +322,7 @@ static void allocate_buf_for_compression(void)
 	big_oops_buf_sz = size;
 	big_oops_buf = buf;
 
-	pr_info("Using compression: %s\n", zbackend->name);
+	pr_debug("Using compression: %s\n", zbackend->name);
 }
 
 static void free_buf_for_compression(void)
@@ -391,12 +391,12 @@ static void pstore_dump(struct kmsg_dumper *dumper,
 	if (down_trylock(&psinfo->buf_lock)) {
 		/* Failed to acquire lock: give up if we cannot wait. */
 		if (pstore_cannot_wait(reason)) {
-			pr_err("dump skipped in %s path: may corrupt error record\n",
+			pr_debug("dump skipped in %s path: may corrupt error record\n",
 				in_nmi() ? "NMI" : why);
 			return;
 		}
 		if (down_interruptible(&psinfo->buf_lock)) {
-			pr_err("could not grab semaphore?!\n");
+			pr_debug("could not grab semaphore?!\n");
 			return;
 		}
 	}
@@ -548,27 +548,27 @@ int pstore_register(struct pstore_info *psi)
 	struct module *owner = psi->owner;
 
 	if (backend && strcmp(backend, psi->name)) {
-		pr_warn("ignoring unexpected backend '%s'\n", psi->name);
+		pr_debug("ignoring unexpected backend '%s'\n", psi->name);
 		return -EPERM;
 	}
 
 	/* Sanity check flags. */
 	if (!psi->flags) {
-		pr_warn("backend '%s' must support at least one frontend\n",
+		pr_debug("backend '%s' must support at least one frontend\n",
 			psi->name);
 		return -EINVAL;
 	}
 
 	/* Check for required functions. */
 	if (!psi->read || !psi->write) {
-		pr_warn("backend '%s' must implement read() and write()\n",
+		pr_debug("backend '%s' must implement read() and write()\n",
 			psi->name);
 		return -EINVAL;
 	}
 
 	spin_lock(&pstore_lock);
 	if (psinfo) {
-		pr_warn("backend '%s' already loaded: ignoring '%s'\n",
+		pr_debug("backend '%s' already loaded: ignoring '%s'\n",
 			psinfo->name, psi->name);
 		spin_unlock(&pstore_lock);
 		return -EBUSY;
@@ -614,7 +614,7 @@ int pstore_register(struct pstore_info *psi)
 	 */
 	backend = psi->name;
 
-	pr_info("Registered %s as persistent store backend\n", psi->name);
+	pr_debug("Registered %s as persistent store backend\n", psi->name);
 
 	module_put(owner);
 
@@ -655,20 +655,20 @@ static void decompress_record(struct pstore_record *record)
 
 	/* Only PSTORE_TYPE_DMESG support compression. */
 	if (record->type != PSTORE_TYPE_DMESG) {
-		pr_warn("ignored compressed record type %d\n", record->type);
+		pr_debug("ignored compressed record type %d\n", record->type);
 		return;
 	}
 
 	/* No compression method has created the common buffer. */
 	if (!big_oops_buf) {
-		pr_warn("no decompression buffer allocated\n");
+		pr_debug("no decompression buffer allocated\n");
 		return;
 	}
 
 	unzipped_len = pstore_decompress(record->buf, big_oops_buf,
 					 record->size, big_oops_buf_sz);
 	if (unzipped_len <= 0) {
-		pr_err("decompression failed: %d\n", unzipped_len);
+		pr_debug("decompression failed: %d\n", unzipped_len);
 		return;
 	}
 
@@ -676,7 +676,7 @@ static void decompress_record(struct pstore_record *record)
 	decompressed = kmalloc(unzipped_len + record->ecc_notice_size,
 			       GFP_KERNEL);
 	if (!decompressed) {
-		pr_err("decompression ran out of memory\n");
+		pr_debug("decompression ran out of memory\n");
 		return;
 	}
 	memcpy(decompressed, big_oops_buf, unzipped_len);
@@ -722,7 +722,7 @@ void pstore_get_backend_records(struct pstore_info *psi,
 
 		record = kzalloc(sizeof(*record), GFP_KERNEL);
 		if (!record) {
-			pr_err("out of memory creating record\n");
+			pr_debug("out of memory creating record\n");
 			break;
 		}
 		pstore_record_init(record, psi);
@@ -751,10 +751,10 @@ out:
 	mutex_unlock(&psi->read_mutex);
 
 	if (failed)
-		pr_warn("failed to create %d record(s) from '%s'\n",
+		pr_debug("failed to create %d record(s) from '%s'\n",
 			failed, psi->name);
 	if (!stop_loop)
-		pr_err("looping? Too many records seen from '%s'\n",
+		pr_debug("looping? Too many records seen from '%s'\n",
 			psi->name);
 }
 

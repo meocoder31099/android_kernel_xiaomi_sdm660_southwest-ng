@@ -222,7 +222,7 @@ int msm_dss_config_vreg_opt_mode(struct dss_vreg *in_vreg, int num_vreg,
 	int i = 0, rc = 0;
 
 	if (mode >= DSS_REG_MODE_MAX) {
-		pr_err("%pS->%s: invalid mode %d\n",
+		pr_debug("%pS->%s: invalid mode %d\n",
 			 __builtin_return_address(0), __func__, mode);
 		rc = -EINVAL;
 		goto error;
@@ -288,7 +288,7 @@ int msm_dss_enable_vreg(struct dss_vreg *in_vreg, int num_vreg, int enable)
 				if( (strcmp(in_vreg[i].vreg_name,"lab")==0) ||
 						(strcmp(in_vreg[i].vreg_name,"ibb")==0) ||
 						(strcmp(in_vreg[i].vreg_name,"wqhd-vddio")==0) ) {
-					// printk(KERN_ERR "[LCD][TP][Gesture][resume] '%s' power continus supply\n",in_vreg[i].vreg_name);
+					// no_printk(KERN_ERR "[LCD][TP][Gesture][resume] '%s' power continus supply\n",in_vreg[i].vreg_name);
 					continue;
 				}
 			}
@@ -327,9 +327,9 @@ int msm_dss_enable_vreg(struct dss_vreg *in_vreg, int num_vreg, int enable)
 		for (i = num_vreg-1; i >= 0; i--) {
 #ifdef CONFIG_MACH_LONGCHEER
 			if(ESD_TE_status){
-				printk(KERN_ERR "panel esd check recovery \n");
+				no_printk(KERN_ERR "panel esd check recovery \n");
 				if((strcmp(in_vreg[i].vreg_name,"wqhd-vddio")==0) ) {
-						printk(KERN_ERR "panel '%s' power continus supply\n",in_vreg[i].vreg_name);
+						no_printk(KERN_ERR "panel '%s' power continus supply\n",in_vreg[i].vreg_name);
 						continue;
 				}
 			}
@@ -569,7 +569,7 @@ int dss_i2c_byte_read(struct i2c_client *client, uint8_t slave_addr,
 
 	ret = i2c_transfer(client->adapter, msgs, 2);
 	if (ret < 1) {
-		pr_err("%s: I2C READ FAILED=[%d]\n", __func__, ret);
+		pr_debug("%s: I2C READ FAILED=[%d]\n", __func__, ret);
 		return -EACCES;
 	}
 	pr_debug("%s: i2c buf is [%x]\n", __func__, *read_buf);
@@ -597,7 +597,7 @@ int dss_i2c_byte_write(struct i2c_client *client, uint8_t slave_addr,
 
 	status = i2c_transfer(client->adapter, msgs, 1);
 	if (status < 1) {
-		pr_err("I2C WRITE FAILED=[%d]\n", status);
+		pr_debug("I2C WRITE FAILED=[%d]\n", status);
 		return -EACCES;
 	}
 	pr_debug("%s: I2C write status=%x\n", __func__, status);

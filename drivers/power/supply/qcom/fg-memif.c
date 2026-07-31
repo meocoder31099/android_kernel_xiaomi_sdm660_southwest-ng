@@ -31,7 +31,7 @@ static int fg_set_address(struct fg_dev *fg, u16 address)
 
 	rc = fg_write(fg, MEM_IF_ADDR_LSB(fg), buffer, 2);
 	if (rc < 0) {
-		pr_err("failed to write to 0x%04X, rc=%d\n",
+		pr_debug("failed to write to 0x%04X, rc=%d\n",
 			MEM_IF_ADDR_LSB(fg), rc);
 		return rc;
 	}
@@ -54,7 +54,7 @@ static int fg_config_access_mode(struct fg_dev *fg, bool access, bool burst)
 	rc = fg_masked_write(fg, MEM_IF_IMA_CTL(fg), IMA_CTL_MASK,
 			intf_ctl);
 	if (rc < 0) {
-		pr_err("failed to write to 0x%04x, rc=%d\n",
+		pr_debug("failed to write to 0x%04x, rc=%d\n",
 			MEM_IF_IMA_CTL(fg), rc);
 		return -EIO;
 	}
@@ -75,14 +75,14 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 			IACS_CLR_BIT | STATIC_CLK_EN_BIT,
 			IACS_CLR_BIT | STATIC_CLK_EN_BIT);
 	if (rc < 0) {
-		pr_err("failed to write 0x%04x, rc=%d\n", MEM_IF_IMA_CFG(fg),
+		pr_debug("failed to write 0x%04x, rc=%d\n", MEM_IF_IMA_CFG(fg),
 			rc);
 		return rc;
 	}
 
 	rc = fg_config_access_mode(fg, FG_READ, false);
 	if (rc < 0) {
-		pr_err("failed to write to 0x%04x, rc=%d\n",
+		pr_debug("failed to write to 0x%04x, rc=%d\n",
 			MEM_IF_IMA_CTL(fg), rc);
 		return rc;
 	}
@@ -91,7 +91,7 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT,
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT);
 	if (rc < 0) {
-		pr_err("failed to set ima_req_access bit rc=%d\n", rc);
+		pr_debug("failed to set ima_req_access bit rc=%d\n", rc);
 		return rc;
 	}
 
@@ -103,7 +103,7 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 			val = 0x4;
 			rc = fg_write(fg, MEM_IF_ADDR_MSB(fg), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to write 0x%04x, rc=%d\n",
+				pr_debug("failed to write 0x%04x, rc=%d\n",
 					MEM_IF_ADDR_MSB(fg), rc);
 				return rc;
 			}
@@ -111,14 +111,14 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 			val = 0;
 			rc = fg_write(fg, MEM_IF_WR_DATA1(fg), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to write 0x%04x, rc=%d\n",
+				pr_debug("failed to write 0x%04x, rc=%d\n",
 					MEM_IF_WR_DATA1(fg), rc);
 				return rc;
 			}
 
 			rc = fg_read(fg, MEM_IF_RD_DATA1(fg), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to read 0x%04x, rc=%d\n",
+				pr_debug("failed to read 0x%04x, rc=%d\n",
 					MEM_IF_RD_DATA1(fg), rc);
 				return rc;
 			}
@@ -126,7 +126,7 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 			val = 0;
 			rc = fg_write(fg, MEM_IF_ADDR_MSB(fg), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to write 0x%04x, rc=%d\n",
+				pr_debug("failed to write 0x%04x, rc=%d\n",
 					MEM_IF_ADDR_MSB(fg), rc);
 				return rc;
 			}
@@ -134,14 +134,14 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 			val = 0;
 			rc = fg_write(fg, MEM_IF_WR_DATA3(fg), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to write 0x%04x, rc=%d\n",
+				pr_debug("failed to write 0x%04x, rc=%d\n",
 					MEM_IF_WR_DATA3(fg), rc);
 				return rc;
 			}
 
 			rc = fg_read(fg, MEM_IF_RD_DATA3(fg), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to read 0x%04x, rc=%d\n",
+				pr_debug("failed to read 0x%04x, rc=%d\n",
 					MEM_IF_RD_DATA3(fg), rc);
 				return rc;
 			}
@@ -152,7 +152,7 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 
 		rc = fg_read(fg, MEM_IF_IMA_HW_STS(fg), &hw_sts, 1);
 		if (rc < 0) {
-			pr_err("failed to read ima_hw_sts rc=%d\n", rc);
+			pr_debug("failed to read ima_hw_sts rc=%d\n", rc);
 			return rc;
 		}
 
@@ -161,7 +161,7 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 
 		rc = fg_read(fg, MEM_IF_IMA_EXP_STS(fg), &exp_sts, 1);
 		if (rc < 0) {
-			pr_err("failed to read ima_exp_sts rc=%d\n", rc);
+			pr_debug("failed to read ima_exp_sts rc=%d\n", rc);
 			return rc;
 		}
 
@@ -170,12 +170,12 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 	}
 
 	if (!tries)
-		pr_err("Failed to clear the error? hw_sts: %x exp_sts: %d\n",
+		pr_debug("Failed to clear the error? hw_sts: %x exp_sts: %d\n",
 			hw_sts, exp_sts);
 
 	rc = fg_masked_write(fg, MEM_IF_IMA_CFG(fg), IACS_CLR_BIT, 0);
 	if (rc < 0) {
-		pr_err("failed to write 0x%04x, rc=%d\n", MEM_IF_IMA_CFG(fg),
+		pr_debug("failed to write 0x%04x, rc=%d\n", MEM_IF_IMA_CFG(fg),
 			rc);
 		return rc;
 	}
@@ -185,7 +185,7 @@ static int fg_run_iacs_clear_sequence(struct fg_dev *fg)
 	rc = fg_masked_write(fg, MEM_IF_MEM_INTF_CFG(fg),
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT, 0);
 	if (rc < 0) {
-		pr_err("failed to write to 0x%04x, rc=%d\n",
+		pr_debug("failed to write to 0x%04x, rc=%d\n",
 			MEM_IF_MEM_INTF_CFG(fg), rc);
 		return rc;
 	}
@@ -204,7 +204,7 @@ int fg_clear_dma_errors_if_any(struct fg_dev *fg)
 
 	rc = fg_read(fg, MEM_IF_DMA_STS(fg), &dma_sts, 1);
 	if (rc < 0) {
-		pr_err("failed to read addr=0x%04x, rc=%d\n",
+		pr_debug("failed to read addr=0x%04x, rc=%d\n",
 			MEM_IF_DMA_STS(fg), rc);
 		return rc;
 	}
@@ -214,7 +214,7 @@ int fg_clear_dma_errors_if_any(struct fg_dev *fg)
 	rc = fg_masked_write(fg, MEM_IF_DMA_CTL(fg), DMA_CLEAR_LOG_BIT,
 			error_present ? DMA_CLEAR_LOG_BIT : 0);
 	if (rc < 0) {
-		pr_err("failed to write addr=0x%04x, rc=%d\n",
+		pr_debug("failed to write addr=0x%04x, rc=%d\n",
 			MEM_IF_DMA_CTL(fg), rc);
 		return rc;
 	}
@@ -230,19 +230,19 @@ int fg_clear_ima_errors_if_any(struct fg_dev *fg, bool check_hw_sts)
 
 	rc = fg_read(fg, MEM_IF_IMA_EXP_STS(fg), &exp_sts, 1);
 	if (rc < 0) {
-		pr_err("failed to read ima_exp_sts rc=%d\n", rc);
+		pr_debug("failed to read ima_exp_sts rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = fg_read(fg, MEM_IF_IMA_HW_STS(fg), &hw_sts, 1);
 	if (rc < 0) {
-		pr_err("failed to read ima_hw_sts rc=%d\n", rc);
+		pr_debug("failed to read ima_hw_sts rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = fg_read(fg, MEM_IF_IMA_ERR_STS(fg), &err_sts, 1);
 	if (rc < 0) {
-		pr_err("failed to read ima_err_sts rc=%d\n", rc);
+		pr_debug("failed to read ima_err_sts rc=%d\n", rc);
 		return rc;
 	}
 
@@ -257,7 +257,7 @@ int fg_clear_ima_errors_if_any(struct fg_dev *fg, bool check_hw_sts)
 		 * exception errors.
 		 */
 		if ((hw_sts & 0x0F) != hw_sts >> 4) {
-			pr_err("IMA HW not in correct state, hw_sts=%x\n",
+			pr_debug("IMA HW not in correct state, hw_sts=%x\n",
 				hw_sts);
 			run_err_clr_seq = true;
 		}
@@ -265,7 +265,7 @@ int fg_clear_ima_errors_if_any(struct fg_dev *fg, bool check_hw_sts)
 
 	if (exp_sts & (IACS_ERR_BIT | XCT_TYPE_ERR_BIT | DATA_RD_ERR_BIT |
 		DATA_WR_ERR_BIT | ADDR_BURST_WRAP_BIT | ADDR_STABLE_ERR_BIT)) {
-		pr_err("IMA exception bit set, exp_sts=%x\n", exp_sts);
+		pr_debug("IMA exception bit set, exp_sts=%x\n", exp_sts);
 		run_err_clr_seq = true;
 	}
 
@@ -273,7 +273,7 @@ int fg_clear_ima_errors_if_any(struct fg_dev *fg, bool check_hw_sts)
 		/* clear the error */
 		rc = fg_run_iacs_clear_sequence(fg);
 		if (rc < 0) {
-			pr_err("failed to run iacs clear sequence rc=%d\n", rc);
+			pr_debug("failed to run iacs clear sequence rc=%d\n", rc);
 			return rc;
 		}
 
@@ -298,7 +298,7 @@ static int fg_check_iacs_ready(struct fg_dev *fg)
 	while (1) {
 		rc = fg_read(fg, MEM_IF_IMA_OPR_STS(fg), &ima_opr_sts, 1);
 		if (rc < 0) {
-			pr_err("failed to read 0x%04x, rc=%d\n",
+			pr_debug("failed to read 0x%04x, rc=%d\n",
 				MEM_IF_IMA_OPR_STS(fg), rc);
 			return rc;
 		}
@@ -314,12 +314,12 @@ static int fg_check_iacs_ready(struct fg_dev *fg)
 	}
 
 	if (!tries) {
-		pr_err("IACS_RDY not set, opr_sts: %d\n", ima_opr_sts);
+		pr_debug("IACS_RDY not set, opr_sts: %d\n", ima_opr_sts);
 		/* check for error condition */
 		rc = fg_clear_ima_errors_if_any(fg, false);
 		if (rc < 0) {
 			if (rc != -EAGAIN)
-				pr_err("Failed to check for ima errors rc=%d\n",
+				pr_debug("Failed to check for ima errors rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -349,7 +349,7 @@ static int __fg_interleaved_mem_write(struct fg_dev *fg, u16 address,
 
 		rc = fg_write(fg, MEM_IF_IMA_BYTE_EN(fg), &byte_enable, 1);
 		if (rc < 0) {
-			pr_err("Unable to write to byte_en_reg rc=%d\n",
+			pr_debug("Unable to write to byte_en_reg rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -358,7 +358,7 @@ static int __fg_interleaved_mem_write(struct fg_dev *fg, u16 address,
 		rc = fg_write(fg, MEM_IF_WR_DATA0(fg) + offset, ptr,
 				num_bytes);
 		if (rc < 0) {
-			pr_err("failed to write to 0x%04x, rc=%d\n",
+			pr_debug("failed to write to 0x%04x, rc=%d\n",
 				MEM_IF_WR_DATA0(fg) + offset, rc);
 			return rc;
 		}
@@ -373,7 +373,7 @@ static int __fg_interleaved_mem_write(struct fg_dev *fg, u16 address,
 			rc = fg_write(fg, MEM_IF_WR_DATA3(fg), &dummy_byte,
 					1);
 			if (rc < 0) {
-				pr_err("failed to write dummy-data to WR_DATA3 rc=%d\n",
+				pr_debug("failed to write dummy-data to WR_DATA3 rc=%d\n",
 					rc);
 				return rc;
 			}
@@ -381,7 +381,7 @@ static int __fg_interleaved_mem_write(struct fg_dev *fg, u16 address,
 			rc = fg_write(fg, MEM_IF_WR_DATA1(fg), &dummy_byte,
 					1);
 			if (rc < 0) {
-				pr_err("failed to write dummy-data to WR_DATA1 rc=%d\n",
+				pr_debug("failed to write dummy-data to WR_DATA1 rc=%d\n",
 					rc);
 				return rc;
 			}
@@ -391,10 +391,10 @@ static int __fg_interleaved_mem_write(struct fg_dev *fg, u16 address,
 		rc = fg_clear_ima_errors_if_any(fg, false);
 		if (rc < 0) {
 			if (rc == -EAGAIN)
-				pr_err("IMA error cleared, address [%d %d] len %d\n",
+				pr_debug("IMA error cleared, address [%d %d] len %d\n",
 					address, offset, len);
 			else
-				pr_err("Failed to check for ima errors rc=%d\n",
+				pr_debug("Failed to check for ima errors rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -407,7 +407,7 @@ static int __fg_interleaved_mem_write(struct fg_dev *fg, u16 address,
 			address++;
 			rc = fg_set_address(fg, address);
 			if (rc < 0) {
-				pr_err("failed to set address rc = %d\n", rc);
+				pr_debug("failed to set address rc = %d\n", rc);
 				return rc;
 			}
 		}
@@ -438,7 +438,7 @@ static int __fg_interleaved_mem_read(struct fg_dev *fg, u16 address,
 		rc = fg_read(fg, MEM_IF_RD_DATA0(fg) + offset, rd_data,
 				num_bytes);
 		if (rc < 0) {
-			pr_err("failed to read 0x%04x, rc=%d\n",
+			pr_debug("failed to read 0x%04x, rc=%d\n",
 				MEM_IF_RD_DATA0(fg) + offset, rc);
 			return rc;
 		}
@@ -451,10 +451,10 @@ static int __fg_interleaved_mem_read(struct fg_dev *fg, u16 address,
 		rc = fg_clear_ima_errors_if_any(fg, false);
 		if (rc < 0) {
 			if (rc == -EAGAIN)
-				pr_err("IMA error cleared, address [%d %d] len %d\n",
+				pr_debug("IMA error cleared, address [%d %d] len %d\n",
 					address, offset, len);
 			else
-				pr_err("Failed to check for ima errors rc=%d\n",
+				pr_debug("Failed to check for ima errors rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -464,7 +464,7 @@ static int __fg_interleaved_mem_read(struct fg_dev *fg, u16 address,
 				address++;
 				rc = fg_set_address(fg, address);
 				if (rc < 0) {
-					pr_err("failed to set address rc = %d\n",
+					pr_debug("failed to set address rc = %d\n",
 						rc);
 					return rc;
 				}
@@ -480,7 +480,7 @@ static int __fg_interleaved_mem_read(struct fg_dev *fg, u16 address,
 				rc = fg_config_access_mode(fg, FG_READ,
 								false);
 				if (rc < 0) {
-					pr_err("failed to move to single mode rc=%d\n",
+					pr_debug("failed to move to single mode rc=%d\n",
 						rc);
 					return -EIO;
 				}
@@ -496,7 +496,7 @@ static int __fg_interleaved_mem_read(struct fg_dev *fg, u16 address,
 
 	if (*fg->debug_mask & FG_SRAM_READ) {
 		fill_string(str, DEBUG_PRINT_BUFFER_SIZE, val, total_len);
-		pr_info("data read: %s\n", str);
+		pr_debug("data read: %s\n", str);
 	}
 
 	return rc;
@@ -509,7 +509,7 @@ static int fg_get_mem_access_status(struct fg_dev *fg, bool *status)
 
 	rc = fg_read(fg, MEM_IF_MEM_INTF_CFG(fg), &mem_if_sts, 1);
 	if (rc < 0) {
-		pr_err("failed to read rif_mem status rc=%d\n", rc);
+		pr_debug("failed to read rif_mem status rc=%d\n", rc);
 		return rc;
 	}
 
@@ -539,7 +539,7 @@ static bool is_mem_access_available(struct fg_dev *fg, int access)
 		 * clear, then return an error instead of waiting for it again.
 		 */
 		if  (time_count > 4) {
-			pr_err("Tried 4 times(~16ms) polling MEM_ACCESS_REQ\n");
+			pr_debug("Tried 4 times(~16ms) polling MEM_ACCESS_REQ\n");
 			return false;
 		}
 
@@ -564,7 +564,7 @@ static int fg_interleaved_mem_config(struct fg_dev *fg, u8 *val,
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT,
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT);
 	if (rc < 0) {
-		pr_err("failed to set ima_req_access bit rc=%d\n", rc);
+		pr_debug("failed to set ima_req_access bit rc=%d\n", rc);
 		return rc;
 	}
 
@@ -573,7 +573,7 @@ static int fg_interleaved_mem_config(struct fg_dev *fg, u8 *val,
 			(offset + len) > fg->sram.num_bytes_per_word;
 	rc = fg_config_access_mode(fg, access, burst_mode);
 	if (rc < 0) {
-		pr_err("failed to set memory access rc = %d\n", rc);
+		pr_debug("failed to set memory access rc = %d\n", rc);
 		return rc;
 	}
 
@@ -585,7 +585,7 @@ static int fg_interleaved_mem_config(struct fg_dev *fg, u8 *val,
 
 	rc = fg_set_address(fg, address);
 	if (rc < 0) {
-		pr_err("failed to set address rc = %d\n", rc);
+		pr_debug("failed to set address rc = %d\n", rc);
 		return rc;
 	}
 
@@ -618,18 +618,18 @@ int fg_interleaved_mem_read(struct fg_dev *fg, u16 address, u8 offset,
 
 	if (fg->version == GEN4_FG) {
 		if (offset > 1) {
-			pr_err("offset too large %d\n", offset);
+			pr_debug("offset too large %d\n", offset);
 			return -EINVAL;
 		}
 	} else {
 		if (offset > 3) {
-			pr_err("offset too large %d\n", offset);
+			pr_debug("offset too large %d\n", offset);
 			return -EINVAL;
 		}
 	}
 retry:
 	if (count >= RETRY_COUNT) {
-		pr_err("Tried %d times\n", RETRY_COUNT);
+		pr_debug("Tried %d times\n", RETRY_COUNT);
 		retry = false;
 		goto out;
 	}
@@ -637,7 +637,7 @@ retry:
 	rc = fg_interleaved_mem_config(fg, val, address, offset, len,
 					FG_READ);
 	if (rc < 0) {
-		pr_err("failed to configure SRAM for IMA rc = %d\n", rc);
+		pr_debug("failed to configure SRAM for IMA rc = %d\n", rc);
 		count++;
 		retry = true;
 		goto out;
@@ -646,7 +646,7 @@ retry:
 	/* read the start beat count */
 	rc = fg_get_beat_count(fg, &start_beat_count);
 	if (rc < 0) {
-		pr_err("failed to read beat count rc=%d\n", rc);
+		pr_debug("failed to read beat count rc=%d\n", rc);
 		count++;
 		retry = true;
 		goto out;
@@ -657,10 +657,10 @@ retry:
 	if (rc < 0) {
 		count++;
 		if (rc == -EAGAIN) {
-			pr_err("IMA read failed retry_count = %d\n", count);
+			pr_debug("IMA read failed retry_count = %d\n", count);
 			goto retry;
 		}
-		pr_err("failed to read SRAM address rc = %d\n", rc);
+		pr_debug("failed to read SRAM address rc = %d\n", rc);
 		retry = true;
 		goto out;
 	}
@@ -668,7 +668,7 @@ retry:
 	/* read the end beat count */
 	rc = fg_get_beat_count(fg, &end_beat_count);
 	if (rc < 0) {
-		pr_err("failed to read beat count rc=%d\n", rc);
+		pr_debug("failed to read beat count rc=%d\n", rc);
 		count++;
 		retry = true;
 		goto out;
@@ -688,7 +688,7 @@ out:
 	ret = fg_masked_write(fg, MEM_IF_MEM_INTF_CFG(fg),
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT, 0);
 	if (rc < 0 && ret < 0) {
-		pr_err("failed to reset IMA access bit ret = %d\n", ret);
+		pr_debug("failed to reset IMA access bit ret = %d\n", ret);
 		return ret;
 	}
 
@@ -709,18 +709,18 @@ int fg_interleaved_mem_write(struct fg_dev *fg, u16 address, u8 offset,
 
 	if (fg->version == GEN4_FG) {
 		if (offset > 1) {
-			pr_err("offset too large %d\n", offset);
+			pr_debug("offset too large %d\n", offset);
 			return -EINVAL;
 		}
 	} else {
 		if (offset > 3) {
-			pr_err("offset too large %d\n", offset);
+			pr_debug("offset too large %d\n", offset);
 			return -EINVAL;
 		}
 	}
 retry:
 	if (count >= RETRY_COUNT) {
-		pr_err("Tried %d times\n", RETRY_COUNT);
+		pr_debug("Tried %d times\n", RETRY_COUNT);
 		retry = false;
 		goto out;
 	}
@@ -728,7 +728,7 @@ retry:
 	rc = fg_interleaved_mem_config(fg, val, address, offset, len,
 					FG_WRITE);
 	if (rc < 0) {
-		pr_err("failed to configure SRAM for IMA rc = %d\n", rc);
+		pr_debug("failed to configure SRAM for IMA rc = %d\n", rc);
 		count++;
 		retry = true;
 		goto out;
@@ -737,7 +737,7 @@ retry:
 	/* read the start beat count */
 	rc = fg_get_beat_count(fg, &start_beat_count);
 	if (rc < 0) {
-		pr_err("failed to read beat count rc=%d\n", rc);
+		pr_debug("failed to read beat count rc=%d\n", rc);
 		count++;
 		retry = true;
 		goto out;
@@ -748,10 +748,10 @@ retry:
 	if (rc < 0) {
 		count++;
 		if (rc == -EAGAIN) {
-			pr_err("IMA write failed retry_count = %d\n", count);
+			pr_debug("IMA write failed retry_count = %d\n", count);
 			goto retry;
 		}
-		pr_err("failed to write SRAM address rc = %d\n", rc);
+		pr_debug("failed to write SRAM address rc = %d\n", rc);
 		retry = true;
 		goto out;
 	}
@@ -759,21 +759,21 @@ retry:
 	/* read the end beat count */
 	rc = fg_get_beat_count(fg, &end_beat_count);
 	if (rc < 0) {
-		pr_err("failed to read beat count rc=%d\n", rc);
+		pr_debug("failed to read beat count rc=%d\n", rc);
 		count++;
 		retry = true;
 		goto out;
 	}
 
 	if (atomic_access && start_beat_count != end_beat_count)
-		pr_err("Start beat_count = %x End beat_count = %x\n",
+		pr_debug("Start beat_count = %x End beat_count = %x\n",
 			start_beat_count, end_beat_count);
 out:
 	/* Release IMA access */
 	ret = fg_masked_write(fg, MEM_IF_MEM_INTF_CFG(fg),
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT, 0);
 	if (rc < 0 && ret < 0) {
-		pr_err("failed to reset IMA access bit ret = %d\n", ret);
+		pr_debug("failed to reset IMA access bit ret = %d\n", ret);
 		return ret;
 	}
 
@@ -799,7 +799,7 @@ static int fg_poll_alg_active(struct fg_dev *fg)
 	while (retries--) {
 		rc = fg_read(fg, BATT_INFO_PEEK_RD(fg), &val, 1);
 		if (rc < 0) {
-			pr_err("failed to read PEEK_MUX rc=%d\n", rc);
+			pr_debug("failed to read PEEK_MUX rc=%d\n", rc);
 			return rc;
 		}
 
@@ -825,14 +825,14 @@ static int fg_direct_mem_release(struct fg_dev *fg)
 	mask = MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT;
 	rc = fg_masked_write(fg, MEM_IF_MEM_INTF_CFG(fg), mask, val);
 	if (rc < 0) {
-		pr_err("failed to configure mem_if_mem_intf_cfg rc=%d\n", rc);
+		pr_debug("failed to configure mem_if_mem_intf_cfg rc=%d\n", rc);
 		return rc;
 	}
 
 	mask = MEM_ARB_REQ_BIT;
 	rc = fg_masked_write(fg, MEM_IF_MEM_ARB_CFG(fg), mask, val);
 	if (rc < 0) {
-		pr_err("failed to configure mem_if_mem_arb_cfg rc:%d\n", rc);
+		pr_debug("failed to configure mem_if_mem_arb_cfg rc:%d\n", rc);
 		return rc;
 	}
 
@@ -850,7 +850,7 @@ static int fg_direct_mem_request(struct fg_dev *fg)
 	if (fg->wa_flags & PM8150B_V1_DMA_WA) {
 		rc = fg_poll_alg_active(fg);
 		if (rc < 0) {
-			pr_err("Failed to assert ALG active rc=%d\n", rc);
+			pr_debug("Failed to assert ALG active rc=%d\n", rc);
 			return rc;
 		}
 	}
@@ -858,7 +858,7 @@ static int fg_direct_mem_request(struct fg_dev *fg)
 	val = mask = MEM_ARB_REQ_BIT;
 	rc = fg_masked_write(fg, MEM_IF_MEM_ARB_CFG(fg), mask, val);
 	if (rc < 0) {
-		pr_err("failed to configure mem_if_mem_arb_cfg rc:%d\n", rc);
+		pr_debug("failed to configure mem_if_mem_arb_cfg rc:%d\n", rc);
 		return rc;
 	}
 
@@ -866,7 +866,7 @@ static int fg_direct_mem_request(struct fg_dev *fg)
 	val = MEM_ACCESS_REQ_BIT;
 	rc = fg_masked_write(fg, MEM_IF_MEM_INTF_CFG(fg), mask, val);
 	if (rc < 0) {
-		pr_err("failed to configure mem_if_mem_intf_cfg rc=%d\n", rc);
+		pr_debug("failed to configure mem_if_mem_intf_cfg rc=%d\n", rc);
 		goto release;
 	}
 
@@ -885,7 +885,7 @@ static int fg_direct_mem_request(struct fg_dev *fg)
 	while (i < MEM_GNT_RETRIES) {
 		rc = fg_read(fg, MEM_IF_INT_RT_STS(fg), &val, 1);
 		if (rc < 0) {
-			pr_err("Error in reading MEM_IF_INT_RT_STS, rc=%d\n",
+			pr_debug("Error in reading MEM_IF_INT_RT_STS, rc=%d\n",
 				rc);
 			goto release;
 		}
@@ -902,7 +902,7 @@ static int fg_direct_mem_request(struct fg_dev *fg)
 	}
 
 	rc = -ETIMEDOUT;
-	pr_err("wait for mem_grant timed out, val=0x%x\n", val);
+	pr_debug("wait for mem_grant timed out, val=0x%x\n", val);
 	fg_dump_regs(fg);
 
 release:
@@ -931,7 +931,7 @@ static int fg_get_dma_address(struct fg_dev *fg, u16 sram_addr, u8 offset,
 		}
 	}
 
-	pr_err("Couldn't find address for %d from address map\n", sram_addr);
+	pr_debug("Couldn't find address for %d from address map\n", sram_addr);
 	return -ENXIO;
 }
 
@@ -961,7 +961,7 @@ static int fg_get_partition_count(struct fg_dev *fg, u16 sram_addr, int len,
 	}
 
 	if (!start_partn || !end_partn) {
-		pr_err("Couldn't find number of partitions for address %d\n",
+		pr_debug("Couldn't find number of partitions for address %d\n",
 			sram_addr);
 		return -ENXIO;
 	}
@@ -990,13 +990,13 @@ static int fg_get_partition_avail_bytes(struct fg_dev *fg, u16 sram_addr,
 	}
 
 	if (part_len <= 0) {
-		pr_err("Bad address? total_len=%d\n", part_len);
+		pr_debug("Bad address? total_len=%d\n", part_len);
 		return -ENXIO;
 	}
 
 	temp = (end_addr - sram_addr + 1) * fg->sram.num_bytes_per_word;
 	if (temp > part_len || !temp) {
-		pr_err("Bad length=%d\n", temp);
+		pr_debug("Bad length=%d\n", temp);
 		return -ENXIO;
 	}
 
@@ -1014,7 +1014,7 @@ static int __fg_direct_mem_rw(struct fg_dev *fg, u16 sram_addr, u8 offset,
 	char *temp_str;
 
 	if (offset > 3) {
-		pr_err("offset too large %d\n", offset);
+		pr_debug("offset too large %d\n", offset);
 		return -EINVAL;
 	}
 
@@ -1026,14 +1026,14 @@ static int __fg_direct_mem_rw(struct fg_dev *fg, u16 sram_addr, u8 offset,
 
 	rc = fg_direct_mem_request(fg);
 	if (rc < 0) {
-		pr_err("Error in requesting direct_mem access rc=%d\n", rc);
+		pr_debug("Error in requesting direct_mem access rc=%d\n", rc);
 		return rc;
 	}
 
 	while (num_partitions-- && len) {
 		rc = fg_get_dma_address(fg, sram_addr, offset, &addr);
 		if (rc < 0) {
-			pr_err("Incorrect address %d/offset %d\n", sram_addr,
+			pr_debug("Incorrect address %d/offset %d\n", sram_addr,
 				offset);
 			break;
 		}
@@ -1058,7 +1058,7 @@ static int __fg_direct_mem_rw(struct fg_dev *fg, u16 sram_addr, u8 offset,
 		}
 
 		if (rc < 0) {
-			pr_err("Error in %sing address %d rc=%d\n", temp_str,
+			pr_debug("Error in %sing address %d rc=%d\n", temp_str,
 				sram_addr, rc);
 			break;
 		}
@@ -1071,7 +1071,7 @@ static int __fg_direct_mem_rw(struct fg_dev *fg, u16 sram_addr, u8 offset,
 
 	ret = fg_direct_mem_release(fg);
 	if (ret < 0) {
-		pr_err("Error in releasing direct_mem access rc=%d\n", rc);
+		pr_debug("Error in releasing direct_mem access rc=%d\n", rc);
 		return ret;
 	}
 
@@ -1089,21 +1089,21 @@ int fg_dma_mem_req(struct fg_dev *chip, bool request)
 				MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT,
 				MEM_ACCESS_REQ_BIT);
 		if (rc < 0) {
-			pr_err("failed to set mem_access bit rc=%d\n", rc);
+			pr_debug("failed to set mem_access bit rc=%d\n", rc);
 			return rc;
 		}
 
 		rc = fg_masked_write(chip, MEM_IF_MEM_ARB_CFG(chip),
 				MEM_IF_ARB_REQ_BIT, MEM_IF_ARB_REQ_BIT);
 		if (rc < 0) {
-			pr_err("failed to set mem_arb bit rc=%d\n", rc);
+			pr_debug("failed to set mem_arb bit rc=%d\n", rc);
 			goto release_mem;
 		}
 
 		while (retry_count--) {
 			rc = fg_read(chip, MEM_IF_INT_RT_STS(chip), &val, 1);
 			if (rc < 0) {
-				pr_err("failed to set ima_rt_sts rc=%d\n", rc);
+				pr_debug("failed to set ima_rt_sts rc=%d\n", rc);
 				goto release_mem;
 			}
 			if (val & MEM_GNT_BIT)
@@ -1111,7 +1111,7 @@ int fg_dma_mem_req(struct fg_dev *chip, bool request)
 			msleep(20);
 		}
 		if ((retry_count < 0) && !(val & MEM_GNT_BIT)) {
-			pr_err("failed to get memory access\n");
+			pr_debug("failed to get memory access\n");
 			rc = -ETIMEDOUT;
 			goto release_mem;
 		}
@@ -1124,12 +1124,12 @@ release_mem:
 	rc = fg_masked_write(chip, MEM_IF_MEM_INTF_CFG(chip),
 			MEM_ACCESS_REQ_BIT | IACS_SLCT_BIT, 0);
 	if (rc < 0)
-		pr_err("failed to reset mem_access bit rc = %d\n", rc);
+		pr_debug("failed to reset mem_access bit rc = %d\n", rc);
 
 	ret = fg_masked_write(chip, MEM_IF_MEM_ARB_CFG(chip),
 			MEM_IF_ARB_REQ_BIT, 0);
 	if (ret < 0) {
-		pr_err("failed to release mem_arb bit rc=%d\n", ret);
+		pr_debug("failed to release mem_arb bit rc=%d\n", ret);
 		return ret;
 	}
 
@@ -1159,7 +1159,7 @@ static int fg_ima_init(struct fg_dev *fg)
 		fg->sram.num_bytes_per_word = 2;
 		fg->sram.address_max = 480;
 	} else {
-		pr_err("Unknown FG version %d\n", fg->version);
+		pr_debug("Unknown FG version %d\n", fg->version);
 		return -ENXIO;
 	}
 
@@ -1171,21 +1171,21 @@ static int fg_ima_init(struct fg_dev *fg)
 	rc = fg_masked_write(fg, MEM_IF_IMA_CFG(fg), IACS_INTR_SRC_SLCT_BIT,
 				IACS_INTR_SRC_SLCT_BIT);
 	if (rc < 0) {
-		pr_err("failed to configure interrupt source %d\n", rc);
+		pr_debug("failed to configure interrupt source %d\n", rc);
 		return rc;
 	}
 
 	/* Clear DMA errors if any before clearing IMA errors */
 	rc = fg_clear_dma_errors_if_any(fg);
 	if (rc < 0) {
-		pr_err("Error in checking DMA errors rc:%d\n", rc);
+		pr_debug("Error in checking DMA errors rc:%d\n", rc);
 		return rc;
 	}
 
 	/* Clear IMA errors if any before SRAM transactions can begin */
 	rc = fg_clear_ima_errors_if_any(fg, true);
 	if (rc < 0 && rc != -EAGAIN) {
-		pr_err("Error in checking IMA errors rc:%d\n", rc);
+		pr_debug("Error in checking IMA errors rc:%d\n", rc);
 		return rc;
 	}
 
@@ -1272,14 +1272,14 @@ static int fg_dma_init(struct fg_dev *fg)
 		fg->sram.num_bytes_per_word = 2;
 		fg->sram.address_max = 485;
 	} else {
-		pr_err("Unknown FG version %d\n", fg->version);
+		pr_debug("Unknown FG version %d\n", fg->version);
 		return -ENXIO;
 	}
 
 	/* Clear DMA errors if any before clearing IMA errors */
 	rc = fg_clear_dma_errors_if_any(fg);
 	if (rc < 0) {
-		pr_err("Error in checking DMA errors rc:%d\n", rc);
+		pr_debug("Error in checking DMA errors rc:%d\n", rc);
 		return rc;
 	}
 
@@ -1287,14 +1287,14 @@ static int fg_dma_init(struct fg_dev *fg)
 	rc = fg_masked_write(fg, MEM_IF_DMA_CTL(fg), ADDR_KIND_BIT,
 				ADDR_KIND_BIT);
 	if (rc < 0) {
-		pr_err("failed to configure DMA_CTL rc:%d\n", rc);
+		pr_debug("failed to configure DMA_CTL rc:%d\n", rc);
 		return rc;
 	}
 
 	/* Release the DMA initially so that request can happen */
 	rc = fg_direct_mem_release(fg);
 	if (rc < 0) {
-		pr_err("Error in releasing direct_mem access rc=%d\n",
+		pr_debug("Error in releasing direct_mem access rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -1304,7 +1304,7 @@ static int fg_dma_init(struct fg_dev *fg)
 		MEM_ARB_LO_LATENCY_EN_BIT | MEM_CLR_LOG_BIT,
 		MEM_ARB_LO_LATENCY_EN_BIT);
 	if (rc < 0) {
-		pr_err("failed to configure mem_if_mem_arb_cfg rc:%d\n", rc);
+		pr_debug("failed to configure mem_if_mem_arb_cfg rc:%d\n", rc);
 		return rc;
 	}
 
@@ -1316,7 +1316,7 @@ static int fg_dma_init(struct fg_dev *fg)
 	val = ALG_ACTIVE_PEEK_CFG;
 	rc = fg_write(fg, BATT_INFO_PEEK_MUX4(fg), &val, 1);
 	if (rc < 0) {
-		pr_err("failed to configure batt_info_peek_mux4 rc:%d\n", rc);
+		pr_debug("failed to configure batt_info_peek_mux4 rc:%d\n", rc);
 		return rc;
 	}
 

@@ -66,7 +66,7 @@ int crypto_qti_program_key(struct crypto_vops_qti_entry *ice_entry,
 
 	err = scm_call2_noretry(smc_id, &desc);
 	if (err)
-		pr_err("%s:SCM call Error: 0x%x slot %d\n",
+		pr_debug("%s:SCM call Error: 0x%x slot %d\n",
 				__func__, err, slot);
 
 	qtee_shmbridge_free_shm(&shm);
@@ -89,7 +89,7 @@ int crypto_qti_invalidate_key(
 
 	err = scm_call2_noretry(smc_id, &desc);
 	if (err)
-		pr_err("%s:SCM call Error: 0x%x\n", __func__, err);
+		pr_debug("%s:SCM call Error: 0x%x\n", __func__, err);
 	return err;
 }
 
@@ -128,7 +128,7 @@ int crypto_qti_tz_raw_secret(const u8 *wrapped_key,
 
 	err = scm_call2(smc_id, &desc);
 	if (err) {
-		pr_err("%s failed to retrieve raw secret\n", __func__);
+		pr_debug("%s failed to retrieve raw secret\n", __func__);
 		return err;
 	}
 

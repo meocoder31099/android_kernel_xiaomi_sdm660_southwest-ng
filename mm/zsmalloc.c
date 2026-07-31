@@ -576,13 +576,13 @@ static inline unsigned long zs_stat_get(struct size_class *class,
 static void __init zs_stat_init(void)
 {
 	if (!debugfs_initialized()) {
-		pr_warn("debugfs not available, stat dir not created\n");
+		pr_debug("debugfs not available, stat dir not created\n");
 		return;
 	}
 
 	zs_stat_root = debugfs_create_dir("zsmalloc", NULL);
 	if (!zs_stat_root)
-		pr_warn("debugfs 'zsmalloc' stat dir creation failed\n");
+		pr_debug("debugfs 'zsmalloc' stat dir creation failed\n");
 }
 
 static void __exit zs_stat_exit(void)
@@ -656,13 +656,13 @@ static void zs_pool_stat_create(struct zs_pool *pool, const char *name)
 	struct dentry *entry;
 
 	if (!zs_stat_root) {
-		pr_warn("no root stat dir, not creating <%s> stat dir\n", name);
+		pr_debug("no root stat dir, not creating <%s> stat dir\n", name);
 		return;
 	}
 
 	entry = debugfs_create_dir(name, zs_stat_root);
 	if (!entry) {
-		pr_warn("debugfs dir <%s> creation failed\n", name);
+		pr_debug("debugfs dir <%s> creation failed\n", name);
 		return;
 	}
 	pool->stat_dentry = entry;
@@ -671,7 +671,7 @@ static void zs_pool_stat_create(struct zs_pool *pool, const char *name)
 				    pool->stat_dentry, pool,
 				    &zs_stats_size_fops);
 	if (!entry) {
-		pr_warn("%s: debugfs file entry <%s> creation failed\n",
+		pr_debug("%s: debugfs file entry <%s> creation failed\n",
 				name, "classes");
 		debugfs_remove_recursive(pool->stat_dentry);
 		pool->stat_dentry = NULL;
@@ -2590,7 +2590,7 @@ void zs_destroy_pool(struct zs_pool *pool)
 
 		for (fg = ZS_EMPTY; fg < NR_ZS_FULLNESS; fg++) {
 			if (!list_empty(&class->fullness_list[fg])) {
-				pr_info("Freeing non-empty class with size %db, fullness group %d\n",
+				pr_debug("Freeing non-empty class with size %db, fullness group %d\n",
 					class->size, fg);
 			}
 		}

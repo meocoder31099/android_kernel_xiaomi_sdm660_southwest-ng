@@ -225,26 +225,26 @@ static struct hdmi_edid_ctrl *hdmi_edid_get_ctrl(struct device *dev)
 	struct mdss_panel_info *pinfo;
 
 	if (!dev) {
-		pr_err("invalid device\n");
+		pr_debug("invalid device\n");
 		goto error;
 	}
 
 	fbi = dev_get_drvdata(dev);
 
 	if (!fbi) {
-		pr_err("invalid fbi\n");
+		pr_debug("invalid fbi\n");
 		goto error;
 	}
 
 	mfd = (struct msm_fb_data_type *)fbi->par;
 	if (!mfd) {
-		pr_err("invalid mfd\n");
+		pr_debug("invalid mfd\n");
 		goto error;
 	}
 
 	pinfo = mfd->panel_info;
 	if (!pinfo) {
-		pr_err("invalid pinfo\n");
+		pr_debug("invalid pinfo\n");
 		goto error;
 	}
 
@@ -990,12 +990,12 @@ static void hdmi_edid_parse_hdrdb(struct hdmi_edid_ctrl *edid_ctrl,
 	u8 len = 0;
 
 	if (!edid_ctrl) {
-		pr_err("invalid edid ctrl data\n");
+		pr_debug("invalid edid ctrl data\n");
 		return;
 	}
 
 	if (!data_block) {
-		pr_err("invalid data block\n");
+		pr_debug("invalid data block\n");
 		return;
 	}
 
@@ -1300,7 +1300,7 @@ static void hdmi_edid_extract_sink_caps(struct hdmi_edid_ctrl *edid_ctrl,
 	const u8 *vsd = NULL;
 
 	if (!edid_ctrl) {
-		pr_err("invalid edid ctrl data\n");
+		pr_debug("invalid edid ctrl data\n");
 		return;
 	}
 

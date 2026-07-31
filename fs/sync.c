@@ -140,7 +140,7 @@ static void do_sync_work(struct work_struct *work)
 	iterate_supers(sync_inodes_one_sb, &nowait);
 	iterate_supers(sync_fs_one_sb, &nowait);
 	iterate_bdevs(fdatawrite_one_bdev, NULL);
-	printk("Emergency Sync complete\n");
+	no_printk("Emergency Sync complete\n");
 	kfree(work);
 }
 

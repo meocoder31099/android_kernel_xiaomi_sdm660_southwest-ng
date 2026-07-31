@@ -61,7 +61,7 @@ static int qcom_apcs_msm8916_clk_probe(struct platform_device *pdev)
 
 	regmap = dev_get_regmap(parent, NULL);
 	if (!regmap) {
-		dev_err(dev, "failed to get regmap: %d\n", ret);
+		dev_dbg(dev, "failed to get regmap: %d\n", ret);
 		return ret;
 	}
 
@@ -87,27 +87,27 @@ static int qcom_apcs_msm8916_clk_probe(struct platform_device *pdev)
 	a53cc->pclk = devm_clk_get(parent, NULL);
 	if (IS_ERR(a53cc->pclk)) {
 		ret = PTR_ERR(a53cc->pclk);
-		dev_err(dev, "failed to get clk: %d\n", ret);
+		dev_dbg(dev, "failed to get clk: %d\n", ret);
 		return ret;
 	}
 
 	a53cc->clk_nb.notifier_call = a53cc_notifier_cb;
 	ret = clk_notifier_register(a53cc->pclk, &a53cc->clk_nb);
 	if (ret) {
-		dev_err(dev, "failed to register clock notifier: %d\n", ret);
+		dev_dbg(dev, "failed to register clock notifier: %d\n", ret);
 		return ret;
 	}
 
 	ret = devm_clk_register_regmap(dev, &a53cc->clkr);
 	if (ret) {
-		dev_err(dev, "failed to register regmap clock: %d\n", ret);
+		dev_dbg(dev, "failed to register regmap clock: %d\n", ret);
 		goto err;
 	}
 
 	ret = of_clk_add_hw_provider(parent->of_node, of_clk_hw_simple_get,
 				     &a53cc->clkr.hw);
 	if (ret) {
-		dev_err(dev, "failed to add clock provider: %d\n", ret);
+		dev_dbg(dev, "failed to add clock provider: %d\n", ret);
 		goto err;
 	}
 

@@ -191,7 +191,7 @@ EXPORT_SYMBOL_GPL(mbox_chan_received_data);
 void mbox_chan_txdone(struct mbox_chan *chan, int r)
 {
 	if (unlikely(!(chan->txdone_method & TXDONE_BY_IRQ))) {
-		dev_err(chan->mbox->dev,
+		dev_dbg(chan->mbox->dev,
 		       "Controller can't run the TX ticker\n");
 		return;
 	}
@@ -212,7 +212,7 @@ EXPORT_SYMBOL_GPL(mbox_chan_txdone);
 void mbox_client_txdone(struct mbox_chan *chan, int r)
 {
 	if (unlikely(!(chan->txdone_method & TXDONE_BY_ACK))) {
-		dev_err(chan->mbox->dev, "Client can't run the TX ticker\n");
+		dev_dbg(chan->mbox->dev, "Client can't run the TX ticker\n");
 		return;
 	}
 
@@ -277,7 +277,7 @@ int mbox_send_message(struct mbox_chan *chan, void *mssg)
 
 	t = add_to_rbuf(chan, mssg);
 	if (t < 0) {
-		dev_err(chan->mbox->dev, "Try increasing MBOX_TX_QUEUE_LEN\n");
+		dev_dbg(chan->mbox->dev, "Try increasing MBOX_TX_QUEUE_LEN\n");
 		return t;
 	}
 
@@ -380,7 +380,7 @@ struct mbox_chan *mbox_request_channel(struct mbox_client *cl, int index)
 		ret = chan->mbox->ops->startup(chan);
 
 		if (ret) {
-			dev_err(dev, "Unable to startup the chan (%d)\n", ret);
+			dev_dbg(dev, "Unable to startup the chan (%d)\n", ret);
 			mbox_free_channel(chan);
 			chan = ERR_PTR(ret);
 		}
@@ -400,12 +400,12 @@ struct mbox_chan *mbox_request_channel_byname(struct mbox_client *cl,
 	int index = 0;
 
 	if (!np) {
-		dev_err(cl->dev, "%s() currently only supports DT\n", __func__);
+		dev_dbg(cl->dev, "%s() currently only supports DT\n", __func__);
 		return ERR_PTR(-EINVAL);
 	}
 
 	if (!of_get_property(np, "mbox-names", NULL)) {
-		dev_err(cl->dev,
+		dev_dbg(cl->dev,
 			"%s() requires an \"mbox-names\" property\n", __func__);
 		return ERR_PTR(-EINVAL);
 	}
@@ -416,7 +416,7 @@ struct mbox_chan *mbox_request_channel_byname(struct mbox_client *cl,
 		index++;
 	}
 
-	dev_err(cl->dev, "%s() could not locate channel named \"%s\"\n",
+	dev_dbg(cl->dev, "%s() could not locate channel named \"%s\"\n",
 		__func__, name);
 	return ERR_PTR(-EINVAL);
 }
@@ -482,7 +482,7 @@ int mbox_controller_register(struct mbox_controller *mbox)
 	if (txdone == TXDONE_BY_POLL) {
 
 		if (!mbox->ops->last_tx_done) {
-			dev_err(mbox->dev, "last_tx_done method is absent\n");
+			dev_dbg(mbox->dev, "last_tx_done method is absent\n");
 			return -EINVAL;
 		}
 

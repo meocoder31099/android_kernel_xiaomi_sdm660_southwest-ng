@@ -506,7 +506,7 @@ void __ext4_error(struct super_block *sb, const char *function,
 		va_start(args, fmt);
 		vaf.fmt = fmt;
 		vaf.va = &args;
-		printk(KERN_CRIT
+		no_printk(KERN_CRIT
 		       "EXT4-fs error (device %s): %s:%d: comm %s: %pV\n",
 		       sb->s_id, function, line, current->comm, &vaf);
 		va_end(args);
@@ -534,12 +534,12 @@ void __ext4_error_inode(struct inode *inode, const char *function,
 		vaf.fmt = fmt;
 		vaf.va = &args;
 		if (block)
-			printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: "
+			no_printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: "
 			       "inode #%lu: block %llu: comm %s: %pV\n",
 			       inode->i_sb->s_id, function, line, inode->i_ino,
 			       block, current->comm, &vaf);
 		else
-			printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: "
+			no_printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: "
 			       "inode #%lu: comm %s: %pV\n",
 			       inode->i_sb->s_id, function, line, inode->i_ino,
 			       current->comm, &vaf);
@@ -573,13 +573,13 @@ void __ext4_error_file(struct file *file, const char *function,
 		vaf.fmt = fmt;
 		vaf.va = &args;
 		if (block)
-			printk(KERN_CRIT
+			no_printk(KERN_CRIT
 			       "EXT4-fs error (device %s): %s:%d: inode #%lu: "
 			       "block %llu: comm %s: path %s: %pV\n",
 			       inode->i_sb->s_id, function, line, inode->i_ino,
 			       block, current->comm, path, &vaf);
 		else
-			printk(KERN_CRIT
+			no_printk(KERN_CRIT
 			       "EXT4-fs error (device %s): %s:%d: inode #%lu: "
 			       "comm %s: path %s: %pV\n",
 			       inode->i_sb->s_id, function, line, inode->i_ino,
@@ -650,7 +650,7 @@ void __ext4_std_error(struct super_block *sb, const char *function,
 
 	if (ext4_error_ratelimit(sb)) {
 		errstr = ext4_decode_error(sb, errno, nbuf);
-		printk(KERN_CRIT "EXT4-fs error (device %s) in %s:%d: %s\n",
+		no_printk(KERN_CRIT "EXT4-fs error (device %s) in %s:%d: %s\n",
 		       sb->s_id, function, line, errstr);
 	}
 
@@ -681,7 +681,7 @@ void __ext4_abort(struct super_block *sb, const char *function,
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: %pV\n",
+	no_printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: %pV\n",
 	       sb->s_id, function, line, &vaf);
 	va_end(args);
 
@@ -718,7 +718,7 @@ void __ext4_msg(struct super_block *sb,
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	printk("%sEXT4-fs (%s): %pV\n", prefix, sb->s_id, &vaf);
+	no_printk("%sEXT4-fs (%s): %pV\n", prefix, sb->s_id, &vaf);
 	va_end(args);
 }
 
@@ -738,7 +738,7 @@ void __ext4_warning(struct super_block *sb, const char *function,
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	printk(KERN_WARNING "EXT4-fs warning (device %s): %s:%d: %pV\n",
+	no_printk(KERN_WARNING "EXT4-fs warning (device %s): %s:%d: %pV\n",
 	       sb->s_id, function, line, &vaf);
 	va_end(args);
 }
@@ -755,7 +755,7 @@ void __ext4_warning_inode(const struct inode *inode, const char *function,
 	va_start(args, fmt);
 	vaf.fmt = fmt;
 	vaf.va = &args;
-	printk(KERN_WARNING "EXT4-fs warning (device %s): %s:%d: "
+	no_printk(KERN_WARNING "EXT4-fs warning (device %s): %s:%d: "
 	       "inode #%lu: comm %s: %pV\n", inode->i_sb->s_id,
 	       function, line, inode->i_ino, current->comm, &vaf);
 	va_end(args);
@@ -784,14 +784,14 @@ __acquires(bitlock)
 		va_start(args, fmt);
 		vaf.fmt = fmt;
 		vaf.va = &args;
-		printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: group %u, ",
+		no_printk(KERN_CRIT "EXT4-fs error (device %s): %s:%d: group %u, ",
 		       sb->s_id, function, line, grp);
 		if (ino)
-			printk(KERN_CONT "inode %lu: ", ino);
+			no_printk(KERN_CONT "inode %lu: ", ino);
 		if (block)
-			printk(KERN_CONT "block %llu:",
+			no_printk(KERN_CONT "block %llu:",
 			       (unsigned long long) block);
-		printk(KERN_CONT "%pV\n", &vaf);
+		no_printk(KERN_CONT "%pV\n", &vaf);
 		va_end(args);
 	}
 
@@ -931,10 +931,10 @@ static void dump_orphan_list(struct super_block *sb, struct ext4_sb_info *sbi)
 	ext4_msg(sb, KERN_ERR, "sb orphan head is %d",
 		 le32_to_cpu(sbi->s_es->s_last_orphan));
 
-	printk(KERN_ERR "sb_info orphan list:\n");
+	no_printk(KERN_ERR "sb_info orphan list:\n");
 	list_for_each(l, &sbi->s_orphan) {
 		struct inode *inode = orphan_list_entry(l);
-		printk(KERN_ERR "  "
+		no_printk(KERN_ERR "  "
 		       "inode %s:%lu at %p: mode %o, nlink %d, next %d\n",
 		       inode->i_sb->s_id, inode->i_ino, inode,
 		       inode->i_mode, inode->i_nlink,
@@ -1601,7 +1601,7 @@ static ext4_fsblk_t get_sb_block(void **data)
 	/* TODO: use simple_strtoll with >32bit ext4 */
 	sb_block = simple_strtoul(options, &options, 0);
 	if (*options && *options != ',') {
-		printk(KERN_ERR "EXT4-fs: Invalid sb specification: %s\n",
+		no_printk(KERN_ERR "EXT4-fs: Invalid sb specification: %s\n",
 		       (char *) *data);
 		return 1;
 	}
@@ -2399,7 +2399,7 @@ static int ext4_setup_super(struct super_block *sb, struct ext4_super_block *es,
 	err = ext4_commit_super(sb, 1);
 done:
 	if (test_opt(sb, DEBUG))
-		printk(KERN_INFO "[EXT4 FS bs=%lu, gc=%u, "
+		no_printk(KERN_INFO "[EXT4 FS bs=%lu, gc=%u, "
 				"bpg=%lu, ipg=%lu, mo=%04x, mo2=%04x]\n",
 			sb->s_blocksize,
 			sbi->s_groups_count,
@@ -3109,34 +3109,34 @@ static void print_daily_error_info(struct timer_list *t)
 		ext4_msg(sb, KERN_NOTICE, "error count since last fsck: %u",
 			 le32_to_cpu(es->s_error_count));
 	if (es->s_first_error_time) {
-		printk(KERN_NOTICE "EXT4-fs (%s): initial error at time %llu: %.*s:%d",
+		no_printk(KERN_NOTICE "EXT4-fs (%s): initial error at time %llu: %.*s:%d",
 		       sb->s_id,
 		       ext4_get_tstamp(es, s_first_error_time),
 		       (int) sizeof(es->s_first_error_func),
 		       es->s_first_error_func,
 		       le32_to_cpu(es->s_first_error_line));
 		if (es->s_first_error_ino)
-			printk(KERN_CONT ": inode %u",
+			no_printk(KERN_CONT ": inode %u",
 			       le32_to_cpu(es->s_first_error_ino));
 		if (es->s_first_error_block)
-			printk(KERN_CONT ": block %llu", (unsigned long long)
+			no_printk(KERN_CONT ": block %llu", (unsigned long long)
 			       le64_to_cpu(es->s_first_error_block));
-		printk(KERN_CONT "\n");
+		no_printk(KERN_CONT "\n");
 	}
 	if (es->s_last_error_time) {
-		printk(KERN_NOTICE "EXT4-fs (%s): last error at time %llu: %.*s:%d",
+		no_printk(KERN_NOTICE "EXT4-fs (%s): last error at time %llu: %.*s:%d",
 		       sb->s_id,
 		       ext4_get_tstamp(es, s_last_error_time),
 		       (int) sizeof(es->s_last_error_func),
 		       es->s_last_error_func,
 		       le32_to_cpu(es->s_last_error_line));
 		if (es->s_last_error_ino)
-			printk(KERN_CONT ": inode %u",
+			no_printk(KERN_CONT ": inode %u",
 			       le32_to_cpu(es->s_last_error_ino));
 		if (es->s_last_error_block)
-			printk(KERN_CONT ": block %llu", (unsigned long long)
+			no_printk(KERN_CONT ": block %llu", (unsigned long long)
 			       le64_to_cpu(es->s_last_error_block));
-		printk(KERN_CONT "\n");
+		no_printk(KERN_CONT "\n");
 	}
 	mod_timer(&sbi->s_err_report, jiffies + 24*60*60*HZ);  /* Once a day */
 }
@@ -3349,7 +3349,7 @@ static int ext4_run_lazyinit_thread(void)
 		ext4_clear_request_list();
 		kfree(ext4_li_info);
 		ext4_li_info = NULL;
-		printk(KERN_CRIT "EXT4-fs: error %d creating inode table "
+		no_printk(KERN_CRIT "EXT4-fs: error %d creating inode table "
 				 "initialization thread\n",
 				 err);
 		return err;
@@ -4603,7 +4603,7 @@ no_journal:
 	EXT4_SB(sb)->rsv_conversion_wq =
 		alloc_workqueue("ext4-rsv-conversion", WQ_MEM_RECLAIM | WQ_UNBOUND, 1);
 	if (!EXT4_SB(sb)->rsv_conversion_wq) {
-		printk(KERN_ERR "EXT4-fs: failed to create workqueue\n");
+		no_printk(KERN_ERR "EXT4-fs: failed to create workqueue\n");
 		ret = -ENOMEM;
 		goto failed_mount4;
 	}
@@ -6292,7 +6292,7 @@ static inline void register_as_ext2(void)
 {
 	int err = register_filesystem(&ext2_fs_type);
 	if (err)
-		printk(KERN_WARNING
+		no_printk(KERN_WARNING
 		       "EXT4-fs: Unable to register as ext2 (%d)\n", err);
 }
 
@@ -6321,7 +6321,7 @@ static inline void register_as_ext3(void)
 {
 	int err = register_filesystem(&ext3_fs_type);
 	if (err)
-		printk(KERN_WARNING
+		no_printk(KERN_WARNING
 		       "EXT4-fs: Unable to register as ext3 (%d)\n", err);
 }
 

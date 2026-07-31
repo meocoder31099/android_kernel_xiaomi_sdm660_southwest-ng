@@ -41,7 +41,7 @@ int pinmux_check_ops(struct pinctrl_dev *pctldev)
 	    !ops->get_function_name ||
 	    !ops->get_function_groups ||
 	    !ops->set_mux) {
-		dev_err(pctldev->dev, "pinmux ops lacks necessary functions\n");
+		dev_dbg(pctldev->dev, "pinmux ops lacks necessary functions\n");
 		return -EINVAL;
 	}
 	/* Check that all functions registered have names */
@@ -50,7 +50,7 @@ int pinmux_check_ops(struct pinctrl_dev *pctldev)
 		const char *fname = ops->get_function_name(pctldev,
 							   selector);
 		if (!fname) {
-			dev_err(pctldev->dev, "pinmux ops has no name for function%u\n",
+			dev_dbg(pctldev->dev, "pinmux ops has no name for function%u\n",
 				selector);
 			return -EINVAL;
 		}
@@ -63,7 +63,7 @@ int pinmux_check_ops(struct pinctrl_dev *pctldev)
 int pinmux_validate_map(const struct pinctrl_map *map, int i)
 {
 	if (!map->data.mux.function) {
-		pr_err("failed to register map %s (%d): no function given\n",
+		pr_debug("failed to register map %s (%d): no function given\n",
 		       map->name, i);
 		return -EINVAL;
 	}
@@ -89,7 +89,7 @@ static int pin_request(struct pinctrl_dev *pctldev,
 
 	desc = pin_desc_get(pctldev, pin);
 	if (desc == NULL) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"pin %d is not registered so it cannot be requested\n",
 			pin);
 		goto out;
@@ -100,14 +100,14 @@ static int pin_request(struct pinctrl_dev *pctldev,
 
 	if ((!gpio_range || ops->strict) &&
 	    desc->mux_usecount && strcmp(desc->mux_owner, owner)) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"pin %s already requested by %s; cannot claim for %s\n",
 			desc->name, desc->mux_owner, owner);
 		goto out;
 	}
 
 	if ((gpio_range || ops->strict) && desc->gpio_owner) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"pin %s already requested by %s; cannot claim for %s\n",
 			desc->name, desc->gpio_owner, owner);
 		goto out;
@@ -125,7 +125,7 @@ static int pin_request(struct pinctrl_dev *pctldev,
 
 	/* Let each pin increase references to this module */
 	if (!try_module_get(pctldev->owner)) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"could not increase module refcount for pin %d\n",
 			pin);
 		status = -EINVAL;
@@ -145,7 +145,7 @@ static int pin_request(struct pinctrl_dev *pctldev,
 		status = 0;
 
 	if (status) {
-		dev_err(pctldev->dev, "request() failed for pin %d\n", pin);
+		dev_dbg(pctldev->dev, "request() failed for pin %d\n", pin);
 		module_put(pctldev->owner);
 	}
 
@@ -161,7 +161,7 @@ out_free_pin:
 	}
 out:
 	if (status)
-		dev_err(pctldev->dev, "pin-%d (%s) status %d\n",
+		dev_dbg(pctldev->dev, "pin-%d (%s) status %d\n",
 			pin, owner, status);
 
 	return status;
@@ -187,7 +187,7 @@ static const char *pin_free(struct pinctrl_dev *pctldev, int pin,
 
 	desc = pin_desc_get(pctldev, pin);
 	if (desc == NULL) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"pin is not registered so it cannot be freed\n");
 		return NULL;
 	}
@@ -321,13 +321,13 @@ int pinmux_map_to_setting(const struct pinctrl_map *map,
 	const char *group;
 
 	if (!pmxops) {
-		dev_err(pctldev->dev, "does not support mux function\n");
+		dev_dbg(pctldev->dev, "does not support mux function\n");
 		return -EINVAL;
 	}
 
 	ret = pinmux_func_name_to_selector(pctldev, map->data.mux.function);
 	if (ret < 0) {
-		dev_err(pctldev->dev, "invalid function %s in map table\n",
+		dev_dbg(pctldev->dev, "invalid function %s in map table\n",
 			map->data.mux.function);
 		return ret;
 	}
@@ -336,12 +336,12 @@ int pinmux_map_to_setting(const struct pinctrl_map *map,
 	ret = pmxops->get_function_groups(pctldev, setting->data.mux.func,
 					  &groups, &num_groups);
 	if (ret < 0) {
-		dev_err(pctldev->dev, "can't query groups for function %s\n",
+		dev_dbg(pctldev->dev, "can't query groups for function %s\n",
 			map->data.mux.function);
 		return ret;
 	}
 	if (!num_groups) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"function %s can't be selected on any group\n",
 			map->data.mux.function);
 		return -EINVAL;
@@ -350,7 +350,7 @@ int pinmux_map_to_setting(const struct pinctrl_map *map,
 		group = map->data.mux.group;
 		ret = match_string(groups, num_groups, group);
 		if (ret < 0) {
-			dev_err(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				"invalid group \"%s\" for function \"%s\"\n",
 				group, map->data.mux.function);
 			return ret;
@@ -361,7 +361,7 @@ int pinmux_map_to_setting(const struct pinctrl_map *map,
 
 	ret = pinctrl_get_group_selector(pctldev, group);
 	if (ret < 0) {
-		dev_err(pctldev->dev, "invalid group %s in map table\n",
+		dev_dbg(pctldev->dev, "invalid group %s in map table\n",
 			map->data.mux.group);
 		return ret;
 	}
@@ -396,7 +396,7 @@ int pinmux_enable_setting(const struct pinctrl_setting *setting)
 		/* errors only affect debug data, so just warn */
 		gname = pctlops->get_group_name(pctldev,
 						setting->data.mux.group);
-		dev_warn(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			 "could not get pins for group %s\n",
 			 gname);
 		num_pins = 0;
@@ -413,7 +413,7 @@ int pinmux_enable_setting(const struct pinctrl_setting *setting)
 			pname = desc ? desc->name : "non-existing";
 			gname = pctlops->get_group_name(pctldev,
 						setting->data.mux.group);
-			dev_err(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				"could not request pin %d (%s) from group %s "
 				" on device %s\n",
 				pins[i], pname, gname,
@@ -426,7 +426,7 @@ int pinmux_enable_setting(const struct pinctrl_setting *setting)
 	for (i = 0; i < num_pins; i++) {
 		desc = pin_desc_get(pctldev, pins[i]);
 		if (desc == NULL) {
-			dev_warn(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				 "could not get pin desc for pin %d\n",
 				 pins[i]);
 			continue;
@@ -475,7 +475,7 @@ void pinmux_disable_setting(const struct pinctrl_setting *setting)
 		/* errors only affect debug data, so just warn */
 		gname = pctlops->get_group_name(pctldev,
 						setting->data.mux.group);
-		dev_warn(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			 "could not get pins for group %s\n",
 			 gname);
 		num_pins = 0;
@@ -485,7 +485,7 @@ void pinmux_disable_setting(const struct pinctrl_setting *setting)
 	for (i = 0; i < num_pins; i++) {
 		desc = pin_desc_get(pctldev, pins[i]);
 		if (desc == NULL) {
-			dev_warn(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				 "could not get pin desc for pin %d\n",
 				 pins[i]);
 			continue;
@@ -497,7 +497,7 @@ void pinmux_disable_setting(const struct pinctrl_setting *setting)
 
 			gname = pctlops->get_group_name(pctldev,
 						setting->data.mux.group);
-			dev_warn(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				 "not freeing pin %d (%s) as part of "
 				 "deactivating group %s - it is already "
 				 "used for some other setting",
@@ -728,7 +728,7 @@ int pinmux_generic_get_function_groups(struct pinctrl_dev *pctldev,
 	function = radix_tree_lookup(&pctldev->pin_function_tree,
 				     selector);
 	if (!function) {
-		dev_err(pctldev->dev, "%s could not find function%i\n",
+		dev_dbg(pctldev->dev, "%s could not find function%i\n",
 			__func__, selector);
 		return -EINVAL;
 	}

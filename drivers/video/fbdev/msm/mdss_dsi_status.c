@@ -79,12 +79,12 @@ static void check_dsi_ctrl_status(struct work_struct *work)
 		struct dsi_status_data, check_status);
 
 	if (!pdsi_status) {
-		pr_err("%s: DSI status data not available\n", __func__);
+		pr_debug("%s: DSI status data not available\n", __func__);
 		return;
 	}
 
 	if (!pdsi_status->mfd) {
-		pr_err("%s: FB data not available\n", __func__);
+		pr_debug("%s: FB data not available\n", __func__);
 		return;
 	}
 
@@ -111,7 +111,7 @@ irqreturn_t hw_vsync_handler(int irq, void *data)
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata =
 			(struct mdss_dsi_ctrl_pdata *)data;
 	if (!ctrl_pdata) {
-		pr_err("%s: DSI ctrl not available\n", __func__);
+		pr_debug("%s: DSI ctrl not available\n", __func__);
 		return IRQ_HANDLED;
 	}
 
@@ -119,7 +119,7 @@ irqreturn_t hw_vsync_handler(int irq, void *data)
 		mod_delayed_work(system_wq, &pstatus_data->check_status,
 			msecs_to_jiffies(interval));
 	else
-		pr_err("Pstatus data is NULL\n");
+		pr_debug("Pstatus data is NULL\n");
 
 	if (!atomic_read(&ctrl_pdata->te_irq_ready))
 		atomic_inc(&ctrl_pdata->te_irq_ready);
@@ -160,7 +160,7 @@ static int fb_event_callback(struct notifier_block *self,
 	char fb_id[7] = {'\0'};
 
 	if (!evdata) {
-		pr_err("%s: event data not available\n", __func__);
+		pr_debug("%s: event data not available\n", __func__);
 		return NOTIFY_BAD;
 	}
 
@@ -173,7 +173,7 @@ static int fb_event_callback(struct notifier_block *self,
 	ctrl_pdata = container_of(dev_get_platdata(&mfd->pdev->dev),
 				struct mdss_dsi_ctrl_pdata, panel_data);
 	if (!ctrl_pdata) {
-		pr_err("%s: DSI ctrl not available\n", __func__);
+		pr_debug("%s: DSI ctrl not available\n", __func__);
 		return NOTIFY_BAD;
 	}
 
@@ -206,7 +206,7 @@ static int fb_event_callback(struct notifier_block *self,
 			cancel_delayed_work(&pdata->check_status);
 			break;
 		default:
-			pr_err("Unknown case in FB_EVENT_BLANK event\n");
+			pr_debug("Unknown case in FB_EVENT_BLANK event\n");
 			break;
 		}
 	}
@@ -223,7 +223,7 @@ static int param_dsi_status_disable(const char *val,
 	if (ret)
 		return ret;
 
-	pr_info("%s: Set DSI status disable to %d\n",
+	pr_debug("%s: Set DSI status disable to %d\n",
 			__func__, int_val);
 	*((int *)kp->arg) = int_val;
 	return ret;
@@ -238,11 +238,11 @@ static int param_set_interval(const char *val, const struct kernel_param *kp)
 	if (ret)
 		return ret;
 	if (int_val < STATUS_CHECK_INTERVAL_MIN_MS) {
-		pr_err("%s: Invalid value %d used, ignoring\n",
+		pr_debug("%s: Invalid value %d used, ignoring\n",
 						__func__, int_val);
 		ret = -EINVAL;
 	} else {
-		pr_info("%s: Set check interval to %d msecs\n",
+		pr_debug("%s: Set check interval to %d msecs\n",
 						__func__, int_val);
 		*((int *)kp->arg) = int_val;
 	}
@@ -261,13 +261,13 @@ int __init mdss_dsi_status_init(void)
 
 	rc = fb_register_client(&pstatus_data->fb_notifier);
 	if (rc < 0) {
-		pr_err("%s: fb_register_client failed, returned with rc=%d\n",
+		pr_debug("%s: fb_register_client failed, returned with rc=%d\n",
 								__func__, rc);
 		kfree(pstatus_data);
 		return -EPERM;
 	}
 
-	pr_info("%s: DSI status check interval:%d\n", __func__,	interval);
+	pr_debug("%s: DSI status check interval:%d\n", __func__,	interval);
 
 	INIT_DELAYED_WORK(&pstatus_data->check_status, check_dsi_ctrl_status);
 

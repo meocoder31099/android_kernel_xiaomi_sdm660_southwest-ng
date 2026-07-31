@@ -1059,7 +1059,7 @@ static int __init nf_nat_init(void)
 	ret = nf_ct_extend_register(&nat_extend);
 	if (ret < 0) {
 		kvfree(nf_nat_bysource);
-		pr_err("Unable to register extension\n");
+		pr_debug("Unable to register extension\n");
 		return ret;
 	}
 

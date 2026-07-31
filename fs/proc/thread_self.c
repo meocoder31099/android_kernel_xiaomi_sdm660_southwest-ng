@@ -60,7 +60,7 @@ int proc_setup_thread_self(struct super_block *s)
 	}
 	inode_unlock(root_inode);
 	if (IS_ERR(thread_self)) {
-		pr_err("proc_fill_super: can't allocate /proc/thread_self\n");
+		pr_debug("proc_fill_super: can't allocate /proc/thread_self\n");
 		return PTR_ERR(thread_self);
 	}
 	ns->proc_thread_self = thread_self;

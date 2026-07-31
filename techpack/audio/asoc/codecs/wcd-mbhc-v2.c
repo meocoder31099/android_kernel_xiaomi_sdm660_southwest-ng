@@ -105,7 +105,7 @@ static void wcd_program_btn_threshold(const struct wcd_mbhc *mbhc, bool micbias)
 	s16 *btn_low, *btn_high;
 
 	if (mbhc->mbhc_cfg->calibration == NULL) {
-		dev_err(card->dev, "%s: calibration data is NULL\n", __func__);
+		dev_dbg(card->dev, "%s: calibration data is NULL\n", __func__);
 		return;
 	}
 
@@ -841,7 +841,7 @@ void wcd_mbhc_elec_hs_report_unplug(struct wcd_mbhc *mbhc)
 		mbhc->mbhc_fn->wcd_cancel_hs_detect_plug(mbhc,
 						&mbhc->correct_plug_swch);
 	else
-		pr_info("%s: hs_detect_plug work not cancelled\n", __func__);
+		pr_debug("%s: hs_detect_plug work not cancelled\n", __func__);
 
 	pr_debug("%s: Report extension cable\n", __func__);
 	wcd_mbhc_report_plug(mbhc, 1, SND_JACK_LINEOUT);
@@ -877,7 +877,7 @@ void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 	enum snd_jack_types jack_type;
 
 	if (mbhc->deinit_in_progress) {
-		pr_info("%s: mbhc deinit in progess: ignore report\n", __func__);
+		pr_debug("%s: mbhc deinit in progess: ignore report\n", __func__);
 		return;
 	}
 
@@ -1065,7 +1065,7 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 		mbhc->mbhc_fn->wcd_cancel_hs_detect_plug(mbhc,
 						&mbhc->correct_plug_swch);
 	else
-		pr_info("%s: hs_detect_plug work not cancelled\n", __func__);
+		pr_debug("%s: hs_detect_plug work not cancelled\n", __func__);
 
 	/* Enable micbias ramp */
 	if (mbhc->mbhc_cb->mbhc_micb_ramp_control)
@@ -1155,7 +1155,7 @@ static void wcd_mbhc_swch_irq_handler(struct wcd_mbhc *mbhc)
 			jack_type = SND_JACK_LINEOUT;
 			break;
 		default:
-			pr_info("%s: Invalid current plug: %d\n",
+			pr_debug("%s: Invalid current plug: %d\n",
 				__func__, mbhc->current_plug);
 			jack_type = SND_JACK_UNSUPPORTED;
 			break;
@@ -1208,11 +1208,11 @@ static irqreturn_t wcd_mbhc_mech_plug_detect_irq(int irq, void *data)
 
 	pr_debug("%s: enter\n", __func__);
 	if (mbhc == NULL) {
-		pr_err("%s: NULL irq data\n", __func__);
+		pr_debug("%s: NULL irq data\n", __func__);
 		return IRQ_NONE;
 	}
 	if (unlikely((mbhc->mbhc_cb->lock_sleep(mbhc, true)) == false)) {
-		pr_warn("%s: failed to hold suspend\n", __func__);
+		pr_debug("%s: failed to hold suspend\n", __func__);
 		r = IRQ_NONE;
 	} else {
 		/* Call handler */
@@ -1452,7 +1452,7 @@ static irqreturn_t wcd_mbhc_hphl_ocp_irq(int irq, void *data)
 					    WCD_MBHC_JACK_MASK);
 		}
 	} else {
-		pr_err("%s: Bad wcd9xxx_spmi private data\n", __func__);
+		pr_debug("%s: Bad wcd9xxx_spmi private data\n", __func__);
 	}
 done:
 	return IRQ_HANDLED;
@@ -1465,7 +1465,7 @@ static irqreturn_t wcd_mbhc_hphr_ocp_irq(int irq, void *data)
 	pr_debug("%s: received HPHR OCP irq\n", __func__);
 
 	if (!mbhc) {
-		pr_err("%s: Bad mbhc private data\n", __func__);
+		pr_debug("%s: Bad mbhc private data\n", __func__);
 		goto done;
 	}
 
@@ -1635,7 +1635,7 @@ static void wcd_mbhc_fw_read(struct work_struct *work)
 		pr_debug("%s: using hwdep cal\n", __func__);
 
 	if (ret != 0 && !fw_data) {
-		pr_err("%s: Cannot load MBHC firmware use default cal\n",
+		pr_debug("%s: Cannot load MBHC firmware use default cal\n",
 		       __func__);
 		use_default_cal = true;
 	}
@@ -1651,7 +1651,7 @@ static void wcd_mbhc_fw_read(struct work_struct *work)
 			size = fw->size;
 		}
 		if (wcd_mbhc_fw_validate(data, size) == false) {
-			pr_err("%s: Invalid MBHC cal data size use default cal\n",
+			pr_debug("%s: Invalid MBHC cal data size use default cal\n",
 				__func__);
 			if (!fw_data)
 				release_firmware(fw);
@@ -1710,7 +1710,7 @@ static int wcd_mbhc_set_keycode(struct wcd_mbhc *mbhc)
 							type,
 							btn_key_code[i]);
 			if (ret) {
-				pr_err("%s: Failed to set code for %d\n",
+				pr_debug("%s: Failed to set code for %d\n",
 					__func__, btn_key_code[i]);
 				result = -1;
 				return result;
@@ -1764,7 +1764,7 @@ static int wcd_mbhc_init_gpio(struct wcd_mbhc *mbhc,
 	if (!(*gpio_dn)) {
 		*gpio = of_get_named_gpio(card->dev->of_node, gpio_dt_str, 0);
 		if (!gpio_is_valid(*gpio)) {
-			dev_err(card->dev, "%s, property %s not in node %s",
+			dev_dbg(card->dev, "%s, property %s not in node %s",
 				__func__, gpio_dt_str,
 				card->dev->of_node->full_name);
 			rc = -EINVAL;
@@ -1775,7 +1775,7 @@ static int wcd_mbhc_init_gpio(struct wcd_mbhc *mbhc,
 	if (!gpio_is_valid(*gpio))
 		*gpio_dn = of_parse_phandle(card->dev->of_node, gpio_dt_str, 0);
 	if (!gpio_is_valid(*gpio) && !(*gpio_dn)) {
-		dev_err(card->dev, "%s, property %s not in node %s",
+		dev_dbg(card->dev, "%s, property %s not in node %s",
 			__func__, gpio_dt_str,
 			card->dev->of_node->full_name);
 		rc = -EINVAL;
@@ -1804,7 +1804,7 @@ static int wcd_mbhc_usb_c_analog_setup_gpios(struct wcd_mbhc *mbhc, bool active)
 		pval.intval = POWER_SUPPLY_TYPEC_PR_SOURCE;
 		if (power_supply_set_property(mbhc->usb_psy,
 				POWER_SUPPLY_PROP_TYPEC_POWER_ROLE, &pval))
-			dev_info(mbhc->component->dev, "%s: force PR_SOURCE mode unsuccessful\n",
+			dev_dbg(mbhc->component->dev, "%s: force PR_SOURCE mode unsuccessful\n",
 					__func__);
 		else
 			mbhc->usbc_force_pr_mode = true;
@@ -1846,7 +1846,7 @@ static int wcd_mbhc_usb_c_analog_setup_gpios(struct wcd_mbhc *mbhc, bool active)
 			pval.intval = POWER_SUPPLY_TYPEC_PR_DUAL;
 			if (power_supply_set_property(mbhc->usb_psy,
 				POWER_SUPPLY_PROP_TYPEC_POWER_ROLE, &pval))
-				dev_info(mbhc->component->dev, "%s: force PR_DUAL mode unsuccessful\n",
+				dev_dbg(mbhc->component->dev, "%s: force PR_DUAL mode unsuccessful\n",
 						__func__);
 			mbhc->usbc_force_pr_mode = false;
 		}
@@ -1882,7 +1882,7 @@ static int wcd_mbhc_usb_c_event_changed(struct notifier_block *nb,
 	ret = power_supply_get_property(mbhc->usb_psy,
 					POWER_SUPPLY_PROP_TYPEC_MODE, &mode);
 	if (ret) {
-		dev_err(component->dev, "%s: Unable to read USB TYPEC_MODE: %d\n",
+		dev_dbg(component->dev, "%s: Unable to read USB TYPEC_MODE: %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -1924,7 +1924,7 @@ static int wcd_mbhc_usb_c_analog_init(struct wcd_mbhc *mbhc)
 
 	mbhc->usb_psy = power_supply_get_by_name("usb");
 	if (IS_ERR_OR_NULL(mbhc->usb_psy)) {
-		dev_err(component->dev, "%s: could not get USB psy info\n",
+		dev_dbg(component->dev, "%s: could not get USB psy info\n",
 			__func__);
 		ret = -EPROBE_DEFER;
 		if (IS_ERR(mbhc->usb_psy))
@@ -1934,7 +1934,7 @@ static int wcd_mbhc_usb_c_analog_init(struct wcd_mbhc *mbhc)
 	}
 	ret = wcd_mbhc_usb_c_analog_setup_gpios(mbhc, false);
 	if (ret) {
-		dev_err(component->dev, "%s: error while setting USBC ana gpios\n",
+		dev_dbg(component->dev, "%s: error while setting USBC ana gpios\n",
 			__func__);
 		goto err;
 	}
@@ -1943,7 +1943,7 @@ static int wcd_mbhc_usb_c_analog_init(struct wcd_mbhc *mbhc)
 	mbhc->psy_nb.priority = 0;
 	ret = power_supply_reg_notifier(&mbhc->psy_nb);
 	if (ret) {
-		dev_err(component->dev, "%s: power supply registration failed\n",
+		dev_dbg(component->dev, "%s: power supply registration failed\n",
 			__func__);
 		goto err;
 	}
@@ -2058,14 +2058,14 @@ int wcd_mbhc_start(struct wcd_mbhc *mbhc, struct wcd_mbhc_config *mbhc_cfg)
 	}
 	/* Set btn key code */
 	if ((!mbhc->is_btn_already_regd) && wcd_mbhc_set_keycode(mbhc))
-		pr_err("Set btn key code error!!!\n");
+		pr_debug("Set btn key code error!!!\n");
 
 	if (!mbhc->mbhc_cfg->read_fw_bin ||
 	    (mbhc->mbhc_cfg->read_fw_bin && mbhc->mbhc_fw) ||
 	    (mbhc->mbhc_cfg->read_fw_bin && mbhc->mbhc_cal)) {
 		rc = wcd_mbhc_initialise(mbhc);
 		if (rc) {
-			dev_err(card->dev, "%s: wcd mbhc initialize failed\n",
+			dev_dbg(card->dev, "%s: wcd mbhc initialize failed\n",
 				__func__);
 			wcd_mbhc_usb_c_analog_deinit(mbhc);
 			goto err;
@@ -2075,7 +2075,7 @@ int wcd_mbhc_start(struct wcd_mbhc *mbhc, struct wcd_mbhc_config *mbhc_cfg)
 			schedule_delayed_work(&mbhc->mbhc_firmware_dwork,
 				      usecs_to_jiffies(FW_READ_TIMEOUT));
 		else
-			pr_err("%s: Skipping to read mbhc fw, 0x%pK %pK\n",
+			pr_debug("%s: Skipping to read mbhc fw, 0x%pK %pK\n",
 				 __func__, mbhc->mbhc_fw, mbhc->mbhc_cal);
 	}
 
@@ -2173,14 +2173,14 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 
 	ret = of_property_read_u32(card->dev->of_node, hph_switch, &hph_swh);
 	if (ret) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"%s: missing %s in dt node\n", __func__, hph_switch);
 		goto err;
 	}
 
 	ret = of_property_read_u32(card->dev->of_node, gnd_switch, &gnd_swh);
 	if (ret) {
-		dev_err(card->dev,
+		dev_dbg(card->dev,
 			"%s: missing %s in dt node\n", __func__, gnd_switch);
 		goto err;
 	}
@@ -2237,11 +2237,11 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 	mbhc->hphr_cross_conn_thr = HPHR_CROSS_CONN_THRESHOLD;
 
 	if (mbhc->intr_ids == NULL) {
-		pr_err("%s: Interrupt mapping not provided\n", __func__);
+		pr_debug("%s: Interrupt mapping not provided\n", __func__);
 		return -EINVAL;
 	}
 	if (!mbhc->wcd_mbhc_regs) {
-		dev_err(component->dev, "%s: mbhc registers are not defined\n",
+		dev_dbg(component->dev, "%s: mbhc registers are not defined\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -2251,7 +2251,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 	    !mbhc_cb->free_irq || !mbhc_cb->map_btn_code_to_num ||
 	    !mbhc_cb->lock_sleep || !mbhc_cb->mbhc_bias ||
 	    !mbhc_cb->set_btn_thr) {
-		dev_err(component->dev, "%s: required mbhc callbacks are not defined\n",
+		dev_dbg(component->dev, "%s: required mbhc callbacks are not defined\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -2262,7 +2262,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 					    "Headset Jack", WCD_MBHC_JACK_MASK,
 					    &mbhc->headset_jack, NULL, 0);
 		if (ret) {
-			pr_err("%s: Failed to create new jack\n", __func__);
+			pr_debug("%s: Failed to create new jack\n", __func__);
 			return ret;
 		}
 
@@ -2271,7 +2271,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 					    WCD_MBHC_JACK_BUTTON_MASK,
 					    &mbhc->button_jack, NULL, 0);
 		if (ret) {
-			pr_err("Failed to create new jack\n");
+			pr_debug("Failed to create new jack\n");
 			return ret;
 		}
 
@@ -2279,7 +2279,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 				       SND_JACK_BTN_0,
 				       KEY_MEDIA);
 		if (ret) {
-			pr_err("%s: Failed to set code for btn-0\n",
+			pr_debug("%s: Failed to set code for btn-0\n",
 				__func__);
 			return ret;
 		}
@@ -2298,7 +2298,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 		ret = mbhc->mbhc_cb->register_notifier(mbhc, &mbhc->nblock,
 						       true);
 		if (ret) {
-			pr_err("%s: Failed to register notifier %d\n",
+			pr_debug("%s: Failed to register notifier %d\n",
 				__func__, ret);
 			return ret;
 		}
@@ -2315,7 +2315,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 		wcd_mbhc_adc_init(mbhc);
 		break;
 	default:
-		pr_err("%s: Unknown detection logic type %d\n",
+		pr_debug("%s: Unknown detection logic type %d\n",
 			__func__, mbhc->mbhc_detection_logic);
 		break;
 	}
@@ -2325,7 +2325,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 	    !mbhc->mbhc_fn->wcd_mbhc_hs_rem_irq ||
 	    !mbhc->mbhc_fn->wcd_mbhc_detect_plug_type ||
 	    !mbhc->mbhc_fn->wcd_cancel_hs_detect_plug) {
-		pr_err("%s: mbhc function pointer is NULL\n", __func__);
+		pr_debug("%s: mbhc function pointer is NULL\n", __func__);
 		goto err_mbhc_sw_irq;
 	}
 	ret = mbhc->mbhc_cb->request_irq(component,
@@ -2333,7 +2333,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 				wcd_mbhc_mech_plug_detect_irq,
 				"mbhc sw intr", mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d, ret = %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d, ret = %d\n", __func__,
 		       mbhc->intr_ids->mbhc_sw_intr, ret);
 		goto err_mbhc_sw_irq;
 	}
@@ -2343,7 +2343,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 					 wcd_mbhc_btn_press_handler,
 					 "Button Press detect", mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 		       mbhc->intr_ids->mbhc_btn_press_intr);
 		goto err_btn_press_irq;
 	}
@@ -2353,7 +2353,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 					 wcd_mbhc_release_handler,
 					 "Button Release detect", mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 			mbhc->intr_ids->mbhc_btn_release_intr);
 		goto err_btn_release_irq;
 	}
@@ -2363,7 +2363,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 					 mbhc->mbhc_fn->wcd_mbhc_hs_ins_irq,
 					 "Elect Insert", mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 		       mbhc->intr_ids->mbhc_hs_ins_intr);
 		goto err_mbhc_hs_ins_irq;
 	}
@@ -2376,7 +2376,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 					 mbhc->mbhc_fn->wcd_mbhc_hs_rem_irq,
 					 "Elect Remove", mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 		       mbhc->intr_ids->mbhc_hs_rem_intr);
 		goto err_mbhc_hs_rem_irq;
 	}
@@ -2389,7 +2389,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 				wcd_mbhc_hphl_ocp_irq, "HPH_L OCP detect",
 				mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 		       mbhc->intr_ids->hph_left_ocp);
 		goto err_hphl_ocp_irq;
 	}
@@ -2399,7 +2399,7 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 				wcd_mbhc_hphr_ocp_irq, "HPH_R OCP detect",
 				mbhc);
 	if (ret) {
-		pr_err("%s: Failed to request irq %d\n", __func__,
+		pr_debug("%s: Failed to request irq %d\n", __func__,
 		       mbhc->intr_ids->hph_right_ocp);
 		goto err_hphr_ocp_irq;
 	}

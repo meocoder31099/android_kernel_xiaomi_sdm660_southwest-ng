@@ -256,7 +256,7 @@ static int adc_read_current_data(struct adc_chip *adc, u16 *data)
 	*data = (rslt_msb << 8) | rslt_lsb;
 
 	if (*data == ADC_USR_DATA_CHECK) {
-		pr_err("Invalid data:0x%x\n", *data);
+		pr_debug("Invalid data:0x%x\n", *data);
 		return -EINVAL;
 	}
 
@@ -279,7 +279,7 @@ static int adc_read_voltage_data(struct adc_chip *adc, u16 *data)
 	*data = (rslt_msb << 8) | rslt_lsb;
 
 	if (*data == ADC_USR_DATA_CHECK) {
-		pr_err("Invalid data:0x%x\n", *data);
+		pr_debug("Invalid data:0x%x\n", *data);
 		return -EINVAL;
 	}
 
@@ -318,7 +318,7 @@ static int adc_wait_eoc(struct adc_chip *adc)
 	if (adc->poll_eoc) {
 		ret = adc_poll_wait_eoc(adc, true);
 		if (ret < 0) {
-			pr_err("EOC bit not set\n");
+			pr_debug("EOC bit not set\n");
 			return ret;
 		}
 	} else {
@@ -328,7 +328,7 @@ static int adc_wait_eoc(struct adc_chip *adc)
 			pr_debug("Did not get completion timeout.\n");
 			ret = adc_poll_wait_eoc(adc, false);
 			if (ret < 0) {
-				pr_err("EOC bit not set\n");
+				pr_debug("EOC bit not set\n");
 				return ret;
 			}
 		}
@@ -375,7 +375,7 @@ static int adc_channel_check(struct adc_chip *adc, u8 buf)
 			return ret;
 
 		if (chno != buf) {
-			pr_err("Write fails twice: written: 0x%x\n", chno);
+			pr_debug("Write fails twice: written: 0x%x\n", chno);
 			return -EINVAL;
 		}
 	}
@@ -602,13 +602,13 @@ static int adc_do_conversion(struct adc_chip *adc,
 			!adc->skip_usb_wa) {
 		ret = adc_pre_configure_usb_in_read(adc);
 		if (ret) {
-			pr_err("ADC configure failed with %d\n", ret);
+			pr_debug("ADC configure failed with %d\n", ret);
 			goto unlock;
 		}
 	} else {
 		ret = adc_configure(adc, prop);
 		if (ret) {
-			pr_err("ADC configure failed with %d\n", ret);
+			pr_debug("ADC configure failed with %d\n", ret);
 			goto unlock;
 		}
 	}
@@ -651,7 +651,7 @@ static int adc7_do_conversion(struct adc_chip *adc,
 
 	ret = adc7_configure(adc, prop);
 	if (ret) {
-		pr_err("ADC configure failed with %d\n", ret);
+		pr_debug("ADC configure failed with %d\n", ret);
 		goto unlock;
 	}
 
@@ -664,7 +664,7 @@ static int adc7_do_conversion(struct adc_chip *adc,
 		goto unlock;
 
 	if (status & ADC7_USR_STATUS1_CONV_FAULT) {
-		pr_err("Unexpected conversion fault\n");
+		pr_debug("Unexpected conversion fault\n");
 		ret = -EIO;
 		goto unlock;
 	}
@@ -1006,7 +1006,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 
 	ret = of_property_read_u32(node, "reg", &chan);
 	if (ret) {
-		dev_err(dev, "invalid channel number %s\n", name);
+		dev_dbg(dev, "invalid channel number %s\n", name);
 		return ret;
 	}
 
@@ -1021,7 +1021,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 	}
 
 	if (chan > ADC_PARALLEL_ISENSE_VBAT_IDATA) {
-		dev_err(dev, "%s invalid channel number %d\n", name, chan);
+		dev_dbg(dev, "%s invalid channel number %d\n", name, chan);
 		return -EINVAL;
 	}
 
@@ -1032,7 +1032,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 	channel_name = of_get_property(node,
 				"label", NULL) ? : node->name;
 	if (!channel_name) {
-		pr_err("Invalid channel name\n");
+		pr_debug("Invalid channel name\n");
 		return -EINVAL;
 	}
 	prop->datasheet_name = channel_name;
@@ -1041,7 +1041,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 	if (!ret) {
 		ret = qcom_adc5_decimation_from_dt(value, data->decimation);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid decimation %d\n",
+			dev_dbg(dev, "%02x invalid decimation %d\n",
 				chan, value);
 			return ret;
 		}
@@ -1054,7 +1054,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 	if (!ret) {
 		ret = adc_prescaling_from_dt(varr[0], varr[1]);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid pre-scaling <%d %d>\n",
+			dev_dbg(dev, "%02x invalid pre-scaling <%d %d>\n",
 				chan, varr[0], varr[1]);
 			return ret;
 		}
@@ -1065,7 +1065,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 	if (!ret) {
 		ret = adc_hw_settle_time_from_dt(value, data->hw_settle);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid hw-settle-time %d us\n",
+			dev_dbg(dev, "%02x invalid hw-settle-time %d us\n",
 				chan, value);
 			return ret;
 		}
@@ -1078,7 +1078,7 @@ static int adc_get_dt_channel_data(struct adc_chip *adc,
 	if (!ret) {
 		ret = adc_avg_samples_from_dt(value);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid avg-samples %d\n",
+			dev_dbg(dev, "%02x invalid avg-samples %d\n",
 				chan, value);
 			return ret;
 		}
@@ -1284,7 +1284,7 @@ static int adc_probe(struct platform_device *pdev)
 		if (!(IS_ERR_OR_NULL(pmic_rev_id)))
 			skip_usb_wa = skip_usb_in_wa(pmic_rev_id);
 		else {
-			pr_err("Unable to get revid\n");
+			pr_debug("Unable to get revid\n");
 			pmic_rev_id = NULL;
 		}
 		of_node_put(revid_dev_node);
@@ -1302,7 +1302,7 @@ static int adc_probe(struct platform_device *pdev)
 
 	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
 	if (!prop_addr) {
-		pr_err("invalid IO resources\n");
+		pr_debug("invalid IO resources\n");
 		return -EINVAL;
 	}
 	adc->base = be32_to_cpu(*prop_addr);
@@ -1328,7 +1328,7 @@ static int adc_probe(struct platform_device *pdev)
 
 	ret = adc_get_dt_data(adc, node);
 	if (ret) {
-		pr_err("adc get dt data failed\n");
+		pr_debug("adc get dt data failed\n");
 		return ret;
 	}
 
@@ -1359,7 +1359,7 @@ static int adc_probe(struct platform_device *pdev)
 							adc_name, 0);
 
 	if (!adc->ipc_log0)
-		pr_err("%s : unable to create IPC Logging 0 for %s ADC\n",
+		pr_debug("%s : unable to create IPC Logging 0 for %s ADC\n",
 					__func__, node->parent->full_name);
 
 	snprintf(adc_name, sizeof(adc_name), "vadc_%s_1",
@@ -1369,7 +1369,7 @@ static int adc_probe(struct platform_device *pdev)
 							adc_name, 0);
 
 	if (!adc->ipc_log1)
-		pr_err("%s : unable to create IPC Logging 1 for %s ADC\n",
+		pr_debug("%s : unable to create IPC Logging 1 for %s ADC\n",
 					__func__, node->parent->full_name);
 #endif
 

@@ -70,7 +70,7 @@ static const char *__init cpu_read_enable_method(int cpu)
 
 		if (!dn) {
 			if (!cpu)
-				pr_err("Failed to find device node for boot cpu\n");
+				pr_debug("Failed to find device node for boot cpu\n");
 			return NULL;
 		}
 
@@ -82,7 +82,7 @@ static const char *__init cpu_read_enable_method(int cpu)
 			 * Don't warn spuriously.
 			 */
 			if (cpu != 0)
-				pr_err("%pOF: missing enable-method property\n",
+				pr_debug("%pOF: missing enable-method property\n",
 					dn);
 		}
 		of_node_put(dn);
@@ -96,7 +96,7 @@ static const char *__init cpu_read_enable_method(int cpu)
 			 * be initialized. Don't warn spuriously.
 			 */
 			if (cpu != 0)
-				pr_err("Unsupported ACPI enable-method\n");
+				pr_debug("Unsupported ACPI enable-method\n");
 		}
 	}
 
@@ -114,7 +114,7 @@ int __init cpu_read_ops(int cpu)
 
 	cpu_ops[cpu] = cpu_get_ops(enable_method);
 	if (!cpu_ops[cpu]) {
-		pr_warn("Unsupported enable-method: %s\n", enable_method);
+		pr_debug("Unsupported enable-method: %s\n", enable_method);
 		return -EOPNOTSUPP;
 	}
 

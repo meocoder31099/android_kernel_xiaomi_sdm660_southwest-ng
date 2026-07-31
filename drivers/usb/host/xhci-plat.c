@@ -369,7 +369,7 @@ static int xhci_plat_probe(struct platform_device *pdev)
 
 	ret = device_create_file(&pdev->dev, &dev_attr_config_imod);
 	if (ret)
-		dev_err(&pdev->dev, "%s: unable to create imod sysfs entry\n",
+		dev_dbg(&pdev->dev, "%s: unable to create imod sysfs entry\n",
 					__func__);
 
 	device_enable_async_suspend(&pdev->dev);

@@ -1972,11 +1972,11 @@ signed long __sched schedule_timeout(signed long timeout)
 		 * Another bit of PARANOID. Note that the retval will be
 		 * 0 since no piece of kernel is supposed to do a check
 		 * for a negative retval of schedule_timeout() (since it
-		 * should never happens anyway). You just have the printk()
+		 * should never happens anyway). You just have the no_printk()
 		 * that will tell you if something is gone wrong and where.
 		 */
 		if (timeout < 0) {
-			printk(KERN_ERR "schedule_timeout: wrong timeout "
+			no_printk(KERN_ERR "schedule_timeout: wrong timeout "
 				"value %lx\n", timeout);
 			dump_stack();
 			current->state = TASK_RUNNING;

@@ -461,7 +461,7 @@ out:
  */
 static bool qmp_last_tx_done(struct mbox_chan *chan)
 {
-	pr_err("In %s, unexpected usage of last_tx_done\n", __func__);
+	pr_debug("In %s, unexpected usage of last_tx_done\n", __func__);
 	return true;
 }
 
@@ -684,7 +684,7 @@ static struct mbox_chan *qmp_mbox_of_xlate(struct mbox_controller *mbox,
 	struct mbox_chan *chan;
 
 	if (dev->num_assigned >= mbox->num_chans || !dev->ctrl.chans) {
-		pr_err("%s: QMP out of channels\n", __func__);
+		pr_debug("%s: QMP out of channels\n", __func__);
 		return ERR_PTR(-ENOMEM);
 	}
 
@@ -803,13 +803,13 @@ static int qmp_mbox_init(struct device_node *n, struct qmp_device *mdev)
 	key = "mbox-desc-offset";
 	rc = of_property_read_u32(n, key, &desc_of);
 	if (rc) {
-		pr_err("%s: missing key %s\n", __func__, key);
+		pr_debug("%s: missing key %s\n", __func__, key);
 		return 0;
 	}
 	key = "priority";
 	rc = of_property_read_u32(n, key, &priority);
 	if (rc) {
-		pr_err("%s: missing key %s\n", __func__, key);
+		pr_debug("%s: missing key %s\n", __func__, key);
 		return 0;
 	}
 	mbox = devm_kzalloc(mdev->dev, sizeof(*mbox), GFP_KERNEL);
@@ -845,7 +845,7 @@ static int qmp_mbox_init(struct device_node *n, struct qmp_device *mdev)
 
 	rc = mbox_controller_register(&mbox->ctrl);
 	if (rc) {
-		pr_err("%s: failed to register mbox controller %d\n", __func__,
+		pr_debug("%s: failed to register mbox controller %d\n", __func__,
 				rc);
 		return rc;
 	}
@@ -872,20 +872,20 @@ static int qmp_parse_ipc(struct platform_device *pdev)
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM,
 					   "irq-reg-base");
 	if (!res) {
-		pr_err("%s: missing key irq-reg-base\n", __func__);
+		pr_debug("%s: missing key irq-reg-base\n", __func__);
 		return -ENODEV;
 	}
 
 	rc = of_property_read_u32(node, "qcom,irq-mask", &mdev->irq_mask);
 	if (rc) {
-		pr_err("%s: missing key qcom,irq-mask\n", __func__);
+		pr_debug("%s: missing key qcom,irq-mask\n", __func__);
 		return -ENODEV;
 	}
 
 	mdev->tx_irq_reg = devm_ioremap_nocache(&pdev->dev, res->start,
 						resource_size(res));
 	if (!mdev->tx_irq_reg) {
-		pr_err("%s: unable to map tx irq reg\n", __func__);
+		pr_debug("%s: unable to map tx irq reg\n", __func__);
 		return -EIO;
 	}
 	return 0;
@@ -909,14 +909,14 @@ static int qmp_edge_init(struct platform_device *pdev)
 	key = "label";
 	mdev->name = of_get_property(node, key, NULL);
 	if (!mdev->name) {
-		pr_err("%s: missing key %s\n", __func__, key);
+		pr_debug("%s: missing key %s\n", __func__, key);
 		return -ENODEV;
 	}
 
 	key = "msgram";
 	msgram_r = platform_get_resource_byname(pdev, IORESOURCE_MEM, key);
 	if (!msgram_r) {
-		pr_err("%s: missing key %s\n", __func__, key);
+		pr_debug("%s: missing key %s\n", __func__, key);
 		return -ENODEV;
 	}
 
@@ -937,7 +937,7 @@ static int qmp_edge_init(struct platform_device *pdev)
 	key = "interrupts";
 	mdev->rx_irq_line = irq_of_parse_and_map(node, 0);
 	if (!mdev->rx_irq_line) {
-		pr_err("%s: missing key %s\n", __func__, key);
+		pr_debug("%s: missing key %s\n", __func__, key);
 		return -ENODEV;
 	}
 
@@ -1014,7 +1014,7 @@ static int __init qmp_init(void)
 
 	rc = platform_driver_register(&qmp_mbox_driver);
 	if (rc)
-		pr_err("%s: qmp_mbox_driver reg failed %d\n", __func__, rc);
+		pr_debug("%s: qmp_mbox_driver reg failed %d\n", __func__, rc);
 	return rc;
 }
 arch_initcall(qmp_init);

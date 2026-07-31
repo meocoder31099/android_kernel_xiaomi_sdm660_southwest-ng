@@ -720,7 +720,7 @@ static void __init cpu_register_vulnerabilities(void)
 {
 	if (sysfs_create_group(&cpu_subsys.dev_root->kobj,
 			       &cpu_root_vulnerabilities_group))
-		pr_err("Unable to register CPU vulnerabilities\n");
+		pr_debug("Unable to register CPU vulnerabilities\n");
 }
 
 #else

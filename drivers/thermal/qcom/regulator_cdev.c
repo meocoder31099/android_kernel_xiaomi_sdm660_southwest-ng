@@ -55,7 +55,7 @@ static int reg_set_min_state(struct thermal_cooling_device *cdev,
 	ret = regulator_set_voltage(reg_dev->reg,
 			reg_dev->lvl[state], INT_MAX);
 	if (ret) {
-		dev_err(&cdev->device,
+		dev_dbg(&cdev->device,
 			"switching to floor %lu err:%d\n",
 			state, ret);
 		return ret;
@@ -63,7 +63,7 @@ static int reg_set_min_state(struct thermal_cooling_device *cdev,
 	if (reg_dev->reg_enable && state == reg_dev->lvl_ct) {
 		ret = regulator_disable(reg_dev->reg);
 		if (ret) {
-			dev_err(&cdev->device,
+			dev_dbg(&cdev->device,
 				"regulator disable err:%d\n", ret);
 			return ret;
 		}
@@ -71,7 +71,7 @@ static int reg_set_min_state(struct thermal_cooling_device *cdev,
 	} else if (!reg_dev->reg_enable && state != reg_dev->lvl_ct) {
 		ret = regulator_enable(reg_dev->reg);
 		if (ret) {
-			dev_err(&cdev->device,
+			dev_dbg(&cdev->device,
 				"regulator enable err:%d\n", ret);
 			return ret;
 		}
@@ -117,7 +117,7 @@ static int reg_cdev_probe(struct platform_device *pdev)
 
 	np = dev_of_node(&pdev->dev);
 	if (!np) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"of node not available for cooling device\n");
 		return -EINVAL;
 	}
@@ -129,12 +129,12 @@ static int reg_cdev_probe(struct platform_device *pdev)
 	reg_dev->reg = devm_regulator_get(&pdev->dev, "regulator-cdev");
 	if (IS_ERR_OR_NULL(reg_dev->reg)) {
 		ret = PTR_ERR(reg_dev->reg);
-		dev_err(&pdev->dev, "regulator register err:%d\n", ret);
+		dev_dbg(&pdev->dev, "regulator register err:%d\n", ret);
 		return ret;
 	}
 	ret = of_property_count_u32_elems(np, "regulator-levels");
 	if (ret <= 0) {
-		dev_err(&pdev->dev, "Invalid levels err:%d\n", ret);
+		dev_dbg(&pdev->dev, "Invalid levels err:%d\n", ret);
 		return ret;
 	}
 	reg_dev->lvl_ct = ret;
@@ -145,7 +145,7 @@ static int reg_cdev_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(np, "regulator-levels",
 				reg_dev->lvl, reg_dev->lvl_ct);
 	if (ret) {
-		dev_err(&pdev->dev, "cdev level fetch err:%d\n", ret);
+		dev_dbg(&pdev->dev, "cdev level fetch err:%d\n", ret);
 		return ret;
 	}
 	/* level count is an index and it depicts the max possible index */
@@ -159,7 +159,7 @@ static int reg_cdev_probe(struct platform_device *pdev)
 					&reg_device_ops);
 	if (IS_ERR(reg_dev->cool_dev)) {
 		ret = PTR_ERR(reg_dev->cool_dev);
-		dev_err(&pdev->dev, "regulator cdev register err:%d\n",
+		dev_dbg(&pdev->dev, "regulator cdev register err:%d\n",
 				ret);
 		return ret;
 	}

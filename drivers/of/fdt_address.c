@@ -28,8 +28,8 @@ static void __init of_dump_addr(const char *s, const __be32 *addr, int na)
 {
 	pr_debug("%s", s);
 	while(na--)
-		pr_cont(" %08x", *(addr++));
-	pr_cont("\n");
+		pr_debug(" %08x", *(addr++));
+	pr_debug("\n");
 }
 #else
 static void __init of_dump_addr(const char *s, const __be32 *addr, int na) { }
@@ -174,7 +174,7 @@ static u64 __init fdt_translate_address(const void *blob, int node_offset)
 
 	reg = fdt_getprop(blob, node_offset, "reg", &len);
 	if (!reg) {
-		pr_err("warning: device tree node '%s' has no address.\n",
+		pr_debug("warning: device tree node '%s' has no address.\n",
 			fdt_get_name(blob, node_offset, NULL));
 		goto bail;
 	}
@@ -188,7 +188,7 @@ static u64 __init fdt_translate_address(const void *blob, int node_offset)
 	/* Cound address cells & copy address locally */
 	bus->count_cells(blob, parent, &na, &ns);
 	if (!OF_CHECK_COUNTS(na, ns)) {
-		pr_err("Bad cell count for %s\n",
+		pr_debug("Bad cell count for %s\n",
 		       fdt_get_name(blob, node_offset, NULL));
 		goto bail;
 	}
@@ -215,7 +215,7 @@ static u64 __init fdt_translate_address(const void *blob, int node_offset)
 		pbus = &of_busses[0];
 		pbus->count_cells(blob, parent, &pna, &pns);
 		if (!OF_CHECK_COUNTS(pna, pns)) {
-			pr_err("Bad cell count for %s\n",
+			pr_debug("Bad cell count for %s\n",
 				fdt_get_name(blob, node_offset, NULL));
 			break;
 		}

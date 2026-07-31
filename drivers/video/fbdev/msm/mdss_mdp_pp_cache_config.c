@@ -104,23 +104,23 @@ static int pp_hist_lut_cache_params_v1_7(struct mdp_hist_lut_data *config,
 	int ret = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("invalid config block %d\n", config->block);
+		pr_debug("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
+		pr_debug("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
 		return -EINVAL;
 	}
 
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 	disp_num = config->block - MDP_LOGICAL_BLOCK_DISP_0;
@@ -131,7 +131,7 @@ static int pp_hist_lut_cache_params_v1_7(struct mdp_hist_lut_data *config,
 
 	if (copy_from_user(&v17_usr_config, config->cfg_payload,
 			   sizeof(v17_usr_config))) {
-		pr_err("failed to copy v17 hist_lut\n");
+		pr_debug("failed to copy v17 hist_lut\n");
 		ret = -EFAULT;
 		return ret;
 	}
@@ -142,7 +142,7 @@ static int pp_hist_lut_cache_params_v1_7(struct mdp_hist_lut_data *config,
 	}
 	memcpy(v17_cache_data, &v17_usr_config, sizeof(v17_usr_config));
 	if (v17_usr_config.len != ENHIST_LUT_ENTRIES) {
-		pr_err("Invalid table size %d exp %d\n",
+		pr_debug("Invalid table size %d exp %d\n",
 			v17_usr_config.len, ENHIST_LUT_ENTRIES);
 		ret = -EINVAL;
 		return ret;
@@ -150,7 +150,7 @@ static int pp_hist_lut_cache_params_v1_7(struct mdp_hist_lut_data *config,
 	v17_cache_data->data = &res_cache->hist_lut[disp_num][0];
 	if (copy_from_user(v17_cache_data->data, v17_usr_config.data,
 			   v17_usr_config.len * sizeof(u32))) {
-		pr_err("failed to copy v17 hist_lut->data\n");
+		pr_debug("failed to copy v17 hist_lut->data\n");
 		ret = -EFAULT;
 		return ret;
 	}
@@ -165,7 +165,7 @@ static int pp_hist_lut_cache_params_pipe_v1_7(struct mdp_hist_lut_data *config,
 	int ret = 0;
 
 	if (!config || !pipe) {
-		pr_err("Invalid param config %pK pipe %pK\n",
+		pr_debug("Invalid param config %pK pipe %pK\n",
 			config, pipe);
 		return -EINVAL;
 	}
@@ -176,19 +176,19 @@ static int pp_hist_lut_cache_params_pipe_v1_7(struct mdp_hist_lut_data *config,
 	}
 
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("Read op is not supported\n");
+		pr_debug("Read op is not supported\n");
 		return -EINVAL;
 	}
 
 	if (!config->cfg_payload) {
-		pr_err("Hist LUT config payload invalid\n");
+		pr_debug("Hist LUT config payload invalid\n");
 		return -EINVAL;
 	}
 
 	if (copy_from_user(&hist_lut_usr_config,
 				(void __user *) config->cfg_payload,
 				sizeof(hist_lut_usr_config))) {
-		pr_err("failed to copy hist lut config\n");
+		pr_debug("failed to copy hist lut config\n");
 		return -EFAULT;
 	}
 
@@ -198,7 +198,7 @@ static int pp_hist_lut_cache_params_pipe_v1_7(struct mdp_hist_lut_data *config,
 				sizeof(struct mdp_hist_lut_data_v1_7),
 				GFP_KERNEL);
 		if (!hist_lut_cache_data) {
-			pr_err("failed to allocate cache_data\n");
+			pr_debug("failed to allocate cache_data\n");
 			ret = -ENOMEM;
 			goto hist_lut_cache_pipe_exit;
 		} else
@@ -208,7 +208,7 @@ static int pp_hist_lut_cache_params_pipe_v1_7(struct mdp_hist_lut_data *config,
 	*hist_lut_cache_data = hist_lut_usr_config;
 
 	if (hist_lut_cache_data->len != ENHIST_LUT_ENTRIES) {
-		pr_err("Invalid Hist LUT length %d\n",
+		pr_debug("Invalid Hist LUT length %d\n",
 			hist_lut_cache_data->len);
 		ret = -EINVAL;
 		goto hist_lut_cache_pipe_exit;
@@ -217,7 +217,7 @@ static int pp_hist_lut_cache_params_pipe_v1_7(struct mdp_hist_lut_data *config,
 	if (copy_from_user(pipe->pp_res.hist_lut,
 			   hist_lut_usr_config.data,
 			   sizeof(uint32_t) * hist_lut_cache_data->len)) {
-		pr_err("Failed to copy usr Hist LUT data\n");
+		pr_debug("Failed to copy usr Hist LUT data\n");
 		ret = -EFAULT;
 		goto hist_lut_cache_pipe_exit;
 	}
@@ -240,16 +240,16 @@ int pp_hist_lut_cache_params(struct mdp_hist_lut_data *config,
 	int ret = 0;
 
 	if (!config || !res_cache) {
-		pr_err("invalid param config %pK res_cache %pK\n",
+		pr_debug("invalid param config %pK res_cache %pK\n",
 			config, res_cache);
 		return -EINVAL;
 	}
 	if (res_cache->block != SSPP_VIG && res_cache->block != DSPP) {
-		pr_err("invalid block for Hist LUT %d\n", res_cache->block);
+		pr_debug("invalid block for Hist LUT %d\n", res_cache->block);
 		return -EINVAL;
 	}
 	if (!res_cache->mdss_pp_res && !res_cache->pipe_res) {
-		pr_err("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
+		pr_debug("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
 			res_cache->block, res_cache->mdss_pp_res,
 			res_cache->pipe_res);
 		return -EINVAL;
@@ -261,18 +261,18 @@ int pp_hist_lut_cache_params(struct mdp_hist_lut_data *config,
 			ret = pp_hist_lut_cache_params_v1_7(config,
 					res_cache->mdss_pp_res);
 			if (ret)
-				pr_err("failed to cache Hist LUT params for DSPP ret %d\n",
+				pr_debug("failed to cache Hist LUT params for DSPP ret %d\n",
 					ret);
 		} else {
 			ret = pp_hist_lut_cache_params_pipe_v1_7(config,
 					res_cache->pipe_res);
 			if (ret)
-				pr_err("failed to cache Hist LUT params for SSPP ret %d\n",
+				pr_debug("failed to cache Hist LUT params for SSPP ret %d\n",
 					ret);
 		}
 		break;
 	default:
-		pr_err("unsupported hist_lut version %d\n",
+		pr_debug("unsupported hist_lut version %d\n",
 			config->version);
 		ret = -EINVAL;
 		break;
@@ -290,29 +290,29 @@ int pp_dither_cache_params_v1_7(struct mdp_dither_cfg_data *config,
 	struct mdp_dither_data_v1_7 *v17_cache_data = NULL, v17_usr_config;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("invalid config block %d\n", config->block);
+		pr_debug("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
+		pr_debug("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
 		return -EINVAL;
 	}
 
 	res_cache = mdss_pp_res->pp_data_v1_7;
 
 	if ((config->flags & MDSS_PP_SPLIT_MASK) == MDSS_PP_SPLIT_MASK) {
-		pr_warn("Can't set both split bits\n");
+		pr_debug("Can't set both split bits\n");
 		return -EINVAL;
 	}
 
 	if (config->flags & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -ENOTSUPP;
 	}
 
@@ -339,7 +339,7 @@ int pp_dither_cache_params_v1_7(struct mdp_dither_cfg_data *config,
 	} else {
 		if (copy_from_user(&v17_usr_config, config->cfg_payload,
 				sizeof(v17_usr_config))) {
-			pr_err("failed to copy v17 dither\n");
+			pr_debug("failed to copy v17 dither\n");
 			ret = -EFAULT;
 			goto dither_config_exit;
 		}
@@ -347,7 +347,7 @@ int pp_dither_cache_params_v1_7(struct mdp_dither_cfg_data *config,
 	}
 	if (v17_cache_data->len &&
 		v17_cache_data->len != MDP_DITHER_DATA_V1_7_SZ) {
-		pr_err("invalid dither len %d expected %d\n",
+		pr_debug("invalid dither len %d expected %d\n",
 			   v17_cache_data->len, MDP_DITHER_DATA_V1_7_SZ);
 		ret = -EINVAL;
 	}
@@ -363,7 +363,7 @@ int pp_dither_cache_params(struct mdp_dither_cfg_data *config,
 	int ret = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
@@ -373,7 +373,7 @@ int pp_dither_cache_params(struct mdp_dither_cfg_data *config,
 				copy_from_kernel);
 		break;
 	default:
-		pr_err("unsupported dither version %d\n",
+		pr_debug("unsupported dither version %d\n",
 			config->version);
 		break;
 	}
@@ -392,23 +392,23 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 	int ret = 0, i = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("invalid config block %d\n", config->block);
+		pr_debug("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
+		pr_debug("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
 		return -EINVAL;
 	}
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (config->flags & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 
@@ -431,13 +431,13 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 
 	if (copy_from_user(&v17_usr_config, config->cfg_payload,
 			   sizeof(v17_usr_config))) {
-		pr_err("failed to copy v17 gamut\n");
+		pr_debug("failed to copy v17 gamut\n");
 		ret = -EFAULT;
 		goto gamut_config_exit;
 	}
 	if (v17_usr_config.mode != mdp_gamut_coarse_mode &&
 	   v17_usr_config.mode != mdp_gamut_fine_mode) {
-		pr_err("invalid gamut mode %d\n", v17_usr_config.mode);
+		pr_debug("invalid gamut mode %d\n", v17_usr_config.mode);
 		return -EINVAL;
 	}
 	if (!(config->flags & MDP_PP_OPS_WRITE)) {
@@ -452,7 +452,7 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 	/* sanity check for sizes */
 	for (i = 0; i < MDP_GAMUT_TABLE_NUM_V1_7; i++) {
 		if (v17_usr_config.tbl_size[i] != tbl_sz) {
-			pr_err("invalid tbl size %d exp %d tbl index %d mode %d\n",
+			pr_debug("invalid tbl size %d exp %d tbl index %d mode %d\n",
 			       v17_usr_config.tbl_size[i], tbl_sz, i,
 			       v17_usr_config.mode);
 			ret = -EINVAL;
@@ -463,7 +463,7 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 			continue;
 		if (v17_usr_config.tbl_scale_off_sz[i] !=
 		    MDP_GAMUT_SCALE_OFF_SZ) {
-			pr_err("invalid scale size %d exp %d scale index %d mode %d\n",
+			pr_debug("invalid scale size %d exp %d scale index %d mode %d\n",
 			       v17_usr_config.tbl_scale_off_sz[i],
 			       MDP_GAMUT_SCALE_OFF_SZ, i,
 			       v17_usr_config.mode);
@@ -476,7 +476,7 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 	/* gamut size should be accounted for c0, c1c2 table */
 	sz = gamut_size * 2 + scal_coff_size;
 	if (sz > GAMUT_TOTAL_TABLE_SIZE_V1_7) {
-		pr_err("Invalid table size act %d max %d\n",
+		pr_debug("Invalid table size act %d max %d\n",
 		      sz, GAMUT_TOTAL_TABLE_SIZE_V1_7);
 		ret = -EINVAL;
 		goto gamut_config_exit;
@@ -495,7 +495,7 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 			v17_usr_config.c0_data[i],
 			(sizeof(u32) * v17_usr_config.tbl_size[i]));
 		if (ret) {
-			pr_err("copying c0 table %d from userspace failed size %zd ret %d\n",
+			pr_debug("copying c0 table %d from userspace failed size %zd ret %d\n",
 				i, (sizeof(u32) *
 				v17_usr_config.tbl_size[i]), ret);
 			ret = -EFAULT;
@@ -509,7 +509,7 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 			v17_usr_config.c1_c2_data[i],
 			(sizeof(u32) * v17_usr_config.tbl_size[i]));
 		if (ret) {
-			pr_err("copying c1_c2 table %d from userspace failed size %zd ret %d\n",
+			pr_debug("copying c1_c2 table %d from userspace failed size %zd ret %d\n",
 				i, (sizeof(u32) *
 				v17_usr_config.tbl_size[i]), ret);
 			ret = -EINVAL;
@@ -524,7 +524,7 @@ static int pp_gamut_cache_params_v1_7(struct mdp_gamut_cfg_data *config,
 			(sizeof(u32) *
 			v17_usr_config.tbl_scale_off_sz[i]));
 		if (ret) {
-			pr_err("copying scale offset table %d from userspace failed size %zd ret %d\n",
+			pr_debug("copying scale offset table %d from userspace failed size %zd ret %d\n",
 				i, (sizeof(u32) *
 				v17_usr_config.tbl_scale_off_sz[i]),
 				ret);
@@ -559,7 +559,7 @@ int pp_gamut_cache_params(struct mdp_gamut_cfg_data *config,
 	int ret = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
@@ -568,7 +568,7 @@ int pp_gamut_cache_params(struct mdp_gamut_cfg_data *config,
 		ret = pp_gamut_cache_params_v1_7(config, mdss_pp_res);
 		break;
 	default:
-		pr_err("unsupported gamut version %d\n",
+		pr_debug("unsupported gamut version %d\n",
 			config->version);
 		ret = -EINVAL;
 		break;
@@ -582,7 +582,7 @@ static int pp_pcc_cache_params_pipe_v1_7(struct mdp_pcc_cfg_data *config,
 	struct mdp_pcc_data_v1_7 *v17_cache_data = NULL, v17_usr_config;
 
 	if (!pipe || !config) {
-		pr_err("invalid params pipe %pK config %pK\n", pipe, config);
+		pr_debug("invalid params pipe %pK config %pK\n", pipe, config);
 		return -EINVAL;
 	}
 
@@ -592,19 +592,19 @@ static int pp_pcc_cache_params_pipe_v1_7(struct mdp_pcc_cfg_data *config,
 	}
 
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read ops not supported\n");
+		pr_debug("read ops not supported\n");
 		return -EINVAL;
 	}
 
 	if (!config->cfg_payload) {
-		pr_err("PCC config payload invalid\n");
+		pr_debug("PCC config payload invalid\n");
 		return -EINVAL;
 	}
 
 	if (copy_from_user(&v17_usr_config,
 				(void __user *) config->cfg_payload,
 				sizeof(v17_usr_config))) {
-		pr_err("failed to copy pcc config\n");
+		pr_debug("failed to copy pcc config\n");
 		return -EFAULT;
 	}
 
@@ -621,7 +621,7 @@ static int pp_pcc_cache_params_pipe_v1_7(struct mdp_pcc_cfg_data *config,
 		pipe->pp_res.pcc_cfg_payload = v17_cache_data;
 	}
 	if (!v17_cache_data) {
-		pr_err("failed to allocate the pcc cache data\n");
+		pr_debug("failed to allocate the pcc cache data\n");
 		return -ENOMEM;
 	}
 	memcpy(v17_cache_data, &v17_usr_config, sizeof(v17_usr_config));
@@ -644,24 +644,24 @@ static int pp_pcc_cache_params_v1_7(struct mdp_pcc_cfg_data *config,
 	struct mdp_pcc_data_v1_7 *v17_cache_data, v17_usr_config;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("invalid config block %d\n", config->block);
+		pr_debug("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
+		pr_debug("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
 		return -EINVAL;
 	}
 
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 	disp_num = config->block - MDP_LOGICAL_BLOCK_DISP_0;
@@ -675,7 +675,7 @@ static int pp_pcc_cache_params_v1_7(struct mdp_pcc_cfg_data *config,
 		memcpy(&v17_usr_config, config->cfg_payload, sizeof(v17_usr_config));
 		ret = 0;
 #else
-		pr_err("failed to copy v17 pcc\n");
+		pr_debug("failed to copy v17 pcc\n");
 		ret = -EFAULT;
 		goto pcc_config_exit;
 #endif
@@ -700,16 +700,16 @@ int pp_pcc_cache_params(struct mdp_pcc_cfg_data *config,
 	int ret = 0;
 
 	if (!config || !res_cache) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, res_cache);
 		return -EINVAL;
 	}
 	if (res_cache->block < SSPP_RGB || res_cache->block > DSPP) {
-		pr_err("invalid block for PCC %d\n", res_cache->block);
+		pr_debug("invalid block for PCC %d\n", res_cache->block);
 		return -EINVAL;
 	}
 	if (!res_cache->mdss_pp_res && !res_cache->pipe_res) {
-		pr_err("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
+		pr_debug("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
 			res_cache->block, res_cache->mdss_pp_res,
 			res_cache->pipe_res);
 		return -EINVAL;
@@ -720,18 +720,18 @@ int pp_pcc_cache_params(struct mdp_pcc_cfg_data *config,
 			ret = pp_pcc_cache_params_v1_7(config,
 					res_cache->mdss_pp_res);
 			if (ret)
-				pr_err("caching for DSPP failed for PCC ret %d\n",
+				pr_debug("caching for DSPP failed for PCC ret %d\n",
 					ret);
 		} else {
 			ret = pp_pcc_cache_params_pipe_v1_7(config,
 						res_cache->pipe_res);
 			if (ret)
-				pr_err("caching for SSPP failed for PCC ret %d block %d\n",
+				pr_debug("caching for SSPP failed for PCC ret %d block %d\n",
 					ret, res_cache->block);
 		}
 		break;
 	default:
-		pr_err("unsupported pcc version %d\n",
+		pr_debug("unsupported pcc version %d\n",
 			config->version);
 		ret = -EINVAL;
 		break;
@@ -749,22 +749,22 @@ static int pp_igc_lut_cache_params_v1_7(struct mdp_igc_lut_data *config,
 	u32 disp_num;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("invalid config block %d\n", config->block);
+		pr_debug("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
+		pr_debug("invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
 		return -EINVAL;
 	}
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 	disp_num = config->block - MDP_LOGICAL_BLOCK_DISP_0;
@@ -776,13 +776,13 @@ static int pp_igc_lut_cache_params_v1_7(struct mdp_igc_lut_data *config,
 		if (copy_from_user(&v17_usr_config,
 				   config->cfg_payload,
 				   sizeof(v17_usr_config))) {
-			pr_err("failed to copy igc config\n");
+			pr_debug("failed to copy igc config\n");
 			ret = -EFAULT;
 			goto igc_config_exit;
 		}
 	} else {
 		if (!config->cfg_payload) {
-			pr_err("can't copy config info NULL payload\n");
+			pr_debug("can't copy config info NULL payload\n");
 			ret = -EINVAL;
 			goto igc_config_exit;
 		}
@@ -795,14 +795,14 @@ static int pp_igc_lut_cache_params_v1_7(struct mdp_igc_lut_data *config,
 	}
 	if (copy_from_kernel && (!v17_usr_config.c0_c1_data ||
 	    !v17_usr_config.c2_data)) {
-		pr_err("copy from kernel invalid params c0_c1_data %pK c2_data %pK\n",
+		pr_debug("copy from kernel invalid params c0_c1_data %pK c2_data %pK\n",
 			v17_usr_config.c0_c1_data,
 			v17_usr_config.c2_data);
 		ret = -EINVAL;
 		goto igc_config_exit;
 	}
 	if (v17_usr_config.len != IGC_LUT_ENTRIES) {
-		pr_err("Invalid table size %d exp %d\n",
+		pr_debug("Invalid table size %d exp %d\n",
 			v17_usr_config.len, IGC_LUT_ENTRIES);
 		ret = -EINVAL;
 		goto igc_config_exit;
@@ -824,7 +824,7 @@ static int pp_igc_lut_cache_params_v1_7(struct mdp_igc_lut_data *config,
 				     v17_usr_config.c0_c1_data,
 				     v17_usr_config.len * sizeof(u32));
 		if (ret) {
-			pr_err("copy from user failed for c0_c1_data size %zd ret %d\n",
+			pr_debug("copy from user failed for c0_c1_data size %zd ret %d\n",
 			       v17_usr_config.len * sizeof(u32), ret);
 			ret = -EFAULT;
 			goto igc_config_exit;
@@ -833,7 +833,7 @@ static int pp_igc_lut_cache_params_v1_7(struct mdp_igc_lut_data *config,
 				     v17_usr_config.c2_data,
 				     v17_usr_config.len * sizeof(u32));
 		if (ret) {
-			pr_err("copy from user failed for c2_data size %zd ret %d\n",
+			pr_debug("copy from user failed for c2_data size %zd ret %d\n",
 			       v17_usr_config.len * sizeof(u32), ret);
 			ret = -EFAULT;
 			goto igc_config_exit;
@@ -851,17 +851,17 @@ static int pp_igc_lut_cache_params_pipe_v1_7(struct mdp_igc_lut_data *config,
 	int ret = 0, fix_up = 0, i = 0;
 
 	if (!config || !pipe) {
-		pr_err("invalid param config %pK pipe %pK\n",
+		pr_debug("invalid param config %pK pipe %pK\n",
 			config, pipe);
 		return -EINVAL;
 	}
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 
 	if (!config->cfg_payload) {
-		pr_err("can't copy config info NULL payload\n");
+		pr_debug("can't copy config info NULL payload\n");
 		ret = -EINVAL;
 		goto igc_config_exit;
 	}
@@ -869,7 +869,7 @@ static int pp_igc_lut_cache_params_pipe_v1_7(struct mdp_igc_lut_data *config,
 	if (copy_from_user(&v17_usr_config,
 				(void __user *) config->cfg_payload,
 				sizeof(v17_usr_config))) {
-		pr_err("failed to copy igc usr config\n");
+		pr_debug("failed to copy igc usr config\n");
 		return -EFAULT;
 	}
 
@@ -883,7 +883,7 @@ static int pp_igc_lut_cache_params_pipe_v1_7(struct mdp_igc_lut_data *config,
 		if (!v17_usr_config.c0_c1_data ||
 		    !v17_usr_config.c2_data ||
 		    v17_usr_config.len != IGC_LUT_ENTRIES) {
-			pr_err("invalid c0_c1data %pK c2_data %pK tbl len %d\n",
+			pr_debug("invalid c0_c1data %pK c2_data %pK tbl len %d\n",
 					v17_usr_config.c0_c1_data,
 					v17_usr_config.c2_data,
 					v17_usr_config.len);
@@ -913,7 +913,7 @@ static int pp_igc_lut_cache_params_pipe_v1_7(struct mdp_igc_lut_data *config,
 		fix_up = 1;
 		break;
 	default:
-		pr_err("invalid format %d\n",
+		pr_debug("invalid format %d\n",
 				v17_usr_config.table_fmt);
 		ret = -EINVAL;
 		goto igc_config_exit;
@@ -949,7 +949,7 @@ static int pp_igc_lut_cache_params_pipe_v1_7(struct mdp_igc_lut_data *config,
 		if (copy_from_user(v17_cache_data->c0_c1_data,
 				v17_usr_config.c0_c1_data,
 				IGC_LUT_ENTRIES * sizeof(u32))) {
-			pr_err("error in copying the c0_c1_data of size %zd\n",
+			pr_debug("error in copying the c0_c1_data of size %zd\n",
 					IGC_LUT_ENTRIES * sizeof(u32));
 			ret = -EFAULT;
 			goto igc_config_exit;
@@ -957,7 +957,7 @@ static int pp_igc_lut_cache_params_pipe_v1_7(struct mdp_igc_lut_data *config,
 		if (copy_from_user(v17_cache_data->c2_data,
 				v17_usr_config.c2_data,
 				IGC_LUT_ENTRIES * sizeof(u32))) {
-			pr_err("error in copying the c2_data of size %zd\n",
+			pr_debug("error in copying the c2_data of size %zd\n",
 					IGC_LUT_ENTRIES * sizeof(u32));
 			ret = -EFAULT;
 		}
@@ -978,16 +978,16 @@ int pp_igc_lut_cache_params(struct mdp_igc_lut_data *config,
 	int ret = 0;
 
 	if (!config || !res_cache) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, res_cache);
 		return -EINVAL;
 	}
 	if (res_cache->block < SSPP_RGB || res_cache->block > DSPP) {
-		pr_err("invalid block for IGC %d\n", res_cache->block);
+		pr_debug("invalid block for IGC %d\n", res_cache->block);
 		return -EINVAL;
 	}
 	if (!res_cache->mdss_pp_res && !res_cache->pipe_res) {
-		pr_err("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
+		pr_debug("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
 			res_cache->block, res_cache->mdss_pp_res,
 			res_cache->pipe_res);
 		ret = -EINVAL;
@@ -999,14 +999,14 @@ int pp_igc_lut_cache_params(struct mdp_igc_lut_data *config,
 			ret = pp_igc_lut_cache_params_v1_7(config,
 				     res_cache->mdss_pp_res, copy_from_kernel);
 			if (ret)
-				pr_err("failed to cache IGC params for DSPP ret %d\n",
+				pr_debug("failed to cache IGC params for DSPP ret %d\n",
 					ret);
 
 		} else {
 			ret = pp_igc_lut_cache_params_pipe_v1_7(config,
 				      res_cache->pipe_res, copy_from_kernel);
 			if (ret)
-				pr_err("failed to cache IGC params for SSPP ret %d\n",
+				pr_debug("failed to cache IGC params for SSPP ret %d\n",
 					ret);
 		}
 		break;
@@ -1015,18 +1015,18 @@ int pp_igc_lut_cache_params(struct mdp_igc_lut_data *config,
 			ret = pp_igc_lut_cache_params_v3(config,
 				res_cache->mdss_pp_res, copy_from_kernel);
 			if (ret)
-				pr_err("cache DSPP IGC params fail ret %d version %d\n",
+				pr_debug("cache DSPP IGC params fail ret %d version %d\n",
 					ret, config->version);
 		} else {
 			ret = pp_igc_lut_cache_params_pipe_v3(config,
 				res_cache->pipe_res, copy_from_kernel);
 			if (ret)
-				pr_err("cache SSPP IGC params fail ret %d version %d\n",
+				pr_debug("cache SSPP IGC params fail ret %d version %d\n",
 					ret, config->version);
 		}
 		break;
 	default:
-		pr_err("unsupported igc version %d\n",
+		pr_debug("unsupported igc version %d\n",
 			config->version);
 		ret = -EINVAL;
 		break;
@@ -1046,31 +1046,31 @@ static int pp_pgc_lut_cache_params_v1_7(struct mdp_pgc_lut_data *config,
 	struct mdss_pp_res_type_v1_7 *res_cache = NULL;
 
 	if (location != DSPP && location != LM) {
-		pr_err("Invalid location for pgc %d\n", location);
+		pr_debug("Invalid location for pgc %d\n", location);
 		return -EINVAL;
 	}
 	disp_num = PP_BLOCK(config->block) - MDP_LOGICAL_BLOCK_DISP_0;
 	if (disp_num >= MDSS_BLOCK_DISP_NUM) {
-		pr_err("invalid disp_num %d\n", disp_num);
+		pr_debug("invalid disp_num %d\n", disp_num);
 		return -EINVAL;
 	}
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (!res_cache) {
-		pr_err("invalid resource payload\n");
+		pr_debug("invalid resource payload\n");
 		return -EINVAL;
 	}
 	if (copy_from_user(&v17_usr_config, config->cfg_payload,
 			   sizeof(v17_usr_config))) {
-		pr_err("failed to copy from user config info\n");
+		pr_debug("failed to copy from user config info\n");
 		return -EFAULT;
 	}
 	if (v17_usr_config.len != PGC_LUT_ENTRIES) {
-		pr_err("invalid entries for pgc act %d exp %d\n",
+		pr_debug("invalid entries for pgc act %d exp %d\n",
 			v17_usr_config.len, PGC_LUT_ENTRIES);
 		return -EFAULT;
 	}
 	if (config->flags & MDP_PP_OPS_READ) {
-		pr_err("ops read not supported\n");
+		pr_debug("ops read not supported\n");
 		return -EINVAL;
 	}
 	if (!(config->flags & MDP_PP_OPS_WRITE)) {
@@ -1107,19 +1107,19 @@ static int pp_pgc_lut_cache_params_v1_7(struct mdp_pgc_lut_data *config,
 	sz = PGC_LUT_ENTRIES * sizeof(u32);
 	if (copy_from_user(v17_cache_data->c0_data, v17_usr_config.c0_data,
 			   sz)) {
-		pr_err("failed to copy c0_data from user sz %d\n", sz);
+		pr_debug("failed to copy c0_data from user sz %d\n", sz);
 		ret = -EFAULT;
 		goto bail_out;
 	}
 	if (copy_from_user(v17_cache_data->c1_data, v17_usr_config.c1_data,
 			   sz)) {
-		pr_err("failed to copy c1_data from user sz %d\n", sz);
+		pr_debug("failed to copy c1_data from user sz %d\n", sz);
 		ret = -EFAULT;
 		goto bail_out;
 	}
 	if (copy_from_user(v17_cache_data->c2_data, v17_usr_config.c2_data,
 			   sz)) {
-		pr_err("failed to copy c2_data from user sz %d\n", sz);
+		pr_debug("failed to copy c2_data from user sz %d\n", sz);
 		ret = -EFAULT;
 		goto bail_out;
 	}
@@ -1139,7 +1139,7 @@ int pp_pgc_lut_cache_params(struct mdp_pgc_lut_data *config,
 	int ret = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
@@ -1148,7 +1148,7 @@ int pp_pgc_lut_cache_params(struct mdp_pgc_lut_data *config,
 		ret = pp_pgc_lut_cache_params_v1_7(config, mdss_pp_res, loc);
 		break;
 	default:
-		pr_err("unsupported igc version %d\n",
+		pr_debug("unsupported igc version %d\n",
 			config->version);
 		ret = -EINVAL;
 		break;
@@ -1164,25 +1164,25 @@ static int pp_pa_cache_params_v1_7(struct mdp_pa_v2_cfg_data *config,
 	int disp_num, ret = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("Invalid param config %pK pp_res %pK\n",
+		pr_debug("Invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 			(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("Invalid config block %d\n", config->block);
+		pr_debug("Invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 
 	if (!mdss_pp_res->pp_data_v1_7) {
-		pr_err("Invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
+		pr_debug("Invalid pp_data_v1_7 %pK\n", mdss_pp_res->pp_data_v1_7);
 		return -EINVAL;
 	}
 
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (config->flags & MDP_PP_OPS_READ) {
-		pr_err("Read op is not supported\n");
+		pr_debug("Read op is not supported\n");
 		return -EINVAL;
 	}
 
@@ -1195,11 +1195,11 @@ static int pp_pa_cache_params_v1_7(struct mdp_pa_v2_cfg_data *config,
 	if (copy_from_user(&pa_usr_config, config->cfg_payload,
 			   sizeof(pa_usr_config))) {
 #ifdef CONFIG_FB_MSM_MDSS_KCAL_CTRL
-		pr_err("%s Failed to copy v1_7 PA - copying in kernel \n",__func__);
+		pr_debug("%s Failed to copy v1_7 PA - copying in kernel \n",__func__);
 		memcpy(&pa_usr_config, config->cfg_payload, sizeof(pa_usr_config));
 		ret = 0;
 #else
-		pr_err("Failed to copy v1_7 PA\n");
+		pr_debug("Failed to copy v1_7 PA\n");
 		ret = -EFAULT;
 		goto pa_config_exit;
 #endif
@@ -1221,7 +1221,7 @@ static int pp_pa_cache_params_v1_7(struct mdp_pa_v2_cfg_data *config,
 	/* Copy six zone LUT if six zone is enabled to be written */
 	if (config->flags & MDP_PP_PA_SIX_ZONE_ENABLE) {
 		if (pa_usr_config.six_zone_len != MDP_SIX_ZONE_LUT_SIZE) {
-			pr_err("Invalid six zone size, actual %d max %d\n",
+			pr_debug("Invalid six zone size, actual %d max %d\n",
 					pa_usr_config.six_zone_len,
 					MDP_SIX_ZONE_LUT_SIZE);
 			ret = -EINVAL;
@@ -1232,7 +1232,7 @@ static int pp_pa_cache_params_v1_7(struct mdp_pa_v2_cfg_data *config,
 				     pa_usr_config.six_zone_curve_p0,
 				     pa_usr_config.six_zone_len * sizeof(u32));
 		if (ret) {
-			pr_err("copying six_zone_curve_p0 lut from userspace failed size %zd ret %d\n",
+			pr_debug("copying six_zone_curve_p0 lut from userspace failed size %zd ret %d\n",
 				(sizeof(u32) * pa_usr_config.six_zone_len),
 				ret);
 			ret = -EFAULT;
@@ -1244,7 +1244,7 @@ static int pp_pa_cache_params_v1_7(struct mdp_pa_v2_cfg_data *config,
 				     pa_usr_config.six_zone_curve_p1,
 				     pa_usr_config.six_zone_len * sizeof(u32));
 		if (ret) {
-			pr_err("copying six_zone_curve_p1 lut from userspace failed size %zd ret %d\n",
+			pr_debug("copying six_zone_curve_p1 lut from userspace failed size %zd ret %d\n",
 				(sizeof(u32) * pa_usr_config.six_zone_len),
 				ret);
 			ret = -EFAULT;
@@ -1270,7 +1270,7 @@ static int pp_pa_cache_params_pipe_v1_7(struct mdp_pa_v2_cfg_data *config,
 	int ret = 0;
 
 	if (!config || !pipe) {
-		pr_err("Invalid param config %pK pipe %pK\n",
+		pr_debug("Invalid param config %pK pipe %pK\n",
 			config, pipe);
 		return -EINVAL;
 	}
@@ -1281,19 +1281,19 @@ static int pp_pa_cache_params_pipe_v1_7(struct mdp_pa_v2_cfg_data *config,
 	}
 
 	if (config->flags & MDP_PP_OPS_READ) {
-		pr_err("Read op is not supported\n");
+		pr_debug("Read op is not supported\n");
 		return -EINVAL;
 	}
 
 	if (!config->cfg_payload) {
-		pr_err("invalid PA config payload\n");
+		pr_debug("invalid PA config payload\n");
 		return -EINVAL;
 	}
 
 	if (copy_from_user(&pa_usr_config,
 				(void __user *) config->cfg_payload,
 				sizeof(pa_usr_config))) {
-		pr_err("failed to copy pa usr config\n");
+		pr_debug("failed to copy pa usr config\n");
 		return -EFAULT;
 	}
 
@@ -1330,16 +1330,16 @@ int pp_pa_cache_params(struct mdp_pa_v2_cfg_data *config,
 	int ret = 0;
 
 	if (!config || !res_cache) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, res_cache);
 		return -EINVAL;
 	}
 	if (res_cache->block != SSPP_VIG && res_cache->block != DSPP) {
-		pr_err("invalid block for PA %d\n", res_cache->block);
+		pr_debug("invalid block for PA %d\n", res_cache->block);
 		return -EINVAL;
 	}
 	if (!res_cache->mdss_pp_res && !res_cache->pipe_res) {
-		pr_err("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
+		pr_debug("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
 			res_cache->block, res_cache->mdss_pp_res,
 			res_cache->pipe_res);
 		return -EINVAL;
@@ -1351,19 +1351,19 @@ int pp_pa_cache_params(struct mdp_pa_v2_cfg_data *config,
 			ret = pp_pa_cache_params_v1_7(config,
 					res_cache->mdss_pp_res);
 			if (ret)
-				pr_err("failed to cache PA params for DSPP ret %d\n",
+				pr_debug("failed to cache PA params for DSPP ret %d\n",
 					ret);
 		} else {
 			ret = pp_pa_cache_params_pipe_v1_7(config,
 					res_cache->pipe_res);
 			if (ret)
-				pr_err("failed to cache PA params for SSPP ret %d\n",
+				pr_debug("failed to cache PA params for SSPP ret %d\n",
 					ret);
 
 		}
 		break;
 	default:
-		pr_err("unsupported pa version %d\n",
+		pr_debug("unsupported pa version %d\n",
 			config->version);
 		ret = -EINVAL;
 		break;
@@ -1411,7 +1411,7 @@ int pp_copy_layer_igc_payload(struct mdp_overlay_pp_params *pp_info)
 	}
 exit:
 	if (ret) {
-		pr_err("layer list copy from user failed, IGC cfg payload = %pK\n",
+		pr_debug("layer list copy from user failed, IGC cfg payload = %pK\n",
 			pp_info->igc_cfg.cfg_payload);
 		ret = -EFAULT;
 		kfree(cfg_payload);
@@ -1440,7 +1440,7 @@ int pp_copy_layer_hist_lut_payload(struct mdp_overlay_pp_params *pp_info)
 				pp_info->hist_lut_cfg.cfg_payload,
 				sizeof(struct mdp_hist_lut_data_v1_7));
 		if (ret) {
-			pr_err("layer list copy from user failed, Hist LUT cfg payload = %pK\n",
+			pr_debug("layer list copy from user failed, Hist LUT cfg payload = %pK\n",
 				pp_info->hist_lut_cfg.cfg_payload);
 			ret = -EFAULT;
 			kfree(cfg_payload);
@@ -1478,7 +1478,7 @@ int pp_copy_layer_pa_payload(struct mdp_overlay_pp_params *pp_info)
 				pp_info->pa_v2_cfg_data.cfg_payload,
 				sizeof(struct mdp_pa_data_v1_7));
 		if (ret) {
-			pr_err("layer list copy from user failed, PA cfg payload = %pK\n",
+			pr_debug("layer list copy from user failed, PA cfg payload = %pK\n",
 				pp_info->pa_v2_cfg_data.cfg_payload);
 			ret = -EFAULT;
 			kfree(cfg_payload);
@@ -1516,7 +1516,7 @@ int pp_copy_layer_pcc_payload(struct mdp_overlay_pp_params *pp_info)
 				pp_info->pcc_cfg_data.cfg_payload,
 				sizeof(struct mdp_pcc_data_v1_7));
 		if (ret) {
-			pr_err("layer list copy from user failed, PCC cfg payload = %pK\n",
+			pr_debug("layer list copy from user failed, PCC cfg payload = %pK\n",
 				pp_info->pcc_cfg_data.cfg_payload);
 			ret = -EFAULT;
 			kfree(cfg_payload);
@@ -1547,11 +1547,11 @@ static int pp_pa_dither_cache_params_v1_7(
 
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("Invalid config block %d\n", config->block);
+		pr_debug("Invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res || !mdss_pp_res->pp_data_v1_7) {
-		pr_err("invalid param mdss_pp_res %pK pp_data_res %pK\n",
+		pr_debug("invalid param mdss_pp_res %pK pp_data_res %pK\n",
 			mdss_pp_res,
 			((mdss_pp_res) ? mdss_pp_res->pp_data_v1_7 : NULL));
 		return -EINVAL;
@@ -1559,7 +1559,7 @@ static int pp_pa_dither_cache_params_v1_7(
 
 	res_cache = mdss_pp_res->pp_data_v1_7;
 	if (config->flags & MDP_PP_OPS_READ) {
-		pr_err("Read op is not supported\n");
+		pr_debug("Read op is not supported\n");
 		return -EINVAL;
 	}
 
@@ -1577,13 +1577,13 @@ static int pp_pa_dither_cache_params_v1_7(
 	memset(&dither_data, 0, sizeof(dither_data));
 	ret = copy_from_user(&dither_data, config->cfg_payload, sz);
 	if (ret) {
-		pr_err("failed to copy the dither data ret %d sz %zd\n",
+		pr_debug("failed to copy the dither data ret %d sz %zd\n",
 			 ret, sz);
 		ret = -EFAULT;
 		goto exit;
 	}
 	if (dither_data.matrix_sz != MDP_DITHER_DATA_V1_7_SZ) {
-		pr_err("invalid matrix len %d expected %d\n",
+		pr_debug("invalid matrix len %d expected %d\n",
 			dither_data.matrix_sz, MDP_DITHER_DATA_V1_7_SZ);
 		ret = -EINVAL;
 		goto exit;
@@ -1595,7 +1595,7 @@ static int pp_pa_dither_cache_params_v1_7(
 			     (u8 *)((unsigned long)dither_data.matrix_data),
 			     (MDP_DITHER_DATA_V1_7_SZ * sizeof(u32)));
 	if (ret) {
-		pr_err("failed to copy the dither matrix ret %d sz %z\n", ret,
+		pr_debug("failed to copy the dither matrix ret %d sz %z\n", ret,
 			MDP_DITHER_DATA_V1_7_SZ * sizeof(u32));
 		ret = -EFAULT;
 		goto exit;
@@ -1613,12 +1613,12 @@ int pp_pa_dither_cache_params(struct mdp_dither_cfg_data *config,
 	int ret = 0;
 
 	if (!config || !res_cache) {
-		pr_err("invalid params config %pK res_cache %pK\n",
+		pr_debug("invalid params config %pK res_cache %pK\n",
 			config, res_cache);
 		return -EINVAL;
 	}
 	if (!res_cache->mdss_pp_res && !res_cache->pipe_res) {
-		pr_err("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
+		pr_debug("NULL payload for block %d mdss_pp_res %pK pipe_res %pK\n",
 			res_cache->block, res_cache->mdss_pp_res,
 			res_cache->pipe_res);
 		return -EINVAL;
@@ -1649,21 +1649,21 @@ static int pp_igc_lut_cache_params_v3(struct mdp_igc_lut_data *config,
 	u32 disp_num, len = 0;
 
 	if (!config || !mdss_pp_res) {
-		pr_err("invalid param config %pK pp_res %pK\n",
+		pr_debug("invalid param config %pK pp_res %pK\n",
 			config, mdss_pp_res);
 		return -EINVAL;
 	}
 	if ((config->block < MDP_LOGICAL_BLOCK_DISP_0) ||
 		(config->block >= MDP_BLOCK_MAX)) {
-		pr_err("invalid config block %d\n", config->block);
+		pr_debug("invalid config block %d\n", config->block);
 		return -EINVAL;
 	}
 	if (!mdss_pp_res->pp_data_v3) {
-		pr_err("invalid pp_data_v3 %pK\n", mdss_pp_res->pp_data_v3);
+		pr_debug("invalid pp_data_v3 %pK\n", mdss_pp_res->pp_data_v3);
 		return -EINVAL;
 	}
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 	disp_num = config->block - MDP_LOGICAL_BLOCK_DISP_0;
@@ -1675,7 +1675,7 @@ static int pp_igc_lut_cache_params_v3(struct mdp_igc_lut_data *config,
 	res_cache = mdss_pp_res->pp_data_v3;
 	v3_cache_data = &res_cache->igc_v3_data[disp_num];
 	if (!v3_cache_data->c0_c1_data || !v3_cache_data->c2_data) {
-		pr_err("invalid payload c0_c1_data %pK c2_data %pK\n",
+		pr_debug("invalid payload c0_c1_data %pK c2_data %pK\n",
 			v3_cache_data->c0_c1_data, v3_cache_data->c2_data);
 		goto igc_config_exit;
 	}
@@ -1683,14 +1683,14 @@ static int pp_igc_lut_cache_params_v3(struct mdp_igc_lut_data *config,
 		if (copy_from_user(&v3_usr_config,
 				   config->cfg_payload,
 				   sizeof(v3_usr_config))) {
-			pr_err("failed to copy igc config\n");
+			pr_debug("failed to copy igc config\n");
 			ret = -EFAULT;
 			goto igc_config_exit;
 		}
 		len = v3_usr_config.len;
 	} else {
 		if (!config->cfg_payload) {
-			pr_err("can't copy config info NULL payload\n");
+			pr_debug("can't copy config info NULL payload\n");
 			ret = -EINVAL;
 			goto igc_config_exit;
 		}
@@ -1699,14 +1699,14 @@ static int pp_igc_lut_cache_params_v3(struct mdp_igc_lut_data *config,
 	}
 	if (copy_from_kernel && (!v3_kernel_data->c0_c1_data ||
 	    !v3_kernel_data->c2_data)) {
-		pr_err("copy from kernel invalid params c0_c1_data %pK c2_data %pK\n",
+		pr_debug("copy from kernel invalid params c0_c1_data %pK c2_data %pK\n",
 			v3_kernel_data->c0_c1_data,
 			v3_kernel_data->c2_data);
 		ret = -EINVAL;
 		goto igc_config_exit;
 	}
 	if (len != IGC_LUT_ENTRIES) {
-		pr_err("Invalid table size %d exp %d\n",
+		pr_debug("Invalid table size %d exp %d\n",
 			len, IGC_LUT_ENTRIES);
 		ret = -EINVAL;
 		goto igc_config_exit;
@@ -1725,7 +1725,7 @@ static int pp_igc_lut_cache_params_v3(struct mdp_igc_lut_data *config,
 			     (u8 *)((unsigned long)v3_usr_config.c0_c1_data),
 			     len * sizeof(u32));
 		if (ret) {
-			pr_err("copy from user failed for c0_c1_data size %zd ret %d\n",
+			pr_debug("copy from user failed for c0_c1_data size %zd ret %d\n",
 				len * sizeof(u32), ret);
 			ret = -EFAULT;
 			goto igc_config_exit;
@@ -1734,7 +1734,7 @@ static int pp_igc_lut_cache_params_v3(struct mdp_igc_lut_data *config,
 			     (u8 *)((unsigned long)v3_usr_config.c2_data),
 			     len * sizeof(u32));
 		if (ret) {
-			pr_err("copy from user failed for c2_data size %zd ret %d\n",
+			pr_debug("copy from user failed for c2_data size %zd ret %d\n",
 			       len * sizeof(u32), ret);
 			ret = -EFAULT;
 			goto igc_config_exit;
@@ -1761,12 +1761,12 @@ static int pp_igc_lut_cache_params_pipe_v3(
 	u32 table_fmt = mdp_igc_rec_max, strength = 0;
 
 	if (!config || !pipe) {
-		pr_err("invalid param config %pK pipe %pK\n",
+		pr_debug("invalid param config %pK pipe %pK\n",
 			config, pipe);
 		return -EINVAL;
 	}
 	if (config->ops & MDP_PP_OPS_READ) {
-		pr_err("read op is not supported\n");
+		pr_debug("read op is not supported\n");
 		return -EINVAL;
 	}
 
@@ -1776,7 +1776,7 @@ static int pp_igc_lut_cache_params_pipe_v3(
 	}
 
 	if (!config->cfg_payload) {
-		pr_err("can't copy config info NULL payload\n");
+		pr_debug("can't copy config info NULL payload\n");
 		ret = -EINVAL;
 		goto igc_config_exit;
 	}
@@ -1808,7 +1808,7 @@ static int pp_igc_lut_cache_params_pipe_v3(
 	switch (table_fmt) {
 	case mdp_igc_custom:
 		if (len != IGC_LUT_ENTRIES) {
-			pr_err("invalid igc len %d exp %d\n", len,
+			pr_debug("invalid igc len %d exp %d\n", len,
 				IGC_LUT_ENTRIES);
 			ret = -EINVAL;
 			goto igc_config_exit;
@@ -1818,7 +1818,7 @@ static int pp_igc_lut_cache_params_pipe_v3(
 		c0_c1_data = v3_cache_data->c0_c1_data;
 		c2_data = v3_cache_data->c2_data;
 		if (!c0_c1_data || !c2_data) {
-			pr_err("invalid param c0_c1_data %pK c2_data %pK\n",
+			pr_debug("invalid param c0_c1_data %pK c2_data %pK\n",
 				c0_c1_data, c2_data);
 			ret = -EINVAL;
 			goto igc_config_exit;
@@ -1846,7 +1846,7 @@ static int pp_igc_lut_cache_params_pipe_v3(
 		fix_up = 1;
 		break;
 	default:
-		pr_err("invalid format %d\n", table_fmt);
+		pr_debug("invalid format %d\n", table_fmt);
 		ret = -EINVAL;
 		goto igc_config_exit;
 	}
@@ -1870,7 +1870,7 @@ static int pp_igc_lut_cache_params_pipe_v3(
 		if (copy_from_user(v3_cache_data->c0_c1_data,
 				(u8 *)((unsigned long)v3_usr_config.c0_c1_data),
 				IGC_LUT_ENTRIES * sizeof(u32))) {
-			pr_err("error in copying the c0_c1_data of size %zd\n",
+			pr_debug("error in copying the c0_c1_data of size %zd\n",
 					IGC_LUT_ENTRIES * sizeof(u32));
 			ret = -EFAULT;
 			goto igc_config_exit;
@@ -1878,7 +1878,7 @@ static int pp_igc_lut_cache_params_pipe_v3(
 		if (copy_from_user(v3_cache_data->c2_data,
 				(u8 *)((unsigned long)v3_usr_config.c2_data),
 				IGC_LUT_ENTRIES * sizeof(u32))) {
-			pr_err("error in copying the c2_data of size %zd\n",
+			pr_debug("error in copying the c2_data of size %zd\n",
 					IGC_LUT_ENTRIES * sizeof(u32));
 			ret = -EFAULT;
 		}

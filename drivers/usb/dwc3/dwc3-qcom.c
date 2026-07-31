@@ -146,7 +146,7 @@ static int dwc3_qcom_register_extcon(struct dwc3_qcom *qcom)
 	ret = devm_extcon_register_notifier(dev, qcom->edev, EXTCON_USB,
 					    &qcom->vbus_nb);
 	if (ret < 0) {
-		dev_err(dev, "VBUS notifier register failed\n");
+		dev_dbg(dev, "VBUS notifier register failed\n");
 		return ret;
 	}
 
@@ -159,7 +159,7 @@ static int dwc3_qcom_register_extcon(struct dwc3_qcom *qcom)
 	ret = devm_extcon_register_notifier(dev, host_edev, EXTCON_USB_HOST,
 					    &qcom->host_nb);
 	if (ret < 0) {
-		dev_err(dev, "Host notifier register failed\n");
+		dev_dbg(dev, "Host notifier register failed\n");
 		return ret;
 	}
 
@@ -240,7 +240,7 @@ static int dwc3_qcom_suspend(struct dwc3_qcom *qcom)
 
 	val = readl(qcom->qscratch_base + PWR_EVNT_IRQ_STAT_REG);
 	if (!(val & PWR_EVNT_LPM_IN_L2_MASK))
-		dev_err(qcom->dev, "HS-PHY not in L2\n");
+		dev_dbg(qcom->dev, "HS-PHY not in L2\n");
 
 	for (i = qcom->num_clocks - 1; i >= 0; i--)
 		clk_disable_unprepare(qcom->clks[i]);
@@ -332,7 +332,7 @@ static int dwc3_qcom_setup_irq(struct platform_device *pdev)
 					IRQF_ONESHOT,
 					"qcom_dwc3 HS", qcom);
 		if (ret) {
-			dev_err(qcom->dev, "hs_phy_irq failed: %d\n", ret);
+			dev_dbg(qcom->dev, "hs_phy_irq failed: %d\n", ret);
 			return ret;
 		}
 		qcom->hs_phy_irq = irq;
@@ -346,7 +346,7 @@ static int dwc3_qcom_setup_irq(struct platform_device *pdev)
 					IRQF_ONESHOT,
 					"qcom_dwc3 DP_HS", qcom);
 		if (ret) {
-			dev_err(qcom->dev, "dp_hs_phy_irq failed: %d\n", ret);
+			dev_dbg(qcom->dev, "dp_hs_phy_irq failed: %d\n", ret);
 			return ret;
 		}
 		qcom->dp_hs_phy_irq = irq;
@@ -360,7 +360,7 @@ static int dwc3_qcom_setup_irq(struct platform_device *pdev)
 					IRQF_ONESHOT,
 					"qcom_dwc3 DM_HS", qcom);
 		if (ret) {
-			dev_err(qcom->dev, "dm_hs_phy_irq failed: %d\n", ret);
+			dev_dbg(qcom->dev, "dm_hs_phy_irq failed: %d\n", ret);
 			return ret;
 		}
 		qcom->dm_hs_phy_irq = irq;
@@ -374,7 +374,7 @@ static int dwc3_qcom_setup_irq(struct platform_device *pdev)
 					IRQF_ONESHOT,
 					"qcom_dwc3 SS", qcom);
 		if (ret) {
-			dev_err(qcom->dev, "ss_phy_irq failed: %d\n", ret);
+			dev_dbg(qcom->dev, "ss_phy_irq failed: %d\n", ret);
 			return ret;
 		}
 		qcom->ss_phy_irq = irq;
@@ -446,13 +446,13 @@ static int dwc3_qcom_probe(struct platform_device *pdev)
 	qcom->resets = devm_reset_control_array_get_optional_exclusive(dev);
 	if (IS_ERR(qcom->resets)) {
 		ret = PTR_ERR(qcom->resets);
-		dev_err(&pdev->dev, "failed to get resets, err=%d\n", ret);
+		dev_dbg(&pdev->dev, "failed to get resets, err=%d\n", ret);
 		return ret;
 	}
 
 	ret = reset_control_assert(qcom->resets);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to assert resets, err=%d\n", ret);
+		dev_dbg(&pdev->dev, "failed to assert resets, err=%d\n", ret);
 		return ret;
 	}
 
@@ -460,21 +460,21 @@ static int dwc3_qcom_probe(struct platform_device *pdev)
 
 	ret = reset_control_deassert(qcom->resets);
 	if (ret) {
-		dev_err(&pdev->dev, "failed to deassert resets, err=%d\n", ret);
+		dev_dbg(&pdev->dev, "failed to deassert resets, err=%d\n", ret);
 		return ret;
 	}
 
 	ret = dwc3_qcom_clk_init(qcom, of_count_phandle_with_args(np,
 						"clocks", "#clock-cells"));
 	if (ret) {
-		dev_err(dev, "failed to get clocks\n");
+		dev_dbg(dev, "failed to get clocks\n");
 		return ret;
 	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	qcom->qscratch_base = devm_ioremap_resource(dev, res);
 	if (IS_ERR(qcom->qscratch_base)) {
-		dev_err(dev, "failed to map qscratch, err=%d\n", ret);
+		dev_dbg(dev, "failed to map qscratch, err=%d\n", ret);
 		ret = PTR_ERR(qcom->qscratch_base);
 		goto clk_disable;
 	}
@@ -485,7 +485,7 @@ static int dwc3_qcom_probe(struct platform_device *pdev)
 
 	dwc3_np = of_get_child_by_name(np, "dwc3");
 	if (!dwc3_np) {
-		dev_err(dev, "failed to find dwc3 core child\n");
+		dev_dbg(dev, "failed to find dwc3 core child\n");
 		ret = -ENODEV;
 		goto clk_disable;
 	}
@@ -501,13 +501,13 @@ static int dwc3_qcom_probe(struct platform_device *pdev)
 
 	ret = of_platform_populate(np, NULL, NULL, dev);
 	if (ret) {
-		dev_err(dev, "failed to register dwc3 core - %d\n", ret);
+		dev_dbg(dev, "failed to register dwc3 core - %d\n", ret);
 		goto clk_disable;
 	}
 
 	qcom->dwc3 = of_find_device_by_node(dwc3_np);
 	if (!qcom->dwc3) {
-		dev_err(&pdev->dev, "failed to get dwc3 platform device\n");
+		dev_dbg(&pdev->dev, "failed to get dwc3 platform device\n");
 		ret = -ENODEV;
 		goto depopulate;
 	}

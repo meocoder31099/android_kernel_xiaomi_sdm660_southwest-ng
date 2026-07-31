@@ -177,7 +177,7 @@ static bool of_mdiobus_child_is_phy(struct device_node *child)
 		return true;
 
 	if (of_match_node(whitelist_phys, child)) {
-		pr_warn(FW_WARN
+		pr_debug(FW_WARN
 			"%pOF: Whitelisted compatible string. Please remove\n",
 			child);
 		return true;
@@ -240,7 +240,7 @@ int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 			rc = of_mdiobus_register_device(mdio, child, addr);
 
 		if (rc == -ENODEV)
-			dev_err(&mdio->dev,
+			dev_dbg(&mdio->dev,
 				"MDIO device at address %d is missing.\n",
 				addr);
 		else if (rc)
@@ -262,7 +262,7 @@ int of_mdiobus_register(struct mii_bus *mdio, struct device_node *np)
 				continue;
 
 			/* be noisy to encourage people to set reg property */
-			dev_info(&mdio->dev, "scan phy %pOFn at address %i\n",
+			dev_dbg(&mdio->dev, "scan phy %pOFn at address %i\n",
 				 child, addr);
 
 			if (of_mdiobus_child_is_phy(child)) {

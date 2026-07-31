@@ -260,19 +260,19 @@ static int pmic_arb_wait_for_done(struct spmi_controller *ctrl,
 
 		if (status & PMIC_ARB_STATUS_DONE) {
 			if (status & PMIC_ARB_STATUS_DENIED) {
-				dev_err(&ctrl->dev, "%s: transaction denied (0x%x)\n",
+				dev_dbg(&ctrl->dev, "%s: transaction denied (0x%x)\n",
 					__func__, status);
 				return -EPERM;
 			}
 
 			if (status & PMIC_ARB_STATUS_FAILURE) {
-				dev_err(&ctrl->dev, "%s: transaction failed (0x%x)\n",
+				dev_dbg(&ctrl->dev, "%s: transaction failed (0x%x)\n",
 					__func__, status);
 				return -EIO;
 			}
 
 			if (status & PMIC_ARB_STATUS_DROPPED) {
-				dev_err(&ctrl->dev, "%s: transaction dropped (0x%x)\n",
+				dev_dbg(&ctrl->dev, "%s: transaction dropped (0x%x)\n",
 					__func__, status);
 				return -EIO;
 			}
@@ -282,7 +282,7 @@ static int pmic_arb_wait_for_done(struct spmi_controller *ctrl,
 		udelay(1);
 	}
 
-	dev_err(&ctrl->dev, "%s: timeout, status 0x%x\n",
+	dev_dbg(&ctrl->dev, "%s: timeout, status 0x%x\n",
 		__func__, status);
 	return -ETIMEDOUT;
 }
@@ -349,7 +349,7 @@ static int pmic_arb_read_cmd(struct spmi_controller *ctrl, u8 opc, u8 sid,
 
 	offset = rc;
 	if (bc >= PMIC_ARB_MAX_TRANS_BYTES) {
-		dev_err(&ctrl->dev, "pmic-arb supports 1..%d bytes per trans, but:%zu requested",
+		dev_dbg(&ctrl->dev, "pmic-arb supports 1..%d bytes per trans, but:%zu requested",
 			PMIC_ARB_MAX_TRANS_BYTES, len);
 		return  -EINVAL;
 	}
@@ -402,7 +402,7 @@ static int pmic_arb_write_cmd(struct spmi_controller *ctrl, u8 opc, u8 sid,
 
 	offset = rc;
 	if (bc >= PMIC_ARB_MAX_TRANS_BYTES) {
-		dev_err(&ctrl->dev, "pmic-arb supports 1..%d bytes per trans, but:%zu requested",
+		dev_dbg(&ctrl->dev, "pmic-arb supports 1..%d bytes per trans, but:%zu requested",
 			PMIC_ARB_MAX_TRANS_BYTES, len);
 		return  -EINVAL;
 	}
@@ -698,7 +698,7 @@ static int qpnpint_irq_request_resources(struct irq_data *d)
 	u16 irq = hwirq_to_irq(d->hwirq);
 
 	if (pmic_arb->apid_data[apid].irq_ee != pmic_arb->ee) {
-		dev_err(&pmic_arb->spmic->dev, "failed to xlate sid = %#x, periph = %#x, irq = %u: ee=%u but owner=%u\n",
+		dev_dbg(&pmic_arb->spmic->dev, "failed to xlate sid = %#x, periph = %#x, irq = %u: ee=%u but owner=%u\n",
 			sid, periph, irq, pmic_arb->ee,
 			pmic_arb->apid_data[apid].irq_ee);
 		return -ENODEV;
@@ -756,7 +756,7 @@ static int qpnpint_irq_domain_dt_translate(struct irq_domain *d,
 	ppid = intspec[0] << 8 | intspec[1];
 	rc = pmic_arb->ver_ops->ppid_to_apid(pmic_arb, ppid);
 	if (rc < 0) {
-		dev_err(&pmic_arb->spmic->dev, "failed to xlate sid = %#x, periph = %#x, irq = %u rc = %d\n",
+		dev_dbg(&pmic_arb->spmic->dev, "failed to xlate sid = %#x, periph = %#x, irq = %u rc = %d\n",
 		intspec[0], intspec[1], intspec[2], rc);
 		return rc;
 	}
@@ -1006,7 +1006,7 @@ static int pmic_arb_offset_v5(struct spmi_pmic_arb *pmic_arb, u8 sid, u16 addr,
 		break;
 	case PMIC_ARB_CHANNEL_RW:
 		if (pmic_arb->apid_data[apid].write_ee != pmic_arb->ee) {
-			dev_err(&pmic_arb->spmic->dev, "disallowed SPMI write to sid=%u, addr=0x%04X\n",
+			dev_dbg(&pmic_arb->spmic->dev, "disallowed SPMI write to sid=%u, addr=0x%04X\n",
 				sid, addr);
 			return -EPERM;
 		}
@@ -1240,7 +1240,7 @@ static int spmi_pmic_arb_probe(struct platform_device *pdev)
 		}
 	}
 
-	dev_info(&ctrl->dev, "PMIC arbiter version %s (0x%x)\n",
+	dev_dbg(&ctrl->dev, "PMIC arbiter version %s (0x%x)\n",
 		 pmic_arb->ver_ops->ver_str, hw_ver);
 
 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "intr");
@@ -1265,12 +1265,12 @@ static int spmi_pmic_arb_probe(struct platform_device *pdev)
 
 	err = of_property_read_u32(pdev->dev.of_node, "qcom,channel", &channel);
 	if (err) {
-		dev_err(&pdev->dev, "channel unspecified.\n");
+		dev_dbg(&pdev->dev, "channel unspecified.\n");
 		goto err_put_ctrl;
 	}
 
 	if (channel > 5) {
-		dev_err(&pdev->dev, "invalid channel (%u) specified.\n",
+		dev_dbg(&pdev->dev, "invalid channel (%u) specified.\n",
 			channel);
 		err = -EINVAL;
 		goto err_put_ctrl;
@@ -1280,12 +1280,12 @@ static int spmi_pmic_arb_probe(struct platform_device *pdev)
 
 	err = of_property_read_u32(pdev->dev.of_node, "qcom,ee", &ee);
 	if (err) {
-		dev_err(&pdev->dev, "EE unspecified.\n");
+		dev_dbg(&pdev->dev, "EE unspecified.\n");
 		goto err_put_ctrl;
 	}
 
 	if (ee > 5) {
-		dev_err(&pdev->dev, "invalid EE (%u) specified\n", ee);
+		dev_dbg(&pdev->dev, "invalid EE (%u) specified\n", ee);
 		err = -EINVAL;
 		goto err_put_ctrl;
 	}
@@ -1314,7 +1314,7 @@ static int spmi_pmic_arb_probe(struct platform_device *pdev)
 	if (hw_ver >= PMIC_ARB_VERSION_V5_MIN) {
 		err = pmic_arb_read_apid_map_v5(pmic_arb);
 		if (err) {
-			dev_err(&pdev->dev, "could not read APID->PPID mapping table, rc= %d\n",
+			dev_dbg(&pdev->dev, "could not read APID->PPID mapping table, rc= %d\n",
 				err);
 			goto err_put_ctrl;
 		}
@@ -1324,7 +1324,7 @@ static int spmi_pmic_arb_probe(struct platform_device *pdev)
 	pmic_arb->domain = irq_domain_add_tree(pdev->dev.of_node,
 					 &pmic_arb_irq_domain_ops, pmic_arb);
 	if (!pmic_arb->domain) {
-		dev_err(&pdev->dev, "unable to create irq_domain\n");
+		dev_dbg(&pdev->dev, "unable to create irq_domain\n");
 		err = -ENOMEM;
 		goto err_put_ctrl;
 	}

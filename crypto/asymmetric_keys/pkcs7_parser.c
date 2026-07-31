@@ -107,7 +107,7 @@ static int pkcs7_check_authattrs(struct pkcs7_message *msg)
 	return 0;
 
 inconsistent:
-	pr_warn("Inconsistently supplied authAttrs\n");
+	pr_debug("Inconsistently supplied authAttrs\n");
 	return -EINVAL;
 }
 
@@ -215,7 +215,7 @@ int pkcs7_note_OID(void *context, size_t hdrlen,
 	if (ctx->last_oid == OID__NR) {
 		char buffer[50];
 		sprint_oid(value, vlen, buffer, sizeof(buffer));
-		printk("PKCS7: Unknown OID: [%lu] %s\n",
+		no_printk("PKCS7: Unknown OID: [%lu] %s\n",
 		       (unsigned long)value - ctx->data, buffer);
 	}
 	return 0;
@@ -253,7 +253,7 @@ int pkcs7_sig_note_digest_algo(void *context, size_t hdrlen,
 		ctx->sinfo->sig->hash_algo = "sha224";
 		break;
 	default:
-		printk("Unsupported digest algo: %u\n", ctx->last_oid);
+		no_printk("Unsupported digest algo: %u\n", ctx->last_oid);
 		return -ENOPKG;
 	}
 	return 0;
@@ -273,7 +273,7 @@ int pkcs7_sig_note_pkey_algo(void *context, size_t hdrlen,
 		ctx->sinfo->sig->pkey_algo = "rsa";
 		break;
 	default:
-		printk("Unsupported pkey algo: %u\n", ctx->last_oid);
+		no_printk("Unsupported pkey algo: %u\n", ctx->last_oid);
 		return -ENOPKG;
 	}
 	return 0;
@@ -289,7 +289,7 @@ int pkcs7_check_content_type(void *context, size_t hdrlen,
 	struct pkcs7_parse_context *ctx = context;
 
 	if (ctx->last_oid != OID_signed_data) {
-		pr_warn("Only support pkcs7_signedData type\n");
+		pr_debug("Only support pkcs7_signedData type\n");
 		return -EINVAL;
 	}
 
@@ -326,7 +326,7 @@ int pkcs7_note_signeddata_version(void *context, size_t hdrlen,
 	return 0;
 
 unsupported:
-	pr_warn("Unsupported SignedData version\n");
+	pr_debug("Unsupported SignedData version\n");
 	return -EINVAL;
 }
 
@@ -366,10 +366,10 @@ int pkcs7_note_signerinfo_version(void *context, size_t hdrlen,
 	return 0;
 
 unsupported:
-	pr_warn("Unsupported SignerInfo version\n");
+	pr_debug("Unsupported SignerInfo version\n");
 	return -EINVAL;
 version_mismatch:
-	pr_warn("SignedData-SignerInfo version mismatch\n");
+	pr_debug("SignedData-SignerInfo version mismatch\n");
 	return -EBADMSG;
 }
 
@@ -442,7 +442,7 @@ int pkcs7_note_content(void *context, size_t hdrlen,
 
 	if (ctx->last_oid != OID_data &&
 	    ctx->last_oid != OID_msIndirectData) {
-		pr_warn("Unsupported data type %d\n", ctx->last_oid);
+		pr_debug("Unsupported data type %d\n", ctx->last_oid);
 		return -EINVAL;
 	}
 
@@ -487,7 +487,7 @@ int pkcs7_sig_note_authenticated_attr(void *context, size_t hdrlen,
 			goto repeated;
 		content_type = look_up_OID(value, vlen);
 		if (content_type != ctx->msg->data_type) {
-			pr_warn("Mismatch between global data type (%d) and sinfo %u (%d)\n",
+			pr_debug("Mismatch between global data type (%d) and sinfo %u (%d)\n",
 				ctx->msg->data_type, sinfo->index,
 				content_type);
 			return -EBADMSG;
@@ -516,7 +516,7 @@ int pkcs7_sig_note_authenticated_attr(void *context, size_t hdrlen,
 		if (__test_and_set_bit(sinfo_has_smime_caps, &sinfo->aa_set))
 			goto repeated;
 		if (ctx->msg->data_type != OID_msIndirectData) {
-			pr_warn("S/MIME Caps only allowed with Authenticode\n");
+			pr_debug("S/MIME Caps only allowed with Authenticode\n");
 			return -EKEYREJECTED;
 		}
 		return 0;
@@ -536,7 +536,7 @@ int pkcs7_sig_note_authenticated_attr(void *context, size_t hdrlen,
 			goto repeated;
 	authenticode_check:
 		if (ctx->msg->data_type != OID_msIndirectData) {
-			pr_warn("Authenticode AuthAttrs only allowed with Authenticode\n");
+			pr_debug("Authenticode AuthAttrs only allowed with Authenticode\n");
 			return -EKEYREJECTED;
 		}
 		/* I'm not sure how to validate these */
@@ -547,7 +547,7 @@ int pkcs7_sig_note_authenticated_attr(void *context, size_t hdrlen,
 
 repeated:
 	/* We permit max one item per AuthenticatedAttribute and no repeats */
-	pr_warn("Repeated/multivalue AuthAttrs not permitted\n");
+	pr_debug("Repeated/multivalue AuthAttrs not permitted\n");
 	return -EKEYREJECTED;
 }
 
@@ -563,13 +563,13 @@ int pkcs7_sig_note_set_of_authattrs(void *context, size_t hdrlen,
 
 	if (!test_bit(sinfo_has_content_type, &sinfo->aa_set) ||
 	    !test_bit(sinfo_has_message_digest, &sinfo->aa_set)) {
-		pr_warn("Missing required AuthAttr\n");
+		pr_debug("Missing required AuthAttr\n");
 		return -EBADMSG;
 	}
 
 	if (ctx->msg->data_type != OID_msIndirectData &&
 	    test_bit(sinfo_has_ms_opus_info, &sinfo->aa_set)) {
-		pr_warn("Unexpected Authenticode AuthAttr\n");
+		pr_debug("Unexpected Authenticode AuthAttr\n");
 		return -EBADMSG;
 	}
 
@@ -650,7 +650,7 @@ int pkcs7_note_signed_info(void *context, size_t hdrlen,
 	struct asymmetric_key_id *kid;
 
 	if (ctx->msg->data_type == OID_msIndirectData && !sinfo->authattrs) {
-		pr_warn("Authenticode requires AuthAttrs\n");
+		pr_debug("Authenticode requires AuthAttrs\n");
 		return -EBADMSG;
 	}
 

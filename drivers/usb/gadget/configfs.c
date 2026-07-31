@@ -609,7 +609,7 @@ static struct config_group *function_make(
 	func_name = buf;
 	instance_name = strchr(func_name, '.');
 	if (!instance_name) {
-		pr_err("Unable to locate . in FUNC.INSTANCE\n");
+		pr_debug("Unable to locate . in FUNC.INSTANCE\n");
 		return ERR_PTR(-EINVAL);
 	}
 	*instance_name = '\0';
@@ -703,7 +703,7 @@ static struct config_group *config_desc_make(
 
 	num_str = strchr(buf, '.');
 	if (!num_str) {
-		pr_err("Unable to locate . in name.bConfigurationValue\n");
+		pr_debug("Unable to locate . in name.bConfigurationValue\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -1322,7 +1322,7 @@ static int configfs_composite_bind(struct usb_gadget *gadget,
 	ret = -EINVAL;
 
 	if (list_empty(&gi->cdev.configs)) {
-		pr_err("Need at least one configuration in %s.\n",
+		pr_debug("Need at least one configuration in %s.\n",
 				gi->composite.name);
 		goto err_comp_cleanup;
 	}
@@ -1333,7 +1333,7 @@ static int configfs_composite_bind(struct usb_gadget *gadget,
 
 		cfg = container_of(c, struct config_usb_cfg, c);
 		if (list_empty(&cfg->func_list)) {
-			pr_err("Config %s/%d of %s needs at least one function.\n",
+			pr_debug("Config %s/%d of %s needs at least one function.\n",
 			      c->label, c->bConfigurationValue,
 			      gi->composite.name);
 			goto err_comp_cleanup;
@@ -1452,7 +1452,7 @@ static int smblib_canncel_recheck(void)
 	if (!usb_psy) {
 		usb_psy = power_supply_get_by_name("usb");
 		if (!usb_psy) {
-			pr_err("Could not get usb psy by canncel recheck\n");
+			pr_debug("Could not get usb psy by canncel recheck\n");
 			return -ENODEV;
 		}
 	}
@@ -1703,7 +1703,7 @@ static void android_disconnect(struct usb_gadget *gadget)
 	struct gadget_info *gi;
 
 	if (!cdev) {
-		pr_err("%s: gadget is not connected\n", __func__);
+		pr_debug("%s: gadget is not connected\n", __func__);
 		return;
 	}
 

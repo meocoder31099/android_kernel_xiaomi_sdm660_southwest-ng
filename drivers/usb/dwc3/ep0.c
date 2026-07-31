@@ -208,7 +208,7 @@ int dwc3_gadget_ep0_queue(struct usb_ep *ep, struct usb_request *request,
 	spin_lock_irqsave(&dwc->lock, flags);
 	if (!dep->endpoint.desc || !dwc->pullups_connected ||
 		!dwc->vbus_active) {
-		dev_err(dwc->dev, "%s: can't queue to disabled endpoint\n",
+		dev_dbg(dwc->dev, "%s: can't queue to disabled endpoint\n",
 				dep->name);
 		ret = -ESHUTDOWN;
 		goto out;
@@ -612,12 +612,12 @@ static int dwc3_ep0_set_address(struct dwc3 *dwc, struct usb_ctrlrequest *ctrl)
 
 	addr = le16_to_cpu(ctrl->wValue);
 	if (addr > 127) {
-		dev_err(dwc->dev, "invalid device address %d\n", addr);
+		dev_dbg(dwc->dev, "invalid device address %d\n", addr);
 		return -EINVAL;
 	}
 
 	if (state == USB_STATE_CONFIGURED) {
-		dev_err(dwc->dev, "can't SetAddress() from Configured State\n");
+		dev_dbg(dwc->dev, "can't SetAddress() from Configured State\n");
 		return -EINVAL;
 	}
 
@@ -792,7 +792,7 @@ static int dwc3_ep0_set_sel(struct dwc3 *dwc, struct usb_ctrlrequest *ctrl)
 	wLength = le16_to_cpu(ctrl->wLength);
 
 	if (wLength != 6) {
-		dev_err(dwc->dev, "Set SEL should be 6 bytes, got %d\n",
+		dev_dbg(dwc->dev, "Set SEL should be 6 bytes, got %d\n",
 				wLength);
 		return -EINVAL;
 	}
@@ -993,7 +993,7 @@ static void dwc3_ep0_complete_status(struct dwc3 *dwc,
 
 		ret = dwc3_gadget_set_test_mode(dwc, dwc->test_mode_nr);
 		if (ret < 0) {
-			dev_err(dwc->dev, "invalid test #%d\n",
+			dev_dbg(dwc->dev, "invalid test #%d\n",
 					dwc->test_mode_nr);
 			dbg_event(0x00, "INVALTEST", ret);
 			dwc3_ep0_stall_and_restart(dwc);
@@ -1207,7 +1207,7 @@ static void dwc3_ep0_xfernotready(struct dwc3 *dwc,
 		if (dwc->ep0_expect_in != event->endpoint_number) {
 			struct dwc3_ep	*dep = dwc->eps[dwc->ep0_expect_in];
 
-			dev_err(dwc->dev, "unexpected direction for Data Phase\n");
+			dev_dbg(dwc->dev, "unexpected direction for Data Phase\n");
 			dwc3_ep0_end_control_data(dwc, dep);
 			dbg_event(epnum, "WRONGDR", 0);
 			dwc3_ep0_stall_and_restart(dwc);

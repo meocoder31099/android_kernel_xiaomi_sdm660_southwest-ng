@@ -143,7 +143,7 @@ static struct mdp_input_layer32 *__create_layer_list32(
 			compat_ptr(commit32->commit_v1.input_layers),
 			sizeof(struct mdp_input_layer32) * layer_count);
 	if (ret) {
-		pr_err("layer list32 copy from user failed, ptr %pK\n",
+		pr_debug("layer list32 copy from user failed, ptr %pK\n",
 			compat_ptr(commit32->commit_v1.input_layers));
 		kfree(layer_list32);
 		ret = -EFAULT;
@@ -174,7 +174,7 @@ static int __copy_scale_params(struct mdp_input_layer *layer,
 			sizeof(struct mdp_scale_data));
 	if (ret) {
 		kfree(scale);
-		pr_err("scale param copy from user failed, ptr %pK\n",
+		pr_debug("scale param copy from user failed, ptr %pK\n",
 			compat_ptr(layer32->scale));
 		ret = -EFAULT;
 	} else {
@@ -301,7 +301,7 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 	ret = copy_from_user(&commit32, (void __user *)argp,
 		sizeof(struct mdp_layer_commit32));
 	if (ret) {
-		pr_err("%s:copy_from_user failed, ptr %pK\n", __func__,
+		pr_debug("%s:copy_from_user failed, ptr %pK\n", __func__,
 			(void __user *)argp);
 		ret = -EFAULT;
 		return ret;
@@ -320,7 +320,7 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 				compat_ptr(commit32.commit_v1.output_layer),
 				buffer_size);
 		if (ret) {
-			pr_err("fail to copy output layer from user, ptr %pK\n",
+			pr_debug("fail to copy output layer from user, ptr %pK\n",
 				compat_ptr(commit32.commit_v1.output_layer));
 			ret = -EFAULT;
 			goto layer_list_err;
@@ -358,7 +358,7 @@ static int __compat_atomic_commit(struct fb_info *info, unsigned int cmd,
 
 	ret = mdss_fb_atomic_commit(info, &commit, file);
 	if (ret)
-		pr_err("atomic commit failed ret:%d\n", ret);
+		pr_debug("atomic commit failed ret:%d\n", ret);
 
 	if (layer_count)
 		__copy_to_user_atomic_commit(&commit, &commit32, layer_list32,
@@ -413,7 +413,7 @@ static struct mdp_async_layer *__create_async_layer_list(
 	ret = copy_from_user(layer_list,
 			update_pos32->input_layers, buffer_size);
 	if (ret) {
-		pr_err("layer list32 copy from user failed\n");
+		pr_debug("layer list32 copy from user failed\n");
 		kfree(layer_list);
 		layer_list = ERR_PTR(ret);
 	}
@@ -434,14 +434,14 @@ static int __compat_async_position_update(struct fb_info *info,
 	ret = copy_from_user(&update_pos32, (void __user *)argp,
 		sizeof(struct mdp_position_update32));
 	if (ret) {
-		pr_err("%s:copy_from_user failed\n", __func__);
+		pr_debug("%s:copy_from_user failed\n", __func__);
 		return ret;
 	}
 
 	update_pos.input_layer_cnt = update_pos32.input_layer_cnt;
 	layer_cnt = update_pos32.input_layer_cnt;
 	if ((!layer_cnt) || (layer_cnt > MAX_LAYER_COUNT)) {
-		pr_err("invalid async layers :%d to update\n", layer_cnt);
+		pr_debug("invalid async layers :%d to update\n", layer_cnt);
 		return -EINVAL;
 	}
 
@@ -454,12 +454,12 @@ static int __compat_async_position_update(struct fb_info *info,
 
 	ret = mdss_fb_async_position_update(info, &update_pos);
 	if (ret)
-		pr_err("async position update failed ret:%d\n", ret);
+		pr_debug("async position update failed ret:%d\n", ret);
 
 	ret = __copy_to_user_async_position_update(&update_pos, &update_pos32,
 			argp, layer_cnt);
 	if (ret)
-		pr_err("copy to user of async update position failed\n");
+		pr_debug("copy to user of async update position failed\n");
 
 	kfree(layer_list);
 	return ret;
@@ -475,7 +475,7 @@ static int mdss_fb_compat_buf_sync(struct fb_info *info, unsigned int cmd,
 
 	buf_sync = compat_alloc_user_space(sizeof(*buf_sync));
 	if (!buf_sync) {
-		pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+		pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 			 __func__, __LINE__, sizeof(*buf_sync));
 		return -EINVAL;
 	}
@@ -495,7 +495,7 @@ static int mdss_fb_compat_buf_sync(struct fb_info *info, unsigned int cmd,
 
 	ret = mdss_fb_do_ioctl(info, cmd, (unsigned long) buf_sync, file);
 	if (ret) {
-		pr_err("%s: failed %d\n", __func__, ret);
+		pr_debug("%s: failed %d\n", __func__, ret);
 		return ret;
 	}
 
@@ -586,7 +586,7 @@ static int mdss_fb_compat_cursor(struct fb_info *info, unsigned int cmd,
 
 	cursor = compat_alloc_user_space(sizeof(*cursor));
 	if (!cursor) {
-		pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+		pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 			 __func__, __LINE__, sizeof(*cursor));
 		return -EINVAL;
 	}
@@ -836,7 +836,7 @@ static int __from_user_pcc_coeff_v17(
 	if (copy_from_user(&pcc_cfg_payload32,
 			   compat_ptr(pcc_cfg32->cfg_payload),
 			   sizeof(struct mdp_pcc_data_v1_7_32))) {
-		pr_err("failed to copy payload for pcc from user\n");
+		pr_debug("failed to copy payload for pcc from user\n");
 		return -EFAULT;
 	}
 
@@ -870,7 +870,7 @@ static int __from_user_pcc_coeff_v17(
 
 	if (copy_to_user(pcc_cfg->cfg_payload, &pcc_cfg_payload,
 			 sizeof(pcc_cfg_payload))) {
-		pr_err("failed to copy payload for pcc to user\n");
+		pr_debug("failed to copy payload for pcc to user\n");
 		return -EFAULT;
 	}
 	return 0;
@@ -894,14 +894,14 @@ static int __from_user_pcc_cfg_data(
 		return -EFAULT;
 
 	if (copy_from_user(&version, &pcc_cfg32->version, sizeof(u32))) {
-		pr_err("failed to copy version for pcc\n");
+		pr_debug("failed to copy version for pcc\n");
 		return -EFAULT;
 	}
 
 	switch (version) {
 	case mdp_pcc_v1_7:
 		if (__from_user_pcc_coeff_v17(pcc_cfg32, pcc_cfg)) {
-			pr_err("failed to copy pcc v17 data\n");
+			pr_debug("failed to copy pcc v17 data\n");
 			return -EFAULT;
 		}
 		break;
@@ -933,7 +933,7 @@ static int __to_user_pcc_coeff_v1_7(
 	if (copy_from_user(&pcc_cfg_payload,
 			   pcc_cfg->cfg_payload,
 			   sizeof(struct mdp_pcc_data_v1_7))) {
-		pr_err("failed to copy payload for pcc from user\n");
+		pr_debug("failed to copy payload for pcc from user\n");
 		return -EFAULT;
 	}
 
@@ -967,7 +967,7 @@ static int __to_user_pcc_coeff_v1_7(
 	if (copy_to_user(compat_ptr(pcc_cfg32->cfg_payload),
 			 &pcc_cfg_payload32,
 			 sizeof(pcc_cfg_payload32))) {
-		pr_err("failed to copy payload for pcc to user\n");
+		pr_debug("failed to copy payload for pcc to user\n");
 		return -EFAULT;
 	}
 
@@ -983,7 +983,7 @@ static int __to_user_pcc_cfg_data(
 	u32 ops;
 
 	if (copy_from_user(&ops, &pcc_cfg->ops, sizeof(u32))) {
-		pr_err("failed to copy op for pcc\n");
+		pr_debug("failed to copy op for pcc\n");
 		return -EFAULT;
 	}
 
@@ -993,14 +993,14 @@ static int __to_user_pcc_cfg_data(
 	}
 
 	if (copy_from_user(&version, &pcc_cfg->version, sizeof(u32))) {
-		pr_err("failed to copy version for pcc\n");
+		pr_debug("failed to copy version for pcc\n");
 		return -EFAULT;
 	}
 
 	switch (version) {
 	case mdp_pcc_v1_7:
 		if (__to_user_pcc_coeff_v1_7(pcc_cfg32, pcc_cfg)) {
-			pr_err("failed to copy pcc v1_7 data\n");
+			pr_debug("failed to copy pcc v1_7 data\n");
 			return -EFAULT;
 		}
 		break;
@@ -1120,7 +1120,7 @@ static int __from_user_igc_lut_data_v17(
 	if (copy_from_user(&igc_cfg_payload_32,
 			   compat_ptr(igc_lut32->cfg_payload),
 			   sizeof(igc_cfg_payload_32))) {
-		pr_err("failed to copy payload from user for igc\n");
+		pr_debug("failed to copy payload from user for igc\n");
 		return -EFAULT;
 	}
 
@@ -1131,7 +1131,7 @@ static int __from_user_igc_lut_data_v17(
 	igc_cfg_payload.table_fmt = igc_cfg_payload_32.table_fmt;
 	if (copy_to_user(igc_lut->cfg_payload, &igc_cfg_payload,
 			 sizeof(igc_cfg_payload))) {
-		pr_err("failed to copy payload to user for igc\n");
+		pr_debug("failed to copy payload to user for igc\n");
 		return -EFAULT;
 	}
 	return 0;
@@ -1160,7 +1160,7 @@ static int __from_user_igc_lut_data(
 		return -EFAULT;
 
 	if (get_user(version, &igc_lut32->version)) {
-		pr_err("failed to copy the version for IGC\n");
+		pr_debug("failed to copy the version for IGC\n");
 		return -EFAULT;
 	}
 
@@ -1168,7 +1168,7 @@ static int __from_user_igc_lut_data(
 	case mdp_igc_v1_7:
 		ret = __from_user_igc_lut_data_v17(igc_lut32, igc_lut);
 		if (ret)
-			pr_err("failed to copy payload for igc version %d ret %d\n",
+			pr_debug("failed to copy payload for igc version %d ret %d\n",
 				version, ret);
 		break;
 	default:
@@ -1257,7 +1257,7 @@ static int __from_user_pgc_lut_data_v1_7(
 	if (copy_from_user(&pgc_cfg_payload_32,
 			   compat_ptr(pgc_lut32->cfg_payload),
 			   sizeof(pgc_cfg_payload_32))) {
-		pr_err("failed to copy from user the pgc32 payload\n");
+		pr_debug("failed to copy from user the pgc32 payload\n");
 		return -EFAULT;
 	}
 	memset(&pgc_cfg_payload, 0, sizeof(pgc_cfg_payload));
@@ -1267,7 +1267,7 @@ static int __from_user_pgc_lut_data_v1_7(
 	pgc_cfg_payload.len = pgc_cfg_payload_32.len;
 	if (copy_to_user(pgc_lut->cfg_payload, &pgc_cfg_payload,
 			 sizeof(pgc_cfg_payload))) {
-		pr_err("failed to copy to user pgc payload\n");
+		pr_debug("failed to copy to user pgc payload\n");
 		return -EFAULT;
 	}
 	return 0;
@@ -1300,7 +1300,7 @@ static int __from_user_pgc_lut_data_legacy(
 	if (num_r_stages > GC_LUT_SEGMENTS || num_b_stages > GC_LUT_SEGMENTS
 	    || num_g_stages > GC_LUT_SEGMENTS || !num_r_stages || !num_b_stages
 	    || !num_g_stages) {
-		pr_err("invalid number of stages r_stages %d b_stages %d g_stages %d\n",
+		pr_debug("invalid number of stages r_stages %d b_stages %d g_stages %d\n",
 		       num_r_stages, num_b_stages, num_g_stages);
 		return -EFAULT;
 	}
@@ -1364,21 +1364,21 @@ static int __from_user_pgc_lut_data(
 			sizeof(uint32_t)))
 		return -EFAULT;
 	if (copy_from_user(&version, &pgc_lut32->version, sizeof(u32))) {
-		pr_err("version copying failed\n");
+		pr_debug("version copying failed\n");
 		return -EFAULT;
 	}
 	switch (version) {
 	case mdp_pgc_v1_7:
 		ret = __from_user_pgc_lut_data_v1_7(pgc_lut32, pgc_lut);
 		if (ret)
-			pr_err("failed to copy pgc v17\n");
+			pr_debug("failed to copy pgc v17\n");
 		break;
 	default:
 		pr_debug("version %d not supported fallback to legacy\n",
 			 version);
 		ret = __from_user_pgc_lut_data_legacy(pgc_lut32, pgc_lut);
 		if (ret)
-			pr_err("copy from user pgc lut legacy failed ret %d\n",
+			pr_debug("copy from user pgc lut legacy failed ret %d\n",
 				ret);
 		break;
 	}
@@ -1466,7 +1466,7 @@ static int __from_user_hist_lut_data_v1_7(
 	if (copy_from_user(&hist_lut_cfg_payload32,
 			compat_ptr(hist_lut32->cfg_payload),
 			sizeof(hist_lut_cfg_payload32))) {
-		pr_err("failed to copy the Hist Lut payload from userspace\n");
+		pr_debug("failed to copy the Hist Lut payload from userspace\n");
 		return -EFAULT;
 	}
 
@@ -1477,7 +1477,7 @@ static int __from_user_hist_lut_data_v1_7(
 	if (copy_to_user(hist_lut->cfg_payload,
 			&hist_lut_cfg_payload,
 			sizeof(hist_lut_cfg_payload))) {
-		pr_err("Failed to copy to user hist lut cfg payload\n");
+		pr_debug("Failed to copy to user hist lut cfg payload\n");
 		return -EFAULT;
 	}
 
@@ -1511,14 +1511,14 @@ static int __from_user_hist_lut_data(
 	if (copy_from_user(&version,
 			&hist_lut32->version,
 			sizeof(uint32_t))) {
-		pr_err("failed to copy the version info\n");
+		pr_debug("failed to copy the version info\n");
 		return -EFAULT;
 	}
 
 	switch (version) {
 	case mdp_hist_lut_v1_7:
 		if (__from_user_hist_lut_data_v1_7(hist_lut32, hist_lut)) {
-			pr_err("failed to get hist lut data for version %d\n",
+			pr_debug("failed to get hist lut data for version %d\n",
 				version);
 			return -EFAULT;
 		}
@@ -2021,7 +2021,7 @@ static int __from_user_pa_data_v1_7(
 	if (copy_from_user(&pa_cfg_payload32,
 			compat_ptr(pa_v2_cfg32->cfg_payload),
 			sizeof(pa_cfg_payload32))) {
-		pr_err("failed to copy the PA payload from userspace\n");
+		pr_debug("failed to copy the PA payload from userspace\n");
 		return -EFAULT;
 	}
 
@@ -2053,7 +2053,7 @@ static int __from_user_pa_data_v1_7(
 
 	if (copy_to_user(pa_v2_cfg->cfg_payload, &pa_cfg_payload,
 			sizeof(pa_cfg_payload))) {
-		pr_err("Failed to copy to user pa cfg payload\n");
+		pr_debug("Failed to copy to user pa cfg payload\n");
 		return -EFAULT;
 	}
 
@@ -2080,14 +2080,14 @@ static int __from_user_pa_v2_cfg_data(
 	if (copy_from_user(&version,
 			&pa_v2_cfg32->version,
 			sizeof(uint32_t))) {
-		pr_err("failed to copy the version info\n");
+		pr_debug("failed to copy the version info\n");
 		return -EFAULT;
 	}
 
 	switch (version) {
 	case mdp_pa_v1_7:
 		if (__from_user_pa_data_v1_7(pa_v2_cfg32, pa_v2_cfg)) {
-			pr_err("failed to get pa data for version %d\n",
+			pr_debug("failed to get pa data for version %d\n",
 				version);
 			return -EFAULT;
 		}
@@ -2130,7 +2130,7 @@ static int __to_user_pa_data_v1_7(
 	if (copy_from_user(&pa_cfg_payload,
 			pa_v2_cfg->cfg_payload,
 			sizeof(pa_cfg_payload))) {
-		pr_err("failed to copy the PA payload from userspace\n");
+		pr_debug("failed to copy the PA payload from userspace\n");
 		return -EFAULT;
 	}
 
@@ -2157,7 +2157,7 @@ static int __to_user_pa_data_v1_7(
 	if (copy_to_user(compat_ptr(pa_v2_cfg32->cfg_payload),
 			&pa_cfg_payload32,
 			sizeof(pa_cfg_payload32))) {
-		pr_err("Failed to copy to user pa cfg payload\n");
+		pr_debug("Failed to copy to user pa cfg payload\n");
 		return -EFAULT;
 	}
 
@@ -2181,7 +2181,7 @@ static int __to_user_pa_v2_cfg_data(
 		if (copy_from_user(&flags,
 				&pa_v2_cfg32->flags,
 				sizeof(uint32_t))) {
-			pr_err("failed to get PA v1_7 flags\n");
+			pr_debug("failed to get PA v1_7 flags\n");
 			return -EFAULT;
 		}
 
@@ -2191,7 +2191,7 @@ static int __to_user_pa_v2_cfg_data(
 		}
 
 		if (__to_user_pa_data_v1_7(pa_v2_cfg32, pa_v2_cfg)) {
-			pr_err("failed to set pa data for version %d\n",
+			pr_debug("failed to set pa data for version %d\n",
 				version);
 			return -EFAULT;
 		}
@@ -2202,7 +2202,7 @@ static int __to_user_pa_v2_cfg_data(
 		if (copy_from_user(&flags,
 				&pa_v2_cfg32->pa_v2_data.flags,
 				sizeof(uint32_t))) {
-			pr_err("failed to get PAv2 flags\n");
+			pr_debug("failed to get PAv2 flags\n");
 			return -EFAULT;
 		}
 
@@ -2280,7 +2280,7 @@ static int __from_user_gamut_cfg_data_v17(
 	if (copy_from_user(&gamut_cfg_payload32,
 			   compat_ptr(gamut_cfg32->cfg_payload),
 			   sizeof(gamut_cfg_payload32))) {
-		pr_err("failed to copy the gamut payload from userspace\n");
+		pr_debug("failed to copy the gamut payload from userspace\n");
 		return -EFAULT;
 	}
 
@@ -2302,7 +2302,7 @@ static int __from_user_gamut_cfg_data_v17(
 	}
 	if (copy_to_user(gamut_cfg->cfg_payload, &gamut_cfg_payload,
 			 sizeof(gamut_cfg_payload))) {
-		pr_err("failed to copy the gamut payload to userspace\n");
+		pr_debug("failed to copy the gamut payload to userspace\n");
 		return -EFAULT;
 	}
 	return 0;
@@ -2333,14 +2333,14 @@ static int __from_user_gamut_cfg_data(
 		return 0;
 
 	if (copy_from_user(&version, &gamut_cfg32->version, sizeof(u32))) {
-		pr_err("failed to copy the version info\n");
+		pr_debug("failed to copy the version info\n");
 		return -EFAULT;
 	}
 
 	switch (version) {
 	case mdp_gamut_v1_7:
 		if (__from_user_gamut_cfg_data_v17(gamut_cfg32, gamut_cfg)) {
-			pr_err("failed to get the gamut data for version %d\n",
+			pr_debug("failed to get the gamut data for version %d\n",
 				version);
 			return -EFAULT;
 		}
@@ -2606,7 +2606,7 @@ static int __from_user_ad_init_cfg(
 				&ad_info->params.cfg))
 			return -EFAULT;
 	} else {
-		pr_err("Invalid AD init/config operation\n");
+		pr_debug("Invalid AD init/config operation\n");
 		return -EINVAL;
 	}
 
@@ -2869,7 +2869,7 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 			alloc_size += __pp_compat_size_igc();
 			*pp = compat_alloc_user_space(alloc_size);
 			if (*pp == NULL) {
-				pr_err("failed to alloc from user size %d for igc\n",
+				pr_debug("failed to alloc from user size %d for igc\n",
 					alloc_size);
 				return -ENOMEM;
 			}
@@ -2885,7 +2885,7 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 			alloc_size += __pp_compat_size_hist_lut();
 			*pp = compat_alloc_user_space(alloc_size);
 			if (*pp == NULL) {
-				pr_err("failed to alloc from user size %d for hist lut\n",
+				pr_debug("failed to alloc from user size %d for hist lut\n",
 					alloc_size);
 				return -ENOMEM;
 			}
@@ -2900,7 +2900,7 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 		default:
 			*pp = compat_alloc_user_space(alloc_size);
 			if (*pp == NULL) {
-				pr_err("failed to alloc from user size %d for lut_type %d\n",
+				pr_debug("failed to alloc from user size %d for lut_type %d\n",
 					alloc_size, lut_type);
 				return -ENOMEM;
 			}
@@ -2913,7 +2913,7 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 		alloc_size += __pp_compat_size_pcc();
 		*pp = compat_alloc_user_space(alloc_size);
 		if (*pp == NULL) {
-			pr_err("alloc from user size %d for pcc fail\n",
+			pr_debug("alloc from user size %d for pcc fail\n",
 				alloc_size);
 			return -ENOMEM;
 		}
@@ -2928,7 +2928,7 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 		alloc_size += __pp_compat_size_gamut();
 		*pp = compat_alloc_user_space(alloc_size);
 		if (*pp == NULL) {
-			pr_err("alloc from user size %d for pcc fail\n",
+			pr_debug("alloc from user size %d for pcc fail\n",
 				alloc_size);
 			return -ENOMEM;
 		}
@@ -2943,7 +2943,7 @@ static int __pp_compat_alloc(struct msmfb_mdp_pp32 __user *pp32,
 		alloc_size += __pp_compat_size_pa();
 		*pp = compat_alloc_user_space(alloc_size);
 		if (*pp == NULL) {
-			pr_err("alloc from user size %d for pcc fail\n",
+			pr_debug("alloc from user size %d for pcc fail\n",
 				alloc_size);
 			return -ENOMEM;
 		}
@@ -3372,7 +3372,7 @@ static int mdss_histo_compat_ioctl(struct fb_info *info, unsigned int cmd,
 		hist_req = compat_alloc_user_space(
 				sizeof(struct mdp_histogram_start_req));
 		if (!hist_req) {
-			pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+			pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 				 __func__, __LINE__,
 				 sizeof(struct mdp_histogram_start_req));
 			return -EINVAL;
@@ -3394,7 +3394,7 @@ static int mdss_histo_compat_ioctl(struct fb_info *info, unsigned int cmd,
 		hist = compat_alloc_user_space(
 				sizeof(struct mdp_histogram_data));
 		if (!hist) {
-			pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+			pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 				 __func__, __LINE__,
 				 sizeof(struct mdp_histogram_data));
 			return -EINVAL;
@@ -3445,7 +3445,7 @@ static int __copy_layer_igc_lut_data_v1_7(
 			cfg_payload32,
 			sizeof(struct mdp_igc_lut_data_v1_7_32));
 	if (ret) {
-		pr_err("copy from user failed, IGC cfg payload = %pK\n",
+		pr_debug("copy from user failed, IGC cfg payload = %pK\n",
 			cfg_payload32);
 		ret = -EFAULT;
 		goto exit;
@@ -3487,7 +3487,7 @@ static int __copy_layer_pp_info_igc_params(
 		ret = __copy_layer_igc_lut_data_v1_7(cfg_payload,
 				compat_ptr(pp_info32->igc_cfg.cfg_payload));
 		if (ret) {
-			pr_err("compat copy of IGC cfg payload failed, ret %d\n",
+			pr_debug("compat copy of IGC cfg payload failed, ret %d\n",
 				ret);
 			kfree(cfg_payload);
 			cfg_payload = NULL;
@@ -3521,7 +3521,7 @@ static int __copy_layer_hist_lut_data_v1_7(
 			cfg_payload32,
 			sizeof(struct mdp_hist_lut_data_v1_7_32));
 	if (ret) {
-		pr_err("copy from user failed, hist lut cfg_payload = %pK\n",
+		pr_debug("copy from user failed, hist lut cfg_payload = %pK\n",
 			cfg_payload32);
 		ret = -EFAULT;
 		goto exit;
@@ -3562,7 +3562,7 @@ static int __copy_layer_pp_info_hist_lut_params(
 		ret = __copy_layer_hist_lut_data_v1_7(cfg_payload,
 			compat_ptr(pp_info32->hist_lut_cfg.cfg_payload));
 		if (ret) {
-			pr_err("compat copy of Hist LUT cfg payload failed, ret %d\n",
+			pr_debug("compat copy of Hist LUT cfg payload failed, ret %d\n",
 				ret);
 			kfree(cfg_payload);
 			cfg_payload = NULL;
@@ -3594,7 +3594,7 @@ static int __copy_layer_pa_data_v1_7(
 			cfg_payload32,
 			sizeof(struct mdp_pa_data_v1_7_32));
 	if (ret) {
-		pr_err("copy from user failed, pa cfg_payload = %pK\n",
+		pr_debug("copy from user failed, pa cfg_payload = %pK\n",
 			cfg_payload32);
 		ret = -EFAULT;
 		goto exit;
@@ -3655,7 +3655,7 @@ static int __copy_layer_pp_info_pa_v2_params(
 		ret = __copy_layer_pa_data_v1_7(cfg_payload,
 			compat_ptr(pp_info32->pa_v2_cfg_data.cfg_payload));
 		if (ret) {
-			pr_err("compat copy of PA cfg payload failed, ret %d\n",
+			pr_debug("compat copy of PA cfg payload failed, ret %d\n",
 				ret);
 			kfree(cfg_payload);
 			cfg_payload = NULL;
@@ -3737,7 +3737,7 @@ static int __copy_layer_pp_info_pcc_params(
 			compat_ptr(pp_info32->pcc_cfg_data.cfg_payload),
 			sizeof(struct mdp_pcc_data_v1_7));
 		if (ret) {
-			pr_err("compat copy of PCC cfg payload failed, ptr %pK\n",
+			pr_debug("compat copy of PCC cfg payload failed, ptr %pK\n",
 				compat_ptr(
 				pp_info32->pcc_cfg_data.cfg_payload));
 			ret = -EFAULT;
@@ -3772,7 +3772,7 @@ static int __copy_layer_pp_info_params(struct mdp_input_layer *layer,
 			compat_ptr(layer32->pp_info),
 			sizeof(struct mdp_overlay_pp_params32));
 	if (ret) {
-		pr_err("pp info copy from user failed, pp_info %pK\n",
+		pr_debug("pp info copy from user failed, pp_info %pK\n",
 			compat_ptr(layer32->pp_info));
 		ret = -EFAULT;
 		goto exit;
@@ -3798,37 +3798,37 @@ static int __copy_layer_pp_info_params(struct mdp_input_layer *layer,
 
 	ret = __copy_layer_pp_info_qseed_params(pp_info, &pp_info32);
 	if (ret) {
-		pr_err("compat copy pp_info QSEED params failed, ret %d\n",
+		pr_debug("compat copy pp_info QSEED params failed, ret %d\n",
 			ret);
 		goto exit_pp_info;
 	}
 	ret = __copy_layer_pp_info_legacy_pa_v2_params(pp_info, &pp_info32);
 	if (ret) {
-		pr_err("compat copy pp_info Legacy PAv2 params failed, ret %d\n",
+		pr_debug("compat copy pp_info Legacy PAv2 params failed, ret %d\n",
 			ret);
 		goto exit_pp_info;
 	}
 	ret = __copy_layer_pp_info_igc_params(pp_info, &pp_info32);
 	if (ret) {
-		pr_err("compat copy pp_info IGC params failed, ret %d\n",
+		pr_debug("compat copy pp_info IGC params failed, ret %d\n",
 			ret);
 		goto exit_pp_info;
 	}
 	ret = __copy_layer_pp_info_hist_lut_params(pp_info, &pp_info32);
 	if (ret) {
-		pr_err("compat copy pp_info Hist LUT params failed, ret %d\n",
+		pr_debug("compat copy pp_info Hist LUT params failed, ret %d\n",
 			ret);
 		goto exit_igc;
 	}
 	ret = __copy_layer_pp_info_pa_v2_params(pp_info, &pp_info32);
 	if (ret) {
-		pr_err("compat copy pp_info PAv2 params failed, ret %d\n",
+		pr_debug("compat copy pp_info PAv2 params failed, ret %d\n",
 			ret);
 		goto exit_hist_lut;
 	}
 	ret = __copy_layer_pp_info_pcc_params(pp_info, &pp_info32);
 	if (ret) {
-		pr_err("compat copy pp_info PCC params failed, ret %d\n",
+		pr_debug("compat copy pp_info PCC params failed, ret %d\n",
 			ret);
 		goto exit_pa;
 	}
@@ -3971,7 +3971,7 @@ static int __from_user_mdp_overlaylist(struct mdp_overlay_list __user *ovlist,
 	struct mdp_overlay32 *iter;
 
 	if (!to_list_head || !ovlist32 || !ovlist) {
-		pr_err("%s:%u: null error\n", __func__, __LINE__);
+		pr_debug("%s:%u: null error\n", __func__, __LINE__);
 		return -EINVAL;
 	}
 
@@ -4013,7 +4013,7 @@ static int __from_user_mdp_overlaylist(struct mdp_overlay_list __user *ovlist,
 	return 0;
 
 validate_exit:
-	pr_err("%s: %u: copy error\n", __func__, __LINE__);
+	pr_debug("%s: %u: copy error\n", __func__, __LINE__);
 	return -EFAULT;
 }
 
@@ -4032,7 +4032,7 @@ static int __to_user_mdp_overlaylist(struct mdp_overlay_list32 __user *ovlist32,
 
 	if (get_user(data, &ovlist32->overlay_list)) {
 		ret = -EFAULT;
-		pr_err("%s:%u: err\n", __func__, __LINE__);
+		pr_debug("%s:%u: err\n", __func__, __LINE__);
 		goto validate_exit;
 	}
 
@@ -4062,7 +4062,7 @@ static int __to_user_mdp_overlaylist(struct mdp_overlay_list32 __user *ovlist32,
 	return 0;
 
 validate_exit:
-	pr_err("%s: %u: copy error\n", __func__, __LINE__);
+	pr_debug("%s: %u: copy error\n", __func__, __LINE__);
 	return -EFAULT;
 
 }
@@ -4094,7 +4094,7 @@ static u32 __pp_sspp_size(void)
 static int __pp_sspp_set_offsets(struct mdp_overlay __user *ov)
 {
 	if (!ov) {
-		pr_err("invalid overlay pointer\n");
+		pr_debug("invalid overlay pointer\n");
 		return -EFAULT;
 	}
 	if (put_user((void *)((unsigned long)ov + sizeof(struct mdp_overlay)),
@@ -4143,19 +4143,19 @@ int mdss_compat_overlay_ioctl(struct fb_info *info, unsigned int cmd,
 		alloc_size += sizeof(*ov) + __pp_sspp_size();
 		ov = compat_alloc_user_space(alloc_size);
 		if (!ov) {
-			pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+			pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 				 __func__, __LINE__, sizeof(*ov));
 			return -EINVAL;
 		}
 		ov32 = compat_ptr(arg);
 		ret = __pp_sspp_set_offsets(ov);
 		if (ret) {
-			pr_err("setting the pp offsets failed ret %d\n", ret);
+			pr_debug("setting the pp offsets failed ret %d\n", ret);
 			return ret;
 		}
 		ret = __from_user_mdp_overlay(ov, ov32);
 		if (ret)
-			pr_err("%s: compat mdp overlay failed\n", __func__);
+			pr_debug("%s: compat mdp overlay failed\n", __func__);
 		else
 			ret = mdss_fb_do_ioctl(info, cmd,
 				(unsigned long) ov, file);
@@ -4165,19 +4165,19 @@ int mdss_compat_overlay_ioctl(struct fb_info *info, unsigned int cmd,
 		alloc_size += sizeof(*ov) + __pp_sspp_size();
 		ov = compat_alloc_user_space(alloc_size);
 		if (!ov) {
-			pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+			pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 				 __func__, __LINE__, sizeof(*ov));
 			return -EINVAL;
 		}
 		ret = __pp_sspp_set_offsets(ov);
 		if (ret) {
-			pr_err("setting the pp offsets failed ret %d\n", ret);
+			pr_debug("setting the pp offsets failed ret %d\n", ret);
 			return ret;
 		}
 		ov32 = compat_ptr(arg);
 		ret = __from_user_mdp_overlay(ov, ov32);
 		if (ret) {
-			pr_err("%s: compat mdp overlay failed\n", __func__);
+			pr_debug("%s: compat mdp overlay failed\n", __func__);
 		} else {
 			ret = mdss_fb_do_ioctl(info, cmd,
 				(unsigned long) ov, file);
@@ -4187,12 +4187,12 @@ int mdss_compat_overlay_ioctl(struct fb_info *info, unsigned int cmd,
 	case MSMFB_OVERLAY_PREPARE:
 		ovlist32 = compat_ptr(arg);
 		if (get_user(num_overlays, &ovlist32->num_overlays)) {
-			pr_err("compat mdp prepare failed: invalid arg\n");
+			pr_debug("compat mdp prepare failed: invalid arg\n");
 			return -EFAULT;
 		}
 
 		if (num_overlays >= OVERLAY_MAX) {
-			pr_err("%s: No: of overlays exceeds max\n", __func__);
+			pr_debug("%s: No: of overlays exceeds max\n", __func__);
 			return -EINVAL;
 		}
 
@@ -4203,7 +4203,7 @@ int mdss_compat_overlay_ioctl(struct fb_info *info, unsigned int cmd,
 		total_mem_chunk = compat_alloc_user_space(
 			prepare_sz + layers_refs_sz + layers_sz);
 		if (!total_mem_chunk) {
-			pr_err("%s:%u: compat alloc error [%zu] bytes\n",
+			pr_debug("%s:%u: compat alloc error [%zu] bytes\n",
 				 __func__, __LINE__,
 				 layers_refs_sz + layers_sz + prepare_sz);
 			return -EINVAL;
@@ -4217,7 +4217,7 @@ int mdss_compat_overlay_ioctl(struct fb_info *info, unsigned int cmd,
 		ret = __from_user_mdp_overlaylist(ovlist, ovlist32,
 					layers_head);
 		if (ret) {
-			pr_err("compat mdp overlaylist failed\n");
+			pr_debug("compat mdp overlaylist failed\n");
 		} else {
 			ret = mdss_fb_do_ioctl(info, cmd,
 				(unsigned long) ovlist, file);
@@ -4296,7 +4296,7 @@ int mdss_fb_compat_ioctl(struct fb_info *info, unsigned int cmd,
 	}
 
 	if (ret == -ENOTSUPP)
-		pr_err("%s: unsupported ioctl\n", __func__);
+		pr_debug("%s: unsupported ioctl\n", __func__);
 	else if (ret)
 		pr_debug("%s: ioctl err cmd=%u ret=%d\n", __func__, cmd, ret);
 

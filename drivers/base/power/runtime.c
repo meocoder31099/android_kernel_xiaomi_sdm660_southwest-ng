@@ -1129,7 +1129,7 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
 		if (!parent->power.disable_depth
 		    && !parent->power.ignore_children
 		    && parent->power.runtime_status != RPM_ACTIVE) {
-			dev_err(dev, "runtime PM trying to activate child device %s but parent (%s) is not active\n",
+			dev_dbg(dev, "runtime PM trying to activate child device %s but parent (%s) is not active\n",
 				dev_name(dev),
 				dev_name(parent));
 			error = -EBUSY;
@@ -1300,7 +1300,7 @@ void pm_runtime_enable(struct device *dev)
 	if (dev->power.disable_depth > 0)
 		dev->power.disable_depth--;
 	else
-		dev_warn(dev, "Unbalanced %s!\n", __func__);
+		dev_dbg(dev, "Unbalanced %s!\n", __func__);
 
 	WARN(!dev->power.disable_depth &&
 	     dev->power.runtime_status == RPM_SUSPENDED &&

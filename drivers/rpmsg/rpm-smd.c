@@ -635,13 +635,13 @@ static inline int msm_rpm_get_error_from_ack(uint8_t *buf)
 	if (!req_len)
 		return 0;
 
-	pr_err("%s:rpm returned error or nack req_len: %d id_ack: %d\n",
+	pr_debug("%s:rpm returned error or nack req_len: %d id_ack: %d\n",
 				__func__, req_len, get_ack_msg_id(buf));
 
 	tmp = buf + ack_msg_size;
 
 	if (memcmp(tmp, ERR, sizeof(uint32_t))) {
-		pr_err("%s rpm returned error\n", __func__);
+		pr_debug("%s rpm returned error\n", __func__);
 		WARN_ON(1);
 	}
 
@@ -649,10 +649,10 @@ static inline int msm_rpm_get_error_from_ack(uint8_t *buf)
 
 	if (!(memcmp(tmp, INV_RSC, min_t(uint32_t, req_len,
 						sizeof(INV_RSC))-1))) {
-		pr_err("%s(): RPM NACK Unsupported resource\n", __func__);
+		pr_debug("%s(): RPM NACK Unsupported resource\n", __func__);
 		rc = -EINVAL;
 	} else {
-		pr_err("%s(): RPM NACK Invalid header\n", __func__);
+		pr_debug("%s(): RPM NACK Invalid header\n", __func__);
 	}
 
 	return rc;
@@ -683,7 +683,7 @@ int msm_rpm_smd_buffer_request(struct msm_rpm_request *cdata,
 		slp->buf = PTR_ALIGN(&slp->ubuf[0], sizeof(u32));
 		memcpy(slp->buf, buf, size);
 		if (tr_insert(&tr_root, slp)) {
-			pr_err("Error updating sleep request\n");
+			pr_debug("Error updating sleep request\n");
 			kfree(slp);
 			return -EINVAL;
 		}
@@ -755,7 +755,7 @@ static int msm_rpm_flush_requests(bool print)
 		 * process these sleep set acks.
 		 */
 		if (count >= MAX_WAIT_ON_ACK) {
-			pr_err("Error: more than %d requests are buffered\n",
+			pr_debug("Error: more than %d requests are buffered\n",
 							MAX_WAIT_ON_ACK);
 			return -ENOSPC;
 		}
@@ -786,7 +786,7 @@ static int msm_rpm_add_kvp_data_common(struct msm_rpm_request *handle,
 		return probe_status;
 
 	if (!handle || !data) {
-		pr_err("%s(): Invalid handle/data\n", __func__);
+		pr_debug("%s(): Invalid handle/data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -810,7 +810,7 @@ static int msm_rpm_add_kvp_data_common(struct msm_rpm_request *handle,
 	}
 
 	if (i >= handle->num_elements) {
-		pr_err("Number of resources exceeds max allocated\n");
+		pr_debug("Number of resources exceeds max allocated\n");
 		return -ENOMEM;
 	}
 
@@ -882,7 +882,7 @@ static struct msm_rpm_request *msm_rpm_create_request_common(
 				GFP_NOIO);
 
 	if (!cdata->kvp) {
-		pr_warn("%s(): Cannot allocate memory for key value data\n",
+		pr_debug("%s(): Cannot allocate memory for key value data\n",
 				__func__);
 		goto kvp_alloc_fail;
 	}
@@ -1199,7 +1199,7 @@ static void msm_rpm_log_request(struct msm_rpm_request *cdata)
 	}
 
 	pos += scnprintf(buf + pos, buflen - pos, "\n");
-	pr_info("request info %s\n", buf);
+	pr_debug("request info %s\n", buf);
 }
 
 static int msm_rpm_send_data(struct msm_rpm_request *cdata,
@@ -1215,11 +1215,11 @@ static int msm_rpm_send_data(struct msm_rpm_request *cdata,
 	uint32_t msg_id;
 
 	if (probe_status) {
-		pr_err("probe failed\n");
+		pr_debug("probe failed\n");
 		return probe_status;
 	}
 	if (!data_len) {
-		pr_err("no data len\n");
+		pr_debug("no data len\n");
 		return 1;
 	}
 
@@ -1240,7 +1240,7 @@ static int msm_rpm_send_data(struct msm_rpm_request *cdata,
 	}
 
 	if (!cdata->buf) {
-		pr_err("Failed malloc\n");
+		pr_debug("Failed malloc\n");
 		return 0;
 	}
 
@@ -1310,7 +1310,7 @@ static int msm_rpm_send_data(struct msm_rpm_request *cdata,
 		struct msm_rpm_wait_data *rc;
 
 		ret = 0;
-		pr_err("Failed to write data msg_size:%d ret:%d msg_id:%d\n",
+		pr_debug("Failed to write data msg_size:%d ret:%d msg_id:%d\n",
 				msg_size, ret, msg_id);
 		rc = msm_rpm_get_entry_from_msg_id(msg_id);
 		if (rc)
@@ -1359,7 +1359,7 @@ int msm_rpm_wait_for_ack(uint32_t msg_id)
 	int rc = 0;
 
 	if (!msg_id) {
-		pr_err("Invalid msg id\n");
+		pr_debug("Invalid msg id\n");
 		return -ENOMEM;
 	}
 
@@ -1578,7 +1578,7 @@ static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
 
 	p = of_find_compatible_node(NULL, NULL, "qcom,rpm-smd");
 	if (!p) {
-		pr_err("Unable to find rpm-smd\n");
+		pr_debug("Unable to find rpm-smd\n");
 		probe_status = -ENODEV;
 		goto fail;
 	}
@@ -1599,11 +1599,11 @@ static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
 	if (version == V1_PROTOCOL_VERSION)
 		rpm_msg_fmt_ver = RPM_MSG_V1_FMT;
 
-	pr_info("RPM-SMD running version %d\n", rpm_msg_fmt_ver);
+	pr_debug("RPM-SMD running version %d\n", rpm_msg_fmt_ver);
 
 	irq = of_irq_get(p, 0);
 	if (!irq) {
-		pr_err("Unable to get rpm-smd interrupt number\n");
+		pr_debug("Unable to get rpm-smd interrupt number\n");
 		probe_status = -ENODEV;
 		goto fail;
 	}
@@ -1616,7 +1616,7 @@ static int qcom_smd_rpm_probe(struct rpmsg_device *rpdev)
 
 	ret = register_pm_notifier(&rpm_smd_pm_nb);
 	if (ret) {
-		pr_err("%s: power state notif error %d\n", __func__, ret);
+		pr_debug("%s: power state notif error %d\n", __func__, ret);
 		probe_status = -ENODEV;
 		goto fail;
 	}
@@ -1634,7 +1634,7 @@ skip_init:
 	probe_status = of_platform_populate(p, NULL, NULL, &rpdev->dev);
 
 	if (standalone)
-		pr_info("RPM running in standalone mode\n");
+		pr_debug("RPM running in standalone mode\n");
 fail:
 	return probe_status;
 }
@@ -1666,7 +1666,7 @@ int __init msm_rpm_driver_init(void)
 
 	ret = register_rpmsg_driver(&qcom_smd_rpm_driver);
 	if (ret)
-		pr_err("register_rpmsg_driver: failed with err %d\n", ret);
+		pr_debug("register_rpmsg_driver: failed with err %d\n", ret);
 
 	return ret;
 }

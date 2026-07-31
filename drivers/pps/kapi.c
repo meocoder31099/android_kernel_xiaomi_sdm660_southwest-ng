@@ -55,7 +55,7 @@ static void pps_add_offset(struct pps_ktime *ts, struct pps_ktime *offset)
 static void pps_echo_client_default(struct pps_device *pps, int event,
 		void *data)
 {
-	dev_info(&pps->dev, "echo %s %s\n",
+	dev_dbg(&pps->dev, "echo %s %s\n",
 		event & PPS_CAPTUREASSERT ? "assert" : "",
 		event & PPS_CAPTURECLEAR ? "clear" : "");
 }
@@ -83,13 +83,13 @@ struct pps_device *pps_register_source(struct pps_source_info *info,
 
 	/* Sanity checks */
 	if ((info->mode & default_params) != default_params) {
-		pr_err("%s: unsupported default parameters\n",
+		pr_debug("%s: unsupported default parameters\n",
 					info->name);
 		err = -EINVAL;
 		goto pps_register_source_exit;
 	}
 	if ((info->mode & (PPS_TSFMT_TSPEC | PPS_TSFMT_NTPFP)) == 0) {
-		pr_err("%s: unspecified time format\n",
+		pr_debug("%s: unspecified time format\n",
 					info->name);
 		err = -EINVAL;
 		goto pps_register_source_exit;
@@ -120,7 +120,7 @@ struct pps_device *pps_register_source(struct pps_source_info *info,
 	/* Create the char device */
 	err = pps_register_cdev(pps);
 	if (err < 0) {
-		pr_err("%s: unable to create char device\n",
+		pr_debug("%s: unable to create char device\n",
 					info->name);
 		goto pps_register_source_exit;
 	}
@@ -130,7 +130,7 @@ struct pps_device *pps_register_source(struct pps_source_info *info,
 	return pps;
 
 pps_register_source_exit:
-	pr_err("%s: unable to register source\n", info->name);
+	pr_debug("%s: unable to register source\n", info->name);
 
 	return NULL;
 }

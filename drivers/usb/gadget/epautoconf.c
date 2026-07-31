@@ -244,7 +244,7 @@ struct usb_ep *usb_ep_autoconfig_by_name(
 	}
 
 err:
-	pr_err("%s:error finding ep %s\n", __func__, ep_name);
+	pr_debug("%s:error finding ep %s\n", __func__, ep_name);
 	return NULL;
 }
 EXPORT_SYMBOL(usb_ep_autoconfig_by_name);

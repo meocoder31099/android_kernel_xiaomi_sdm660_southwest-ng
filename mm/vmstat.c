@@ -90,11 +90,11 @@ int sysctl_vm_numa_stat_handler(struct ctl_table *table, int write,
 		goto out;
 	else if (sysctl_vm_numa_stat == ENABLE_NUMA_STAT) {
 		static_branch_enable(&vm_numa_stat_key);
-		pr_info("enable numa statistics\n");
+		pr_debug("enable numa statistics\n");
 	} else {
 		static_branch_disable(&vm_numa_stat_key);
 		invalid_numa_statistics();
-		pr_info("disable numa statistics, and clear numa counters\n");
+		pr_debug("disable numa statistics, and clear numa counters\n");
 	}
 
 out:
@@ -1785,7 +1785,7 @@ int vmstat_refresh(struct ctl_table *table, int write,
 	for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++) {
 		val = atomic_long_read(&vm_zone_stat[i]);
 		if (val < 0) {
-			pr_warn("%s: %s %ld\n",
+			pr_debug("%s: %s %ld\n",
 				__func__, vmstat_text[i], val);
 			err = -EINVAL;
 		}
@@ -1794,7 +1794,7 @@ int vmstat_refresh(struct ctl_table *table, int write,
 	for (i = 0; i < NR_VM_NUMA_STAT_ITEMS; i++) {
 		val = atomic_long_read(&vm_numa_stat[i]);
 		if (val < 0) {
-			pr_warn("%s: %s %ld\n",
+			pr_debug("%s: %s %ld\n",
 				__func__, vmstat_text[i + NR_VM_ZONE_STAT_ITEMS], val);
 			err = -EINVAL;
 		}
@@ -1979,13 +1979,13 @@ void __init init_mm_internals(void)
 	ret = cpuhp_setup_state_nocalls(CPUHP_MM_VMSTAT_DEAD, "mm/vmstat:dead",
 					NULL, vmstat_cpu_dead);
 	if (ret < 0)
-		pr_err("vmstat: failed to register 'dead' hotplug state\n");
+		pr_debug("vmstat: failed to register 'dead' hotplug state\n");
 
 	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "mm/vmstat:online",
 					vmstat_cpu_online,
 					vmstat_cpu_down_prep);
 	if (ret < 0)
-		pr_err("vmstat: failed to register 'online' hotplug state\n");
+		pr_debug("vmstat: failed to register 'online' hotplug state\n");
 
 	get_online_cpus();
 	init_cpu_node_state();

@@ -40,20 +40,20 @@ static void audio_effects_init_pp(struct audio_client *ac)
 	};
 
 	if (!ac) {
-		pr_err("%s: audio client null to init pp\n", __func__);
+		pr_debug("%s: audio client null to init pp\n", __func__);
 		return;
 	}
 	ret = q6asm_set_softvolume_v2(ac, &softvol,
 				      SOFT_VOLUME_INSTANCE_1);
 	if (ret < 0)
-		pr_err("%s: Send SoftVolume Param failed ret=%d\n",
+		pr_debug("%s: Send SoftVolume Param failed ret=%d\n",
 			__func__, ret);
 }
 
 static void audio_effects_deinit_pp(struct audio_client *ac)
 {
 	if (!ac) {
-		pr_err("%s: audio client null to deinit pp\n", __func__);
+		pr_debug("%s: audio client null to deinit pp\n", __func__);
 		return;
 	}
 }
@@ -64,7 +64,7 @@ static void audio_effects_event_handler(uint32_t opcode, uint32_t token,
 	struct q6audio_effects *effects;
 
 	if (!payload || !priv) {
-		pr_err("%s: invalid data to handle events, payload: %pK, priv: %pK\n",
+		pr_debug("%s: invalid data to handle events, payload: %pK, priv: %pK\n",
 			__func__, payload, priv);
 		return;
 	}
@@ -122,7 +122,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 					true /*overwrite topology*/,
 					ASM_STREAM_POSTPROC_TOPO_ID_HPX_MASTER);
 		if (rc < 0) {
-			pr_err("%s: Open failed for hw accelerated effects:rc=%d\n",
+			pr_debug("%s: Open failed for hw accelerated effects:rc=%d\n",
 				__func__, rc);
 			rc = -EINVAL;
 			mutex_unlock(&effects->lock);
@@ -139,7 +139,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 					effects->config.output.buf_size,
 					effects->config.output.num_buf);
 		if (rc < 0) {
-			pr_err("%s: Write buffer Allocation failed rc = %d\n",
+			pr_debug("%s: Write buffer Allocation failed rc = %d\n",
 				__func__, rc);
 			rc = -ENOMEM;
 			mutex_unlock(&effects->lock);
@@ -150,7 +150,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 					effects->config.input.buf_size,
 					effects->config.input.num_buf);
 		if (rc < 0) {
-			pr_err("%s: Read buffer Allocation failed rc = %d\n",
+			pr_debug("%s: Read buffer Allocation failed rc = %d\n",
 				__func__, rc);
 			rc = -ENOMEM;
 			goto readbuf_fail;
@@ -165,7 +165,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 					   effects->config.input.sample_rate,
 					   effects->config.input.num_channels);
 		if (rc < 0) {
-			pr_err("%s: pcm read block config failed\n", __func__);
+			pr_debug("%s: pcm read block config failed\n", __func__);
 			rc = -EINVAL;
 			goto cfg_fail;
 		}
@@ -178,7 +178,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 				effects->config.output.num_channels,
 				effects->config.output.bits_per_sample);
 		if (rc < 0) {
-			pr_err("%s: pcm write format block config failed\n",
+			pr_debug("%s: pcm write format block config failed\n",
 				__func__);
 			rc = -EINVAL;
 			goto cfg_fail;
@@ -191,7 +191,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 			effects->started = 1;
 		else {
 			effects->started = 0;
-			pr_err("%s: ASM run state failed\n", __func__);
+			pr_debug("%s: ASM run state failed\n", __func__);
 		}
 		mutex_unlock(&effects->lock);
 		break;
@@ -213,13 +213,13 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 					atomic_read(&effects->out_count),
 					WAIT_TIMEDOUT_DURATION_SECS * HZ);
 		if (!rc) {
-			pr_err("%s: write wait_event_timeout\n", __func__);
+			pr_debug("%s: write wait_event_timeout\n", __func__);
 			rc = -EFAULT;
 			 mutex_unlock(&effects->lock);
 			goto ioctl_fail;
 		}
 		if (!atomic_read(&effects->out_count)) {
-			pr_err("%s: pcm stopped out_count 0\n", __func__);
+			pr_debug("%s: pcm stopped out_count 0\n", __func__);
 			rc = -EFAULT;
 			mutex_unlock(&effects->lock);
 			goto ioctl_fail;
@@ -244,7 +244,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 			}
 			atomic_dec(&effects->out_count);
 		} else {
-			pr_err("%s: AUDIO_EFFECTS_WRITE: Buffer dropped\n",
+			pr_debug("%s: AUDIO_EFFECTS_WRITE: Buffer dropped\n",
 				__func__);
 		}
 		mutex_unlock(&effects->lock);
@@ -268,19 +268,19 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 		q6asm_read_v2(effects->ac, effects->config.buf_cfg.input_len);
 		/* Read might fail initially, don't error out */
 		if (rc < 0)
-			pr_err("%s: read failed\n", __func__);
+			pr_debug("%s: read failed\n", __func__);
 
 		rc = wait_event_timeout(effects->read_wait,
 					atomic_read(&effects->in_count),
 					WAIT_TIMEDOUT_DURATION_SECS * HZ);
 		if (!rc) {
-			pr_err("%s: read wait_event_timeout\n", __func__);
+			pr_debug("%s: read wait_event_timeout\n", __func__);
 			rc = -EFAULT;
 			mutex_unlock(&effects->lock);
 			goto ioctl_fail;
 		}
 		if (!atomic_read(&effects->in_count)) {
-			pr_err("%s: pcm stopped in_count 0\n", __func__);
+			pr_debug("%s: pcm stopped in_count 0\n", __func__);
 			rc = -EFAULT;
 			mutex_unlock(&effects->lock);
 			goto ioctl_fail;
@@ -305,7 +305,7 @@ static int audio_effects_shared_ioctl(struct file *file, unsigned int cmd,
 		break;
 	}
 	default:
-		pr_err("%s: Invalid effects config module\n", __func__);
+		pr_debug("%s: Invalid effects config module\n", __func__);
 		rc = -EINVAL;
 		break;
 	}
@@ -393,7 +393,7 @@ static long audio_effects_set_pp_param(struct q6audio_effects *effects,
 			      (long *)&values[1], SOFT_VOLUME_INSTANCE_2);
 		break;
 	default:
-		pr_err("%s: Invalid effects config module\n", __func__);
+		pr_debug("%s: Invalid effects config module\n", __func__);
 		rc = -EINVAL;
 	}
 	return rc;
@@ -413,7 +413,7 @@ static long audio_effects_ioctl(struct file *file, unsigned int cmd,
 		memset(&effects->config, 0, sizeof(effects->config));
 		if (copy_from_user(&effects->config, (void *)arg,
 				   sizeof(effects->config))) {
-			pr_err("%s: copy from user for AUDIO_SET_EFFECTS_CONFIG failed\n",
+			pr_debug("%s: copy from user for AUDIO_SET_EFFECTS_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -434,7 +434,7 @@ static long audio_effects_ioctl(struct file *file, unsigned int cmd,
 		mutex_lock(&effects->lock);
 		if (copy_from_user(&effects->config.buf_cfg, (void *)arg,
 				   sizeof(effects->config.buf_cfg))) {
-			pr_err("%s: copy from user for AUDIO_EFFECTS_SET_BUF_LEN failed\n",
+			pr_debug("%s: copy from user for AUDIO_EFFECTS_SET_BUF_LEN failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -455,7 +455,7 @@ static long audio_effects_ioctl(struct file *file, unsigned int cmd,
 			 buf_avail.input_num_avail);
 		if (copy_to_user((void *)arg, &buf_avail,
 				   sizeof(buf_avail))) {
-			pr_err("%s: copy to user for AUDIO_EFFECTS_GET_NUM_BUF_AVAIL failed\n",
+			pr_debug("%s: copy to user for AUDIO_EFFECTS_GET_NUM_BUF_AVAIL failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -466,7 +466,7 @@ static long audio_effects_ioctl(struct file *file, unsigned int cmd,
 		mutex_lock(&effects->lock);
 		if (copy_from_user(argvalues, (void *)arg,
 				   MAX_PP_PARAMS_SZ*sizeof(long))) {
-			pr_err("%s: copy from user for pp params failed\n",
+			pr_debug("%s: copy from user for pp params failed\n",
 				__func__);
 			mutex_unlock(&effects->lock);
 			return -EFAULT;
@@ -481,7 +481,7 @@ static long audio_effects_ioctl(struct file *file, unsigned int cmd,
 		break;
 	}
 	if (rc)
-		pr_err("%s: cmd 0x%x failed\n", __func__, cmd);
+		pr_debug("%s: cmd 0x%x failed\n", __func__, cmd);
 	return rc;
 }
 
@@ -543,7 +543,7 @@ static long audio_effects_compat_ioctl(struct file *file, unsigned int cmd,
 		memset(&effects->config, 0, sizeof(effects->config));
 		if (copy_from_user(&config32, (void *)arg,
 				   sizeof(config32))) {
-			pr_err("%s: copy to user for AUDIO_SET_EFFECTS_CONFIG failed\n",
+			pr_debug("%s: copy to user for AUDIO_SET_EFFECTS_CONFIG failed\n",
 				__func__);
 			rc = -EFAULT;
 			mutex_unlock(&effects->lock);
@@ -593,7 +593,7 @@ static long audio_effects_compat_ioctl(struct file *file, unsigned int cmd,
 		mutex_lock(&effects->lock);
 		if (copy_from_user(&buf_cfg32, (void *)arg,
 				   sizeof(buf_cfg32))) {
-			pr_err("%s: copy from user for AUDIO_EFFECTS_SET_BUF_LEN failed\n",
+			pr_debug("%s: copy from user for AUDIO_EFFECTS_SET_BUF_LEN failed\n",
 				__func__);
 			rc = -EFAULT;
 			mutex_unlock(&effects->lock);
@@ -620,7 +620,7 @@ static long audio_effects_compat_ioctl(struct file *file, unsigned int cmd,
 			 buf_avail.input_num_avail);
 		if (copy_to_user((void *)arg, &buf_avail,
 				   sizeof(buf_avail))) {
-			pr_err("%s: copy to user for AUDIO_EFFECTS_GET_NUM_BUF_AVAIL failed\n",
+			pr_debug("%s: copy to user for AUDIO_EFFECTS_GET_NUM_BUF_AVAIL failed\n",
 				__func__);
 			rc = -EFAULT;
 		}
@@ -634,7 +634,7 @@ static long audio_effects_compat_ioctl(struct file *file, unsigned int cmd,
 		mutex_lock(&effects->lock);
 		if (copy_from_user(argvalues32, (void *)arg,
 				   MAX_PP_PARAMS_SZ*sizeof(int))) {
-			pr_err("%s: copy from user failed for pp params\n",
+			pr_debug("%s: copy from user failed for pp params\n",
 				__func__);
 			mutex_unlock(&effects->lock);
 			return -EFAULT;
@@ -673,7 +673,7 @@ static int audio_effects_release(struct inode *inode, struct file *file)
 	int rc = 0;
 
 	if (!effects) {
-		pr_err("%s: effect is NULL\n", __func__);
+		pr_debug("%s: effect is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (effects->opened) {
@@ -681,17 +681,17 @@ static int audio_effects_release(struct inode *inode, struct file *file)
 					atomic_read(&effects->out_count),
 					WAIT_TIMEDOUT_DURATION_SECS * HZ);
 		if (!rc)
-			pr_err("%s: write wait_event_timeout failed\n",
+			pr_debug("%s: write wait_event_timeout failed\n",
 				__func__);
 		rc = wait_event_timeout(effects->read_wait,
 					atomic_read(&effects->in_count),
 					WAIT_TIMEDOUT_DURATION_SECS * HZ);
 		if (!rc)
-			pr_err("%s: read wait_event_timeout failed\n",
+			pr_debug("%s: read wait_event_timeout failed\n",
 				__func__);
 		rc = q6asm_cmd(effects->ac, CMD_CLOSE);
 		if (rc < 0)
-			pr_err("%s[%pK]:Failed to close the session rc=%d\n",
+			pr_debug("%s[%pK]:Failed to close the session rc=%d\n",
 				__func__, effects, rc);
 		effects->opened = 0;
 		effects->started = 0;
@@ -725,7 +725,7 @@ static int audio_effects_open(struct inode *inode, struct file *file)
 					(app_cb)audio_effects_event_handler,
 					(void *)effects);
 	if (!effects->ac) {
-		pr_err("%s: Could not allocate memory for audio client\n",
+		pr_debug("%s: Could not allocate memory for audio client\n",
 			__func__);
 		kfree(effects);
 		return -ENOMEM;

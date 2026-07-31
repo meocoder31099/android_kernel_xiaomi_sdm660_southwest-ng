@@ -288,7 +288,7 @@ int iommu_dma_init_domain(struct iommu_domain *domain, dma_addr_t base,
 	if (domain->geometry.force_aperture) {
 		if (base > domain->geometry.aperture_end ||
 		    base + size <= domain->geometry.aperture_start) {
-			pr_warn("specified DMA range outside IOMMU capability\n");
+			pr_debug("specified DMA range outside IOMMU capability\n");
 			return -EFAULT;
 		}
 		/* ...then finally give it a kicking to make sure it fits */
@@ -300,7 +300,7 @@ int iommu_dma_init_domain(struct iommu_domain *domain, dma_addr_t base,
 	if (iovad->start_pfn) {
 		if (1UL << order != iovad->granule ||
 		    base_pfn != iovad->start_pfn) {
-			pr_warn("Incompatible range for DMA domain\n");
+			pr_debug("Incompatible range for DMA domain\n");
 			return -EFAULT;
 		}
 

@@ -80,7 +80,7 @@ void cqhci_crypto_qti_enable(struct cqhci_host *host)
 
 	err = crypto_qti_enable(host->crypto_vops->priv);
 	if (err) {
-		pr_err("%s: Error enabling crypto, err %d\n",
+		pr_debug("%s: Error enabling crypto, err %d\n",
 				__func__, err);
 		cqhci_crypto_qti_disable(host);
 	}
@@ -121,7 +121,7 @@ static int cqhci_crypto_qti_keyslot_program(struct keyslot_manager *ksm,
 		if (err)
 			return err;
 	} else {
-		pr_err("%s: Invalid clock value\n", __func__);
+		pr_debug("%s: Invalid clock value\n", __func__);
 		return -EINVAL;
 	}
 
@@ -145,7 +145,7 @@ static int cqhci_crypto_qti_keyslot_program(struct keyslot_manager *ksm,
 	err = crypto_qti_keyslot_program(host->crypto_vops->priv, key,
 					 slot, data_unit_mask, crypto_alg_id);
 	if (err)
-		pr_err("%s: failed with error %d\n", __func__, err);
+		pr_debug("%s: failed with error %d\n", __func__, err);
 
 	clk_disable_unprepare(msm_host->pclk);
 	clk_disable_unprepare(msm_host->ice_clk);
@@ -172,7 +172,7 @@ static int cqhci_crypto_qti_keyslot_evict(struct keyslot_manager *ksm,
 		if (err)
 			return err;
 	} else {
-		pr_err("%s: Invalid clock value\n", __func__);
+		pr_debug("%s: Invalid clock value\n", __func__);
 		return -EINVAL;
 	}
 	pm_runtime_get_sync(&host->mmc->card->dev);
@@ -185,7 +185,7 @@ static int cqhci_crypto_qti_keyslot_evict(struct keyslot_manager *ksm,
 
 	err = crypto_qti_keyslot_evict(host->crypto_vops->priv, slot);
 	if (err)
-		pr_err("%s: failed with error %d\n", __func__, err);
+		pr_debug("%s: failed with error %d\n", __func__, err);
 
 	clk_disable_unprepare(msm_host->pclk);
 	clk_disable_unprepare(msm_host->ice_clk);
@@ -258,7 +258,7 @@ int cqhci_host_init_crypto_qti_spec(struct cqhci_host *host,
 				sizeof(host->crypto_cap_array[0]), GFP_KERNEL);
 	if (!host->crypto_cap_array) {
 		err = -ENOMEM;
-		pr_err("%s failed to allocate memory\n", __func__);
+		pr_debug("%s failed to allocate memory\n", __func__);
 		goto out;
 	}
 
@@ -333,13 +333,13 @@ int cqhci_crypto_qti_init_crypto(struct cqhci_host *host,
 				     cqhci_ice_memres->start,
 				     resource_size(cqhci_ice_memres));
 	if (!host->icemmio) {
-		pr_err("%s failed to remap ice regs\n", __func__);
+		pr_debug("%s failed to remap ice regs\n", __func__);
 		return PTR_ERR(host->icemmio);
 	}
 
 	err = cqhci_host_init_crypto_qti_spec(host, &cqhci_crypto_qti_ksm_ops);
 	if (err) {
-		pr_err("%s: Error initiating crypto capabilities, err %d\n",
+		pr_debug("%s: Error initiating crypto capabilities, err %d\n",
 					__func__, err);
 		return err;
 	}
@@ -347,7 +347,7 @@ int cqhci_crypto_qti_init_crypto(struct cqhci_host *host,
 	err = crypto_qti_init_crypto(&msm_host->pdev->dev,
 			host->icemmio, (void **)&host->crypto_vops->priv);
 	if (err) {
-		pr_err("%s: Error initiating crypto, err %d\n",
+		pr_debug("%s: Error initiating crypto, err %d\n",
 					__func__, err);
 	}
 	return err;
@@ -384,7 +384,7 @@ int cqhci_crypto_qti_prep_desc(struct cqhci_host *host, struct mmc_request *mrq,
 				CRYPTO_CONFIG_INDEX(key_index) |
 				CRYPTO_ENABLE(!bypass);
 		} else {
-			pr_err("%s crypto config failed err = %d\n", __func__,
+			pr_debug("%s crypto config failed err = %d\n", __func__,
 					ret);
 		}
 #endif
@@ -412,7 +412,7 @@ int cqhci_crypto_qti_prep_desc(struct cqhci_host *host, struct mmc_request *mrq,
 		ret = cqhci_crypto_qti_keyslot_program(host->ksm, bc->bc_key,
 						       bc->bc_keyslot);
 		if (ret) {
-			pr_err("%s keyslot program failed %d\n", __func__, ret);
+			pr_debug("%s keyslot program failed %d\n", __func__, ret);
 			return ret;
 		}
 		val = atomic_read(&keycache) | (1 << bc->bc_keyslot);

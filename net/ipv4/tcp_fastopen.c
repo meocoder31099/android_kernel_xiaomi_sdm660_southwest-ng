@@ -81,12 +81,12 @@ int tcp_fastopen_reset_cipher(struct net *net, struct sock *sk,
 	if (IS_ERR(ctx->tfm)) {
 		err = PTR_ERR(ctx->tfm);
 error:		kfree(ctx);
-		pr_err("TCP: TFO aes cipher alloc error: %d\n", err);
+		pr_debug("TCP: TFO aes cipher alloc error: %d\n", err);
 		return err;
 	}
 	err = crypto_cipher_setkey(ctx->tfm, key, len);
 	if (err) {
-		pr_err("TCP: TFO cipher key error: %d\n", err);
+		pr_debug("TCP: TFO cipher key error: %d\n", err);
 		crypto_free_cipher(ctx->tfm);
 		goto error;
 	}

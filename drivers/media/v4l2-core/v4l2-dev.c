@@ -37,7 +37,7 @@
 #define VIDEO_NAME              "video4linux"
 
 #define dprintk(fmt, arg...) do {					\
-		printk(KERN_DEBUG pr_fmt("%s: " fmt),			\
+		no_printk(KERN_DEBUG pr_fmt("%s: " fmt),			\
 		       __func__, ##arg);				\
 } while (0)
 
@@ -794,7 +794,7 @@ static int video_register_media_controller(struct video_device *vdev)
 		ret = media_device_register_entity(vdev->v4l2_dev->mdev,
 						   &vdev->entity);
 		if (ret < 0) {
-			pr_warn("%s: media_device_register_entity failed\n",
+			pr_debug("%s: media_device_register_entity failed\n",
 				__func__);
 			return ret;
 		}
@@ -877,7 +877,7 @@ int __video_register_device(struct video_device *vdev,
 		name_base = "v4l-touch";
 		break;
 	default:
-		pr_err("%s called with unknown type: %d\n",
+		pr_debug("%s called with unknown type: %d\n",
 		       __func__, type);
 		return -EINVAL;
 	}
@@ -926,7 +926,7 @@ int __video_register_device(struct video_device *vdev,
 	if (nr == minor_cnt)
 		nr = devnode_find(vdev, 0, minor_cnt);
 	if (nr == minor_cnt) {
-		pr_err("could not get a free device node number\n");
+		pr_debug("could not get a free device node number\n");
 		mutex_unlock(&videodev_lock);
 		return -ENFILE;
 	}
@@ -941,7 +941,7 @@ int __video_register_device(struct video_device *vdev,
 			break;
 	if (i == VIDEO_NUM_DEVICES) {
 		mutex_unlock(&videodev_lock);
-		pr_err("could not get a free minor\n");
+		pr_debug("could not get a free minor\n");
 		return -ENFILE;
 	}
 #endif
@@ -951,7 +951,7 @@ int __video_register_device(struct video_device *vdev,
 	/* Should not happen since we thought this minor was free */
 	if (WARN_ON(video_devices[vdev->minor])) {
 		mutex_unlock(&videodev_lock);
-		pr_err("video_device not empty!\n");
+		pr_debug("video_device not empty!\n");
 		return -ENFILE;
 	}
 	devnode_set(vdev);
@@ -972,7 +972,7 @@ int __video_register_device(struct video_device *vdev,
 	vdev->cdev->owner = owner;
 	ret = cdev_add(vdev->cdev, MKDEV(VIDEO_MAJOR, vdev->minor), 1);
 	if (ret < 0) {
-		pr_err("%s: cdev_add failed\n", __func__);
+		pr_debug("%s: cdev_add failed\n", __func__);
 		kfree(vdev->cdev);
 		vdev->cdev = NULL;
 		goto cleanup;
@@ -992,13 +992,13 @@ int __video_register_device(struct video_device *vdev,
 	ret = device_register(&vdev->dev);
 	if (ret < 0) {
 		mutex_unlock(&videodev_lock);
-		pr_err("%s: device_register failed\n", __func__);
+		pr_debug("%s: device_register failed\n", __func__);
 		put_device(&vdev->dev);
 		return ret;
 	}
 
 	if (nr != -1 && nr != vdev->num && warn_if_nr_in_use)
-		pr_warn("%s: requested %s%d, got %s\n", __func__,
+		pr_debug("%s: requested %s%d, got %s\n", __func__,
 			name_base, nr, video_device_node_name(vdev));
 
 	/* Part 5: Register the entity. */
@@ -1054,10 +1054,10 @@ static int __init videodev_init(void)
 	dev_t dev = MKDEV(VIDEO_MAJOR, 0);
 	int ret;
 
-	pr_info("Linux video capture interface: v2.00\n");
+	pr_debug("Linux video capture interface: v2.00\n");
 	ret = register_chrdev_region(dev, VIDEO_NUM_DEVICES, VIDEO_NAME);
 	if (ret < 0) {
-		pr_warn("videodev: unable to get major %d\n",
+		pr_debug("videodev: unable to get major %d\n",
 				VIDEO_MAJOR);
 		return ret;
 	}
@@ -1065,7 +1065,7 @@ static int __init videodev_init(void)
 	ret = class_register(&video_class);
 	if (ret < 0) {
 		unregister_chrdev_region(dev, VIDEO_NUM_DEVICES);
-		pr_warn("video_dev: class_register failed\n");
+		pr_debug("video_dev: class_register failed\n");
 		return -EIO;
 	}
 

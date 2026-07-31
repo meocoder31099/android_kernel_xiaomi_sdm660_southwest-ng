@@ -66,7 +66,7 @@ static void mdss_free_timeline(struct kref *kref)
 static void mdss_put_timeline(struct mdss_timeline *tl)
 {
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return;
 	}
 
@@ -80,7 +80,7 @@ static void mdss_put_timeline(struct mdss_timeline *tl)
 static void mdss_get_timeline(struct mdss_timeline *tl)
 {
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return;
 	}
 
@@ -170,7 +170,7 @@ struct mdss_timeline *mdss_create_timeline(const char *name)
 	struct mdss_timeline *tl;
 
 	if (!name) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return NULL;
 	}
 
@@ -258,13 +258,13 @@ void mdss_resync_timeline(struct mdss_timeline *tl)
 	s32 val;
 
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return;
 	}
 
 	val = tl->next_value - tl->value;
 	if (val > 0) {
-		pr_warn("flush %s:%d TL(Nxt %d , Crnt %d)\n", tl->name, val,
+		pr_debug("flush %s:%d TL(Nxt %d , Crnt %d)\n", tl->name, val,
 			tl->next_value, tl->value);
 		mdss_inc_timeline_locked(tl, val);
 	}
@@ -284,7 +284,7 @@ struct mdss_fence *mdss_get_sync_fence(
 	unsigned long flags;
 
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return NULL;
 	}
 
@@ -324,7 +324,7 @@ int mdss_inc_timeline(struct mdss_timeline *tl, int increment)
 	int rc;
 
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return -EINVAL;
 	}
 
@@ -339,7 +339,7 @@ int mdss_inc_timeline(struct mdss_timeline *tl, int increment)
 u32 mdss_get_timeline_commit_ts(struct mdss_timeline *tl)
 {
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return 0;
 	}
 
@@ -353,7 +353,7 @@ u32 mdss_get_timeline_commit_ts(struct mdss_timeline *tl)
 u32 mdss_get_timeline_retire_ts(struct mdss_timeline *tl)
 {
 	if (!tl) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return 0;
 	}
 
@@ -367,7 +367,7 @@ u32 mdss_get_timeline_retire_ts(struct mdss_timeline *tl)
 void mdss_put_sync_fence(struct mdss_fence *fence)
 {
 	if (!fence) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return;
 	}
 
@@ -385,7 +385,7 @@ int mdss_wait_sync_fence(struct mdss_fence *fence,
 	int rc;
 
 	if (!fence) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return -EINVAL;
 	}
 
@@ -401,7 +401,7 @@ int mdss_wait_sync_fence(struct mdss_fence *fence,
 		if (input_fence->ops->timeline_value_str)
 			input_fence->ops->timeline_value_str(input_fence,
 					timeline_str, MDSS_SYNC_NAME_SIZE);
-		pr_err(
+		pr_debug(
 			"drv:%s timeline:%s seqno:%d timeline:%s status:0x%x\n",
 			input_fence->ops->get_driver_name(input_fence),
 			input_fence->ops->get_timeline_name(input_fence),
@@ -437,20 +437,20 @@ int mdss_get_sync_fence_fd(struct mdss_fence *fence)
 	struct sync_file *sync_file;
 
 	if (!fence) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return -EINVAL;
 	}
 
 	fd = get_unused_fd_flags(O_CLOEXEC);
 	if (fd < 0) {
-		pr_err("fail to get unused fd\n");
+		pr_debug("fail to get unused fd\n");
 		return fd;
 	}
 
 	sync_file = sync_file_create((struct dma_fence *) fence);
 	if (!sync_file) {
 		put_unused_fd(fd);
-		pr_err("failed to create sync file\n");
+		pr_debug("failed to create sync file\n");
 		return -ENOMEM;
 	}
 
@@ -469,7 +469,7 @@ const char *mdss_get_sync_fence_name(struct mdss_fence *fence)
 	struct dma_fence *input_fence = NULL;
 
 	if (!fence) {
-		pr_err("invalid parameters\n");
+		pr_debug("invalid parameters\n");
 		return NULL;
 	}
 

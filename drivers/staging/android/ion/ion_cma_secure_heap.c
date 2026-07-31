@@ -222,7 +222,7 @@ static unsigned int intersect(unsigned long s1, unsigned long l1,
 	if (base1 < end2 && base1 > base2)
 		return end2 - base1;
 
-	pr_err("Bad math! Did not detect chunks correctly! %lx %lx %lx %lx\n",
+	pr_debug("Bad math! Did not detect chunks correctly! %lx %lx %lx %lx\n",
 	       s1, l1, s2, l2);
 	WARN_ON(1);
 	/* retrun max intersection value, so that it will fail later*/
@@ -267,16 +267,16 @@ static void bad_math_dump(unsigned long len, int total_overlap,
 {
 	struct list_head *entry;
 
-	pr_err("Bad math! expected total was %lx actual was %x\n",
+	pr_debug("Bad math! expected total was %lx actual was %x\n",
 	       len, total_overlap);
-	pr_err("attempted %s address was %pa len %lx\n",
+	pr_debug("attempted %s address was %pa len %lx\n",
 	       alloc ? "allocation" : "free", &paddr, len);
-	pr_err("chunks:\n");
+	pr_debug("chunks:\n");
 	list_for_each(entry, &sheap->chunks) {
 		struct ion_cma_alloc_chunk *chunk =
 			container_of(entry,
 				     struct ion_cma_alloc_chunk, entry);
-		pr_info("---   pa %pa len %lx\n",
+		pr_debug("---   pa %pa len %lx\n",
 			&chunk->handle, chunk->chunk_size);
 	}
 	WARN(1, "mismatch in the sizes of secure cma chunks\n");
@@ -483,7 +483,7 @@ retry:
 		ret = ion_secure_cma_add_to_pool(sheap, len, false);
 		if (ret) {
 			mutex_unlock(&sheap->alloc_lock);
-			dev_err(sheap->dev, "Fail to allocate buffer\n");
+			dev_dbg(sheap->dev, "Fail to allocate buffer\n");
 			goto err;
 		}
 		ret = ion_secure_cma_alloc_from_pool(sheap, &info->phys, len);
@@ -499,7 +499,7 @@ retry:
 	atomic_add(len, &sheap->total_allocated);
 	info->table = kmalloc(sizeof(*info->table), GFP_KERNEL);
 	if (!info->table) {
-		dev_err(sheap->dev, "Fail to allocate sg table\n");
+		dev_dbg(sheap->dev, "Fail to allocate sg table\n");
 		goto err;
 	}
 
@@ -572,13 +572,13 @@ __ion_secure_cma_allocate_non_contig(struct ion_heap *heap,
 	INIT_LIST_HEAD(&info->non_contig_list);
 	info->table = kmalloc(sizeof(*info->table), GFP_KERNEL);
 	if (!info->table) {
-		dev_err(sheap->dev, "Fail to allocate sg table\n");
+		dev_dbg(sheap->dev, "Fail to allocate sg table\n");
 		goto err;
 	}
 	mutex_lock(&sheap->alloc_lock);
 	while (total_allocated < len) {
 		if (alloc_size < SZ_1M) {
-			pr_err("Cannot allocate less than 1MB\n");
+			pr_debug("Cannot allocate less than 1MB\n");
 			goto err2;
 		}
 		nc_info = kzalloc(sizeof(*nc_info), GFP_KERNEL);
@@ -623,7 +623,7 @@ retry:
 					   ion_secure_cma_non_contig_info,
 					   entry);
 	if (!nc_info) {
-		pr_err("%s: Unable to find first entry of non contig list\n",
+		pr_debug("%s: Unable to find first entry of non contig list\n",
 		       __func__);
 		goto err1;
 	}
@@ -670,19 +670,19 @@ static int ion_secure_cma_allocate(struct ion_heap *heap,
 
 	if (!secure_allocation &&
 	    !ion_heap_allow_secure_allocation(heap->type)) {
-		pr_err("%s: non-secure allocation disallowed from heap %s %lx\n",
+		pr_debug("%s: non-secure allocation disallowed from heap %s %lx\n",
 		       __func__, heap->name, flags);
 		return -ENOMEM;
 	}
 
 	if (ION_IS_CACHED(flags)) {
-		pr_err("%s: cannot allocate cached memory from secure heap %s\n",
+		pr_debug("%s: cannot allocate cached memory from secure heap %s\n",
 		       __func__, heap->name);
 		return -ENOMEM;
 	}
 
 	if (!IS_ALIGNED(len, SZ_1M)) {
-		pr_err("%s: length of allocation from %s must be a multiple of 1MB\n",
+		pr_debug("%s: length of allocation from %s must be a multiple of 1MB\n",
 		       __func__, heap->name);
 		return -ENOMEM;
 	}
@@ -698,7 +698,7 @@ static int ion_secure_cma_allocate(struct ion_heap *heap,
 		int ret;
 
 		if (!msm_secure_v2_is_supported()) {
-			pr_err("%s: securing buffers from clients is not supported on this platform\n",
+			pr_debug("%s: securing buffers from clients is not supported on this platform\n",
 			       __func__);
 			ret = 1;
 		} else {
@@ -713,7 +713,7 @@ static int ion_secure_cma_allocate(struct ion_heap *heap,
 				container_of(buffer->heap,
 					     struct ion_cma_secure_heap, heap);
 
-			pr_err("%s: failed to secure buffer\n", __func__);
+			pr_debug("%s: failed to secure buffer\n", __func__);
 			__ion_secure_cma_free(sheap, buf, true);
 		}
 		return ret;
@@ -751,7 +751,7 @@ static int ion_secure_cma_mmap(struct ion_heap *mapper,
 			       struct ion_buffer *buffer,
 			       struct vm_area_struct *vma)
 {
-	pr_info("%s: mmaping from secure heap %s disallowed\n",
+	pr_debug("%s: mmaping from secure heap %s disallowed\n",
 		__func__, mapper->name);
 	return -EINVAL;
 }
@@ -759,7 +759,7 @@ static int ion_secure_cma_mmap(struct ion_heap *mapper,
 static void *ion_secure_cma_map_kernel(struct ion_heap *heap,
 				       struct ion_buffer *buffer)
 {
-	pr_info("%s: kernel mapping from secure heap %s disallowed\n",
+	pr_debug("%s: kernel mapping from secure heap %s disallowed\n",
 		__func__, heap->name);
 	return ERR_PTR(-EINVAL);
 }

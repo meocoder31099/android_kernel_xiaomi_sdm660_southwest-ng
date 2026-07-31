@@ -104,7 +104,7 @@ static void pfkey_sock_destruct(struct sock *sk)
 	skb_queue_purge(&sk->sk_receive_queue);
 
 	if (!sock_flag(sk, SOCK_DEAD)) {
-		pr_err("Attempt to release alive pfkey socket: %p\n", sk);
+		pr_debug("Attempt to release alive pfkey socket: %p\n", sk);
 		return;
 	}
 
@@ -1453,7 +1453,7 @@ static inline int event2poltype(int event)
 	case XFRM_MSG_POLEXPIRE:
 	//	return SADB_X_SPDEXPIRE;
 	default:
-		pr_err("pfkey: Unknown policy event %d\n", event);
+		pr_debug("pfkey: Unknown policy event %d\n", event);
 		break;
 	}
 
@@ -1472,7 +1472,7 @@ static inline int event2keytype(int event)
 	case XFRM_MSG_EXPIRE:
 		return SADB_EXPIRE;
 	default:
-		pr_err("pfkey: Unknown SA event %d\n", event);
+		pr_debug("pfkey: Unknown SA event %d\n", event);
 		break;
 	}
 
@@ -3101,7 +3101,7 @@ static int pfkey_send_notify(struct xfrm_state *x, const struct km_event *c)
 	case XFRM_MSG_NEWAE: /* not yet supported */
 		break;
 	default:
-		pr_err("pfkey: Unknown SA event %d\n", c->event);
+		pr_debug("pfkey: Unknown SA event %d\n", c->event);
 		break;
 	}
 
@@ -3125,7 +3125,7 @@ static int pfkey_send_policy_notify(struct xfrm_policy *xp, int dir, const struc
 			break;
 		return key_notify_policy_flush(c);
 	default:
-		pr_err("pfkey: Unknown policy event %d\n", c->event);
+		pr_debug("pfkey: Unknown policy event %d\n", c->event);
 		break;
 	}
 

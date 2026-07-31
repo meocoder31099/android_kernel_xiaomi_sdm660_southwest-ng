@@ -264,13 +264,13 @@ static ssize_t power_ro_lock_store(struct device *dev,
 	blk_put_request(req);
 
 	if (!ret) {
-		pr_info("%s: Locking boot partition ro until next power on\n",
+		pr_debug("%s: Locking boot partition ro until next power on\n",
 			md->disk->disk_name);
 		set_disk_ro(md->disk, 1);
 
 		list_for_each_entry(part_md, &md->part, part)
 			if (part_md->area_type == MMC_BLK_DATA_AREA_BOOT) {
-				pr_info("%s: Locking boot partition ro until next power on\n", part_md->disk->disk_name);
+				pr_debug("%s: Locking boot partition ro until next power on\n", part_md->disk->disk_name);
 				set_disk_ro(part_md->disk, 1);
 			}
 	}
@@ -432,7 +432,7 @@ static int ioctl_do_sanitize(struct mmc_card *card)
 
 	if (!mmc_can_sanitize(card) &&
 			(card->host->caps2 & MMC_CAP2_SANITIZE)) {
-		pr_warn("%s: %s - SANITIZE is not supported\n",
+		pr_debug("%s: %s - SANITIZE is not supported\n",
 			mmc_hostname(card->host), __func__);
 		err = -EOPNOTSUPP;
 		goto out;
@@ -446,7 +446,7 @@ static int ioctl_do_sanitize(struct mmc_card *card)
 					MMC_SANITIZE_REQ_TIMEOUT);
 
 	if (err)
-		pr_err("%s: %s - EXT_CSD_SANITIZE_START failed. err=%d\n",
+		pr_debug("%s: %s - EXT_CSD_SANITIZE_START failed. err=%d\n",
 		       mmc_hostname(card->host), __func__, err);
 
 	pr_debug("%s: %s - SANITIZE COMPLETED\n", mmc_hostname(card->host),
@@ -477,7 +477,7 @@ static int card_busy_detect(struct mmc_card *card, unsigned int timeout_ms,
 
 		err = __mmc_send_status(card, &status, 5);
 		if (err) {
-			dev_err(mmc_dev(card->host),
+			dev_dbg(mmc_dev(card->host),
 				"error %d requesting status\n", err);
 			return err;
 		}
@@ -491,7 +491,7 @@ static int card_busy_detect(struct mmc_card *card, unsigned int timeout_ms,
 		 * leaves the program state.
 		 */
 		if (done) {
-			dev_err(mmc_dev(card->host),
+			dev_dbg(mmc_dev(card->host),
 				"Card stuck in wrong state! %s status: %#x\n",
 				 __func__, status);
 			return -ETIMEDOUT;
@@ -603,7 +603,7 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
 		err = ioctl_do_sanitize(card);
 
 		if (err)
-			pr_err("%s: ioctl_do_sanitize() failed. err = %d",
+			pr_debug("%s: ioctl_do_sanitize() failed. err = %d",
 			       __func__, err);
 
 		return err;
@@ -613,12 +613,12 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
 	memcpy(&idata->ic.response, cmd.resp, sizeof(cmd.resp));
 
 	if (cmd.error) {
-		dev_err(mmc_dev(card->host), "%s: cmd error %d\n",
+		dev_dbg(mmc_dev(card->host), "%s: cmd error %d\n",
 						__func__, cmd.error);
 		return cmd.error;
 	}
 	if (data.error) {
-		dev_err(mmc_dev(card->host), "%s: data error %d\n",
+		dev_dbg(mmc_dev(card->host), "%s: data error %d\n",
 						__func__, data.error);
 		return data.error;
 	}
@@ -924,7 +924,7 @@ static inline int mmc_blk_part_switch(struct mmc_card *card,
 				 EXT_CSD_PART_CONFIG, part_config,
 				 card->ext_csd.part_time);
 		if (ret) {
-			pr_err("%s: %s: switch failure, %d -> %d\n",
+			pr_debug("%s: %s: switch failure, %d -> %d\n",
 				mmc_hostname(card->host), __func__,
 				main_md->part_curr, part_type);
 			mmc_blk_part_switch_post(card, part_type);
@@ -1107,7 +1107,7 @@ static void mmc_blk_issue_drv_op(struct mmc_queue *mq, struct request *req)
 				 EXT_CSD_BOOT_WP_B_PWR_WP_EN,
 				 card->ext_csd.part_time);
 		if (ret)
-			pr_err("%s: Locking boot partition ro until next power on failed: %d\n",
+			pr_debug("%s: Locking boot partition ro until next power on failed: %d\n",
 			       md->disk->disk_name, ret);
 		else
 			card->ext_csd.boot_ro_lock |=
@@ -1123,7 +1123,7 @@ static void mmc_blk_issue_drv_op(struct mmc_queue *mq, struct request *req)
 		ret = mmc_get_ext_csd(card, ext_csd);
 		break;
 	default:
-		pr_err("%s: unknown driver specific operation\n",
+		pr_debug("%s: unknown driver specific operation\n",
 		       md->disk->disk_name);
 		ret = -EINVAL;
 		break;
@@ -1627,7 +1627,7 @@ static int mmc_blk_cqe_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 	if (host->clk_scaling.state == MMC_LOAD_LOW) {
 		err = host->cqe_ops->cqe_wait_for_idle(host);
 		if (err) {
-			pr_err("%s: %s: CQE went in recovery path.\n",
+			pr_debug("%s: %s: CQE went in recovery path.\n",
 				mmc_hostname(host), __func__);
 			goto stop_scaling;
 		}
@@ -1907,7 +1907,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
 	/* Reset if the card is in a bad state */
 	if (!mmc_host_is_spi(mq->card->host) &&
 	    err && mmc_blk_reset(md, card->host, type)) {
-		pr_err("%s: recovery failed!\n", req->rq_disk->disk_name);
+		pr_debug("%s: recovery failed!\n", req->rq_disk->disk_name);
 		mqrq->retries = MMC_NO_RETRIES;
 		if (mmc_card_sd(card))
 			mmc_card_set_removed(card);
@@ -2299,11 +2299,11 @@ enum mmc_issued mmc_blk_mq_issue_rq(struct mmc_queue *mq, struct request *req)
 	if (ret) {
 		err = mmc_blk_reset(md, card->host, MMC_BLK_PARTSWITCH);
 		if (!err) {
-			pr_err("%s: mmc_blk_reset(MMC_BLK_PARTSWITCH) succeeded.\n",
+			pr_debug("%s: mmc_blk_reset(MMC_BLK_PARTSWITCH) succeeded.\n",
 					mmc_hostname(card->host));
 			mmc_blk_reset_success(md, MMC_BLK_PARTSWITCH);
 		} else {
-			pr_err("%s: mmc_blk_reset(MMC_BLK_PARTSWITCH) failed.\n",
+			pr_debug("%s: mmc_blk_reset(MMC_BLK_PARTSWITCH) failed.\n",
 					mmc_hostname(card->host));
 		}
 
@@ -2394,7 +2394,7 @@ static struct mmc_blk_data *mmc_blk_alloc_req(struct mmc_card *card,
 		 * what we support.
 		 */
 		if (devidx == -ENOSPC)
-			dev_err(mmc_dev(card->host),
+			dev_dbg(mmc_dev(card->host),
 				"no more device IDs available\n");
 
 		return ERR_PTR(devidx);
@@ -2542,7 +2542,7 @@ static int mmc_blk_alloc_part(struct mmc_card *card,
 
 	string_get_size((u64)get_capacity(part_md->disk), 512, STRING_UNITS_2,
 			cap_str, sizeof(cap_str));
-	pr_info("%s: %s %s partition %u %s\n",
+	pr_debug("%s: %s %s partition %u %s\n",
 	       part_md->disk->disk_name, mmc_card_id(card),
 	       mmc_card_name(card), part_md->part_type, cap_str);
 	return 0;
@@ -2672,7 +2672,7 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *card,
 	rpmb->chrdev.owner = THIS_MODULE;
 	ret = cdev_device_add(&rpmb->chrdev, &rpmb->dev);
 	if (ret) {
-		pr_err("%s: could not add character device\n", rpmb_name);
+		pr_debug("%s: could not add character device\n", rpmb_name);
 		goto out_put_device;
 	}
 
@@ -2681,7 +2681,7 @@ static int mmc_blk_alloc_rpmb_part(struct mmc_card *card,
 	string_get_size((u64)size, 512, STRING_UNITS_2,
 			cap_str, sizeof(cap_str));
 
-	pr_info("%s: %s %s partition %u %s, chardev (%d:%d)\n",
+	pr_debug("%s: %s %s partition %u %s, chardev (%d:%d)\n",
 		rpmb_name, mmc_card_id(card),
 		mmc_card_name(card), EXT_CSD_PART_CONFIG_ACC_RPMB, cap_str,
 		MAJOR(mmc_rpmb_devt), rpmb->id);
@@ -2893,7 +2893,7 @@ static int mmc_ext_csd_open(struct inode *inode, struct file *filp)
 	err = req_to_mmc_queue_req(req)->drv_op_result;
 	blk_put_request(req);
 	if (err) {
-		pr_err("FAILED %d\n", err);
+		pr_debug("FAILED %d\n", err);
 		goto out_free;
 	}
 
@@ -3013,7 +3013,7 @@ static int mmc_blk_probe(struct mmc_card *card)
 	card->complete_wq = alloc_workqueue("mmc_complete",
 					WQ_MEM_RECLAIM | WQ_HIGHPRI, 0);
 	if (unlikely(!card->complete_wq)) {
-		pr_err("Failed to create mmc completion workqueue");
+		pr_debug("Failed to create mmc completion workqueue");
 		return -ENOMEM;
 	}
 
@@ -3023,7 +3023,7 @@ static int mmc_blk_probe(struct mmc_card *card)
 
 	string_get_size((u64)get_capacity(md->disk), 512, STRING_UNITS_2,
 			cap_str, sizeof(cap_str));
-	pr_info("%s: %s %s %s %s\n",
+	pr_debug("%s: %s %s %s %s\n",
 		md->disk->disk_name, mmc_card_id(card), mmc_card_name(card),
 		cap_str, md->read_only ? "(ro)" : "");
 
@@ -3150,17 +3150,17 @@ static int __init mmc_blk_init(void)
 
 	res  = bus_register(&mmc_rpmb_bus_type);
 	if (res < 0) {
-		pr_err("mmcblk: could not register RPMB bus type\n");
+		pr_debug("mmcblk: could not register RPMB bus type\n");
 		return res;
 	}
 	res = alloc_chrdev_region(&mmc_rpmb_devt, 0, MAX_DEVICES, "rpmb");
 	if (res < 0) {
-		pr_err("mmcblk: failed to allocate rpmb chrdev region\n");
+		pr_debug("mmcblk: failed to allocate rpmb chrdev region\n");
 		goto out_bus_unreg;
 	}
 
 	if (perdev_minors != CONFIG_MMC_BLOCK_MINORS)
-		pr_info("mmcblk: using %d minors per device\n", perdev_minors);
+		pr_debug("mmcblk: using %d minors per device\n", perdev_minors);
 
 	max_devices = min(MAX_DEVICES, (1 << MINORBITS) / perdev_minors);
 

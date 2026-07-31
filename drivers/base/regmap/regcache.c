@@ -58,7 +58,7 @@ static int regcache_hw_init(struct regmap *map)
 
 	if (!map->reg_defaults_raw) {
 		bool cache_bypass = map->cache_bypass;
-		dev_warn(map->dev, "No cache defaults, reading back from HW\n");
+		dev_dbg(map->dev, "No cache defaults, reading back from HW\n");
 
 		/* Bypass the cache access till data read from HW */
 		map->cache_bypass = true;
@@ -97,7 +97,7 @@ static int regcache_hw_init(struct regmap *map)
 			ret = regmap_read(map, reg, &val);
 			map->cache_bypass = cache_bypass;
 			if (ret != 0) {
-				dev_err(map->dev, "Failed to read %d: %d\n",
+				dev_dbg(map->dev, "Failed to read %d: %d\n",
 					reg, ret);
 				goto err_free;
 			}
@@ -124,7 +124,7 @@ int regcache_init(struct regmap *map, const struct regmap_config *config)
 
 	if (map->cache_type == REGCACHE_NONE) {
 		if (config->reg_defaults || config->num_reg_defaults_raw)
-			dev_warn(map->dev,
+			dev_dbg(map->dev,
 				 "No cache used with register defaults set!\n");
 
 		map->cache_bypass = true;
@@ -132,7 +132,7 @@ int regcache_init(struct regmap *map, const struct regmap_config *config)
 	}
 
 	if (config->reg_defaults && !config->num_reg_defaults) {
-		dev_err(map->dev,
+		dev_dbg(map->dev,
 			 "Register defaults are set without the number!\n");
 		return -EINVAL;
 	}
@@ -146,7 +146,7 @@ int regcache_init(struct regmap *map, const struct regmap_config *config)
 			break;
 
 	if (i == ARRAY_SIZE(cache_types)) {
-		dev_err(map->dev, "Could not match compress type: %d\n",
+		dev_dbg(map->dev, "Could not match compress type: %d\n",
 			map->cache_type);
 		return -EINVAL;
 	}
@@ -319,7 +319,7 @@ static int regcache_default_sync(struct regmap *map, unsigned int min,
 		ret = _regmap_write(map, reg, val);
 		map->cache_bypass = false;
 		if (ret) {
-			dev_err(map->dev, "Unable to sync register %#x. %d\n",
+			dev_dbg(map->dev, "Unable to sync register %#x. %d\n",
 				reg, ret);
 			return ret;
 		}
@@ -370,7 +370,7 @@ int regcache_sync(struct regmap *map)
 	for (i = 0; i < map->patch_regs; i++) {
 		ret = _regmap_write(map, map->patch[i].reg, map->patch[i].def);
 		if (ret != 0) {
-			dev_err(map->dev, "Failed to write %x = %x: %d\n",
+			dev_dbg(map->dev, "Failed to write %x = %x: %d\n",
 				map->patch[i].reg, map->patch[i].def, ret);
 			goto out;
 		}
@@ -700,7 +700,7 @@ static int regcache_sync_block_single(struct regmap *map, void *block,
 
 		map->cache_bypass = false;
 		if (ret != 0) {
-			dev_err(map->dev, "Unable to sync register %#x. %d\n",
+			dev_dbg(map->dev, "Unable to sync register %#x. %d\n",
 				regtmp, ret);
 			return ret;
 		}
@@ -729,7 +729,7 @@ static int regcache_sync_block_raw_flush(struct regmap *map, const void **data,
 
 	ret = _regmap_raw_write(map, base, *data, count * val_bytes);
 	if (ret)
-		dev_err(map->dev, "Unable to sync registers %#x-%#x. %d\n",
+		dev_dbg(map->dev, "Unable to sync registers %#x-%#x. %d\n",
 			base, cur - map->reg_stride, ret);
 
 	map->cache_bypass = false;

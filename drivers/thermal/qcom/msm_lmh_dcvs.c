@@ -120,7 +120,7 @@ static void limits_dcvs_get_freq_limits(struct limits_dcvs_hw *hw)
 		freq_floor = 0;
 		cpu_dev = get_cpu_device(cpu);
 		if (!cpu_dev) {
-			pr_err("Error in get CPU%d device\n", cpu);
+			pr_debug("Error in get CPU%d device\n", cpu);
 			idx++;
 			continue;
 		}
@@ -146,7 +146,7 @@ static unsigned long limits_mitigation_notify(struct limits_dcvs_hw *hw)
 	for_each_cpu(cpu, &hw->core_map) {
 		cpu_dev = get_cpu_device(cpu);
 		if (!cpu_dev) {
-			pr_err("Error in get CPU%d device\n",
+			pr_debug("Error in get CPU%d device\n",
 				cpumask_first(&hw->core_map));
 			goto notify_exit;
 		}
@@ -166,7 +166,7 @@ static unsigned long limits_mitigation_notify(struct limits_dcvs_hw *hw)
 			opp_entry = dev_pm_opp_find_freq_ceil(cpu_dev,
 								&freq_val);
 			if (IS_ERR(opp_entry))
-				dev_err(cpu_dev,
+				dev_dbg(cpu_dev,
 					"frequency:%lu. opp error:%ld\n",
 					freq_val, PTR_ERR(opp_entry));
 		}
@@ -300,7 +300,7 @@ static int lmh_set_trips(void *data, int low, int high)
 	int ret = 0;
 
 	if (high >= LIMITS_TEMP_HIGH_THRESH_MAX || low < 0) {
-		pr_err("Value out of range low:%d high:%d\n",
+		pr_debug("Value out of range low:%d high:%d\n",
 				low, high);
 		return -EINVAL;
 	}
@@ -360,7 +360,7 @@ static int enable_lmh(struct device_node *dn)
 	ret = scm_call2(SCM_SIP_FNID(SCM_SVC_LMH, LIMITS_PROFILE_CHANGE),
 			&desc_arg);
 	if (ret) {
-		pr_err("Error switching profile:[1]. err:%d\n", ret);
+		pr_debug("Error switching profile:[1]. err:%d\n", ret);
 		return ret;
 	}
 
@@ -451,7 +451,7 @@ static void register_cooling_device(struct work_struct *work)
 			}
 			policy = cpufreq_cpu_get(cpu);
 			if (!policy) {
-				pr_err("no policy for cpu%d\n", cpu);
+				pr_debug("no policy for cpu%d\n", cpu);
 				continue;
 			}
 			hw->cdev_data[idx].max_freq = U32_MAX;
@@ -460,7 +460,7 @@ static void register_cooling_device(struct work_struct *work)
 					cpufreq_platform_cooling_register(
 							policy, &cd_ops);
 			if (IS_ERR_OR_NULL(hw->cdev_data[idx].cdev)) {
-				pr_err("CPU:%u cdev register error:%ld\n",
+				pr_debug("CPU:%u cdev register error:%ld\n",
 					cpu, PTR_ERR(hw->cdev_data[idx].cdev));
 				hw->cdev_data[idx].cdev = NULL;
 			} else {
@@ -500,31 +500,31 @@ static void limits_isens_qref_init(struct platform_device *pdev,
 		if (ret == -EINVAL)
 			return;
 
-		pr_err("Regulator:isens_vref settings read error:%d\n",
+		pr_debug("Regulator:isens_vref settings read error:%d\n",
 				ret);
 		return;
 	}
 	hw->isens_reg[idx] = devm_regulator_get(&pdev->dev, reg_name);
 	if (IS_ERR_OR_NULL(hw->isens_reg[idx])) {
-		pr_err("Regulator:isens_vref init error:%ld\n",
+		pr_debug("Regulator:isens_vref init error:%ld\n",
 			PTR_ERR(hw->isens_reg[idx]));
 		return;
 	}
 	ret = regulator_set_voltage(hw->isens_reg[idx], settings[0],
 					settings[1]);
 	if (ret) {
-		pr_err("Regulator:isens_vref set voltage error:%d\n", ret);
+		pr_debug("Regulator:isens_vref set voltage error:%d\n", ret);
 		devm_regulator_put(hw->isens_reg[idx]);
 		return;
 	}
 	ret = regulator_set_load(hw->isens_reg[idx], settings[2]);
 	if (ret) {
-		pr_err("Regulator:isens_vref set load error:%d\n", ret);
+		pr_debug("Regulator:isens_vref set load error:%d\n", ret);
 		devm_regulator_put(hw->isens_reg[idx]);
 		return;
 	}
 	if (regulator_enable(hw->isens_reg[idx])) {
-		pr_err("Failed to enable regulator:isens_vref\n");
+		pr_debug("Failed to enable regulator:isens_vref\n");
 		devm_regulator_put(hw->isens_reg[idx]);
 		return;
 	}
@@ -630,7 +630,7 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_THERMAL,
 			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
 		if (ret) {
-			pr_err("Unable to enable THERM algo for cluster%d\n",
+			pr_debug("Unable to enable THERM algo for cluster%d\n",
 				affinity);
 			return ret;
 		}
@@ -638,7 +638,7 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_CRNT,
 			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
 		if (ret) {
-			pr_err("Unable to enable CRNT algo for cluster%d\n",
+			pr_debug("Unable to enable CRNT algo for cluster%d\n",
 				affinity);
 			return ret;
 		}
@@ -646,7 +646,7 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_REL,
 			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
 		if (ret) {
-			pr_err("Unable to enable REL algo for cluster%d\n",
+			pr_debug("Unable to enable REL algo for cluster%d\n",
 				affinity);
 			return ret;
 		}
@@ -654,7 +654,7 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 		ret = limits_dcvs_write(hw->affinity, LIMITS_SUB_FN_BCL,
 			 LIMITS_ALGO_MODE_ENABLE, 1, 0, 0);
 		if (ret) {
-			pr_err("Unable to enable BCL algo for cluster%d\n",
+			pr_debug("Unable to enable BCL algo for cluster%d\n",
 				affinity);
 			return ret;
 		}
@@ -668,14 +668,14 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 
 	addr = of_get_address(dn, 0, NULL, NULL);
 	if (!addr) {
-		pr_err("Property llm-base-addr not found\n");
+		pr_debug("Property llm-base-addr not found\n");
 		return -EINVAL;
 	}
 	clear_reg = be32_to_cpu(addr[0]) + LIMITS_CLUSTER_INT_CLR_OFFSET;
 	min_reg = be32_to_cpu(addr[0]) + LIMITS_CLUSTER_MIN_FREQ_OFFSET;
 	addr = of_get_address(dn, 1, NULL, NULL);
 	if (!addr) {
-		pr_err("Property osm-base-addr not found\n");
+		pr_debug("Property osm-base-addr not found\n");
 		return -EINVAL;
 	}
 	request_reg = be32_to_cpu(addr[0]) + LIMITS_CLUSTER_REQ_OFFSET;
@@ -713,7 +713,7 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 	if (!no_cdev_register) {
 		hw->min_freq_reg = devm_ioremap(&pdev->dev, min_reg, 0x4);
 		if (!hw->min_freq_reg) {
-			pr_err("min frequency enable register remap failed\n");
+			pr_debug("min frequency enable register remap failed\n");
 			ret = -ENOMEM;
 			goto unregister_sensor;
 		}
@@ -724,18 +724,18 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 	INIT_DELAYED_WORK(&hw->freq_poll_work, limits_dcvs_poll);
 	hw->osm_hw_reg = devm_ioremap(&pdev->dev, request_reg, 0x4);
 	if (!hw->osm_hw_reg) {
-		pr_err("register remap failed\n");
+		pr_debug("register remap failed\n");
 		goto probe_exit;
 	}
 	hw->int_clr_reg = devm_ioremap(&pdev->dev, clear_reg, 0x4);
 	if (!hw->int_clr_reg) {
-		pr_err("interrupt clear reg remap failed\n");
+		pr_debug("interrupt clear reg remap failed\n");
 		goto probe_exit;
 	}
 
 	hw->irq_num = of_irq_get(pdev->dev.of_node, 0);
 	if (hw->irq_num < 0) {
-		pr_err("Error getting IRQ number. err:%d\n", hw->irq_num);
+		pr_debug("Error getting IRQ number. err:%d\n", hw->irq_num);
 		goto probe_exit;
 	}
 	hw->is_irq_enabled = true;
@@ -743,7 +743,7 @@ static int limits_dcvs_probe(struct platform_device *pdev)
 		lmh_dcvs_handle_isr, IRQF_TRIGGER_HIGH | IRQF_ONESHOT
 		| IRQF_NO_SUSPEND | IRQF_SHARED, hw->sensor_name, hw);
 	if (ret) {
-		pr_err("Error registering for irq. err:%d\n", ret);
+		pr_debug("Error registering for irq. err:%d\n", ret);
 		ret = 0;
 		goto probe_exit;
 	}

@@ -164,7 +164,7 @@ static int dcc_xpu_lock(struct dcc_drvdata *drvdata)
 
 		ret = dcc_cfg_xpu(drvdata, 1);
 		if (ret)
-			dev_err(drvdata->dev, "Failed to lock DCC XPU.\n");
+			dev_dbg(drvdata->dev, "Failed to lock DCC XPU.\n");
 
 		clk_disable_unprepare(drvdata->clk);
 	}
@@ -191,7 +191,7 @@ static int dcc_xpu_unlock(struct dcc_drvdata *drvdata)
 
 		ret = dcc_cfg_xpu(drvdata, 0);
 		if (ret)
-			dev_err(drvdata->dev, "Failed to unlock DCC XPU.\n");
+			dev_dbg(drvdata->dev, "Failed to unlock DCC XPU.\n");
 
 		clk_disable_unprepare(drvdata->clk);
 	}
@@ -223,14 +223,14 @@ static int dcc_sw_trigger(struct dcc_drvdata *drvdata)
 	mutex_lock(&drvdata->mutex);
 
 	if (!drvdata->enable) {
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"DCC is disabled. Can't send sw trigger.\n");
 		ret = -EINVAL;
 		goto err;
 	}
 
 	if (!dcc_ready(drvdata)) {
-		dev_err(drvdata->dev, "DCC is not ready!\n");
+		dev_dbg(drvdata->dev, "DCC is not ready!\n");
 		ret = -EBUSY;
 		goto err;
 	}
@@ -238,7 +238,7 @@ static int dcc_sw_trigger(struct dcc_drvdata *drvdata)
 	dcc_writel(drvdata, 1, DCC_SW_CTL);
 
 	if (!dcc_ready(drvdata)) {
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"DCC is busy after receiving sw tigger.\n");
 		ret = -EBUSY;
 		goto err;
@@ -259,7 +259,7 @@ static int __dcc_ll_cfg(struct dcc_drvdata *drvdata)
 	struct dcc_config_entry *entry;
 
 	if (list_empty(&drvdata->config_head)) {
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"No configuration is available to program in DCC SRAM!\n");
 		return -EINVAL;
 	}
@@ -298,7 +298,7 @@ static int __dcc_ll_cfg(struct dcc_drvdata *drvdata)
 		}
 
 		if ((off - prev_off) > 0xFF || entry->len > MAX_DCC_LEN) {
-			dev_err(drvdata->dev,
+			dev_dbg(drvdata->dev,
 				"DCC: Progamming error! Base: 0x%x, offset 0x%x.\n",
 				entry->base, entry->offset);
 			ret = -EINVAL;
@@ -370,7 +370,7 @@ static int __dcc_ll_cfg(struct dcc_drvdata *drvdata)
 overstep:
 	ret = -EINVAL;
 	memset_io(drvdata->ram_base, 0, drvdata->ram_size);
-	dev_err(drvdata->dev, "DCC SRAM oversteps, 0x%x (0x%x)\n",
+	dev_dbg(drvdata->dev, "DCC SRAM oversteps, 0x%x (0x%x)\n",
 		sram_offset, drvdata->ram_size);
 err:
 	return ret;
@@ -414,7 +414,7 @@ static void __dcc_first_crc(struct dcc_drvdata *drvdata)
 	 */
 	for (i = 0; i < 2; i++) {
 		if (!dcc_ready(drvdata))
-			dev_err(drvdata->dev, "DCC is not ready!\n");
+			dev_dbg(drvdata->dev, "DCC is not ready!\n");
 
 		dcc_writel(drvdata, 1, DCC_SW_CTL);
 	}
@@ -430,7 +430,7 @@ static int dcc_enable(struct dcc_drvdata *drvdata)
 	mutex_lock(&drvdata->mutex);
 
 	if (drvdata->enable) {
-		dev_err(drvdata->dev, "DCC is already enabled!\n");
+		dev_dbg(drvdata->dev, "DCC is already enabled!\n");
 		mutex_unlock(&drvdata->mutex);
 		return 0;
 	}
@@ -496,7 +496,7 @@ static int __dcc_rpm_sw_trigger(struct dcc_drvdata *drvdata, bool enable)
 
 	if (enable && (!drvdata->enable || drvdata->func_type !=
 		       DCC_FUNC_TYPE_CRC)) {
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"DCC: invalid state! Can't send sw trigger req to rpm\n");
 		return -EINVAL;
 	}
@@ -509,7 +509,7 @@ static int __dcc_rpm_sw_trigger(struct dcc_drvdata *drvdata, bool enable)
 	ret = msm_rpm_send_message(MSM_RPM_CTX_ACTIVE_SET,
 				   RPM_MISC_REQ_TYPE, 0, rpm_kvp, 1);
 	if (ret) {
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"DCC: SW trigger %s req to rpm failed %d\n",
 			(enable ? "enable" : "disable"), ret);
 		drvdata->rpm_trig_req.enable = !enable;
@@ -529,11 +529,11 @@ static void dcc_disable(struct dcc_drvdata *drvdata)
 	/* Send request to RPM to disable DCC SW trigger */
 
 	if (__dcc_rpm_sw_trigger(drvdata, 0))
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"DCC: Request to RPM to disable SW trigger failed.\n");
 
 	if (!dcc_ready(drvdata))
-		dev_err(drvdata->dev, "DCC is not ready! Disabling DCC...\n");
+		dev_dbg(drvdata->dev, "DCC is not ready! Disabling DCC...\n");
 
 	dcc_writel(drvdata, 0, DCC_LL);
 	drvdata->enable = false;
@@ -719,7 +719,7 @@ static ssize_t config_show(struct device *dev,
 				entry->offset, entry->len);
 
 		if ((count + len) > PAGE_SIZE) {
-			dev_err(dev, "DCC: Couldn't write complete config!\n");
+			dev_dbg(dev, "DCC: Couldn't write complete config!\n");
 			break;
 		}
 
@@ -743,7 +743,7 @@ static int dcc_config_add(struct dcc_drvdata *drvdata, unsigned int addr,
 
 	/* Check the len to avoid allocate huge memory */
 	if (!len || len > (drvdata->ram_size / 8)) {
-		dev_err(drvdata->dev, "DCC: Invalid length!\n");
+		dev_dbg(drvdata->dev, "DCC: Invalid length!\n");
 		ret = -EINVAL;
 		goto err;
 	}
@@ -1021,7 +1021,7 @@ static int dcc_create_files(struct device *dev,
 	for (i = 0; attrs[i] != NULL; i++) {
 		ret = device_create_file(dev, attrs[i]);
 		if (ret) {
-			dev_err(dev, "DCC: Couldn't create sysfs attribute: %s!\n",
+			dev_dbg(dev, "DCC: Couldn't create sysfs attribute: %s!\n",
 				attrs[i]->attr.name);
 			break;
 		}
@@ -1068,7 +1068,7 @@ static ssize_t dcc_sram_read(struct file *file, char __user *data,
 	clk_disable_unprepare(drvdata->clk);
 
 	if (copy_to_user(data, buf, len)) {
-		dev_err(drvdata->dev,
+		dev_dbg(drvdata->dev,
 			"DCC: Couldn't copy all data to user!\n");
 		kfree(buf);
 		return -EFAULT;
@@ -1163,7 +1163,7 @@ static int dcc_sram_dev_init(struct dcc_drvdata *drvdata)
 	strlcpy(drvdata->sram_node, node_name, node_size);
 	ret = dcc_sram_dev_register(drvdata);
 	if (ret)
-		dev_err(drvdata->dev, "DCC: sram node not registered.\n");
+		dev_dbg(drvdata->dev, "DCC: sram node not registered.\n");
 
 	return ret;
 }
@@ -1191,9 +1191,9 @@ static void dcc_allocate_dump_mem(struct dcc_drvdata *drvdata)
 		ret = msm_dump_data_register(MSM_DUMP_TABLE_APPS,
 					     &reg_dump_entry);
 		if (ret)
-			dev_err(dev, "DCC REG dump setup failed\n");
+			dev_dbg(dev, "DCC REG dump setup failed\n");
 	} else {
-		dev_err(dev, "DCC REG dump allocation failed\n");
+		dev_dbg(dev, "DCC REG dump allocation failed\n");
 	}
 
 	/* Allocate memory for dcc sram dump */
@@ -1208,9 +1208,9 @@ static void dcc_allocate_dump_mem(struct dcc_drvdata *drvdata)
 		ret = msm_dump_data_register(MSM_DUMP_TABLE_APPS,
 					     &sram_dump_entry);
 		if (ret)
-			dev_err(dev, "DCC SRAM dump setup failed\n");
+			dev_dbg(dev, "DCC SRAM dump setup failed\n");
 	} else {
-		dev_err(dev, "DCC SRAM dump allocation failed\n");
+		dev_dbg(dev, "DCC SRAM dump allocation failed\n");
 	}
 }
 
@@ -1271,11 +1271,11 @@ static int dcc_probe(struct platform_device *pdev)
 			drvdata->xpu_scm_avail = true;
 			drvdata->xpu_addr = res->start;
 		} else {
-			dev_err(dev, "scm call is not available\n");
+			dev_dbg(dev, "scm call is not available\n");
 			return -EINVAL;
 		}
 	} else {
-		dev_info(dev, "DCC XPU is not specified\n");
+		dev_dbg(dev, "DCC XPU is not specified\n");
 	}
 
 	ret = dcc_xpu_unlock(drvdata);
@@ -1305,7 +1305,7 @@ static int dcc_probe(struct platform_device *pdev)
 			}
 
 		if (i == ARRAY_SIZE(str_dcc_data_sink)) {
-			dev_err(dev, "Unknown sink type for DCC! Using '%s' as data sink\n",
+			dev_dbg(dev, "Unknown sink type for DCC! Using '%s' as data sink\n",
 				str_dcc_data_sink[drvdata->data_sink]);
 		}
 	}

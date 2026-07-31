@@ -191,7 +191,7 @@ static int check_bufsize_for_encoding(struct diagfwd_buf_t *buf, uint32_t len)
 	max_size = (2 * len) + 3;
 	if (max_size > PERIPHERAL_BUF_SZ) {
 		if (max_size > MAX_PERIPHERAL_BUF_SZ) {
-			pr_err("diag: In %s, max_size (%d) is going beyond 32k\n",
+			pr_debug("diag: In %s, max_size (%d) is going beyond 32k\n",
 			       __func__, max_size);
 			max_size = MAX_PERIPHERAL_HDLC_BUF_SZ;
 			flag_64k = 1;
@@ -347,7 +347,7 @@ static void diagfwd_data_process_done(struct diagfwd_info *fwd_info,
 	peripheral =
 		diag_md_get_peripheral(buf->ctxt);
 	if (peripheral < 0) {
-		pr_err("diag:%s:%d invalid peripheral = %d\n",
+		pr_debug("diag:%s:%d invalid peripheral = %d\n",
 			__func__, __LINE__, peripheral);
 		mutex_unlock(&fwd_info->data_mutex);
 		mutex_unlock(&driver->hdlc_disable_mutex);
@@ -360,13 +360,13 @@ static void diagfwd_data_process_done(struct diagfwd_info *fwd_info,
 	if (hdlc_disabled) {
 		/* The data is raw and and on APPS side HDLC is disabled */
 		if (!buf) {
-			pr_err("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
 			       __func__, buf, fwd_info->peripheral,
 			       fwd_info->type);
 			goto end;
 		}
 		if (len > PERIPHERAL_BUF_SZ) {
-			pr_err("diag: In %s, Incoming buffer too large %d, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, Incoming buffer too large %d, peripheral %d, type: %d\n",
 			       __func__, len, fwd_info->peripheral,
 			       fwd_info->type);
 			goto end;
@@ -377,7 +377,7 @@ static void diagfwd_data_process_done(struct diagfwd_info *fwd_info,
 		write_buf = buf->data_raw;
 	} else {
 		if (!buf) {
-			pr_err("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
 				__func__, buf, fwd_info->peripheral,
 				fwd_info->type);
 			goto end;
@@ -385,14 +385,14 @@ static void diagfwd_data_process_done(struct diagfwd_info *fwd_info,
 
 		write_len = check_bufsize_for_encoding(buf, len);
 		if (write_len <= 0) {
-			pr_err("diag: error in checking buf for encoding\n");
+			pr_debug("diag: error in checking buf for encoding\n");
 			goto end;
 		}
 		write_buf = buf->data;
 		err = diag_add_hdlc_encoding(write_buf, &write_len,
 			buf->data_raw, len);
 		if (err) {
-			pr_err("diag: error in adding hdlc encoding\n");
+			pr_debug("diag: error in adding hdlc encoding\n");
 			goto end;
 		}
 	}
@@ -504,7 +504,7 @@ static void diagfwd_data_read_untag_done(struct diagfwd_info *fwd_info,
 					fwd_info->buf_upd[i][1]->data_raw;
 			}
 		} else {
-			pr_err("diag: In %s, no match for buffer %pK, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, no match for buffer %pK, peripheral %d, type: %d\n",
 			       __func__, buf, peripheral,
 			       fwd_info->type);
 			goto end;
@@ -677,7 +677,7 @@ static void diagfwd_data_read_done(struct diagfwd_info *fwd_info,
 			temp_buf = fwd_info->buf_2;
 			write_buf = fwd_info->buf_2->data;
 		} else {
-			pr_err("diag: In %s, no match for buffer %pK, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, no match for buffer %pK, peripheral %d, type: %d\n",
 			       __func__, buf, fwd_info->peripheral,
 			       fwd_info->type);
 			goto end;
@@ -691,13 +691,13 @@ static void diagfwd_data_read_done(struct diagfwd_info *fwd_info,
 			   fwd_info->buf_2->data_raw == buf) {
 			temp_buf = fwd_info->buf_2;
 		} else {
-			pr_err("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
 			       __func__, buf, fwd_info->peripheral,
 			       fwd_info->type);
 			goto end;
 		}
 		if (len > PERIPHERAL_BUF_SZ) {
-			pr_err("diag: In %s, Incoming buffer too large %d, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, Incoming buffer too large %d, peripheral %d, type: %d\n",
 			       __func__, len, fwd_info->peripheral,
 			       fwd_info->type);
 			goto end;
@@ -711,20 +711,20 @@ static void diagfwd_data_read_done(struct diagfwd_info *fwd_info,
 			   fwd_info->buf_2->data_raw == buf) {
 			temp_buf = fwd_info->buf_2;
 		} else {
-			pr_err("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
+			pr_debug("diag: In %s, no match for non encode buffer %pK, peripheral %d, type: %d\n",
 				__func__, buf, fwd_info->peripheral,
 				fwd_info->type);
 			goto end;
 		}
 		write_len = check_bufsize_for_encoding(temp_buf, len);
 		if (write_len <= 0) {
-			pr_err("diag: error in checking buf for encoding\n");
+			pr_debug("diag: error in checking buf for encoding\n");
 			goto end;
 		}
 		write_buf = temp_buf->data;
 		err = diag_add_hdlc_encoding(write_buf, &write_len, buf, len);
 		if (err) {
-			pr_err("diag: error in adding hdlc encoding\n");
+			pr_debug("diag: error in adding hdlc encoding\n");
 			goto end;
 		}
 	}
@@ -769,7 +769,7 @@ static void diagfwd_cntl_read_done(struct diagfwd_info *fwd_info,
 	}
 
 	if (fwd_info->type != TYPE_CNTL) {
-		pr_err("diag: In %s, invalid type %d for peripheral %d\n",
+		pr_debug("diag: In %s, invalid type %d for peripheral %d\n",
 		       __func__, fwd_info->type, fwd_info->peripheral);
 		diag_ws_release();
 		return;
@@ -805,7 +805,7 @@ static void diagfwd_dci_read_done(struct diagfwd_info *fwd_info,
 	case TYPE_DCI_CMD:
 		break;
 	default:
-		pr_err("diag: In %s, invalid type %d for peripheral %d\n",
+		pr_debug("diag: In %s, invalid type %d for peripheral %d\n",
 		       __func__, fwd_info->type, fwd_info->peripheral);
 		return;
 	}
@@ -1015,7 +1015,7 @@ int diagfwd_register(uint8_t transport, uint8_t peripheral, uint8_t type,
 
 	if (peripheral >= NUM_PERIPHERALS || type >= NUM_TYPES ||
 	    !ctxt || !ops || transport >= NUM_TRANSPORT) {
-		pr_err("diag: In %s, returning error\n", __func__);
+		pr_debug("diag: In %s, returning error\n", __func__);
 		return -EIO;
 	}
 
@@ -1036,7 +1036,7 @@ int diagfwd_register(uint8_t transport, uint8_t peripheral, uint8_t type,
 		fwd_info->c_ops = &dci_ch_ops;
 		break;
 	default:
-		pr_err("diag: In %s, invalid type: %d\n", __func__, type);
+		pr_debug("diag: In %s, invalid type: %d\n", __func__, type);
 		return -EINVAL;
 	}
 
@@ -1062,7 +1062,7 @@ void diagfwd_deregister(uint8_t peripheral, uint8_t type, void *ctxt)
 
 	fwd_info = &peripheral_info[type][peripheral];
 	if (fwd_info->ctxt != ctxt) {
-		pr_err("diag: In %s, unable to find a match for p: %d t: %d\n",
+		pr_debug("diag: In %s, unable to find a match for p: %d t: %d\n",
 		       __func__, peripheral, type);
 		return;
 	}
@@ -1567,7 +1567,7 @@ void diagfwd_write_done(uint8_t peripheral, uint8_t type, int buf_num)
 			rpmsg_mark_buffers_free(peripheral, type, 2);
 		}
 	} else
-		pr_err("diag: In %s, invalid buf_num %d\n", __func__, buf_num);
+		pr_debug("diag: In %s, invalid buf_num %d\n", __func__, buf_num);
 
 	diagfwd_queue_read(fwd_info);
 }
@@ -1742,7 +1742,7 @@ void diagfwd_buffers_init(struct diagfwd_info *fwd_info)
 		return;
 
 	if (!fwd_info->inited) {
-		pr_err("diag: In %s, channel not inited, p: %d, t: %d\n",
+		pr_debug("diag: In %s, channel not inited, p: %d, t: %d\n",
 		       __func__, fwd_info->peripheral, fwd_info->type);
 		return;
 	}

@@ -119,7 +119,7 @@ static int wdsp_rpmsg_callback(struct rpmsg_device *rpdev, void *data,
 	u8 rsp_cnt = 0;
 
 	if (!ch || !data) {
-		pr_err("%s: Invalid ch or data\n", __func__);
+		pr_debug("%s: Invalid ch or data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -162,7 +162,7 @@ static int wdsp_rpmsg_probe(struct rpmsg_device *rpdev)
 
 	ch = wdsp_get_ch(rpdev->id.name);
 	if (!ch) {
-		dev_err(&rpdev->dev, "%s, Invalid Channel [%s]\n",
+		dev_dbg(&rpdev->dev, "%s, Invalid Channel [%s]\n",
 			__func__, rpdev->id.name);
 		return -EINVAL;
 	}
@@ -189,7 +189,7 @@ static void wdsp_rpmsg_remove(struct rpmsg_device *rpdev)
 	struct wdsp_ch *ch = dev_get_drvdata(&rpdev->dev);
 
 	if (!ch) {
-		dev_err(&rpdev->dev, "%s: Invalid ch\n", __func__);
+		dev_dbg(&rpdev->dev, "%s: Invalid ch\n", __func__);
 		return;
 	}
 
@@ -267,15 +267,15 @@ static void wdsp_tx_buf_work(struct work_struct *work)
 		ret = rpmsg_send(rpdev->ept, cpkt->payload,
 				 cpkt->payload_size);
 		if (ret < 0)
-			dev_err(wpriv->dev, "%s: rpmsg send failed, ret = %d\n",
+			dev_dbg(wpriv->dev, "%s: rpmsg send failed, ret = %d\n",
 				__func__, ret);
 	} else {
 		spin_unlock(&ch->ch_lock);
 		if (rpdev)
-			dev_err(wpriv->dev, "%s: channel %s is not in connected state\n",
+			dev_dbg(wpriv->dev, "%s: channel %s is not in connected state\n",
 				__func__, ch->ch_name);
 		else
-			dev_err(wpriv->dev, "%s: rpdev is NULL\n", __func__);
+			dev_dbg(wpriv->dev, "%s: rpdev is NULL\n", __func__);
 	}
 	vfree(tx_buf);
 }
@@ -298,7 +298,7 @@ static ssize_t wdsp_glink_read(struct file *file, char __user *buf,
 
 	wpriv = (struct wdsp_glink_priv *)file->private_data;
 	if (!wpriv) {
-		pr_err("%s: Invalid private data\n", __func__);
+		pr_debug("%s: Invalid private data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -384,7 +384,7 @@ static ssize_t wdsp_glink_write(struct file *file, const char __user *buf,
 
 	wpriv = (struct wdsp_glink_priv *)file->private_data;
 	if (!wpriv) {
-		pr_err("%s: Invalid private data\n", __func__);
+		pr_debug("%s: Invalid private data\n", __func__);
 		ret = -EINVAL;
 		goto done;
 	}
@@ -515,7 +515,7 @@ static int wdsp_glink_flush(struct file *file, fl_owner_t id)
 
 	wpriv = (struct wdsp_glink_priv *)file->private_data;
 	if (!wpriv) {
-		pr_err("%s: Invalid private data\n", __func__);
+		pr_debug("%s: Invalid private data\n", __func__);
 		return -EINVAL;
 	}
 
@@ -571,7 +571,7 @@ static int wdsp_register_rpmsg(struct platform_device *pdev,
 	no_of_channels = of_property_count_strings(pdev->dev.of_node,
 						   "qcom,wdsp-channels");
 	if (no_of_channels < 0) {
-		dev_err(&pdev->dev, "%s: channel name parse error %d\n",
+		dev_dbg(&pdev->dev, "%s: channel name parse error %d\n",
 			__func__, no_of_channels);
 		return -EINVAL;
 	}
@@ -587,7 +587,7 @@ static int wdsp_register_rpmsg(struct platform_device *pdev,
 						   "qcom,wdsp-channels", i,
 						   &ch_name);
 		if (ret) {
-			dev_err(&pdev->dev, "%s: channel name parse error %d\n",
+			dev_dbg(&pdev->dev, "%s: channel name parse error %d\n",
 				__func__, ret);
 			return -EINVAL;
 		}
@@ -609,7 +609,7 @@ static int wdsp_register_rpmsg(struct platform_device *pdev,
 	wpriv->dev = wdev->dev;
 	wpriv->work_queue = create_singlethread_workqueue("wdsp_glink_wq");
 	if (!wpriv->work_queue) {
-		dev_err(&pdev->dev, "%s: Error creating wdsp_glink_wq\n",
+		dev_dbg(&pdev->dev, "%s: Error creating wdsp_glink_wq\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -633,7 +633,7 @@ static int wdsp_register_rpmsg(struct platform_device *pdev,
 	wdsp_rpmsg_driver.id_table = wdsp_rpmsg_id_table;
 	ret = register_rpmsg_driver(&wdsp_rpmsg_driver);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "%s: Rpmsg driver register failed, err = %d\n",
+		dev_dbg(&pdev->dev, "%s: Rpmsg driver register failed, err = %d\n",
 			__func__, ret);
 		goto err;
 	}
@@ -668,7 +668,7 @@ static int wdsp_glink_probe(struct platform_device *pdev)
 	ret = alloc_chrdev_region(&wdev->dev_num, 0, MINOR_NUMBER_COUNT,
 				  WDSP_GLINK_DRIVER_NAME);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "%s: Failed to alloc char dev, err = %d\n",
+		dev_dbg(&pdev->dev, "%s: Failed to alloc char dev, err = %d\n",
 			__func__, ret);
 		goto err_chrdev;
 	}
@@ -676,7 +676,7 @@ static int wdsp_glink_probe(struct platform_device *pdev)
 	wdev->cls = class_create(THIS_MODULE, WDSP_GLINK_DRIVER_NAME);
 	if (IS_ERR(wdev->cls)) {
 		ret = PTR_ERR(wdev->cls);
-		dev_err(&pdev->dev, "%s: Failed to create class, err = %d\n",
+		dev_dbg(&pdev->dev, "%s: Failed to create class, err = %d\n",
 			__func__, ret);
 		goto err_class;
 	}
@@ -685,7 +685,7 @@ static int wdsp_glink_probe(struct platform_device *pdev)
 				  NULL, WDSP_GLINK_DRIVER_NAME);
 	if (IS_ERR(wdev->dev)) {
 		ret = PTR_ERR(wdev->dev);
-		dev_err(&pdev->dev, "%s: Failed to create device, err = %d\n",
+		dev_dbg(&pdev->dev, "%s: Failed to create device, err = %d\n",
 			__func__, ret);
 		goto err_dev_create;
 	}
@@ -693,14 +693,14 @@ static int wdsp_glink_probe(struct platform_device *pdev)
 	cdev_init(&wdev->cdev, &wdsp_glink_fops);
 	ret = cdev_add(&wdev->cdev, wdev->dev_num, MINOR_NUMBER_COUNT);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "%s: Failed to register char dev, err = %d\n",
+		dev_dbg(&pdev->dev, "%s: Failed to register char dev, err = %d\n",
 			__func__, ret);
 		goto err_cdev_add;
 	}
 
 	ret = wdsp_register_rpmsg(pdev, wdev);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "%s: Failed to register with rpmsg, err = %d\n",
+		dev_dbg(&pdev->dev, "%s: Failed to register with rpmsg, err = %d\n",
 			__func__, ret);
 		goto err_cdev_add;
 	}

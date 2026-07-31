@@ -1318,7 +1318,7 @@ static int __init hashlimit_mt_init(void)
 					    sizeof(struct dsthash_ent), 0, 0,
 					    NULL);
 	if (!hashlimit_cachep) {
-		pr_warn("unable to create slab cache\n");
+		pr_debug("unable to create slab cache\n");
 		goto err2;
 	}
 	return 0;

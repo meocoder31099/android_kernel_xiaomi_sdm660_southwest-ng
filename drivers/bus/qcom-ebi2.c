@@ -272,7 +272,7 @@ static void qcom_ebi2_setup_chipselect(struct device_node *np,
 
 		/* We're dealing with an u32 */
 		if (val > xp->max) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"too high value for %s: %u, capped at %u\n",
 				xp->prop, val, xp->max);
 			val = xp->max;
@@ -284,7 +284,7 @@ static void qcom_ebi2_setup_chipselect(struct device_node *np,
 		dev_dbg(dev, "set %s to %u\n", xp->prop, val);
 	}
 
-	dev_info(dev, "CS%u: SLOW CFG 0x%08x, FAST CFG 0x%08x\n",
+	dev_dbg(dev, "CS%u: SLOW CFG 0x%08x, FAST CFG 0x%08x\n",
 		 csindex, slowcfg, fastcfg);
 
 	if (slowcfg)
@@ -313,7 +313,7 @@ static int qcom_ebi2_probe(struct platform_device *pdev)
 
 	ret = clk_prepare_enable(ebi2xclk);
 	if (ret) {
-		dev_err(dev, "could not enable EBI2X clk (%d)\n", ret);
+		dev_dbg(dev, "could not enable EBI2X clk (%d)\n", ret);
 		return ret;
 	}
 
@@ -325,7 +325,7 @@ static int qcom_ebi2_probe(struct platform_device *pdev)
 
 	ret = clk_prepare_enable(ebi2clk);
 	if (ret) {
-		dev_err(dev, "could not enable EBI2 clk\n");
+		dev_dbg(dev, "could not enable EBI2 clk\n");
 		goto err_disable_2x_clk;
 	}
 
@@ -363,7 +363,7 @@ static int qcom_ebi2_probe(struct platform_device *pdev)
 		}
 
 		if (csindex > 5) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"invalid chipselect %u, we only support 0-5\n",
 				csindex);
 			continue;

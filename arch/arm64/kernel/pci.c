@@ -129,21 +129,21 @@ pci_acpi_setup_ecam_mapping(struct acpi_pci_root *root)
 
 	ret = pci_mcfg_lookup(root, &cfgres, &ecam_ops);
 	if (ret) {
-		dev_err(dev, "%04x:%pR ECAM region not found\n", seg, bus_res);
+		dev_dbg(dev, "%04x:%pR ECAM region not found\n", seg, bus_res);
 		return NULL;
 	}
 
 	adev = acpi_resource_consumer(&cfgres);
 	if (adev)
-		dev_info(dev, "ECAM area %pR reserved by %s\n", &cfgres,
+		dev_dbg(dev, "ECAM area %pR reserved by %s\n", &cfgres,
 			 dev_name(&adev->dev));
 	else
-		dev_warn(dev, FW_BUG "ECAM area %pR not reserved in ACPI namespace\n",
+		dev_dbg(dev, FW_BUG "ECAM area %pR not reserved in ACPI namespace\n",
 			 &cfgres);
 
 	cfg = pci_ecam_create(dev, &cfgres, bus_res, ecam_ops);
 	if (IS_ERR(cfg)) {
-		dev_err(dev, "%04x:%pR error %ld mapping ECAM\n", seg, bus_res,
+		dev_dbg(dev, "%04x:%pR error %ld mapping ECAM\n", seg, bus_res,
 			PTR_ERR(cfg));
 		return NULL;
 	}

@@ -30,7 +30,7 @@ int pinconf_check_ops(struct pinctrl_dev *pctldev)
 
 	/* We have to be able to config the pins in SOME way */
 	if (!ops->pin_config_set && !ops->pin_config_group_set) {
-		dev_err(pctldev->dev,
+		dev_dbg(pctldev->dev,
 			"pinconf has to be able to set a pins config\n");
 		return -EINVAL;
 	}
@@ -40,14 +40,14 @@ int pinconf_check_ops(struct pinctrl_dev *pctldev)
 int pinconf_validate_map(const struct pinctrl_map *map, int i)
 {
 	if (!map->data.configs.group_or_pin) {
-		pr_err("failed to register map %s (%d): no group/pin given\n",
+		pr_debug("failed to register map %s (%d): no group/pin given\n",
 		       map->name, i);
 		return -EINVAL;
 	}
 
 	if (!map->data.configs.num_configs ||
 			!map->data.configs.configs) {
-		pr_err("failed to register map %s (%d): no configs given\n",
+		pr_debug("failed to register map %s (%d): no configs given\n",
 		       map->name, i);
 		return -EINVAL;
 	}
@@ -117,7 +117,7 @@ int pinconf_map_to_setting(const struct pinctrl_map *map,
 		pin = pin_get_from_name(pctldev,
 					map->data.configs.group_or_pin);
 		if (pin < 0) {
-			dev_err(pctldev->dev, "could not map pin config for \"%s\"",
+			dev_dbg(pctldev->dev, "could not map pin config for \"%s\"",
 				map->data.configs.group_or_pin);
 			return pin;
 		}
@@ -127,7 +127,7 @@ int pinconf_map_to_setting(const struct pinctrl_map *map,
 		pin = pinctrl_get_group_selector(pctldev,
 					 map->data.configs.group_or_pin);
 		if (pin < 0) {
-			dev_err(pctldev->dev, "could not map group config for \"%s\"",
+			dev_dbg(pctldev->dev, "could not map group config for \"%s\"",
 				map->data.configs.group_or_pin);
 			return pin;
 		}
@@ -154,14 +154,14 @@ int pinconf_apply_setting(const struct pinctrl_setting *setting)
 	int ret;
 
 	if (!ops) {
-		dev_err(pctldev->dev, "missing confops\n");
+		dev_dbg(pctldev->dev, "missing confops\n");
 		return -EINVAL;
 	}
 
 	switch (setting->type) {
 	case PIN_MAP_TYPE_CONFIGS_PIN:
 		if (!ops->pin_config_set) {
-			dev_err(pctldev->dev, "missing pin_config_set op\n");
+			dev_dbg(pctldev->dev, "missing pin_config_set op\n");
 			return -EINVAL;
 		}
 		ret = ops->pin_config_set(pctldev,
@@ -169,7 +169,7 @@ int pinconf_apply_setting(const struct pinctrl_setting *setting)
 				setting->data.configs.configs,
 				setting->data.configs.num_configs);
 		if (ret < 0) {
-			dev_err(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				"pin_config_set op failed for pin %d\n",
 				setting->data.configs.group_or_pin);
 			return ret;
@@ -177,7 +177,7 @@ int pinconf_apply_setting(const struct pinctrl_setting *setting)
 		break;
 	case PIN_MAP_TYPE_CONFIGS_GROUP:
 		if (!ops->pin_config_group_set) {
-			dev_err(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				"missing pin_config_group_set op\n");
 			return -EINVAL;
 		}
@@ -186,7 +186,7 @@ int pinconf_apply_setting(const struct pinctrl_setting *setting)
 				setting->data.configs.configs,
 				setting->data.configs.num_configs);
 		if (ret < 0) {
-			dev_err(pctldev->dev,
+			dev_dbg(pctldev->dev,
 				"pin_config_group_set op failed for group %d\n",
 				setting->data.configs.group_or_pin);
 			return ret;

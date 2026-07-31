@@ -230,14 +230,14 @@ static bool cs_watchdog_read(struct clocksource *cs, u64 *csnow, u64 *wdnow)
 					      watchdog->shift);
 		if (wd_delay <= WATCHDOG_MAX_SKEW) {
 			if (nretries > 1 || nretries >= max_cswd_read_retries) {
-				pr_warn("timekeeping watchdog on CPU%d: %s retried %d times before success\n",
+				pr_debug("timekeeping watchdog on CPU%d: %s retried %d times before success\n",
 					smp_processor_id(), watchdog->name, nretries);
 			}
 			return true;
 		}
 	}
 
-	pr_warn("timekeeping watchdog on CPU%d: %s read-back delay of %lldns, attempt %d, marking unstable\n",
+	pr_debug("timekeeping watchdog on CPU%d: %s read-back delay of %lldns, attempt %d, marking unstable\n",
 		smp_processor_id(), watchdog->name, wd_delay, nretries);
 	return false;
 }
@@ -295,11 +295,11 @@ static void clocksource_watchdog(struct timer_list *unused)
 
 		/* Check the deviation from the watchdog clocksource. */
 		if (abs(cs_nsec - wd_nsec) > WATCHDOG_THRESHOLD) {
-			pr_warn("timekeeping watchdog on CPU%d: Marking clocksource '%s' as unstable because the skew is too large:\n",
+			pr_debug("timekeeping watchdog on CPU%d: Marking clocksource '%s' as unstable because the skew is too large:\n",
 				smp_processor_id(), cs->name);
-			pr_warn("                      '%s' wd_now: %llx wd_last: %llx mask: %llx\n",
+			pr_debug("                      '%s' wd_now: %llx wd_last: %llx mask: %llx\n",
 				watchdog->name, wdnow, wdlast, watchdog->mask);
-			pr_warn("                      '%s' cs_now: %llx cs_last: %llx mask: %llx\n",
+			pr_debug("                      '%s' cs_now: %llx cs_last: %llx mask: %llx\n",
 				cs->name, csnow, cslast, cs->mask);
 			__clocksource_unstable(cs);
 			continue;
@@ -538,7 +538,7 @@ static void __clocksource_suspend_select(struct clocksource *cs)
 	 * interfaces to suspend the nonstop clocksource when system suspends.
 	 */
 	if (cs->suspend || cs->resume) {
-		pr_warn("Nonstop clocksource %s should not supply suspend/resume interfaces\n",
+		pr_debug("Nonstop clocksource %s should not supply suspend/resume interfaces\n",
 			cs->name);
 	}
 
@@ -816,7 +816,7 @@ static void __clocksource_select(bool skipcur, bool force)
 		if (!(cs->flags & CLOCK_SOURCE_VALID_FOR_HRES) && oneshot) {
 			/* Override clocksource cannot be used. */
 			if (cs->flags & CLOCK_SOURCE_UNSTABLE) {
-				pr_warn("Override clocksource %s is unstable and not HRT compatible - cannot switch while in HRT/NOHZ mode\n",
+				pr_debug("Override clocksource %s is unstable and not HRT compatible - cannot switch while in HRT/NOHZ mode\n",
 					cs->name);
 				override_name[0] = 0;
 			} else {
@@ -824,7 +824,7 @@ static void __clocksource_select(bool skipcur, bool force)
 				 * The override cannot be currently verified.
 				 * Deferring to let the watchdog check.
 				 */
-				pr_info("Override clocksource %s is not currently HRT compatible - deferring\n",
+				pr_debug("Override clocksource %s is not currently HRT compatible - deferring\n",
 					cs->name);
 			}
 		} else
@@ -835,7 +835,7 @@ static void __clocksource_select(bool skipcur, bool force)
 
 found:
 	if (curr_clocksource != best && !timekeeping_notify(best)) {
-		pr_info("Switched to clocksource %s\n", best->name);
+		pr_debug("Switched to clocksource %s\n", best->name);
 		curr_clocksource = best;
 	}
 }
@@ -984,7 +984,7 @@ void __clocksource_update_freq_scale(struct clocksource *cs, u32 scale, u32 freq
 
 	clocksource_update_max_deferment(cs);
 
-	pr_info("%s: mask: 0x%llx max_cycles: 0x%llx, max_idle_ns: %lld ns\n",
+	pr_debug("%s: mask: 0x%llx max_cycles: 0x%llx, max_idle_ns: %lld ns\n",
 		cs->name, cs->mask, cs->max_cycles, cs->max_idle_ns);
 }
 EXPORT_SYMBOL_GPL(__clocksource_update_freq_scale);
@@ -1304,10 +1304,10 @@ __setup("clocksource=", boot_override_clocksource);
 static int __init boot_override_clock(char* str)
 {
 	if (!strcmp(str, "pmtmr")) {
-		pr_warn("clock=pmtmr is deprecated - use clocksource=acpi_pm\n");
+		pr_debug("clock=pmtmr is deprecated - use clocksource=acpi_pm\n");
 		return boot_override_clocksource("acpi_pm");
 	}
-	pr_warn("clock= boot option is deprecated - use clocksource=xyz\n");
+	pr_debug("clock= boot option is deprecated - use clocksource=xyz\n");
 	return boot_override_clocksource(str);
 }
 

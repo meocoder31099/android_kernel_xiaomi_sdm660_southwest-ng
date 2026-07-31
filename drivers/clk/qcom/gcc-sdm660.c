@@ -2727,7 +2727,7 @@ static int gcc_660_probe(struct platform_device *pdev)
 	vdd_dig.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_dig");
 	if (IS_ERR(vdd_dig.regulator[0])) {
 		if (!(PTR_ERR(vdd_dig.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_dig regulator\n");
 		return PTR_ERR(vdd_dig.regulator[0]);
 	}
@@ -2735,14 +2735,14 @@ static int gcc_660_probe(struct platform_device *pdev)
 	vdd_dig_ao.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_dig_ao");
 	if (IS_ERR(vdd_dig_ao.regulator[0])) {
 		if (!(PTR_ERR(vdd_dig_ao.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_dig_ao regulator\n");
 		return PTR_ERR(vdd_dig_ao.regulator[0]);
 	}
 
 	ret = qcom_cc_really_probe(pdev, &gcc_660_desc, regmap);
 	if (ret) {
-		dev_err(&pdev->dev, "Failed to register GCC clocks\n");
+		dev_dbg(&pdev->dev, "Failed to register GCC clocks\n");
 		return ret;
 	}
 
@@ -2762,7 +2762,7 @@ static int gcc_660_probe(struct platform_device *pdev)
 	/* Set the HMSS_GPLL0_SRC for 300MHz to CPU subsystem */
 	clk_set_rate(hmss_gpll0_clk_src.clkr.hw.clk, 300000000);
 
-	pr_err("Registered GCC clocks\n");
+	pr_debug("Registered GCC clocks\n");
 
 	return ret;
 }
@@ -3373,7 +3373,7 @@ static int clk_debug_sdm660_probe(struct platform_device *pdev)
 	clk = devm_clk_get(&pdev->dev, "xo_clk_src");
 	if (IS_ERR(clk)) {
 		if (PTR_ERR(clk) != -EPROBE_DEFER)
-			dev_err(&pdev->dev, "Unable to get xo clock\n");
+			dev_dbg(&pdev->dev, "Unable to get xo clock\n");
 		return PTR_ERR(clk);
 	}
 
@@ -3389,7 +3389,7 @@ static int clk_debug_sdm660_probe(struct platform_device *pdev)
 
 		clk = devm_clk_register(&pdev->dev, &mux_list[i].mux->hw);
 		if (IS_ERR(clk)) {
-			dev_err(&pdev->dev, "Unable to register %s, err:(%d)\n",
+			dev_dbg(&pdev->dev, "Unable to register %s, err:(%d)\n",
 				mux_list[i].mux->hw.init->name, PTR_ERR(clk));
 			return PTR_ERR(clk);
 		}
@@ -3398,7 +3398,7 @@ static int clk_debug_sdm660_probe(struct platform_device *pdev)
 	for (i = 0; i < ARRAY_SIZE(debugcc_sdm660_hws); i++) {
 		clk = devm_clk_register(&pdev->dev, debugcc_sdm660_hws[i]);
 		if (IS_ERR(clk)) {
-			dev_err(&pdev->dev, "Unable to register %s, err:(%d)\n",
+			dev_dbg(&pdev->dev, "Unable to register %s, err:(%d)\n",
 			debugcc_sdm660_hws[i]->init->name, PTR_ERR(clk));
 			return PTR_ERR(clk);
 		}
@@ -3406,7 +3406,7 @@ static int clk_debug_sdm660_probe(struct platform_device *pdev)
 
 	ret = clk_debug_measure_register(&gcc_debug_mux.hw);
 	if (ret)
-		dev_err(&pdev->dev, "Could not register Measure clock\n");
+		dev_dbg(&pdev->dev, "Could not register Measure clock\n");
 
 	return ret;
 }

@@ -85,7 +85,7 @@ int netlink_init(void)
 			&netlink_cfg);
 
 	if (!nl_sk) {
-		pr_err("create netlink socket error\n");
+		pr_debug("create netlink socket error\n");
 		return 1;
 	}
 
@@ -99,5 +99,5 @@ void netlink_exit(void)
 		nl_sk = NULL;
 	}
 
-	pr_info("self module exited\n");
+	pr_debug("self module exited\n");
 }

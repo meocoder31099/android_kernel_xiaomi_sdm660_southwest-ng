@@ -656,7 +656,7 @@ static int __init vti_init(void)
 	const char *msg;
 	int err;
 
-	pr_info("IPv4 over IPsec tunneling driver\n");
+	pr_debug("IPv4 over IPsec tunneling driver\n");
 
 	msg = "tunnel device";
 	err = register_pernet_device(&vti_net_ops);
@@ -697,7 +697,7 @@ xfrm_proto_ah_failed:
 xfrm_proto_esp_failed:
 	unregister_pernet_device(&vti_net_ops);
 pernet_dev_failed:
-	pr_err("vti init: failed to register %s\n", msg);
+	pr_debug("vti init: failed to register %s\n", msg);
 	return err;
 }
 

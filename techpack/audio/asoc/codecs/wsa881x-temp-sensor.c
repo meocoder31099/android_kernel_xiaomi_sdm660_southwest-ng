@@ -47,11 +47,11 @@ int wsa881x_get_temp(struct thermal_zone_device *thermal,
 		if (pdata->component) {
 			component = pdata->component;
 		} else {
-			pr_err("%s: codec is NULL\n", __func__);
+			pr_debug("%s: codec is NULL\n", __func__);
 			return -EINVAL;
 		}
 	} else {
-		pr_err("%s: pdata is NULL\n", __func__);
+		pr_debug("%s: pdata is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (atomic_cmpxchg(&pdata->is_suspend_spk, 1, 0)) {
@@ -72,14 +72,14 @@ temp_retry:
 	if (pdata->wsa_temp_reg_read) {
 		ret = pdata->wsa_temp_reg_read(component, &reg);
 		if (ret) {
-			pr_err("%s: temp read failed: %d, current temp: %d\n",
+			pr_debug("%s: temp read failed: %d, current temp: %d\n",
 				__func__, ret, pdata->curr_temp);
 			if (temp)
 				*temp = pdata->curr_temp;
 			return 0;
 		}
 	} else {
-		pr_err("%s: wsa_temp_reg_read is NULL\n", __func__);
+		pr_debug("%s: wsa_temp_reg_read is NULL\n", __func__);
 		return -EINVAL;
 	}
 	/*
@@ -152,7 +152,7 @@ int wsa881x_init_thermal(struct wsa881x_tz_priv *tz_pdata)
 	struct thermal_zone_device *tz_dev;
 
 	if (tz_pdata == NULL) {
-		pr_err("%s: thermal pdata is NULL\n", __func__);
+		pr_debug("%s: thermal pdata is NULL\n", __func__);
 		return -EINVAL;
 	}
 	/* Register with the thermal zone */
@@ -160,7 +160,7 @@ int wsa881x_init_thermal(struct wsa881x_tz_priv *tz_pdata)
 				0, 0, tz_pdata,
 				&wsa881x_thermal_ops, NULL, 0, 0);
 	if (IS_ERR(tz_dev)) {
-		pr_err("%s: thermal device register failed.\n", __func__);
+		pr_debug("%s: thermal device register failed.\n", __func__);
 		return -EINVAL;
 	}
 	tz_pdata->tz_dev = tz_dev;

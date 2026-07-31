@@ -581,7 +581,7 @@ int usb_func_ep_queue(struct usb_function *func, struct usb_ep *ep,
 			pr_debug("bus suspended func wakeup for %s delayed until bus resume.\n",
 				 func->name ? func->name : "");
 		} else if (ret < 0 && ret != -ENOTSUPP) {
-			pr_err("Failed to wake function %s from suspend state. ret=%d.\n",
+			pr_debug("Failed to wake function %s from suspend state. ret=%d.\n",
 			       func->name ? func->name : "", ret);
 		}
 		goto done;

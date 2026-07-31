@@ -593,13 +593,13 @@ static bool snd_dualsense_ih_match(struct input_handler *handler,
 
 	input_dev_path = kobject_get_path(&dev->dev.kobj, GFP_KERNEL);
 	if (!input_dev_path) {
-		dev_warn(&snd_dev->dev, "Failed to get input dev path\n");
+		dev_dbg(&snd_dev->dev, "Failed to get input dev path\n");
 		return false;
 	}
 
 	usb_dev_path = kobject_get_path(&snd_dev->dev.kobj, GFP_KERNEL);
 	if (!usb_dev_path) {
-		dev_warn(&snd_dev->dev, "Failed to get USB dev path\n");
+		dev_dbg(&snd_dev->dev, "Failed to get USB dev path\n");
 		goto free_paths;
 	}
 
@@ -778,7 +778,7 @@ static int snd_dualsense_jack_create(struct usb_mixer_interface *mixer,
 
 	err = input_register_handler(&mei->ih);
 	if (err) {
-		dev_warn(&mixer->chip->dev->dev,
+		dev_dbg(&mixer->chip->dev->dev,
 			 "Could not register input handler: %d\n", err);
 		mei->ih.event = NULL;
 	}
@@ -1012,7 +1012,7 @@ static int snd_ni_control_init_val(struct usb_mixer_interface *mixer,
 			      USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_DIR_IN,
 			      0, pval & 0xffff, &value, 1);
 	if (err < 0) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"unable to issue vendor read request (ret = %d)", err);
 		return err;
 	}
@@ -2321,7 +2321,7 @@ static int snd_rme_read_value(struct snd_usb_audio *chip,
 			      0, 0,
 			      value, sizeof(*value));
 	if (err < 0)
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"unable to issue vendor read request %d (ret = %d)",
 			item, err);
 	return err;

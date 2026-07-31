@@ -1252,7 +1252,7 @@ int hid_quirks_init(char **quirks_param, __u16 bus, int count)
 
 		if (m != 3 ||
 		    hid_modify_dquirk(&id, quirks) != 0) {
-			pr_warn("Could not parse HID quirk module param %s\n",
+			pr_debug("Could not parse HID quirk module param %s\n",
 				quirks_param[n]);
 		}
 	}

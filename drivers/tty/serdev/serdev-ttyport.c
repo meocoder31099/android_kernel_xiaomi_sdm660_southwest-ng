@@ -318,7 +318,7 @@ struct device *serdev_tty_port_register(struct tty_port *port,
 	if (ret)
 		goto err_reset_data;
 
-	dev_info(&ctrl->dev, "tty port %s%d registered\n", drv->name, idx);
+	dev_dbg(&ctrl->dev, "tty port %s%d registered\n", drv->name, idx);
 	return &ctrl->dev;
 
 err_reset_data:

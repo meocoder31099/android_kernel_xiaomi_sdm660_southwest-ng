@@ -32,83 +32,83 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
 
 	cpumask_clear(groupmask);
 
-	printk(KERN_DEBUG "%*s domain-%d: ", level, "", level);
+	no_printk(KERN_DEBUG "%*s domain-%d: ", level, "", level);
 
 	if (!(sd->flags & SD_LOAD_BALANCE)) {
-		printk("does not load-balance\n");
+		no_printk("does not load-balance\n");
 		if (sd->parent)
-			printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain has parent");
+			no_printk(KERN_ERR "ERROR: !SD_LOAD_BALANCE domain has parent");
 		return -1;
 	}
 
-	printk(KERN_CONT "span=%*pbl level=%s\n",
+	no_printk(KERN_CONT "span=%*pbl level=%s\n",
 	       cpumask_pr_args(sched_domain_span(sd)), sd->name);
 
 	if (!cpumask_test_cpu(cpu, sched_domain_span(sd))) {
-		printk(KERN_ERR "ERROR: domain->span does not contain CPU%d\n", cpu);
+		no_printk(KERN_ERR "ERROR: domain->span does not contain CPU%d\n", cpu);
 	}
 	if (group && !cpumask_test_cpu(cpu, sched_group_span(group))) {
-		printk(KERN_ERR "ERROR: domain->groups does not contain CPU%d\n", cpu);
+		no_printk(KERN_ERR "ERROR: domain->groups does not contain CPU%d\n", cpu);
 	}
 
-	printk(KERN_DEBUG "%*s groups:", level + 1, "");
+	no_printk(KERN_DEBUG "%*s groups:", level + 1, "");
 	do {
 		if (!group) {
-			printk("\n");
-			printk(KERN_ERR "ERROR: group is NULL\n");
+			no_printk("\n");
+			no_printk(KERN_ERR "ERROR: group is NULL\n");
 			break;
 		}
 
 		if (!cpumask_weight(sched_group_span(group))) {
-			printk(KERN_CONT "\n");
-			printk(KERN_ERR "ERROR: empty group\n");
+			no_printk(KERN_CONT "\n");
+			no_printk(KERN_ERR "ERROR: empty group\n");
 			break;
 		}
 
 		if (!(sd->flags & SD_OVERLAP) &&
 		    cpumask_intersects(groupmask, sched_group_span(group))) {
-			printk(KERN_CONT "\n");
-			printk(KERN_ERR "ERROR: repeated CPUs\n");
+			no_printk(KERN_CONT "\n");
+			no_printk(KERN_ERR "ERROR: repeated CPUs\n");
 			break;
 		}
 
 		cpumask_or(groupmask, groupmask, sched_group_span(group));
 
-		printk(KERN_CONT " %d:{ span=%*pbl",
+		no_printk(KERN_CONT " %d:{ span=%*pbl",
 				group->sgc->id,
 				cpumask_pr_args(sched_group_span(group)));
 
 		if ((sd->flags & SD_OVERLAP) &&
 		    !cpumask_equal(group_balance_mask(group), sched_group_span(group))) {
-			printk(KERN_CONT " mask=%*pbl",
+			no_printk(KERN_CONT " mask=%*pbl",
 				cpumask_pr_args(group_balance_mask(group)));
 		}
 
 		if (group->sgc->capacity != SCHED_CAPACITY_SCALE)
-			printk(KERN_CONT " cap=%lu", group->sgc->capacity);
+			no_printk(KERN_CONT " cap=%lu", group->sgc->capacity);
 
 		if (group == sd->groups && sd->child &&
 		    !cpumask_equal(sched_domain_span(sd->child),
 				   sched_group_span(group))) {
-			printk(KERN_ERR "ERROR: domain->groups does not match domain->child\n");
+			no_printk(KERN_ERR "ERROR: domain->groups does not match domain->child\n");
 		}
 
-		printk(KERN_CONT " }");
+		no_printk(KERN_CONT " }");
 
 		group = group->next;
 
 		if (group != sd->groups)
-			printk(KERN_CONT ",");
+			no_printk(KERN_CONT ",");
 
 	} while (group != sd->groups);
-	printk(KERN_CONT "\n");
+	no_printk(KERN_CONT "\n");
 
 	if (!cpumask_equal(sched_domain_span(sd), groupmask))
-		printk(KERN_ERR "ERROR: groups don't span domain->span\n");
+		no_printk(KERN_ERR "ERROR: groups don't span domain->span\n");
 
 	if (sd->parent &&
 	    !cpumask_subset(groupmask, sched_domain_span(sd->parent)))
-		printk(KERN_ERR "ERROR: parent span is not a superset of domain->span\n");
+		no_printk(KERN_ERR "ERROR: parent span is not a superset of domain->span\n");
 	return 0;
 }
 
@@ -120,11 +120,11 @@ static void sched_domain_debug(struct sched_domain *sd, int cpu)
 		return;
 
 	if (!sd) {
-		printk(KERN_DEBUG "CPU%d attaching NULL sched-domain.\n", cpu);
+		no_printk(KERN_DEBUG "CPU%d attaching NULL sched-domain.\n", cpu);
 		return;
 	}
 
-	printk(KERN_DEBUG "CPU%d attaching sched-domain(s):\n", cpu);
+	no_printk(KERN_DEBUG "CPU%d attaching sched-domain(s):\n", cpu);
 
 	for (;;) {
 		if (sched_domain_debug_one(sd, cpu, level, sched_domains_tmpmask))
@@ -261,7 +261,7 @@ static struct perf_domain *pd_init(int cpu)
 
 	if (!obj) {
 		if (sched_debug())
-			pr_info("%s: no EM found for CPU%d\n", __func__, cpu);
+			pr_debug("%s: no EM found for CPU%d\n", __func__, cpu);
 		return NULL;
 	}
 
@@ -279,17 +279,17 @@ static void perf_domain_debug(const struct cpumask *cpu_map,
 	if (!sched_debug() || !pd)
 		return;
 
-	printk(KERN_DEBUG "root_domain %*pbl:", cpumask_pr_args(cpu_map));
+	no_printk(KERN_DEBUG "root_domain %*pbl:", cpumask_pr_args(cpu_map));
 
 	while (pd) {
-		printk(KERN_CONT " pd%d:{ cpus=%*pbl nr_cstate=%d }",
+		no_printk(KERN_CONT " pd%d:{ cpus=%*pbl nr_cstate=%d }",
 				cpumask_first(perf_domain_span(pd)),
 				cpumask_pr_args(perf_domain_span(pd)),
 				em_pd_nr_cap_states(pd->em_pd));
 		pd = pd->next;
 	}
 
-	printk(KERN_CONT "\n");
+	no_printk(KERN_CONT "\n");
 }
 
 static void destroy_perf_domain_rcu(struct rcu_head *rp)
@@ -304,11 +304,11 @@ static void sched_energy_set(bool has_eas)
 {
 	if (!has_eas && static_branch_unlikely(&sched_energy_present)) {
 		if (sched_debug())
-			pr_info("%s: stopping EAS\n", __func__);
+			pr_debug("%s: stopping EAS\n", __func__);
 		static_branch_disable_cpuslocked(&sched_energy_present);
 	} else if (has_eas && !static_branch_unlikely(&sched_energy_present)) {
 		if (sched_debug())
-			pr_info("%s: starting EAS\n", __func__);
+			pr_debug("%s: starting EAS\n", __func__);
 		static_branch_enable_cpuslocked(&sched_energy_present);
 	}
 }
@@ -357,7 +357,7 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
 #ifndef CONFIG_SCHED_WALT
 	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
 		if (sched_debug()) {
-			pr_info("rd %*pbl: CPUs do not have asymmetric capacities\n",
+			pr_debug("rd %*pbl: CPUs do not have asymmetric capacities\n",
 					cpumask_pr_args(cpu_map));
 		}
 		goto free;
@@ -1181,7 +1181,7 @@ int sched_domain_level_max;
 static int __init setup_relax_domain_level(char *str)
 {
 	if (kstrtoint(str, 0, &default_relax_domain_level))
-		pr_warn("Unable to set relax_domain_level\n");
+		pr_debug("Unable to set relax_domain_level\n");
 
 	return 1;
 }
@@ -1470,15 +1470,15 @@ static void sched_numa_warn(const char *str)
 
 	done = true;
 
-	printk(KERN_WARNING "ERROR: %s\n\n", str);
+	no_printk(KERN_WARNING "ERROR: %s\n\n", str);
 
 	for (i = 0; i < nr_node_ids; i++) {
-		printk(KERN_WARNING "  ");
+		no_printk(KERN_WARNING "  ");
 		for (j = 0; j < nr_node_ids; j++)
-			printk(KERN_CONT "%02d ", node_distance(i,j));
-		printk(KERN_CONT "\n");
+			no_printk(KERN_CONT "%02d ", node_distance(i,j));
+		no_printk(KERN_CONT "\n");
 	}
-	printk(KERN_WARNING "\n");
+	no_printk(KERN_WARNING "\n");
 }
 
 bool find_numa_distance(int distance)
@@ -1838,9 +1838,9 @@ static struct sched_domain *build_sched_domain(struct sched_domain_topology_leve
 
 		if (!cpumask_subset(sched_domain_span(child),
 				    sched_domain_span(sd))) {
-			pr_err("BUG: arch topology borken\n");
+			pr_debug("BUG: arch topology borken\n");
 #ifdef CONFIG_SCHED_DEBUG
-			pr_err("     the %s domain not a subset of the %s domain\n",
+			pr_debug("     the %s domain not a subset of the %s domain\n",
 					child->name, sd->name);
 #endif
 			/* Fixup, ensure @sd has at least @child CPUs. */

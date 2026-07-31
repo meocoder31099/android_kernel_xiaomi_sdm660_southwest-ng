@@ -940,7 +940,7 @@ static int __init xfrmi_init(void)
 	const char *msg;
 	int err;
 
-	pr_info("IPsec XFRM device driver\n");
+	pr_debug("IPsec XFRM device driver\n");
 
 	msg = "tunnel device";
 	err = register_pernet_device(&xfrmi_net_ops);
@@ -974,7 +974,7 @@ xfrmi6_failed:
 xfrmi4_failed:
 	unregister_pernet_device(&xfrmi_net_ops);
 pernet_dev_failed:
-	pr_err("xfrmi init: failed to register %s\n", msg);
+	pr_debug("xfrmi init: failed to register %s\n", msg);
 	return err;
 }
 

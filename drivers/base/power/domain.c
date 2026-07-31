@@ -351,7 +351,7 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
 	if (unlikely(genpd->set_performance_state)) {
 		ret = genpd->set_performance_state(genpd, genpd->performance_state);
 		if (ret) {
-			pr_warn("%s: Failed to set performance state %d (%d)\n",
+			pr_debug("%s: Failed to set performance state %d (%d)\n",
 				genpd->name, genpd->performance_state, ret);
 		}
 	}
@@ -834,7 +834,7 @@ static int __init genpd_power_off_unused(void)
 	struct generic_pm_domain *genpd;
 
 	if (pd_ignore_unused) {
-		pr_warn("genpd: Not disabling unused power domains\n");
+		pr_debug("genpd: Not disabling unused power domains\n");
 		return 0;
 	}
 
@@ -1581,7 +1581,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
 	genpd_lock_nested(genpd, SINGLE_DEPTH_NESTING);
 
 	if (!list_empty(&subdomain->master_links) || subdomain->device_count) {
-		pr_warn("%s: unable to remove subdomain %s\n", genpd->name,
+		pr_debug("%s: unable to remove subdomain %s\n", genpd->name,
 			subdomain->name);
 		ret = -EBUSY;
 		goto out;
@@ -1691,7 +1691,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
 		if (ret)
 			return ret;
 	} else if (!gov) {
-		pr_warn("%s : no governor for states\n", genpd->name);
+		pr_debug("%s : no governor for states\n", genpd->name);
 	}
 
 	device_initialize(&genpd->dev);
@@ -1716,13 +1716,13 @@ static int genpd_remove(struct generic_pm_domain *genpd)
 
 	if (genpd->has_provider) {
 		genpd_unlock(genpd);
-		pr_err("Provider present, unable to remove %s\n", genpd->name);
+		pr_debug("Provider present, unable to remove %s\n", genpd->name);
 		return -EBUSY;
 	}
 
 	if (!list_empty(&genpd->master_links) || genpd->device_count) {
 		genpd_unlock(genpd);
-		pr_err("%s: unable to remove %s\n", __func__, genpd->name);
+		pr_debug("%s: unable to remove %s\n", __func__, genpd->name);
 		return -EBUSY;
 	}
 
@@ -1841,7 +1841,7 @@ static struct generic_pm_domain *genpd_xlate_onecell(
 		return ERR_PTR(-EINVAL);
 
 	if (idx >= genpd_data->num_domains) {
-		pr_err("%s: invalid domain index %u\n", __func__, idx);
+		pr_debug("%s: invalid domain index %u\n", __func__, idx);
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -1902,7 +1902,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
 	if (genpd->set_performance_state) {
 		ret = dev_pm_opp_of_add_table(&genpd->dev);
 		if (ret) {
-			dev_err(&genpd->dev, "Failed to add OPP table: %d\n",
+			dev_dbg(&genpd->dev, "Failed to add OPP table: %d\n",
 				ret);
 			goto unlock;
 		}
@@ -1960,7 +1960,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
 		if (genpd->set_performance_state) {
 			ret = dev_pm_opp_of_add_table_indexed(&genpd->dev, i);
 			if (ret) {
-				dev_err(&genpd->dev, "Failed to add OPP table for index %d: %d\n",
+				dev_dbg(&genpd->dev, "Failed to add OPP table for index %d: %d\n",
 					i, ret);
 				goto error;
 			}
@@ -2215,7 +2215,7 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
 	}
 
 	if (ret < 0) {
-		dev_err(dev, "failed to remove from PM domain %s: %d",
+		dev_dbg(dev, "failed to remove from PM domain %s: %d",
 			pd->name, ret);
 		return;
 	}
@@ -2268,7 +2268,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
 
 	if (ret < 0) {
 		if (ret != -EPROBE_DEFER)
-			dev_err(dev, "failed to add to PM domain %s: %d",
+			dev_dbg(dev, "failed to add to PM domain %s: %d",
 				pd->name, ret);
 		return ret;
 	}
@@ -2466,7 +2466,7 @@ static int genpd_iterate_idle_states(struct device_node *dn,
 		if (states) {
 			ret = genpd_parse_state(&states[i], np);
 			if (ret) {
-				pr_err("Parsing idle state node %pOF failed with err %d\n",
+				pr_debug("Parsing idle state node %pOF failed with err %d\n",
 				       np, ret);
 				of_node_put(np);
 				return ret;
@@ -2550,7 +2550,7 @@ unsigned int of_genpd_opp_to_performance_state(struct device *dev,
 
 	opp = of_dev_pm_opp_find_required_opp(&genpd->dev, np);
 	if (IS_ERR(opp)) {
-		dev_err(dev, "Failed to find required OPP: %ld\n",
+		dev_dbg(dev, "Failed to find required OPP: %ld\n",
 			PTR_ERR(opp));
 		goto unlock;
 	}

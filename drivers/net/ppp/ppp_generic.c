@@ -676,7 +676,7 @@ static long ppp_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 	if (pf->kind != INTERFACE) {
 		/* can't happen */
-		pr_err("PPP: not interface or channel??\n");
+		pr_debug("PPP: not interface or channel??\n");
 		err = -EINVAL;
 		goto out;
 	}
@@ -1216,17 +1216,17 @@ static int __init ppp_init(void)
 {
 	int err;
 
-	pr_info("PPP generic driver version " PPP_VERSION "\n");
+	pr_debug("PPP generic driver version " PPP_VERSION "\n");
 
 	err = register_pernet_device(&ppp_net_ops);
 	if (err) {
-		pr_err("failed to register PPP pernet device (%d)\n", err);
+		pr_debug("failed to register PPP pernet device (%d)\n", err);
 		goto out;
 	}
 
 	err = register_chrdev(PPP_MAJOR, "ppp", &ppp_device_fops);
 	if (err) {
-		pr_err("failed to register PPP device (%d)\n", err);
+		pr_debug("failed to register PPP device (%d)\n", err);
 		goto out_net;
 	}
 
@@ -1238,7 +1238,7 @@ static int __init ppp_init(void)
 
 	err = rtnl_link_register(&ppp_link_ops);
 	if (err) {
-		pr_err("failed to register rtnetlink PPP handler\n");
+		pr_debug("failed to register rtnetlink PPP handler\n");
 		goto out_class;
 	}
 
@@ -3309,7 +3309,7 @@ static void ppp_destroy_channel(struct channel *pch)
 
 	if (!pch->file.dead) {
 		/* "can't happen" */
-		pr_err("ppp: destroying undead channel %p !\n", pch);
+		pr_debug("ppp: destroying undead channel %p !\n", pch);
 		return;
 	}
 	skb_queue_purge(&pch->file.xq);
@@ -3321,7 +3321,7 @@ static void __exit ppp_cleanup(void)
 {
 	/* should never happen */
 	if (atomic_read(&ppp_unit_count) || atomic_read(&channel_count))
-		pr_err("PPP: removing module but units remain!\n");
+		pr_debug("PPP: removing module but units remain!\n");
 	rtnl_link_unregister(&ppp_link_ops);
 	unregister_chrdev(PPP_MAJOR, "ppp");
 	device_destroy(ppp_class, MKDEV(PPP_MAJOR, 0));

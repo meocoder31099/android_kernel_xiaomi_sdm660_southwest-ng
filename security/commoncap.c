@@ -45,7 +45,7 @@ static void warn_setuid_and_fcaps_mixed(const char *fname)
 {
 	static int warned;
 	if (!warned) {
-		printk(KERN_INFO "warning: `%s' has both setuid-root and"
+		no_printk(KERN_INFO "warning: `%s' has both setuid-root and"
 			" effective capabilities. Therefore not raising all"
 			" capabilities.\n", fname);
 		warned = 1;
@@ -695,7 +695,7 @@ static int get_file_caps(struct linux_binprm *bprm, bool *effective, bool *has_f
 	rc = get_vfs_caps_from_disk(bprm->file->f_path.dentry, &vcaps);
 	if (rc < 0) {
 		if (rc == -EINVAL)
-			printk(KERN_NOTICE "Invalid argument reading file caps for %s\n",
+			no_printk(KERN_NOTICE "Invalid argument reading file caps for %s\n",
 					bprm->filename);
 		else if (rc == -ENODATA)
 			rc = 0;
@@ -704,7 +704,7 @@ static int get_file_caps(struct linux_binprm *bprm, bool *effective, bool *has_f
 
 	rc = bprm_caps_from_vfs_caps(&vcaps, bprm, effective, has_fcap);
 	if (rc == -EINVAL)
-		printk(KERN_NOTICE "%s: cap_from_disk returned %d for %s\n",
+		no_printk(KERN_NOTICE "%s: cap_from_disk returned %d for %s\n",
 		       __func__, rc, bprm->filename);
 
 out:

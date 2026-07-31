@@ -157,7 +157,7 @@ static int dwc3_otg_get_irq(struct dwc3 *dwc)
 		goto out;
 
 	if (irq != -EPROBE_DEFER)
-		dev_err(dwc->dev, "missing OTG IRQ\n");
+		dev_dbg(dwc->dev, "missing OTG IRQ\n");
 
 	if (!irq)
 		irq = -EINVAL;
@@ -384,7 +384,7 @@ void dwc3_otg_update(struct dwc3 *dwc, bool ignore_idstatus)
 		spin_unlock_irqrestore(&dwc->lock, flags);
 		ret = dwc3_host_init(dwc);
 		if (ret) {
-			dev_err(dwc->dev, "failed to initialize host\n");
+			dev_dbg(dwc->dev, "failed to initialize host\n");
 		} else {
 			if (dwc->usb2_phy)
 				otg_set_vbus(dwc->usb2_phy->otg, true);
@@ -407,7 +407,7 @@ void dwc3_otg_update(struct dwc3 *dwc, bool ignore_idstatus)
 				     PHY_MODE_USB_DEVICE);
 		ret = dwc3_gadget_init(dwc);
 		if (ret)
-			dev_err(dwc->dev, "failed to initialize peripheral\n");
+			dev_dbg(dwc->dev, "failed to initialize peripheral\n");
 		break;
 	default:
 		break;
@@ -476,7 +476,7 @@ int dwc3_drd_init(struct dwc3 *dwc)
 		ret = extcon_register_notifier(dwc->edev, EXTCON_USB_HOST,
 					       &dwc->edev_nb);
 		if (ret < 0) {
-			dev_err(dwc->dev, "couldn't register cable notifier\n");
+			dev_dbg(dwc->dev, "couldn't register cable notifier\n");
 			return ret;
 		}
 
@@ -501,7 +501,7 @@ int dwc3_drd_init(struct dwc3 *dwc)
 					   dwc3_otg_thread_irq,
 					   IRQF_SHARED, "dwc3-otg", dwc);
 		if (ret) {
-			dev_err(dwc->dev, "failed to request irq #%d --> %d\n",
+			dev_dbg(dwc->dev, "failed to request irq #%d --> %d\n",
 				dwc->otg_irq, ret);
 			ret = -ENODEV;
 			return ret;

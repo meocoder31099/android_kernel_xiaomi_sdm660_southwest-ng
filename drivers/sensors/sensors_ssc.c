@@ -80,12 +80,12 @@ static void slpi_load_fw(struct work_struct *slpi_ldr_work)
 	const char *firmware_name = NULL;
 
 	if (!pdev) {
-		pr_err("%s: Platform device null\n", __func__);
+		pr_debug("%s: Platform device null\n", __func__);
 		goto fail;
 	}
 
 	if (!pdev->dev.of_node) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Device tree information missing\n", __func__);
 		goto fail;
 	}
@@ -93,20 +93,20 @@ static void slpi_load_fw(struct work_struct *slpi_ldr_work)
 	ret = of_property_read_string(pdev->dev.of_node,
 		"qcom,firmware-name", &firmware_name);
 	if (ret < 0) {
-		pr_err("can't get fw name.\n");
+		pr_debug("can't get fw name.\n");
 		goto fail;
 	}
 
 	priv = platform_get_drvdata(pdev);
 	if (!priv) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 		" %s: Private data get failed\n", __func__);
 		goto fail;
 	}
 
 	priv->pil_h = subsystem_get_with_fwname("slpi", firmware_name);
 	if (IS_ERR(priv->pil_h)) {
-		dev_err(&pdev->dev, "%s: pil get failed,\n",
+		dev_dbg(&pdev->dev, "%s: pil get failed,\n",
 			__func__);
 		goto fail;
 	}
@@ -115,7 +115,7 @@ static void slpi_load_fw(struct work_struct *slpi_ldr_work)
 	return;
 
 fail:
-	pr_err("%s: SLPI image loading failed\n", __func__);
+	pr_debug("%s: SLPI image loading failed\n", __func__);
 }
 
 static void slpi_loader_do(struct platform_device *pdev)
@@ -166,11 +166,11 @@ static ssize_t slpi_ssr_store(struct kobject *kobj,
 	if (!sns_dev)
 		return -EINVAL;
 
-	dev_err(&pdev->dev, "Something went wrong with SLPI, restarting\n");
+	dev_dbg(&pdev->dev, "Something went wrong with SLPI, restarting\n");
 
 	/* subsystem_restart_dev has worker queue to handle */
 	if (subsystem_restart_dev(sns_dev) != 0) {
-		dev_err(&pdev->dev, "subsystem_restart_dev failed\n");
+		dev_dbg(&pdev->dev, "subsystem_restart_dev failed\n");
 		return -EINVAL;
 	}
 
@@ -219,7 +219,7 @@ static int slpi_loader_init_sysfs(struct platform_device *pdev)
 				sizeof(*(priv->attr_group)),
 				GFP_KERNEL);
 	if (!priv->attr_group) {
-		dev_err(&pdev->dev, "%s: malloc attr_group failed\n",
+		dev_dbg(&pdev->dev, "%s: malloc attr_group failed\n",
 						__func__);
 		ret = -ENOMEM;
 		goto error_return;
@@ -229,7 +229,7 @@ static int slpi_loader_init_sysfs(struct platform_device *pdev)
 
 	priv->boot_slpi_obj = kobject_create_and_add("boot_slpi", kernel_kobj);
 	if (!priv->boot_slpi_obj) {
-		dev_err(&pdev->dev, "%s: sysfs create and add failed\n",
+		dev_dbg(&pdev->dev, "%s: sysfs create and add failed\n",
 						__func__);
 		ret = -ENOMEM;
 		goto error_return;
@@ -237,7 +237,7 @@ static int slpi_loader_init_sysfs(struct platform_device *pdev)
 
 	ret = sysfs_create_group(priv->boot_slpi_obj, priv->attr_group);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: sysfs create group failed %d\n",
+		dev_dbg(&pdev->dev, "%s: sysfs create group failed %d\n",
 							__func__, ret);
 		goto error_return;
 	}
@@ -350,19 +350,19 @@ static int sensors_ssc_probe(struct platform_device *pdev)
 	int ret = slpi_loader_init_sysfs(pdev);
 
 	if (ret != 0) {
-		dev_err(&pdev->dev, "%s: Error in initing sysfs\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Error in initing sysfs\n", __func__);
 		return ret;
 	}
 
 	sns_ctl.dev_class = class_create(THIS_MODULE, CLASS_NAME);
 	if (sns_ctl.dev_class == NULL) {
-		pr_err("%s: class_create fail.\n", __func__);
+		pr_debug("%s: class_create fail.\n", __func__);
 		goto res_err;
 	}
 
 	ret = alloc_chrdev_region(&sns_ctl.dev_num, 0, 1, DRV_NAME);
 	if (ret) {
-		pr_err("%s: alloc_chrdev_region fail.\n", __func__);
+		pr_debug("%s: alloc_chrdev_region fail.\n", __func__);
 		goto alloc_chrdev_region_err;
 	}
 
@@ -370,13 +370,13 @@ static int sensors_ssc_probe(struct platform_device *pdev)
 				     sns_ctl.dev_num,
 				     &sns_ctl, DRV_NAME);
 	if (IS_ERR(sns_ctl.dev)) {
-		pr_err("%s: device_create fail.\n", __func__);
+		pr_debug("%s: device_create fail.\n", __func__);
 		goto device_create_err;
 	}
 
 	sns_ctl.cdev = cdev_alloc();
 	if (sns_ctl.cdev == NULL) {
-		pr_err("%s: cdev_alloc fail.\n", __func__);
+		pr_debug("%s: cdev_alloc fail.\n", __func__);
 		goto cdev_alloc_err;
 	}
 	cdev_init(sns_ctl.cdev, &sensors_ssc_fops);
@@ -384,7 +384,7 @@ static int sensors_ssc_probe(struct platform_device *pdev)
 
 	ret = cdev_add(sns_ctl.cdev, sns_ctl.dev_num, 1);
 	if (ret) {
-		pr_err("%s: cdev_add fail.\n", __func__);
+		pr_debug("%s: cdev_add fail.\n", __func__);
 		goto cdev_add_err;
 	}
 
@@ -439,7 +439,7 @@ static int __init sensors_ssc_init(void)
 	pr_debug("%s driver version %s.\n", DRV_NAME, DRV_VERSION);
 	rc = platform_driver_register(&sensors_ssc_driver);
 	if (rc) {
-		pr_err("%s: Failed to register sensors ssc driver\n",
+		pr_debug("%s: Failed to register sensors ssc driver\n",
 			__func__);
 		return rc;
 	}

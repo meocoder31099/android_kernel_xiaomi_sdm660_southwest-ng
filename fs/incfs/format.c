@@ -666,18 +666,18 @@ int incfs_read_next_metadata_record(struct backing_file_context *bfc,
 	md_record_size = le16_to_cpu(md_hdr->h_record_size);
 
 	if (md_record_size > max_md_size) {
-		pr_warn("incfs: The record is too large. Size: %zu",
+		pr_debug("incfs: The record is too large. Size: %zu",
 				md_record_size);
 		return -EBADMSG;
 	}
 
 	if (bytes_read < md_record_size) {
-		pr_warn("incfs: The record hasn't been fully read.");
+		pr_debug("incfs: The record hasn't been fully read.");
 		return -EBADMSG;
 	}
 
 	if (next_record <= handler->md_record_offset && next_record != 0) {
-		pr_warn("incfs: Next record (%lld) points back in file.",
+		pr_debug("incfs: Next record (%lld) points back in file.",
 			next_record);
 		return -EBADMSG;
 	}

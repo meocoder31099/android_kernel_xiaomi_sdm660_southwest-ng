@@ -66,7 +66,7 @@ static int service_locator_new_server(struct qmi_handle *qmi,
 	service_locator.connected = true;
 	if (!service_inited)
 		complete_all(&service_locator.service_available);
-	pr_info("Connection established with the Service locator\n");
+	pr_debug("Connection established with the Service locator\n");
 	return 0;
 }
 
@@ -75,7 +75,7 @@ static void service_locator_del_server(struct qmi_handle *qmi,
 {
 	service_locator.connected = false;
 	complete_all(&service_locator.service_available);
-	pr_info("Connection with service locator lost\n");
+	pr_debug("Connection with service locator lost\n");
 }
 
 static struct qmi_ops server_ops = {
@@ -116,7 +116,7 @@ static int servreg_loc_send_msg(
 	rc = qmi_txn_init(&service_locator.clnt_handle, &txn,
 			qmi_servreg_loc_get_domain_list_resp_msg_v01_ei, resp);
 	if (rc < 0) {
-		pr_err("QMI tx init failed for client %s, ret - %d\n",
+		pr_debug("QMI tx init failed for client %s, ret - %d\n",
 			pd->client_name, rc);
 		return rc;
 	}
@@ -128,7 +128,7 @@ static int servreg_loc_send_msg(
 			qmi_servreg_loc_get_domain_list_req_msg_v01_ei,
 			req);
 	if (rc < 0) {
-		pr_err("QMI send req failed for client %s, ret - %d\n",
+		pr_debug("QMI send req failed for client %s, ret - %d\n",
 			pd->client_name, rc);
 		qmi_txn_cancel(&txn);
 		return rc;
@@ -137,14 +137,14 @@ static int servreg_loc_send_msg(
 	rc = qmi_txn_wait(&txn,
 			msecs_to_jiffies(QMI_SERVREG_LOC_SERVER_TIMEOUT));
 	if (rc < 0) {
-		pr_err("QMI qmi txn wait failed for client %s, ret - %d\n",
+		pr_debug("QMI qmi txn wait failed for client %s, ret - %d\n",
 			pd->client_name, rc);
 		return rc;
 	}
 
 	/* Check the response */
 	if (resp->resp.result != QMI_RESULT_SUCCESS_V01) {
-		pr_err("QMI request for client %s failed 0x%x\n",
+		pr_debug("QMI request for client %s failed 0x%x\n",
 			pd->client_name, resp->resp.error);
 		return -EREMOTEIO;
 	}
@@ -159,7 +159,7 @@ static int service_locator_send_msg(struct pd_qmi_client_data *pd)
 	int db_rev_count = 0, domains_read = 0;
 
 	if (!service_locator.connected) {
-		pr_err("Service locator not available!\n");
+		pr_debug("Service locator not available!\n");
 		return -EAGAIN;
 	}
 
@@ -167,7 +167,7 @@ static int service_locator_send_msg(struct pd_qmi_client_data *pd)
 		struct qmi_servreg_loc_get_domain_list_req_msg_v01),
 		GFP_KERNEL);
 	if (!req) {
-		pr_err("Unable to allocate memory for req message\n");
+		pr_debug("Unable to allocate memory for req message\n");
 		rc = -ENOMEM;
 		goto out;
 	}
@@ -175,7 +175,7 @@ static int service_locator_send_msg(struct pd_qmi_client_data *pd)
 		struct qmi_servreg_loc_get_domain_list_resp_msg_v01),
 		GFP_KERNEL);
 	if (!resp) {
-		pr_err("Unable to allocate memory for resp message\n");
+		pr_debug("Unable to allocate memory for resp message\n");
 		rc = -ENOMEM;
 		goto out;
 	}
@@ -190,14 +190,14 @@ static int service_locator_send_msg(struct pd_qmi_client_data *pd)
 		req->domain_offset += domains_read;
 		rc = servreg_loc_send_msg(req, resp, pd);
 		if (rc < 0) {
-			pr_err("send msg failed rc:%d\n", rc);
+			pr_debug("send msg failed rc:%d\n", rc);
 			goto out;
 		}
 		if (!domains_read) {
 			db_rev_count = pd->db_rev_count = resp->db_rev_count;
 			pd->total_domains = resp->total_domains;
 			if (!resp->total_domains) {
-				pr_err("No matching domains found\n");
+				pr_debug("No matching domains found\n");
 				goto out;
 			}
 
@@ -205,13 +205,13 @@ static int service_locator_send_msg(struct pd_qmi_client_data *pd)
 					sizeof(struct servreg_loc_entry_v01) *
 					resp->total_domains, GFP_KERNEL);
 			if (!pd->domain_list) {
-				pr_err("Cannot allocate domain list\n");
+				pr_debug("Cannot allocate domain list\n");
 				rc = -ENOMEM;
 				goto out;
 			}
 		}
 		if (db_rev_count != resp->db_rev_count) {
-			pr_err("Service Locator DB updated for client %s\n",
+			pr_debug("Service Locator DB updated for client %s\n",
 				pd->client_name);
 			kfree(pd->domain_list);
 			pd->domain_list = NULL;
@@ -242,7 +242,7 @@ static int init_service_locator(void)
 	if (rc)
 		return rc;
 	if (locator_status == LOCATOR_NOT_PRESENT) {
-		pr_err("Service Locator not enabled\n");
+		pr_debug("Service Locator not enabled\n");
 		rc = -ENODEV;
 		goto inited;
 	}
@@ -261,7 +261,7 @@ static int init_service_locator(void)
 		QMI_SERVREG_LOC_GET_DOMAIN_LIST_RESP_MSG_V01_MAX_MSG_LEN,
 			&server_ops, NULL);
 	if (rc < 0) {
-		pr_err("Service locator QMI handle init failed rc:%d\n", rc);
+		pr_debug("Service locator QMI handle init failed rc:%d\n", rc);
 		goto inited;
 	}
 
@@ -274,11 +274,11 @@ static int init_service_locator(void)
 				&service_locator.service_available,
 				msecs_to_jiffies(LOCATOR_SERVICE_TIMEOUT));
 	if (rc < 0) {
-		pr_err("Wait for locator service interrupted by signal\n");
+		pr_debug("Wait for locator service interrupted by signal\n");
 		goto inited;
 	}
 	if (!rc) {
-		pr_err("%s: wait for locator service timed out\n", __func__);
+		pr_debug("%s: wait for locator service timed out\n", __func__);
 		service_timedout = true;
 		rc = -ETIME;
 		goto inited;
@@ -286,7 +286,7 @@ static int init_service_locator(void)
 
 	service_inited = true;
 	mutex_unlock(&service_init_mutex);
-	pr_info("Service locator initialized\n");
+	pr_debug("Service locator initialized\n");
 	return 0;
 
 inited:
@@ -303,14 +303,14 @@ int get_service_location(char *client_name, char *service_name,
 
 	if (!locator_nb || !client_name || !service_name) {
 		rc = -EINVAL;
-		pr_err("Invalid input!\n");
+		pr_debug("Invalid input!\n");
 		goto err;
 	}
 
 	pqcd = kzalloc(sizeof(struct pd_qmi_client_data), GFP_KERNEL);
 	if (!pqcd) {
 		rc = -ENOMEM;
-		pr_err("Allocation failed\n");
+		pr_debug("Allocation failed\n");
 		goto err;
 	}
 	strlcpy(pqcd->client_name, client_name, ARRAY_SIZE(pqcd->client_name));
@@ -320,7 +320,7 @@ int get_service_location(char *client_name, char *service_name,
 	pqw = kmalloc(sizeof(struct pd_qmi_work), GFP_KERNEL);
 	if (!pqw) {
 		rc = -ENOMEM;
-		pr_err("Allocation failed\n");
+		pr_debug("Allocation failed\n");
 		kfree(pqcd);
 		goto err;
 	}
@@ -345,14 +345,14 @@ static void pd_locator_work(struct work_struct *work)
 	data = pdqw->pdc;
 	rc = init_service_locator();
 	if (rc) {
-		pr_err("Unable to connect to service locator!, rc = %d\n", rc);
+		pr_debug("Unable to connect to service locator!, rc = %d\n", rc);
 		pdqw->notifier->notifier_call(pdqw->notifier,
 			LOCATOR_DOWN, NULL);
 		goto err_init_servloc;
 	}
 	rc = service_locator_send_msg(data);
 	if (rc) {
-		pr_err("Failed to get process domains for %s for client %s rc:%d\n",
+		pr_debug("Failed to get process domains for %s for client %s rc:%d\n",
 			data->service_name, data->client_name, rc);
 		pdqw->notifier->notifier_call(pdqw->notifier,
 			LOCATOR_DOWN, NULL);

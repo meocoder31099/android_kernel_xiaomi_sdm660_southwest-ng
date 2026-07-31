@@ -28,7 +28,7 @@
 	} while (0)
 
 #define QIIB_ERR(x...) do { \
-	pr_err(x); \
+	pr_debug(x); \
 	if (qiib_info->log_ctx) \
 		ipc_log_string(qiib_info->log_ctx, x); \
 	} while (0)

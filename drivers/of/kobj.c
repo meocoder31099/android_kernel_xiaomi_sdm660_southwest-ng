@@ -54,7 +54,7 @@ static const char *safe_name(struct kobject *kobj, const char *orig_name)
 	if (name == orig_name) {
 		name = kstrdup(orig_name, GFP_KERNEL);
 	} else {
-		pr_warn("Duplicate name in %s, renamed to \"%s\"\n",
+		pr_debug("Duplicate name in %s, renamed to \"%s\"\n",
 			kobject_name(kobj), name);
 	}
 	return name;

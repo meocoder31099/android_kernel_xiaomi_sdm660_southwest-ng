@@ -628,7 +628,7 @@ static void __sock_release(struct socket *sock, struct inode *inode)
 	}
 
 	if (sock->wq->fasync_list)
-		pr_err("%s: fasync list not empty!\n", __func__);
+		pr_debug("%s: fasync list not empty!\n", __func__);
 
 	if (!sock->file) {
 		iput(SOCK_INODE(sock));
@@ -2835,7 +2835,7 @@ int sock_register(const struct net_proto_family *ops)
 	int err;
 
 	if (ops->family >= NPROTO) {
-		pr_crit("protocol %d >= NPROTO(%d)\n", ops->family, NPROTO);
+		pr_debug("protocol %d >= NPROTO(%d)\n", ops->family, NPROTO);
 		return -ENOBUFS;
 	}
 
@@ -2849,7 +2849,7 @@ int sock_register(const struct net_proto_family *ops)
 	}
 	spin_unlock(&net_family_lock);
 
-	pr_info("NET: Registered protocol family %d\n", ops->family);
+	pr_debug("NET: Registered protocol family %d\n", ops->family);
 	return err;
 }
 EXPORT_SYMBOL(sock_register);
@@ -2877,7 +2877,7 @@ void sock_unregister(int family)
 
 	synchronize_rcu();
 
-	pr_info("NET: Unregistered protocol family %d\n", family);
+	pr_debug("NET: Unregistered protocol family %d\n", family);
 }
 EXPORT_SYMBOL(sock_unregister);
 

@@ -500,7 +500,7 @@ static void unix_sock_destructor(struct sock *sk)
 	WARN_ON(!sk_unhashed(sk));
 	WARN_ON(sk->sk_socket);
 	if (!sock_flag(sk, SOCK_DEAD)) {
-		pr_info("Attempt to release alive unix socket: %p\n", sk);
+		pr_debug("Attempt to release alive unix socket: %p\n", sk);
 		return;
 	}
 
@@ -2940,7 +2940,7 @@ static int __init af_unix_init(void)
 
 	rc = proto_register(&unix_proto, 1);
 	if (rc != 0) {
-		pr_crit("%s: Cannot create unix_sock SLAB cache!\n", __func__);
+		pr_debug("%s: Cannot create unix_sock SLAB cache!\n", __func__);
 		goto out;
 	}
 

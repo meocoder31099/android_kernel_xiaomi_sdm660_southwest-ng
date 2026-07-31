@@ -728,7 +728,7 @@ static void diag_cmd_invalidate_polling(int change_flag)
 	list_for_each_safe(start, temp, &driver->cmd_reg_list) {
 		item = list_entry(start, struct diag_cmd_reg_t, link);
 		if (!item) {
-			pr_err("diag: In %s, unable to search command\n",
+			pr_debug("diag: In %s, unable to search command\n",
 			       __func__);
 			return;
 		}
@@ -746,12 +746,12 @@ int diag_cmd_add_reg(struct diag_cmd_reg_entry_t *new_entry, uint8_t proc,
 	struct diag_cmd_reg_t *new_item = NULL;
 
 	if (!new_entry) {
-		pr_err("diag: In %s, invalid new entry\n", __func__);
+		pr_debug("diag: In %s, invalid new entry\n", __func__);
 		return -EINVAL;
 	}
 
 	if (proc > APPS_DATA) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__, proc);
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__, proc);
 		return -EINVAL;
 	}
 
@@ -787,14 +787,14 @@ struct diag_cmd_reg_entry_t *diag_cmd_search(
 	struct diag_cmd_reg_entry_t *temp_entry = NULL;
 
 	if (!entry) {
-		pr_err("diag: In %s, invalid entry\n", __func__);
+		pr_debug("diag: In %s, invalid entry\n", __func__);
 		return NULL;
 	}
 
 	list_for_each_safe(start, temp, &driver->cmd_reg_list) {
 		item = list_entry(start, struct diag_cmd_reg_t, link);
 		if (!item) {
-			pr_err("diag: In %s, unable to search command\n",
+			pr_debug("diag: In %s, unable to search command\n",
 			       __func__);
 			return NULL;
 		}
@@ -842,7 +842,7 @@ void diag_cmd_remove_reg(struct diag_cmd_reg_entry_t *entry, uint8_t proc)
 	struct diag_cmd_reg_entry_t *temp_entry;
 
 	if (!entry) {
-		pr_err("diag: In %s, invalid entry\n", __func__);
+		pr_debug("diag: In %s, invalid entry\n", __func__);
 		return;
 	}
 
@@ -872,7 +872,7 @@ void diag_cmd_remove_reg_by_pid(int pid)
 	list_for_each_safe(start, temp, &driver->cmd_reg_list) {
 		item = list_entry(start, struct diag_cmd_reg_t, link);
 		if (!item) {
-			pr_err("diag: In %s, unable to search command\n",
+			pr_debug("diag: In %s, unable to search command\n",
 			       __func__);
 			mutex_unlock(&driver->cmd_reg_mutex);
 			return;
@@ -896,7 +896,7 @@ void diag_cmd_remove_reg_by_proc(int proc)
 	list_for_each_safe(start, temp, &driver->cmd_reg_list) {
 		item = list_entry(start, struct diag_cmd_reg_t, link);
 		if (!item) {
-			pr_err("diag: In %s, unable to search command\n",
+			pr_debug("diag: In %s, unable to search command\n",
 			       __func__);
 			mutex_unlock(&driver->cmd_reg_mutex);
 			return;
@@ -927,7 +927,7 @@ static int diag_copy_dci(char __user *buf, size_t count,
 
 	ret += sizeof(int);
 	if (ret >= count) {
-		pr_err("diag: In %s, invalid value for ret: %d, count: %zu\n",
+		pr_debug("diag: In %s, invalid value for ret: %d, count: %zu\n",
 		       __func__, ret, count);
 		return -EINVAL;
 	}
@@ -1047,12 +1047,12 @@ static int diag_send_raw_data_remote(int proc, void *buf, int len,
 		return -EINVAL;
 
 	if (len <= 0) {
-		pr_err("diag: In %s, invalid len: %d\n", __func__, len);
+		pr_debug("diag: In %s, invalid len: %d\n", __func__, len);
 		return -EBADMSG;
 	}
 
 	if (bridge_index < 0 || bridge_index > NUM_REMOTE_DEV) {
-		pr_err("diag: In %s, invalid bridge index: %d\n", __func__,
+		pr_debug("diag: In %s, invalid bridge index: %d\n", __func__,
 			bridge_index);
 		return -EINVAL;
 	}
@@ -1069,7 +1069,7 @@ static int diag_send_raw_data_remote(int proc, void *buf, int len,
 
 	if (hdlc_flag) {
 		if (len > DIAG_MAX_HDLC_BUF_SIZE) {
-			pr_err("diag: Dropping packet, HDLC encoded packet payload size crosses buffer limit. Current payload size %d\n",
+			pr_debug("diag: Dropping packet, HDLC encoded packet payload size crosses buffer limit. Current payload size %d\n",
 			       len);
 			return -EBADMSG;
 		}
@@ -1102,7 +1102,7 @@ static int diag_send_raw_data_remote(int proc, void *buf, int len,
 		 */
 		max_len = (2 * len) + 3;
 		if (max_len > DIAG_MAX_HDLC_BUF_SIZE) {
-			pr_err("diag: Dropping packet, HDLC encoded packet payload size crosses buffer limit. Current payload size %d\n",
+			pr_debug("diag: Dropping packet, HDLC encoded packet payload size crosses buffer limit. Current payload size %d\n",
 				   max_len);
 			return -EBADMSG;
 		}
@@ -1137,13 +1137,13 @@ static int diag_process_userspace_remote(int proc, void *buf, int len)
 	int bridge_index = proc - 1;
 
 	if (!buf || len < 0) {
-		pr_err("diag: Invalid input in %s, buf: %pK, len: %d\n",
+		pr_debug("diag: Invalid input in %s, buf: %pK, len: %d\n",
 		       __func__, buf, len);
 		return -EINVAL;
 	}
 
 	if (bridge_index < 0 || bridge_index > NUM_REMOTE_DEV) {
-		pr_err("diag: In %s, invalid bridge index: %d\n", __func__,
+		pr_debug("diag: In %s, invalid bridge index: %d\n", __func__,
 		       bridge_index);
 		return -EINVAL;
 	}
@@ -1827,7 +1827,7 @@ static int diag_switch_logging_proc(struct diag_logging_mode_param_t *param,
 			err = diag_mux_switch_logging(proc, &new_mode,
 					&peripheral_mask);
 			if (err) {
-				pr_err("diag: In %s, unable to switch mode from %d to %d, err: %d\n",
+				pr_debug("diag: In %s, unable to switch mode from %d to %d, err: %d\n",
 					__func__, curr_mode, new_mode, err);
 				driver->logging_mode[proc] = curr_mode;
 				return err;
@@ -1958,7 +1958,7 @@ static int diag_switch_logging(struct diag_logging_mode_param_t *param)
 		new_mode = DIAG_USB_MODE;
 		break;
 	default:
-		pr_err("diag: In %s, request to switch to invalid mode: %d\n",
+		pr_debug("diag: In %s, request to switch to invalid mode: %d\n",
 		       __func__, param->req_mode);
 		return -EINVAL;
 	}
@@ -2081,7 +2081,7 @@ static int diag_ioctl_vote_real_time(unsigned long ioarg)
 	if (vote.proc > DIAG_PROC_MEMORY_DEVICE ||
 		vote.real_time_vote > MODE_UNKNOWN ||
 		vote.client_id < 0) {
-		pr_err("diag: %s, invalid params, proc: %d, vote: %d, client_id: %d\n",
+		pr_debug("diag: %s, invalid params, proc: %d, vote: %d, client_id: %d\n",
 			__func__, vote.proc, vote.real_time_vote,
 			vote.client_id);
 		return -EINVAL;
@@ -2138,7 +2138,7 @@ static int diag_ioctl_get_real_time(unsigned long ioarg)
 		return -EAGAIN;
 
 	if (rt_query.proc < 0 || rt_query.proc >= DIAG_NUM_PROC) {
-		pr_err("diag: Invalid proc %d in %s\n", rt_query.proc,
+		pr_debug("diag: Invalid proc %d in %s\n", rt_query.proc,
 		       __func__);
 		return -EINVAL;
 	}
@@ -2180,20 +2180,20 @@ static int diag_ioctl_set_buffering_mode(unsigned long ioarg)
 
 	if ((peripheral < 0) ||
 		peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral = %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral = %d\n", __func__,
 		       peripheral);
 		return -EIO;
 	}
 
 	if (params.peripheral > NUM_PERIPHERALS &&
 		!driver->feature[peripheral].pd_buffering) {
-		pr_err("diag: In %s, pd buffering not supported for peripheral:%d\n",
+		pr_debug("diag: In %s, pd buffering not supported for peripheral:%d\n",
 			__func__, peripheral);
 		return -EIO;
 	}
 
 	if (!driver->feature[peripheral].peripheral_buffering) {
-		pr_err("diag: In %s, peripheral %d doesn't support buffering\n",
+		pr_debug("diag: In %s, peripheral %d doesn't support buffering\n",
 		       __func__, peripheral);
 		return -EIO;
 	}
@@ -2217,14 +2217,14 @@ static int diag_ioctl_peripheral_drain_immediate(unsigned long ioarg)
 
 	if ((peripheral < 0) ||
 		peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, invalid peripheral %d\n", __func__,
+		pr_debug("diag: In %s, invalid peripheral %d\n", __func__,
 		       peripheral);
 		return -EINVAL;
 	}
 
 	if (pd > NUM_PERIPHERALS &&
 		!driver->feature[peripheral].pd_buffering) {
-		pr_err("diag: In %s, pd buffering not supported for peripheral:%d\n",
+		pr_debug("diag: In %s, pd buffering not supported for peripheral:%d\n",
 			__func__, peripheral);
 		return -EIO;
 	}
@@ -2665,7 +2665,7 @@ static int diag_ioctl_register_callback(unsigned long ioarg)
 	}
 
 	if (reg.proc < 0 || reg.proc >= NUM_DIAG_MD_DEV) {
-		pr_err("diag: In %s, invalid proc %d for callback registration\n",
+		pr_debug("diag: In %s, invalid proc %d for callback registration\n",
 		       __func__, reg.proc);
 		return -EINVAL;
 	}
@@ -2686,13 +2686,13 @@ static int diag_cmd_register_tbl(struct diag_cmd_reg_tbl_t *reg_tbl)
 
 
 	if (!reg_tbl) {
-		pr_err("diag: In %s, invalid registration table\n", __func__);
+		pr_debug("diag: In %s, invalid registration table\n", __func__);
 		return -EINVAL;
 	}
 
 	count = reg_tbl->count;
 	if ((UINT_MAX / entry_len) < count) {
-		pr_warn("diag: In %s, possbile integer overflow.\n", __func__);
+		pr_debug("diag: In %s, possbile integer overflow.\n", __func__);
 		return -EFAULT;
 	}
 
@@ -2703,7 +2703,7 @@ static int diag_cmd_register_tbl(struct diag_cmd_reg_tbl_t *reg_tbl)
 
 	err = copy_from_user(entries, reg_tbl->entries, count * entry_len);
 	if (err) {
-		pr_err("diag: In %s, error copying data from userspace, err: %d\n",
+		pr_debug("diag: In %s, error copying data from userspace, err: %d\n",
 		       __func__, err);
 		kfree(entries);
 		return -EFAULT;
@@ -2712,7 +2712,7 @@ static int diag_cmd_register_tbl(struct diag_cmd_reg_tbl_t *reg_tbl)
 	for (i = 0; i < count; i++) {
 		err = diag_cmd_add_reg(&entries[i], APPS_DATA, current->tgid);
 		if (err) {
-			pr_err("diag: In %s, unable to register command, err: %d\n",
+			pr_debug("diag: In %s, unable to register command, err: %d\n",
 			       __func__, err);
 			break;
 		}
@@ -3133,7 +3133,7 @@ static int diag_process_apps_data_hdlc(unsigned char *buf, int len,
 	const uint32_t max_encoded_size = ((2 * len) + 3);
 
 	if (!buf || len <= 0) {
-		pr_err("diag: In %s, invalid buf: %pK len: %d\n",
+		pr_debug("diag: In %s, invalid buf: %pK len: %d\n",
 		       __func__, buf, len);
 		return -EIO;
 	}
@@ -3289,7 +3289,7 @@ static int diag_process_apps_data_non_hdlc(unsigned char *buf, int len,
 	const uint32_t max_pkt_size = sizeof(header) + len + 1;
 
 	if (!buf || len <= 0) {
-		pr_err("diag: In %s, invalid buf: %pK len: %d\n",
+		pr_debug("diag: In %s, invalid buf: %pK len: %d\n",
 		       __func__, buf, len);
 		return -EIO;
 	}
@@ -3426,7 +3426,7 @@ static int diag_user_process_dci_apps_data(const char __user *buf, int len,
 
 	err = copy_from_user(user_space_data, buf, len);
 	if (err) {
-		pr_alert("diag: In %s, unable to copy data from userspace, err: %d\n",
+		pr_debug("diag: In %s, unable to copy data from userspace, err: %d\n",
 			 __func__, err);
 		goto fail;
 	}
@@ -3459,7 +3459,7 @@ static int diag_user_process_raw_data(const char __user *buf, int len)
 
 	err = copy_from_user(user_space_data, buf, len);
 	if (err) {
-		pr_err("diag: copy failed for user space data\n");
+		pr_debug("diag: copy failed for user space data\n");
 		goto fail;
 	}
 
@@ -3469,7 +3469,7 @@ static int diag_user_process_raw_data(const char __user *buf, int len)
 	if (remote_proc) {
 		token_offset = sizeof(int);
 		if (len <= MIN_SIZ_ALLOW) {
-			pr_err("diag: In %s, possible integer underflow, payload size: %d\n",
+			pr_debug("diag: In %s, possible integer underflow, payload size: %d\n",
 		       __func__, len);
 			diagmem_free(driver, user_space_data, mempool);
 			user_space_data = NULL;
@@ -3480,7 +3480,7 @@ static int diag_user_process_raw_data(const char __user *buf, int len)
 	if (driver->mask_check) {
 		if (!mask_request_validate(user_space_data +
 						token_offset, len)) {
-			pr_alert("diag: mask request Invalid\n");
+			pr_debug("diag: mask request Invalid\n");
 			diagmem_free(driver, user_space_data, mempool);
 			user_space_data = NULL;
 			return -EFAULT;
@@ -3491,7 +3491,7 @@ static int diag_user_process_raw_data(const char __user *buf, int len)
 				(void *)(user_space_data + token_offset),
 				len, USER_SPACE_RAW_DATA);
 		if (ret) {
-			pr_err("diag: Error sending data to remote proc %d, err: %d\n",
+			pr_debug("diag: Error sending data to remote proc %d, err: %d\n",
 				remote_proc, ret);
 		}
 	} else {
@@ -3537,7 +3537,7 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 
 	err = copy_from_user(driver->user_space_data_buf, buf, len);
 	if (err) {
-		pr_err("diag: In %s, failed to copy data from userspace, err: %d\n",
+		pr_debug("diag: In %s, failed to copy data from userspace, err: %d\n",
 		       __func__, err);
 		return -EIO;
 	}
@@ -3546,7 +3546,7 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 	remote_proc = diag_get_remote(*(int *)driver->user_space_data_buf);
 	if (remote_proc) {
 		if (len <= MIN_SIZ_ALLOW) {
-			pr_err("diag: Integer underflow in %s, payload size: %d\n",
+			pr_debug("diag: Integer underflow in %s, payload size: %d\n",
 			       __func__, len);
 			return -EBADMSG;
 		}
@@ -3558,7 +3558,7 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 	if (driver->mask_check) {
 		if (!mask_request_validate(driver->user_space_data_buf +
 					   token_offset, len)) {
-			pr_alert("diag: mask request Invalid\n");
+			pr_debug("diag: mask request Invalid\n");
 			return -EFAULT;
 		}
 	}
@@ -3568,7 +3568,7 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 		mutex_lock(&driver->md_session_lock);
 		session_info = diag_md_session_get_pid(current->tgid);
 		if (!session_info) {
-			pr_err("diag:In %s request came from invalid md session pid:%d\n",
+			pr_debug("diag:In %s request came from invalid md session pid:%d\n",
 				__func__, current->tgid);
 			mutex_unlock(&driver->md_session_lock);
 			return -EINVAL;
@@ -3594,7 +3594,7 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 					    token_offset, len);
 	if (err) {
 		driver->user_space_data_busy = 0;
-		pr_err("diag: Error sending mask to remote proc %d, err: %d\n",
+		pr_debug("diag: Error sending mask to remote proc %d, err: %d\n",
 		       remote_proc, err);
 	}
 
@@ -3637,7 +3637,7 @@ static int diag_user_process_apps_data(const char __user *buf, int len,
 
 	ret = copy_from_user(user_space_data, buf, len);
 	if (ret) {
-		pr_alert("diag: In %s, unable to copy data from userspace, err: %d\n",
+		pr_debug("diag: In %s, unable to copy data from userspace, err: %d\n",
 			 __func__, ret);
 		diagmem_free(driver, user_space_data, mempool);
 		user_space_data = NULL;
@@ -3711,11 +3711,11 @@ static ssize_t diagchar_read(struct file *file, char __user *buf, size_t count,
 	mutex_unlock(&driver->diagchar_mutex);
 
 	if (index == -1) {
-		pr_err("diag: Client PID not found in table\n");
+		pr_debug("diag: Client PID not found in table\n");
 		return -EINVAL;
 	}
 	if (!buf) {
-		pr_err("diag: bad address from user side\n");
+		pr_debug("diag: bad address from user side\n");
 		return -EFAULT;
 	}
 	wait_event_interruptible(driver->wait_q,
@@ -4089,7 +4089,7 @@ static ssize_t diagchar_write(struct file *file, const char __user *buf,
 	 * packet type heeader.
 	 */
 	if (count < sizeof(int)) {
-		pr_err("diag: In %s, client is sending short data, len: %d\n",
+		pr_debug("diag: In %s, client is sending short data, len: %d\n",
 		       __func__, (int)count);
 		return -EBADMSG;
 	}
@@ -4103,7 +4103,7 @@ static ssize_t diagchar_write(struct file *file, const char __user *buf,
 
 	err = copy_from_user(&token, buf+4, sizeof(int));
 	if (err) {
-		pr_err("diag: copy failed for user space data\n");
+		pr_debug("diag: copy failed for user space data\n");
 		return -EIO;
 	}
 	if (token < 0)
@@ -4353,7 +4353,7 @@ static void diag_debug_init(void)
 {
 	diag_ipc_log = ipc_log_context_create(DIAG_IPC_LOG_PAGES, "diag", 0);
 	if (!diag_ipc_log)
-		pr_err("diag: Failed to create IPC logging context\n");
+		pr_debug("diag: Failed to create IPC logging context\n");
 	/*
 	 * Set the bit mask here as per diag_ipc_logging.h to enable debug logs
 	 * to be logged to IPC
@@ -4415,14 +4415,14 @@ static int diagchar_setup_cdev(dev_t devno)
 	err = cdev_add(driver->cdev, devno, 1);
 
 	if (err) {
-		pr_info("diagchar cdev registration failed !\n");
+		pr_debug("diagchar cdev registration failed !\n");
 		return err;
 	}
 
 	driver->diagchar_class = class_create(THIS_MODULE, "diag");
 
 	if (IS_ERR(driver->diagchar_class)) {
-		pr_err("Error creating diagchar class.\n");
+		pr_debug("Error creating diagchar class.\n");
 		return PTR_ERR(driver->diagchar_class);
 	}
 
@@ -4586,7 +4586,7 @@ static int __init diagchar_init(void)
 		driver->major = MAJOR(dev);
 		driver->minor_start = MINOR(dev);
 	} else {
-		pr_err("diag: Major number not allocated\n");
+		pr_debug("diag: Major number not allocated\n");
 		goto fail;
 	}
 	driver->cdev = cdev_alloc();
@@ -4603,7 +4603,7 @@ static int __init diagchar_init(void)
 	return 0;
 
 fail:
-	pr_err("diagchar is not initialized, ret: %d\n", ret);
+	pr_debug("diagchar is not initialized, ret: %d\n", ret);
 #ifdef CONFIG_DEBUG_FS
 	diag_debugfs_cleanup();
 #endif
@@ -4622,7 +4622,7 @@ fail:
 
 static void diagchar_exit(void)
 {
-	pr_info("diagchar exiting...\n");
+	pr_debug("diagchar exiting...\n");
 	diag_mempool_exit();
 	diag_mux_exit();
 	diagfwd_peripheral_exit();
@@ -4636,7 +4636,7 @@ static void diagchar_exit(void)
 	diag_debugfs_cleanup();
 #endif
 	diagchar_cleanup();
-	pr_info("done diagchar exit\n");
+	pr_debug("done diagchar exit\n");
 }
 
 module_init(diagchar_init);

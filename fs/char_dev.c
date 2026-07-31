@@ -113,7 +113,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	if (major == 0) {
 		ret = find_dynamic_major();
 		if (ret < 0) {
-			pr_err("CHRDEV \"%s\" dynamic allocation region is full\n",
+			pr_debug("CHRDEV \"%s\" dynamic allocation region is full\n",
 			       name);
 			goto out;
 		}
@@ -121,7 +121,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	}
 
 	if (major >= CHRDEV_MAJOR_MAX) {
-		pr_err("CHRDEV \"%s\" major requested (%u) is greater than the maximum (%u)\n",
+		pr_debug("CHRDEV \"%s\" major requested (%u) is greater than the maximum (%u)\n",
 		       name, major, CHRDEV_MAJOR_MAX-1);
 		ret = -EINVAL;
 		goto out;

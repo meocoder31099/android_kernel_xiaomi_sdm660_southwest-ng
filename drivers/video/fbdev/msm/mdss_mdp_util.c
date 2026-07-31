@@ -29,7 +29,7 @@ void mdss_mdp_format_flag_removal(u32 *table, u32 num, u32 remove_bits)
 	int i, j;
 
 	if (table == NULL) {
-		pr_err("Null table provided\n");
+		pr_debug("Null table provided\n");
 		return;
 	}
 
@@ -388,7 +388,7 @@ int mdss_mdp_get_rau_strides(u32 w, u32 h,
 		ps->rau_h[0] = 4;
 		ps->rau_h[1] = 0;
 	} else  {
-		pr_err("Invalid format=%d\n", fmt->format);
+		pr_debug("Invalid format=%d\n", fmt->format);
 		return -EINVAL;
 	}
 
@@ -412,7 +412,7 @@ static int mdss_mdp_get_ubwc_plane_size(struct mdss_mdp_format_params *fmt,
 		(struct mdss_mdp_format_params_ubwc *)fmt;
 
 	if (!mdss_mdp_is_ubwc_supported(mdata)) {
-		pr_err("ubwc format is not supported for format: %d\n",
+		pr_debug("ubwc format is not supported for format: %d\n",
 			fmt->format);
 		return -EINVAL;
 	}
@@ -499,7 +499,7 @@ static int mdss_mdp_get_ubwc_plane_size(struct mdss_mdp_format_params *fmt,
 		ps->plane_size[2] = ALIGN(ps->ystride[2] *
 			ALIGN(DIV_ROUND_UP(height, 4), 16), 4096);
 	} else {
-		pr_err("%s: UBWC format not supported for fmt:%d\n",
+		pr_debug("%s: UBWC format not supported for fmt:%d\n",
 			__func__, fmt->format);
 		rc = -EINVAL;
 	}
@@ -617,7 +617,7 @@ static int mdss_mdp_ubwc_data_check(struct mdss_mdp_data *data,
 	dma_addr_t base_addr;
 
 	if (!mdss_mdp_is_ubwc_supported(mdata)) {
-		pr_err("ubwc format is not supported for format: %d\n",
+		pr_debug("ubwc format is not supported for format: %d\n",
 			fmt->format);
 		return -ENOTSUPP;
 	}
@@ -628,7 +628,7 @@ static int mdss_mdp_ubwc_data_check(struct mdss_mdp_data *data,
 	/* From this point, assumption is plane 0 is to be divided */
 	data_size = data->p[0].len;
 	if (data_size < ps->total_size) {
-		pr_err("insufficient current mem len=%lu required mem len=%u\n",
+		pr_debug("insufficient current mem len=%lu required mem len=%u\n",
 		       data_size, ps->total_size);
 		return -ENOMEM;
 	}
@@ -704,7 +704,7 @@ static int mdss_mdp_ubwc_data_check(struct mdss_mdp_data *data,
 
 end:
 	if (data->num_planes != ps->num_planes) {
-		pr_err("num_planes don't match: fmt:%d, data:%d, ps:%d\n",
+		pr_debug("num_planes don't match: fmt:%d, data:%d, ps:%d\n",
 				fmt->format, data->num_planes, ps->num_planes);
 		return -EINVAL;
 	}
@@ -713,7 +713,7 @@ end:
 		fmt->format == MDP_Y_CBCR_H2V2_TP10_UBWC) ? 1 : 2);
 	for (i = 0; i < MAX_PLANES; i += inc) {
 		if (data->p[i].len != ps->plane_size[i]) {
-			pr_err("plane:%d fmt:%d, len does not match: data:%lu, ps:%d\n",
+			pr_debug("plane:%d fmt:%d, len does not match: data:%lu, ps:%d\n",
 					i, fmt->format, data->p[i].len,
 					ps->plane_size[i]);
 			return -EINVAL;
@@ -755,7 +755,7 @@ int mdss_mdp_data_check(struct mdss_mdp_data *data,
 			curr->addr = prev->addr + psize;
 		}
 		if (curr->len < ps->plane_size[i]) {
-			pr_err("insufficient mem=%lu p=%d len=%u\n",
+			pr_debug("insufficient mem=%lu p=%d len=%u\n",
 			       curr->len, i, ps->plane_size[i]);
 			return -ENOMEM;
 		}
@@ -775,18 +775,18 @@ int mdss_mdp_validate_offset_for_ubwc_format(
 
 	ret = mdss_mdp_get_ubwc_micro_dim(fmt->format, &micro_w, &micro_h);
 	if (ret || !micro_w || !micro_h) {
-		pr_err("Could not get valid micro tile dimensions\n");
+		pr_debug("Could not get valid micro tile dimensions\n");
 		return -EINVAL;
 	}
 
 	if (x % (micro_w * UBWC_META_MACRO_W_H)) {
-		pr_err("x=%d does not align with meta width=%d\n", x,
+		pr_debug("x=%d does not align with meta width=%d\n", x,
 			micro_w * UBWC_META_MACRO_W_H);
 		return -EINVAL;
 	}
 
 	if (y % (micro_h * UBWC_META_MACRO_W_H)) {
-		pr_err("y=%d does not align with meta height=%d\n", y,
+		pr_debug("y=%d does not align with meta height=%d\n", y,
 			UBWC_META_MACRO_W_H);
 		return -EINVAL;
 	}
@@ -803,14 +803,14 @@ void mdss_mdp_ubwc_data_calc_offset(struct mdss_mdp_data *data, u16 x, u16 y,
 	int ret;
 
 	if (!mdss_mdp_is_ubwc_supported(mdata)) {
-		pr_err("ubwc format is not supported for format: %d\n",
+		pr_debug("ubwc format is not supported for format: %d\n",
 			fmt->format);
 		return;
 	}
 
 	ret = mdss_mdp_get_ubwc_micro_dim(fmt->format, &micro_w, &micro_h);
 	if (ret || !micro_w || !micro_h) {
-		pr_err("Could not get valid micro tile dimensions\n");
+		pr_debug("Could not get valid micro tile dimensions\n");
 		return;
 	}
 	macro_w = 4 * micro_w;
@@ -989,7 +989,7 @@ static int mdss_mdp_get_img(struct msmfb_data *img,
 	if (img->flags & MDP_MEMORY_ID_TYPE_FB) {
 		f = fdget(img->memory_id);
 		if (f.file == NULL) {
-			pr_err("invalid framebuffer file (%d)\n",
+			pr_debug("invalid framebuffer file (%d)\n",
 					img->memory_id);
 			return -EINVAL;
 		}
@@ -999,15 +999,15 @@ static int mdss_mdp_get_img(struct msmfb_data *img,
 			fb_num = MINOR(f.file->f_path.dentry->d_inode->i_rdev);
 			ret = mdss_fb_get_phys_info(start, len, fb_num);
 			if (ret)
-				pr_err("mdss_fb_get_phys_info() failed\n");
+				pr_debug("mdss_fb_get_phys_info() failed\n");
 		} else {
-			pr_err("invalid FB_MAJOR\n");
+			pr_debug("invalid FB_MAJOR\n");
 			ret = -1;
 		}
 	} else {
 		data->srcp_dma_buf = dma_buf_get(img->memory_id);
 		if (IS_ERR_OR_NULL(data->srcp_dma_buf)) {
-			pr_err("error on ion_import_fd\n");
+			pr_debug("error on ion_import_fd\n");
 			ret = PTR_ERR(data->srcp_dma_buf);
 			data->srcp_dma_buf = NULL;
 			return ret;
@@ -1021,7 +1021,7 @@ static int mdss_mdp_get_img(struct msmfb_data *img,
 							 dev, domain);
 			if (IS_ERR_OR_NULL(data->srcp_attachment)) {
 				ret = PTR_ERR(data->srcp_attachment);
-				pr_err("error during dma buf attach\n");
+				pr_debug("error during dma buf attach\n");
 				goto err_put;
 			}
 
@@ -1065,20 +1065,20 @@ static int mdss_mdp_get_img(struct msmfb_data *img,
 			do {
 				sg_ptr = data->srcp_table;
 				if (sg_ptr == NULL) {
-					pr_err("ion sg table get failed\n");
+					pr_debug("ion sg table get failed\n");
 					ret = -EINVAL;
 					break;
 				}
 
 				if (sg_ptr->nents != 1) {
-					pr_err("ion buffer mapping failed\n");
+					pr_debug("ion buffer mapping failed\n");
 					ret = -EINVAL;
 					break;
 				}
 
 				if (((uint64_t)sg_dma_address(sg_ptr->sgl) >=
 					PHY_ADDR_4G - sg_ptr->sgl->length)) {
-					pr_err("ion buffer mapped size is invalid\n");
+					pr_debug("ion buffer mapped size is invalid\n");
 					ret = -EINVAL;
 					break;
 				}
@@ -1093,7 +1093,7 @@ static int mdss_mdp_get_img(struct msmfb_data *img,
 		}
 	}
 	if (start && !*start) {
-		pr_err("start address is zero!\n");
+		pr_debug("start address is zero!\n");
 		mdss_mdp_put_img(data, rotator, dir);
 		return -ENOMEM;
 	}
@@ -1143,7 +1143,7 @@ static int mdss_mdp_map_buffer(struct mdss_mdp_img_data *data, bool rotator,
 					data->srcp_table, domain,
 					&data->addr, &data->len, dir);
 			if (IS_ERR_VALUE((unsigned long) ret)) {
-				pr_err("smmu map dma buf failed: (%d)\n", ret);
+				pr_debug("smmu map dma buf failed: (%d)\n", ret);
 				goto err_unmap;
 			}
 			data->mapped = true;
@@ -1159,7 +1159,7 @@ static int mdss_mdp_map_buffer(struct mdss_mdp_img_data *data, bool rotator,
 	}
 
 	if (!data->addr) {
-		pr_err("start address is zero!\n");
+		pr_debug("start address is zero!\n");
 		mdss_mdp_put_img(data, rotator, dir);
 		return -ENOMEM;
 	}
@@ -1200,7 +1200,7 @@ static int mdss_mdp_data_get(struct mdss_mdp_data *data,
 		rc = mdss_mdp_get_img(&planes[i], &data->p[i], dev, rotator,
 				dir);
 		if (rc) {
-			pr_err("failed to get buf p=%d flags=%llx\n", i, flags);
+			pr_debug("failed to get buf p=%d flags=%llx\n", i, flags);
 			while (i > 0) {
 				i--;
 				mdss_mdp_put_img(&data->p[i], rotator, dir);
@@ -1224,7 +1224,7 @@ int mdss_mdp_data_map(struct mdss_mdp_data *data, bool rotator, int dir)
 	for (i = 0; i < data->num_planes; i++) {
 		rc = mdss_mdp_map_buffer(&data->p[i], rotator, dir);
 		if (rc) {
-			pr_err("failed to map buf p=%d\n", i);
+			pr_debug("failed to map buf p=%d\n", i);
 			while (i > 0) {
 				i--;
 				mdss_mdp_put_img(&data->p[i], rotator, dir);
@@ -1261,7 +1261,7 @@ int mdss_mdp_data_get_and_validate_size(struct mdss_mdp_data *data,
 
 	fmt = mdss_mdp_get_format_params(buffer->format);
 	if (!fmt) {
-		pr_err("Format %d not supported\n", buffer->format);
+		pr_debug("Format %d not supported\n", buffer->format);
 		return -EINVAL;
 	}
 
@@ -1277,7 +1277,7 @@ int mdss_mdp_data_get_and_validate_size(struct mdss_mdp_data *data,
 				data->p[i].srcp_dma_buf->size : data->p[i].len;
 
 		if (plane_len < planes[i].offset) {
-			pr_err("Offset=%d larger than buffer size=%lu\n",
+			pr_debug("Offset=%d larger than buffer size=%lu\n",
 				planes[i].offset, plane_len);
 			ret = -EINVAL;
 			goto buf_too_small;
@@ -1286,7 +1286,7 @@ int mdss_mdp_data_get_and_validate_size(struct mdss_mdp_data *data,
 	}
 
 	if (total_buf_len < ps.total_size) {
-		pr_err("Buffer size=%lu, expected size=%d\n", total_buf_len,
+		pr_debug("Buffer size=%lu, expected size=%d\n", total_buf_len,
 			ps.total_size);
 		ret = -EINVAL;
 		goto buf_too_small;

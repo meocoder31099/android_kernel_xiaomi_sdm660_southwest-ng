@@ -171,7 +171,7 @@ static void tcp_westwood_cong_control(struct sock *sk, const struct rate_sample 
 		}
 	}
 	if (debug)
-		printk("##st:%d->%d bw:%llu last_bdp:%d cwnd:%d minrtt:%d\n", prev_state, state, bw, w->last_bdp, tp->snd_cwnd, w->min_rtt_us);
+		no_printk("##st:%d->%d bw:%llu last_bdp:%d cwnd:%d minrtt:%d\n", prev_state, state, bw, w->last_bdp, tp->snd_cwnd, w->min_rtt_us);
 }
 
 /* Extract info for Tcp socket info provided via netlink. */

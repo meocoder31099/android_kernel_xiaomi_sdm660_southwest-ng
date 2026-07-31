@@ -250,7 +250,7 @@ next_desc:
 	return usbnet_get_endpoints(dev, intf);
 
 bad_desc:
-	dev_info(&dev->udev->dev, "unsupported MDLM descriptors\n");
+	dev_dbg(&dev->udev->dev, "unsupported MDLM descriptors\n");
 	return -ENODEV;
 }
 

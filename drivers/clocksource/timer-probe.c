@@ -40,7 +40,7 @@ void __init timer_probe(void)
 
 		ret = init_func_ret(np);
 		if (ret) {
-			pr_err("Failed to initialize '%pOF': %d\n", np, ret);
+			pr_debug("Failed to initialize '%pOF': %d\n", np, ret);
 			continue;
 		}
 
@@ -50,5 +50,5 @@ void __init timer_probe(void)
 	timers += acpi_probe_device_table(timer);
 
 	if (!timers)
-		pr_crit("%s: no matching timers found\n", __func__);
+		pr_debug("%s: no matching timers found\n", __func__);
 }

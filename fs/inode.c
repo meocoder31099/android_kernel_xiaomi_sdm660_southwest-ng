@@ -2043,7 +2043,7 @@ void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 	else if (S_ISSOCK(mode))
 		;	/* leave it no_open_fops */
 	else
-		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
+		no_printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
 				  " inode %s:%lu\n", mode, inode->i_sb->s_id,
 				  inode->i_ino);
 }

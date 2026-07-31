@@ -5858,7 +5858,7 @@ static int btf_module_notify(struct notifier_block *nb, unsigned long op,
 		}
 		btf = btf_parse_module(mod->name, mod->btf_data, mod->btf_data_size);
 		if (IS_ERR(btf)) {
-			pr_warn("failed to validate module [%s] BTF: %ld\n",
+			pr_debug("failed to validate module [%s] BTF: %ld\n",
 				mod->name, PTR_ERR(btf));
 			kfree(btf_mod);
 			err = PTR_ERR(btf);
@@ -5893,7 +5893,7 @@ static int btf_module_notify(struct notifier_block *nb, unsigned long op,
 
 			err = sysfs_create_bin_file(btf_kobj, attr);
 			if (err) {
-				pr_warn("failed to register module [%s] BTF in sysfs: %d\n",
+				pr_debug("failed to register module [%s] BTF in sysfs: %d\n",
 					mod->name, err);
 				kfree(attr);
 				err = 0;

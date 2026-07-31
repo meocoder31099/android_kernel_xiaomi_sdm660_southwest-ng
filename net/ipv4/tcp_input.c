@@ -213,7 +213,7 @@ static void tcp_gro_dev_warn(struct sock *sk, const struct sk_buff *skb,
 		rcu_read_lock();
 		dev = dev_get_by_index_rcu(sock_net(sk), skb->skb_iif);
 		if (!dev || len >= dev->mtu)
-			pr_warn("%s: Driver has suspect GRO implementation, TCP performance may be compromised.\n",
+			pr_debug("%s: Driver has suspect GRO implementation, TCP performance may be compromised.\n",
 				dev ? dev->name : "Unknown driver");
 		rcu_read_unlock();
 	}
@@ -4335,7 +4335,7 @@ void tcp_fin(struct sock *sk)
 		/* Only TCP_LISTEN and TCP_CLOSE are left, in these
 		 * cases we should never reach this piece of code.
 		 */
-		pr_err("%s: Impossible, sk->sk_state=%d\n",
+		pr_debug("%s: Impossible, sk->sk_state=%d\n",
 		       __func__, sk->sk_state);
 		break;
 	}

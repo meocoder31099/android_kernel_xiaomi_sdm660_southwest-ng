@@ -313,7 +313,7 @@ void kgsl_process_init_sysfs(struct kgsl_device *device,
 
 	if (kobject_init_and_add(&private->kobj, &process_ktype,
 		kgsl_driver.prockobj, "%d", pid_nr(private->pid))) {
-		dev_err(device->dev, "Unable to add sysfs for process %d\n",
+		dev_dbg(device->dev, "Unable to add sysfs for process %d\n",
 			pid_nr(private->pid));
 		return;
 	}
@@ -327,7 +327,7 @@ void kgsl_process_init_sysfs(struct kgsl_device *device,
 			&mem_stats[i].max_attr.attr.attr);
 
 		if (ret)
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"Unable to create sysfs files for process %d\n",
 				pid_nr(private->pid));
 	}
@@ -570,7 +570,7 @@ static int kgsl_lock_sgt(struct sg_table *sgt, u64 size)
 		 * system.
 		 */
 		if (ret == -EADDRNOTAVAIL)
-			pr_err("Failure to lock secure GPU memory 0x%llx bytes will not be recoverable\n",
+			pr_debug("Failure to lock secure GPU memory 0x%llx bytes will not be recoverable\n",
 				size);
 
 		return ret;
@@ -618,7 +618,7 @@ static void kgsl_page_alloc_free(struct kgsl_memdesc *memdesc)
 			 * Give up on the buffer and don't return it to the
 			 * pool.
 			 */
-			pr_err("kgsl: secure buf unlock failed: gpuaddr: %llx size: %llx ret: %d\n",
+			pr_debug("kgsl: secure buf unlock failed: gpuaddr: %llx size: %llx ret: %d\n",
 					memdesc->gpuaddr, memdesc->size, ret);
 			return;
 		}
@@ -980,7 +980,7 @@ static int kgsl_memdesc_file_setup(struct kgsl_memdesc *memdesc, uint64_t size)
 				VM_NORESERVE);
 		if (IS_ERR(memdesc->shmem_filp)) {
 			ret = PTR_ERR(memdesc->shmem_filp);
-			pr_err("kgsl: unable to setup shmem file err %d\n",
+			pr_debug("kgsl: unable to setup shmem file err %d\n",
 					ret);
 			memdesc->shmem_filp = NULL;
 			return ret;
@@ -1151,7 +1151,7 @@ kgsl_sharedmem_page_alloc_user(struct kgsl_memdesc *memdesc,
 			memdesc->size = (size - len);
 
 			if (!sharedmem_noretry_flag && __ratelimit(&_rs))
-				pr_err(
+				pr_debug(
 					"kgsl: out of memory: only allocated %lldKB of %lldKB requested\n",
 					(size - len) >> 10, size >> 10);
 

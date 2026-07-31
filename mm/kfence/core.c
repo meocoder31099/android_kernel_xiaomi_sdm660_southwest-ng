@@ -652,7 +652,7 @@ void __init kfence_alloc_pool(void)
 	__kfence_pool = memblock_virt_alloc(KFENCE_POOL_SIZE, PAGE_SIZE);
 
 	if (!__kfence_pool)
-		pr_err("failed to allocate pool\n");
+		pr_debug("failed to allocate pool\n");
 }
 
 void __init kfence_init(void)
@@ -662,13 +662,13 @@ void __init kfence_init(void)
 		return;
 
 	if (!kfence_init_pool()) {
-		pr_err("%s failed\n", __func__);
+		pr_debug("%s failed\n", __func__);
 		return;
 	}
 
 	WRITE_ONCE(kfence_enabled, true);
 	queue_delayed_work(system_unbound_wq, &kfence_timer, 0);
-	pr_info("initialized - using %lu bytes for %d objects at 0x%p-0x%p\n", KFENCE_POOL_SIZE,
+	pr_debug("initialized - using %lu bytes for %d objects at 0x%p-0x%p\n", KFENCE_POOL_SIZE,
 		CONFIG_KFENCE_NUM_OBJECTS, (void *)__kfence_pool,
 		(void *)(__kfence_pool + KFENCE_POOL_SIZE));
 }

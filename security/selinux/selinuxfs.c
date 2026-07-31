@@ -288,7 +288,7 @@ static ssize_t sel_write_disable(struct file *file, const char __user *buf,
 	 *       (e.g. sleeping/blocking) as we progress through future
 	 *       kernel releases until eventually it is removed
 	 */
-	pr_err("SELinux:  Runtime disable is deprecated, use selinux=0 on the kernel cmdline.\n");
+	pr_debug("SELinux:  Runtime disable is deprecated, use selinux=0 on the kernel cmdline.\n");
 
 	if (count >= PAGE_SIZE)
 		return -ENOMEM;
@@ -516,19 +516,19 @@ static int sel_make_policy_nodes(struct selinux_fs_info *fsi)
 
 	ret = sel_make_bools(fsi);
 	if (ret) {
-		pr_err("SELinux: failed to load policy booleans\n");
+		pr_debug("SELinux: failed to load policy booleans\n");
 		return ret;
 	}
 
 	ret = sel_make_classes(fsi);
 	if (ret) {
-		pr_err("SELinux: failed to load policy classes\n");
+		pr_debug("SELinux: failed to load policy classes\n");
 		return ret;
 	}
 
 	ret = sel_make_policycap(fsi);
 	if (ret) {
-		pr_err("SELinux: failed to load policy capabilities\n");
+		pr_debug("SELinux: failed to load policy capabilities\n");
 		return ret;
 	}
 
@@ -624,7 +624,7 @@ static ssize_t sel_write_context(struct file *file, char *buf, size_t size)
 
 	length = -ERANGE;
 	if (len > SIMPLE_TRANSACTION_LIMIT) {
-		pr_err("SELinux: %s:  context size (%u) exceeds "
+		pr_debug("SELinux: %s:  context size (%u) exceeds "
 			"payload max\n", __func__, len);
 		goto out;
 	}
@@ -960,7 +960,7 @@ static ssize_t sel_write_create(struct file *file, char *buf, size_t size)
 
 	length = -ERANGE;
 	if (len > SIMPLE_TRANSACTION_LIMIT) {
-		pr_err("SELinux: %s:  context size (%u) exceeds "
+		pr_debug("SELinux: %s:  context size (%u) exceeds "
 			"payload max\n", __func__, len);
 		goto out;
 	}
@@ -1151,7 +1151,7 @@ static ssize_t sel_write_member(struct file *file, char *buf, size_t size)
 
 	length = -ERANGE;
 	if (len > SIMPLE_TRANSACTION_LIMIT) {
-		pr_err("SELinux: %s:  context size (%u) exceeds "
+		pr_debug("SELinux: %s:  context size (%u) exceeds "
 			"payload max\n", __func__, len);
 		goto out;
 	}
@@ -2079,7 +2079,7 @@ static int sel_fill_super(struct super_block *sb, struct fs_context *fc)
 		goto err;
 	return 0;
 err:
-	pr_err("SELinux: %s:  failed while creating inodes\n",
+	pr_debug("SELinux: %s:  failed while creating inodes\n",
 		__func__);
 
 	selinux_fs_info_free(sb);
@@ -2138,14 +2138,14 @@ static int __init init_sel_fs(void)
 
 	selinux_null.mnt = selinuxfs_mount = kern_mount(&sel_fs_type);
 	if (IS_ERR(selinuxfs_mount)) {
-		pr_err("selinuxfs:  could not mount!\n");
+		pr_debug("selinuxfs:  could not mount!\n");
 		err = PTR_ERR(selinuxfs_mount);
 		selinuxfs_mount = NULL;
 	}
 	selinux_null.dentry = d_hash_and_lookup(selinux_null.mnt->mnt_root,
 						&null_name);
 	if (IS_ERR(selinux_null.dentry)) {
-		pr_err("selinuxfs:  could not lookup null!\n");
+		pr_debug("selinuxfs:  could not lookup null!\n");
 		err = PTR_ERR(selinux_null.dentry);
 		selinux_null.dentry = NULL;
 	}

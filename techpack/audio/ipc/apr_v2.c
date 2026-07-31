@@ -35,7 +35,7 @@ uint16_t apr_get_data_src(struct apr_hdr *hdr)
 	else if (hdr->src_domain == APR_DOMAIN_ADSP)
 		return APR_DEST_QDSP6;
 
-	pr_err("APR: Pkt from wrong source: %d\n", hdr->src_domain);
+	pr_debug("APR: Pkt from wrong source: %d\n", hdr->src_domain);
 	return APR_DEST_MAX;		/*RETURN INVALID VALUE*/
 }
 
@@ -54,7 +54,7 @@ void subsys_notif_register(char *client_name, int domain,
 
 	ret = audio_notifier_register(client_name, domain, nb);
 	if (ret < 0)
-		pr_err("%s: Audio notifier register failed for domain %d ret = %d\n",
+		pr_debug("%s: Audio notifier register failed for domain %d ret = %d\n",
 			__func__, domain, ret);
 }
 
@@ -64,7 +64,7 @@ void subsys_notif_deregister(char *client_name)
 
 	ret = audio_notifier_deregister(client_name);
 	if (ret < 0)
-		pr_err("%s: Audio notifier de-register failed for client %s\n",
+		pr_debug("%s: Audio notifier de-register failed for client %s\n",
 			__func__, client_name);
 }
 

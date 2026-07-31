@@ -366,7 +366,7 @@ void epping_tx_complete(void *ctx, HTC_PACKET *htc_pkt)
 			flushing = true;
 		}
 		if (status != QDF_STATUS_E_RESOURCES) {
-			printk("%s() -TX ERROR, status: 0x%x\n",
+			no_printk("%s() -TX ERROR, status: 0x%x\n",
 			       __func__, status);
 		}
 	} else {

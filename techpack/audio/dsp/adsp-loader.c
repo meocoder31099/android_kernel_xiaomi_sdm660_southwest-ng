@@ -66,19 +66,19 @@ static void adsp_load_fw(struct work_struct *adsp_ldr_work)
 	const char *img_name;
 
 	if (!pdev) {
-		dev_err(&pdev->dev, "%s: Platform device null\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Platform device null\n", __func__);
 		goto fail;
 	}
 
 	if (!pdev->dev.of_node) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Device tree information missing\n", __func__);
 		goto fail;
 	}
 
 	rc = of_property_read_u32(pdev->dev.of_node, adsp_dt, &adsp_state);
 	if (rc) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: ADSP state = %x\n", __func__, adsp_state);
 		goto fail;
 	}
@@ -100,14 +100,14 @@ static void adsp_load_fw(struct work_struct *adsp_ldr_work)
 		if (adsp_state == APR_SUBSYS_DOWN) {
 			priv = platform_get_drvdata(pdev);
 			if (!priv) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 				" %s: Private data get failed\n", __func__);
 				goto fail;
 			}
 
 			priv->pil_h = subsystem_get("modem");
 			if (IS_ERR(priv->pil_h)) {
-				dev_err(&pdev->dev, "%s: pil get failed,\n",
+				dev_dbg(&pdev->dev, "%s: pil get failed,\n",
 					__func__);
 				goto fail;
 			}
@@ -129,7 +129,7 @@ load_adsp:
 		if (adsp_state == APR_SUBSYS_DOWN) {
 			priv = platform_get_drvdata(pdev);
 			if (!priv) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 				" %s: Private data get failed\n", __func__);
 				goto fail;
 			}
@@ -144,7 +144,7 @@ load_adsp:
 			}
 
 			if (IS_ERR(priv->pil_h)) {
-				dev_err(&pdev->dev, "%s: pil get failed,\n",
+				dev_dbg(&pdev->dev, "%s: pil get failed,\n",
 					__func__);
 				goto fail;
 			}
@@ -157,7 +157,7 @@ load_adsp:
 		return;
 	}
 fail:
-	dev_err(&pdev->dev, "%s: Q6 image loading failed\n", __func__);
+	dev_dbg(&pdev->dev, "%s: Q6 image loading failed\n", __func__);
 }
 
 static void adsp_loader_do(struct platform_device *pdev)
@@ -192,12 +192,12 @@ static ssize_t adsp_ssr_store(struct kobject *kobj,
 	if (!adsp_dev)
 		return -EINVAL;
 
-	dev_err(&pdev->dev, "requesting for ADSP restart\n");
+	dev_dbg(&pdev->dev, "requesting for ADSP restart\n");
 
 	/* subsystem_restart_dev has worker queue to handle */
 	rc = subsystem_restart_dev(adsp_dev);
 	if (rc) {
-		dev_err(&pdev->dev, "subsystem_restart_dev failed\n");
+		dev_dbg(&pdev->dev, "subsystem_restart_dev failed\n");
 		return rc;
 	}
 
@@ -213,7 +213,7 @@ static ssize_t adsp_boot_store(struct kobject *kobj,
 	int boot = 0;
 
 	if (sscanf(buf, "%du", &boot) != 1) {
-		pr_err("%s: failed to read boot info from string\n", __func__);
+		pr_debug("%s: failed to read boot info from string\n", __func__);
 		return -EINVAL;
 	}
 
@@ -271,7 +271,7 @@ static int adsp_loader_init_sysfs(struct platform_device *pdev)
 
 	priv->boot_adsp_obj = kobject_create_and_add("boot_adsp", kernel_kobj);
 	if (!priv->boot_adsp_obj) {
-		dev_err(&pdev->dev, "%s: sysfs create and add failed\n",
+		dev_dbg(&pdev->dev, "%s: sysfs create and add failed\n",
 						__func__);
 		ret = -ENOMEM;
 		goto error_return;
@@ -279,7 +279,7 @@ static int adsp_loader_init_sysfs(struct platform_device *pdev)
 
 	ret = sysfs_create_group(priv->boot_adsp_obj, priv->attr_group);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: sysfs create group failed %d\n",
+		dev_dbg(&pdev->dev, "%s: sysfs create group failed %d\n",
 							__func__, ret);
 		goto error_return;
 	}
@@ -343,7 +343,7 @@ static int adsp_loader_probe(struct platform_device *pdev)
 
 	ret = adsp_loader_init_sysfs(pdev);
 	if (ret != 0) {
-		dev_err(&pdev->dev, "%s: Error in initing sysfs\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Error in initing sysfs\n", __func__);
 		return ret;
 	}
 

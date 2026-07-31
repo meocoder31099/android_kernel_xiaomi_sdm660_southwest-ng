@@ -47,7 +47,7 @@ static int msm_pcm_routing_hwdep_ioctl(struct snd_hwdep *hw, struct file *file,
 		ret = msm_ds2_dap_ioctl(hw, file, cmd, argp);
 		break;
 	default:
-		pr_err("%s called with invalid control 0x%X\n", __func__, cmd);
+		pr_debug("%s called with invalid control 0x%X\n", __func__, cmd);
 		ret = -EINVAL;
 		break;
 	}
@@ -82,7 +82,7 @@ static int msm_pcm_routing_hwdep_compat_ioctl(struct snd_hwdep *hw,
 		ret = msm_ds2_dap_compat_ioctl(hw, file, cmd, argp);
 		break;
 	default:
-		pr_err("%s called with invalid control 0x%X\n", __func__, cmd);
+		pr_debug("%s called with invalid control 0x%X\n", __func__, cmd);
 		ret = -EINVAL;
 		break;
 	}
@@ -99,7 +99,7 @@ int msm_pcm_routing_hwdep_new(struct snd_soc_pcm_runtime *runtime,
 
 	if (dai_link->id < 0 ||
 		dai_link->id >= MSM_BACKEND_DAI_MAX) {
-		pr_err("%s:BE id %d invalid index\n",
+		pr_debug("%s:BE id %d invalid index\n",
 			__func__, dai_link->id);
 		return -EINVAL;
 	}
@@ -108,12 +108,12 @@ int msm_pcm_routing_hwdep_new(struct snd_soc_pcm_runtime *runtime,
 			   msm_bedais[dai_link->id].name,
 			   dai_link->id, &hwdep);
 	if (hwdep == NULL) {
-		pr_err("%s: hwdep intf failed to create %s- hwdep NULL\n",
+		pr_debug("%s: hwdep intf failed to create %s- hwdep NULL\n",
 			__func__, msm_bedais[dai_link->id].name);
 		return rc;
 	}
 	if (rc < 0) {
-		pr_err("%s: hwdep intf failed to create %s rc %d\n", __func__,
+		pr_debug("%s: hwdep intf failed to create %s rc %d\n", __func__,
 			msm_bedais[dai_link->id].name, rc);
 		return rc;
 	}

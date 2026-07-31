@@ -43,7 +43,7 @@ static int syscon_restart_handle(struct notifier_block *this,
 
 	mdelay(1000);
 
-	pr_emerg("Unable to restart system\n");
+	pr_debug("Unable to restart system\n");
 	return NOTIFY_DONE;
 }
 
@@ -71,7 +71,7 @@ static int syscon_reboot_probe(struct platform_device *pdev)
 	ctx->restart_handler.priority = 192;
 	err = register_restart_handler(&ctx->restart_handler);
 	if (err)
-		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
+		dev_dbg(dev, "can't register restart notifier (err=%d)\n", err);
 
 	return err;
 }

@@ -294,7 +294,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
 	if (of_property_read_u32(node, "qcom,temperature-threshold-set",
 				 &chip->init_thresh) == 0) {
 		if (chip->init_thresh > THRESH_MAX) {
-			dev_err(&pdev->dev, "Invalid qcom,temperature-threshold-set=%u\n",
+			dev_dbg(&pdev->dev, "Invalid qcom,temperature-threshold-set=%u\n",
 				chip->init_thresh);
 			return -EINVAL;
 		}
@@ -317,25 +317,25 @@ static int qpnp_tm_probe(struct platform_device *pdev)
 
 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "could not read type\n");
+		dev_dbg(&pdev->dev, "could not read type\n");
 		return ret;
 	}
 
 	ret = qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "could not read subtype\n");
+		dev_dbg(&pdev->dev, "could not read subtype\n");
 		return ret;
 	}
 
 	ret = qpnp_tm_read(chip, QPNP_TM_REG_DIG_MAJOR, &dig_major);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "could not read dig_major\n");
+		dev_dbg(&pdev->dev, "could not read dig_major\n");
 		return ret;
 	}
 
 	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
 				     && subtype != QPNP_TM_SUBTYPE_GEN2)) {
-		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
+		dev_dbg(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
 			type, subtype);
 		return -ENODEV;
 	}
@@ -349,7 +349,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
 
 	ret = qpnp_tm_init(chip);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "init failed\n");
+		dev_dbg(&pdev->dev, "init failed\n");
 		return ret;
 	}
 
@@ -361,7 +361,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
 	chip->tz_dev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
 							&qpnp_tm_sensor_ops);
 	if (IS_ERR(chip->tz_dev)) {
-		dev_err(&pdev->dev, "failed to register sensor\n");
+		dev_dbg(&pdev->dev, "failed to register sensor\n");
 		return PTR_ERR(chip->tz_dev);
 	}
 

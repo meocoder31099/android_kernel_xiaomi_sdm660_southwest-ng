@@ -335,18 +335,18 @@ static int __init ashmem_init(void)
 					       sizeof(struct ashmem_area),
 					       0, 0, NULL);
 	if (unlikely(!ashmem_area_cachep)) {
-		pr_err("failed to create slab cache\n");
+		pr_debug("failed to create slab cache\n");
 		ret = -ENOMEM;
 		goto out;
 	}
 
 	ret = misc_register(&ashmem_misc);
 	if (unlikely(ret)) {
-		pr_err("failed to register misc device!\n");
+		pr_debug("failed to register misc device!\n");
 		goto out_free1;
 	}
 
-	pr_info("initialized\n");
+	pr_debug("initialized\n");
 
 	return 0;
 

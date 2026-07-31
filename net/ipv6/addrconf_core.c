@@ -249,7 +249,7 @@ void in6_dev_finish_destroy(struct inet6_dev *idev)
 #endif
 	dev_put(dev);
 	if (!idev->dead) {
-		pr_warn("Freeing alive inet6 device %p\n", idev);
+		pr_debug("Freeing alive inet6 device %p\n", idev);
 		return;
 	}
 	call_rcu(&idev->rcu, in6_dev_finish_destroy_rcu);

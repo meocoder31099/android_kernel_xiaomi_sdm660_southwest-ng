@@ -395,7 +395,7 @@ static void diag_send_event_mask_update(uint8_t peripheral, int sub_index,
 			temp_len = num_bytes + header_len;
 			temp = krealloc(buf, temp_len, GFP_KERNEL);
 			if (!temp) {
-				pr_err("diag: Unable to realloc event mask update buffer\n");
+				pr_debug("diag: Unable to realloc event mask update buffer\n");
 				goto err;
 			} else {
 				mask_info->update_buf = temp;
@@ -411,7 +411,7 @@ static void diag_send_event_mask_update(uint8_t peripheral, int sub_index,
 				memcpy(buf + header_len,
 				mask_info->ptr, num_bytes);
 		} else {
-			pr_err("diag: num_bytes(%d) is not satisfying length condition\n",
+			pr_debug("diag: num_bytes(%d) is not satisfying length condition\n",
 				num_bytes);
 			goto err;
 		}
@@ -587,7 +587,7 @@ static void diag_send_msg_mask_update(uint8_t peripheral, int first, int last,
 			temp = krealloc(mask_info->update_buf, temp_len,
 					GFP_KERNEL);
 			if (!temp) {
-				pr_err("diag: In %s, unable to realloc msg_mask update buffer\n",
+				pr_debug("diag: In %s, unable to realloc msg_mask update buffer\n",
 				       __func__);
 				mask_size = (mask_info->update_buf_len -
 					    header_len) / sizeof(uint32_t);
@@ -672,14 +672,14 @@ static void diag_send_time_sync_update(uint8_t peripheral)
 	int err = 0;
 
 	if (peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, Invalid peripheral, %d\n",
+		pr_debug("diag: In %s, Invalid peripheral, %d\n",
 				__func__, peripheral);
 		return;
 	}
 
 	if (!driver->diagfwd_cntl[peripheral] ||
 		!driver->diagfwd_cntl[peripheral]->ch_open) {
-		pr_err("diag: In %s, control channel is not open, p: %d, %pK\n",
+		pr_debug("diag: In %s, control channel is not open, p: %d, %pK\n",
 			__func__, peripheral, driver->diagfwd_cntl[peripheral]);
 		return;
 	}
@@ -692,7 +692,7 @@ static void diag_send_time_sync_update(uint8_t peripheral)
 
 	err = diagfwd_write(peripheral, TYPE_CNTL, &time_sync_msg, msg_size);
 	if (err)
-		pr_err("diag: In %s, unable to write to peripheral: %d, type: %d, len: %d, err: %d\n",
+		pr_debug("diag: In %s, unable to write to peripheral: %d, type: %d, len: %d, err: %d\n",
 				__func__, peripheral, TYPE_CNTL,
 				msg_size, err);
 	mutex_unlock(&driver->diag_cntl_mutex);
@@ -708,14 +708,14 @@ static void diag_send_feature_mask_update(uint8_t peripheral)
 	int err = 0;
 
 	if (peripheral >= NUM_PERIPHERALS) {
-		pr_err("diag: In %s, Invalid peripheral, %d\n",
+		pr_debug("diag: In %s, Invalid peripheral, %d\n",
 			__func__, peripheral);
 		return;
 	}
 
 	if (!driver->diagfwd_cntl[peripheral] ||
 	    !driver->diagfwd_cntl[peripheral]->ch_open) {
-		pr_err("diag: In %s, control channel is not open, p: %d, %pK\n",
+		pr_debug("diag: In %s, control channel is not open, p: %d, %pK\n",
 		       __func__, peripheral, driver->diagfwd_cntl[peripheral]);
 		return;
 	}
@@ -787,7 +787,7 @@ static int diag_cmd_get_ssid_range(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &msg_mask : info->msg_mask;
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0 ||
 	    !mask_info) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -830,13 +830,13 @@ static int diag_cmd_get_ssid_range(unsigned char *src_buf, int src_len,
 		mask_ptr = (struct diag_msg_mask_t *)mask_info->ptr;
 	}
 	if (!mask_ptr || !mask_ptr->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		goto err;
 	}
 	for (i = 0; i < msg_mask_tbl_count; i++, mask_ptr++) {
 		if (write_len + sizeof(ssid_range) > dest_len) {
-			pr_err("diag: In %s, Truncating response due to size limitations of rsp buffer\n",
+			pr_debug("diag: In %s, Truncating response due to size limitations of rsp buffer\n",
 			       __func__);
 			break;
 		}
@@ -868,7 +868,7 @@ static int diag_cmd_get_build_mask(unsigned char *src_buf, int src_len,
 
 	if (!src_buf || !dest_buf || dest_len <= 0 ||
 		src_len < sizeof(struct diag_build_mask_req_t)) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -917,7 +917,7 @@ static int diag_cmd_get_build_mask(unsigned char *src_buf, int src_len,
 			continue;
 		num_entries = ssid_range.ssid_last - ssid_range.ssid_first + 1;
 		if (num_entries > build_mask->range) {
-			pr_warn("diag: In %s, truncating ssid range for ssid_first: %d ssid_last %d\n",
+			pr_debug("diag: In %s, truncating ssid range for ssid_first: %d ssid_last %d\n",
 				__func__, ssid_range.ssid_first,
 				ssid_range.ssid_last);
 			num_entries = build_mask->range;
@@ -971,7 +971,7 @@ static int diag_cmd_get_msg_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &msg_mask : info->msg_mask;
 	if (!src_buf || !dest_buf || dest_len <= 0 ||
 	    !mask_info || (src_len < sizeof(struct diag_build_mask_req_t))) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1021,7 +1021,7 @@ static int diag_cmd_get_msg_mask(unsigned char *src_buf, int src_len,
 		header_len = sizeof(rsp_sub);
 	}
 	if (!mask || !mask->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		write_len = -EINVAL;
 		goto err;
@@ -1084,7 +1084,7 @@ static int diag_cmd_set_msg_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &msg_mask : info->msg_mask;
 	if (!src_buf || !dest_buf || dest_len <= 0 || !mask_info ||
 		(src_len < sizeof(struct diag_msg_build_mask_t))) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1122,7 +1122,7 @@ static int diag_cmd_set_msg_mask(unsigned char *src_buf, int src_len,
 		preset = req_sub->reserved;
 	}
 	if (!mask || !mask->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		goto err;
 	}
@@ -1150,7 +1150,7 @@ static int diag_cmd_set_msg_mask(unsigned char *src_buf, int src_len,
 		mutex_lock(&mask->lock);
 		mask_size = ssid_range.ssid_last - ssid_range.ssid_first + 1;
 		if (mask_size > MAX_SSID_PER_RANGE) {
-			pr_warn("diag: In %s, truncating ssid range, %d-%d to max allowed: %d\n",
+			pr_debug("diag: In %s, truncating ssid range, %d-%d to max allowed: %d\n",
 				__func__, mask->ssid_first, mask->ssid_last,
 				MAX_SSID_PER_RANGE);
 			mask_size = MAX_SSID_PER_RANGE;
@@ -1179,7 +1179,7 @@ static int diag_cmd_set_msg_mask(unsigned char *src_buf, int src_len,
 
 		offset = ssid_range.ssid_first - mask->ssid_first;
 		if (offset + mask_size > mask->range_tools) {
-			pr_err("diag: In %s, Not in msg mask range, mask_size: %d, offset: %d\n",
+			pr_debug("diag: In %s, Not in msg mask range, mask_size: %d, offset: %d\n",
 			       __func__, mask_size, offset);
 			mutex_unlock(&mask->lock);
 			break;
@@ -1233,7 +1233,7 @@ static int diag_cmd_set_msg_mask(unsigned char *src_buf, int src_len,
 								APPS_DATA);
 			ret_val = diag_save_user_msg_mask(info);
 			if (ret_val < 0)
-				pr_err("diag: unable to save msg mask to update userspace clients err:%d\n",
+				pr_debug("diag: unable to save msg mask to update userspace clients err:%d\n",
 					ret_val);
 			mutex_unlock(&driver->md_session_lock);
 			if (diag_check_update(APPS_DATA, pid))
@@ -1288,7 +1288,7 @@ static int diag_cmd_set_all_msg_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &msg_mask : info->msg_mask;
 	if (!src_buf || !dest_buf || dest_len <= 0 || !mask_info ||
 		(src_len < sizeof(struct diag_msg_config_rsp_t))) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1325,7 +1325,7 @@ static int diag_cmd_set_all_msg_mask(unsigned char *src_buf, int src_len,
 	}
 
 	if (!mask || !mask->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		goto err;
 	}
@@ -1375,7 +1375,7 @@ static int diag_cmd_set_all_msg_mask(unsigned char *src_buf, int src_len,
 								APPS_DATA);
 			ret_val = diag_save_user_msg_mask(info);
 			if (ret_val < 0)
-				pr_err("diag: unable to save msg mask to update userspace clients err:%d\n",
+				pr_debug("diag: unable to save msg mask to update userspace clients err:%d\n",
 					ret_val);
 			mutex_unlock(&driver->md_session_lock);
 			if (diag_check_update(APPS_DATA, pid))
@@ -1418,7 +1418,7 @@ static int diag_cmd_get_event_mask(unsigned char *src_buf, int src_len,
 	struct diag_multisim_masks *ms_ptr = NULL;
 
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -1428,7 +1428,7 @@ static int diag_cmd_get_event_mask(unsigned char *src_buf, int src_len,
 
 	mask_size = EVENT_COUNT_TO_BYTES(driver->last_event_id);
 	if (mask_size + sizeof(rsp) > dest_len) {
-		pr_err("diag: In %s, invalid mask size: %d\n", __func__,
+		pr_debug("diag: In %s, invalid mask size: %d\n", __func__,
 		       mask_size);
 		return -ENOMEM;
 	}
@@ -1490,7 +1490,7 @@ static int diag_cmd_update_event_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &event_mask : info->event_mask;
 	if (!src_buf || !dest_buf || dest_len <= 0 || !mask_info ||
 		src_len < sizeof(struct diag_event_mask_config_t)) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1498,7 +1498,7 @@ static int diag_cmd_update_event_mask(unsigned char *src_buf, int src_len,
 	}
 	mutex_lock(&mask_info->lock);
 	if (!mask_info->ptr) {
-		pr_err("diag: In %s, invalid input mask_info->ptr: %pK\n",
+		pr_debug("diag: In %s, invalid input mask_info->ptr: %pK\n",
 			__func__, mask_info->ptr);
 		goto err;
 	}
@@ -1517,7 +1517,7 @@ static int diag_cmd_update_event_mask(unsigned char *src_buf, int src_len,
 		preset = req_sub->preset_id;
 	}
 	if (mask_len <= 0 || mask_len > event_mask.mask_len) {
-		pr_err("diag: In %s, invalid event mask len: %d\n", __func__,
+		pr_debug("diag: In %s, invalid event mask len: %d\n", __func__,
 			mask_len);
 		ret = -EIO;
 		goto err;
@@ -1616,7 +1616,7 @@ static int diag_cmd_toggle_events(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &event_mask : info->event_mask;
 	if (!src_buf || !dest_buf || src_len <= sizeof(uint8_t) ||
 		dest_len <= 0 || !mask_info) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1624,7 +1624,7 @@ static int diag_cmd_toggle_events(unsigned char *src_buf, int src_len,
 	}
 	mutex_lock(&mask_info->lock);
 	if (!mask_info->ptr) {
-		pr_err("diag: In %s, invalid input mask_info->ptr: %pK\n",
+		pr_debug("diag: In %s, invalid input mask_info->ptr: %pK\n",
 			__func__, mask_info->ptr);
 		goto err;
 	}
@@ -1729,7 +1729,7 @@ static int diag_cmd_get_log_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &log_mask : info->log_mask;
 	if (!src_buf || !dest_buf || dest_len <= 0 || !mask_info ||
 		src_len < sizeof(struct diag_log_config_get_req_t)) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1783,7 +1783,7 @@ static int diag_cmd_get_log_mask(unsigned char *src_buf, int src_len,
 			sizeof(struct diag_log_config_rsp_sub_t));
 	}
 	if (!log_item || !log_item->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		write_len = -EINVAL;
 		goto err;
@@ -1811,7 +1811,7 @@ static int diag_cmd_get_log_mask(unsigned char *src_buf, int src_len,
 		 */
 		if ((mask_size + (2 * sizeof(uint32_t)) + rsp_header_len) >
 								dest_len) {
-			pr_err("diag: In %s, invalid length: %d, max rsp_len: %d\n",
+			pr_debug("diag: In %s, invalid length: %d, max rsp_len: %d\n",
 				__func__, mask_size, dest_len);
 			status = LOG_STATUS_FAIL;
 			mutex_unlock(&log_item->lock);
@@ -1861,7 +1861,7 @@ static int diag_cmd_get_log_range(unsigned char *src_buf, int src_len,
 		return 0;
 
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -1940,7 +1940,7 @@ static int diag_cmd_set_log_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &log_mask : info->log_mask;
 	if (!src_buf || !dest_buf || dest_len <= 0 || !mask_info ||
 		src_len < sizeof(struct diag_log_config_req_t)) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -1988,20 +1988,20 @@ static int diag_cmd_set_log_mask(unsigned char *src_buf, int src_len,
 		preset = req_sub->preset_id;
 	}
 	if (!mask || !mask->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		mutex_unlock(&mask_info->lock);
 		mutex_unlock(&driver->md_session_lock);
 		return -EINVAL;
 	}
 	if (range.equip_id >= MAX_EQUIP_ID) {
-		pr_err("diag: In %s, Invalid logging mask request, equip_id: %d\n",
+		pr_debug("diag: In %s, Invalid logging mask request, equip_id: %d\n",
 		       __func__, range.equip_id);
 		status = LOG_STATUS_INVALID;
 	}
 
 	if (range.num_items == 0) {
-		pr_err("diag: In %s, Invalid number of items in log mask request, equip_id: %d\n",
+		pr_debug("diag: In %s, Invalid number of items in log mask request, equip_id: %d\n",
 		       __func__, range.equip_id);
 		status = LOG_STATUS_INVALID;
 	}
@@ -2070,7 +2070,7 @@ static int diag_cmd_set_log_mask(unsigned char *src_buf, int src_len,
 	 */
 	payload_len = LOG_ITEMS_TO_SIZE(range.num_items);
 	if ((payload_len + rsp_header_len > dest_len) || (payload_len == 0)) {
-		pr_err("diag: In %s, invalid length, payload_len: %d, header_len: %d, dest_len: %d\n",
+		pr_debug("diag: In %s, invalid length, payload_len: %d, header_len: %d, dest_len: %d\n",
 		       __func__, payload_len, rsp_header_len, dest_len);
 		status = LOG_STATUS_FAIL;
 	}
@@ -2113,7 +2113,7 @@ static int diag_cmd_set_log_mask(unsigned char *src_buf, int src_len,
 								APPS_DATA);
 			ret_val = diag_save_user_log_mask(info);
 			if (ret_val < 0)
-				pr_err("diag: unable to save log mask to update userspace clients err:%d\n",
+				pr_debug("diag: unable to save log mask to update userspace clients err:%d\n",
 					ret_val);
 			mutex_unlock(&driver->md_session_lock);
 			if (diag_check_update(APPS_DATA, pid))
@@ -2159,7 +2159,7 @@ static int diag_cmd_disable_log_mask(unsigned char *src_buf, int src_len,
 	mask_info = (!info) ? &log_mask : info->log_mask;
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0 ||
 	    !mask_info) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d, mask_info: %pK\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len,
 		       mask_info);
 		mutex_unlock(&driver->md_session_lock);
@@ -2190,7 +2190,7 @@ static int diag_cmd_disable_log_mask(unsigned char *src_buf, int src_len,
 		}
 	}
 	if (!mask || !mask->ptr) {
-		pr_err("diag: In %s, Invalid mask\n",
+		pr_debug("diag: In %s, Invalid mask\n",
 			__func__);
 		mutex_unlock(&driver->md_session_lock);
 		return -EINVAL;
@@ -2239,7 +2239,7 @@ static int diag_cmd_disable_log_mask(unsigned char *src_buf, int src_len,
 								APPS_DATA);
 			ret_val = diag_save_user_log_mask(info);
 			if (ret_val < 0)
-				pr_err("diag: unable to save log  mask to update userspace clients err:%d\n",
+				pr_debug("diag: unable to save log  mask to update userspace clients err:%d\n",
 					ret_val);
 			mutex_unlock(&driver->md_session_lock);
 			if (diag_check_update(APPS_DATA, pid))
@@ -2449,7 +2449,7 @@ static int diag_create_build_time_mask(void)
 		if (!tbl)
 			continue;
 		if (tbl_size > build_mask->range * sizeof(uint32_t)) {
-			pr_warn("diag: In %s, table %d has more ssid than max, ssid_first: %d, ssid_last: %d\n",
+			pr_debug("diag: In %s, table %d has more ssid than max, ssid_first: %d, ssid_last: %d\n",
 				__func__, i, build_mask->ssid_first,
 				build_mask->ssid_last);
 			tbl_size = build_mask->range * sizeof(uint32_t);
@@ -2669,7 +2669,7 @@ void diag_log_mask_free(struct diag_mask_info *mask_info)
 	mutex_lock(&mask_info->lock);
 	mask = (struct diag_log_mask_t *)mask_info->ptr;
 	if (!mask->ptr) {
-		pr_err("diag: Invalid input in %s, mask->ptr: %pK\n",
+		pr_debug("diag: Invalid input in %s, mask->ptr: %pK\n",
 			__func__, mask->ptr);
 		mutex_unlock(&mask_info->lock);
 		return;
@@ -2696,7 +2696,7 @@ static int diag_msg_mask_init(void)
 
 	err = diag_create_msg_mask_table(INVALID_INDEX);
 	if (err) {
-		pr_err("diag: Unable to create msg masks, err: %d\n", err);
+		pr_debug("diag: Unable to create msg masks, err: %d\n", err);
 		return err;
 	}
 	mutex_lock(&driver->msg_mask_lock);
@@ -2710,7 +2710,7 @@ static int diag_msg_mask_init(void)
 							APPS_DATA);
 	err = diag_save_user_msg_mask(session_info);
 	if (err < 0)
-		pr_err("diag: unable to save msg mask to update userspace clients err:%d\n",
+		pr_debug("diag: unable to save msg mask to update userspace clients err:%d\n",
 			err);
 	mutex_unlock(&driver->md_session_lock);
 	return 0;
@@ -2850,7 +2850,7 @@ void diag_msg_mask_free(struct diag_mask_info *mask_info,
 	mutex_lock(&driver->msg_mask_lock);
 	mask = (struct diag_msg_mask_t *)mask_info->ptr;
 	if (!mask->ptr) {
-		pr_err("diag: Invalid input in %s, mask->ptr: %pK\n",
+		pr_debug("diag: Invalid input in %s, mask->ptr: %pK\n",
 			__func__, mask->ptr);
 		mutex_unlock(&driver->msg_mask_lock);
 		mutex_unlock(&mask_info->lock);
@@ -2916,7 +2916,7 @@ static int diag_build_time_mask_init(void)
 		return err;
 	err = diag_create_build_time_mask();
 	if (err) {
-		pr_err("diag: Unable to create msg build time masks, err: %d\n",
+		pr_debug("diag: Unable to create msg build time masks, err: %d\n",
 		       err);
 		return err;
 	}
@@ -2961,7 +2961,7 @@ static int diag_log_mask_init(void)
 							APPS_DATA);
 	err = diag_save_user_log_mask(session_info);
 	if (err < 0)
-		pr_err("diag: unable to save log  mask to update userspace clients err:%d\n",
+		pr_debug("diag: unable to save log  mask to update userspace clients err:%d\n",
 			err);
 	mutex_unlock(&driver->md_session_lock);
 	return 0;
@@ -3116,7 +3116,7 @@ int diag_copy_to_user_msg_mask(char __user *buf, size_t count,
 		return -EIO;
 
 	if (!mask_info->ptr || !mask_info->update_buf_client) {
-		pr_err("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf_client: %pK\n",
+		pr_debug("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf_client: %pK\n",
 			__func__, mask_info->ptr, mask_info->update_buf_client);
 		return -EINVAL;
 	}
@@ -3129,7 +3129,7 @@ int diag_copy_to_user_msg_mask(char __user *buf, size_t count,
 		err = -EINVAL;
 	}
 	if (err) {
-		pr_err("diag: In %s Unable to send msg masks to user space clients, err: %d\n",
+		pr_debug("diag: In %s Unable to send msg masks to user space clients, err: %d\n",
 		       __func__, err);
 	}
 	return err ? err : mask_info->update_buf_client_len;
@@ -3148,7 +3148,7 @@ int diag_copy_to_user_log_mask(char __user *buf, size_t count,
 		return -EIO;
 
 	if (!mask_info->ptr || !mask_info->update_buf_client) {
-		pr_err("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf_client: %pK\n",
+		pr_debug("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf_client: %pK\n",
 			__func__, mask_info->ptr, mask_info->update_buf_client);
 		return -EINVAL;
 	}
@@ -3161,7 +3161,7 @@ int diag_copy_to_user_log_mask(char __user *buf, size_t count,
 		err = -EINVAL;
 	}
 	if (err) {
-		pr_err("diag: In %s Unable to send msg masks to user space clients, err: %d\n",
+		pr_debug("diag: In %s Unable to send msg masks to user space clients, err: %d\n",
 		       __func__, err);
 	}
 	return err ? err : mask_info->update_buf_client_len;
@@ -3182,7 +3182,7 @@ static int diag_save_user_msg_mask(struct diag_md_session_t *info)
 		return -EIO;
 
 	if (!mask_info->ptr || !mask_info->update_buf) {
-		pr_err("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf: %pK\n",
+		pr_debug("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf: %pK\n",
 			__func__, mask_info->ptr, mask_info->update_buf);
 		return -EINVAL;
 	}
@@ -3191,7 +3191,7 @@ static int diag_save_user_msg_mask(struct diag_md_session_t *info)
 
 	mask = (struct diag_msg_mask_t *)(mask_info->ptr);
 	if (!mask->ptr) {
-		pr_err("diag: Invalid input in %s, mask->ptr: %pK\n",
+		pr_debug("diag: Invalid input in %s, mask->ptr: %pK\n",
 			__func__, mask->ptr);
 		mutex_unlock(&driver->msg_mask_lock);
 		mutex_unlock(&mask_info->lock);
@@ -3212,7 +3212,7 @@ static int diag_save_user_msg_mask(struct diag_md_session_t *info)
 		len += sizeof(header);
 		copy_len = (sizeof(uint32_t) * mask->range_tools);
 		if ((len + copy_len) > mask_info->update_buf_len) {
-			pr_err("diag: In %s, no space to update msg mask, first: %d, last: %d\n",
+			pr_debug("diag: In %s, no space to update msg mask, first: %d, last: %d\n",
 			       __func__, mask->ssid_first,
 			       mask->ssid_last_tools);
 			mutex_unlock(&mask->lock);
@@ -3223,7 +3223,7 @@ static int diag_save_user_msg_mask(struct diag_md_session_t *info)
 		mutex_unlock(&mask->lock);
 		/* + sizeof(int) to account for data_type already in buf */
 		if (total_len + sizeof(int) + len > MAX_USERSPACE_BUF_SIZ) {
-			pr_err("diag: In %s, unable to send msg masks to user space, total_len: %d,\n",
+			pr_debug("diag: In %s, unable to send msg masks to user space, total_len: %d,\n",
 			       __func__, total_len);
 			err = -ENOMEM;
 			break;
@@ -3252,7 +3252,7 @@ static int diag_save_user_log_mask(struct diag_md_session_t *info)
 		return -EIO;
 
 	if (!mask_info->ptr || !mask_info->update_buf) {
-		pr_err("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf: %pK\n",
+		pr_debug("diag: In %s, invalid input mask_info->ptr: %pK, mask_info->update_buf: %pK\n",
 			__func__, mask_info->ptr, mask_info->update_buf);
 		return -EINVAL;
 	}
@@ -3260,7 +3260,7 @@ static int diag_save_user_log_mask(struct diag_md_session_t *info)
 	mutex_lock(&mask_info->lock);
 	mask = (struct diag_log_mask_t *)(mask_info->ptr);
 	if (!mask->ptr) {
-		pr_err("diag: Invalid input in %s, mask->ptr: %pK\n",
+		pr_debug("diag: Invalid input in %s, mask->ptr: %pK\n",
 			__func__, mask->ptr);
 		mutex_unlock(&mask_info->lock);
 		return -EINVAL;
@@ -3277,7 +3277,7 @@ static int diag_save_user_log_mask(struct diag_md_session_t *info)
 		len += sizeof(header);
 		copy_len = LOG_ITEMS_TO_SIZE(header.num_items);
 		if ((len + copy_len) > mask_info->update_buf_len) {
-			pr_err("diag: In %s, no space to update log mask, equip_id: %d\n",
+			pr_debug("diag: In %s, no space to update log mask, equip_id: %d\n",
 			       __func__, mask->equip_id);
 			mutex_unlock(&mask->lock);
 			continue;
@@ -3287,7 +3287,7 @@ static int diag_save_user_log_mask(struct diag_md_session_t *info)
 		mutex_unlock(&mask->lock);
 		/* + sizeof(int) to account for data_type already in buf */
 		if (total_len + sizeof(int) + len > MAX_USERSPACE_BUF_SIZ) {
-			pr_err("diag: In %s, unable to send log masks to user space, total_len: %d\n",
+			pr_debug("diag: In %s, unable to send log masks to user space, total_len: %d\n",
 			       __func__, total_len);
 			err = -ENOMEM;
 			break;
@@ -3568,7 +3568,7 @@ static int diag_multisim_msg_mask_init(int subid_index,
 
 	err = diag_create_msg_mask_table(subid_index);
 	if (err) {
-		pr_err("diag: Unable to create msg masks, err: %d\n", err);
+		pr_debug("diag: Unable to create msg masks, err: %d\n", err);
 		return err;
 	}
 
@@ -3620,7 +3620,7 @@ int diag_check_subid_mask_index(uint32_t subid, int pid)
 			return i;
 	}
 	if (i == MAX_SIM_NUM) {
-		pr_err("diag: Reached maximum number of subid supported: %d\n",
+		pr_debug("diag: Reached maximum number of subid supported: %d\n",
 				MAX_SIM_NUM);
 		return -EINVAL;
 	}
@@ -3642,7 +3642,7 @@ int diag_check_subid_mask_index(uint32_t subid, int pid)
 
 	return i;
 fail:
-	pr_err("diag: Could not initialize diag mask for subid: %d buffers\n",
+	pr_debug("diag: Could not initialize diag mask for subid: %d buffers\n",
 		subid);
 	return -ENOMEM;
 }
@@ -3677,7 +3677,7 @@ int diag_masks_init(void)
 	}
 	return 0;
 fail:
-	pr_err("diag: Could not initialize diag mask buffers\n");
+	pr_debug("diag: Could not initialize diag mask buffers\n");
 	diag_masks_exit();
 	return -ENOMEM;
 }

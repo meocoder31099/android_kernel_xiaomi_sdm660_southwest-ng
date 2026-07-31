@@ -3898,14 +3898,14 @@ int __init shmem_init(void)
 
 	error = register_filesystem(&shmem_fs_type);
 	if (error) {
-		pr_err("Could not register tmpfs\n");
+		pr_debug("Could not register tmpfs\n");
 		goto out2;
 	}
 
 	shm_mnt = kern_mount(&shmem_fs_type);
 	if (IS_ERR(shm_mnt)) {
 		error = PTR_ERR(shm_mnt);
-		pr_err("Could not kern_mount tmpfs\n");
+		pr_debug("Could not kern_mount tmpfs\n");
 		goto out1;
 	}
 

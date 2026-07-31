@@ -3063,7 +3063,7 @@ static int mmcc_660_probe(struct platform_device *pdev)
 	vdd_mx.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_mx_mmss");
 	if (IS_ERR(vdd_mx.regulator[0])) {
 		if (!(PTR_ERR(vdd_mx.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_mx_mmss regulator\n");
 		return PTR_ERR(vdd_mx.regulator[0]);
 	}
@@ -3071,7 +3071,7 @@ static int mmcc_660_probe(struct platform_device *pdev)
 	vdd_dig.regulator[0] = devm_regulator_get(&pdev->dev, "vdd_dig_mmss");
 	if (IS_ERR(vdd_dig.regulator[0])) {
 		if (!(PTR_ERR(vdd_dig.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdd_dig regulator\n");
 		return PTR_ERR(vdd_dig.regulator[0]);
 	}
@@ -3080,7 +3080,7 @@ static int mmcc_660_probe(struct platform_device *pdev)
 	vdda.regulator[0] = devm_regulator_get(&pdev->dev, "vdda");
 	if (IS_ERR(vdda.regulator[0])) {
 		if (!(PTR_ERR(vdda.regulator[0]) == -EPROBE_DEFER))
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 					"Unable to get vdda regulator\n");
 		return PTR_ERR(vdda.regulator[0]);
 	}
@@ -3105,11 +3105,11 @@ static int mmcc_660_probe(struct platform_device *pdev)
 
 	ret = qcom_cc_really_probe(pdev, &mmcc_660_desc, regmap);
 	if (ret) {
-		dev_err(&pdev->dev, "Failed to register MMSS clocks\n");
+		dev_dbg(&pdev->dev, "Failed to register MMSS clocks\n");
 		return ret;
 	}
 
-	dev_err(&pdev->dev, "Registered MMSS clocks\n");
+	dev_dbg(&pdev->dev, "Registered MMSS clocks\n");
 
 	return ret;
 }

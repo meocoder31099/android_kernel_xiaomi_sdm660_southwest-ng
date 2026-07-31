@@ -62,7 +62,7 @@ int __init __weak early_init_dt_alloc_reserved_memory_arch(phys_addr_t size,
 	phys_addr_t align, phys_addr_t start, phys_addr_t end, bool nomap,
 	phys_addr_t *res_base)
 {
-	pr_err("Reserved memory not supported, ignoring region 0x%llx%s\n",
+	pr_debug("Reserved memory not supported, ignoring region 0x%llx%s\n",
 		  size, nomap ? " (nomap)" : "");
 	return -ENOSYS;
 }
@@ -77,7 +77,7 @@ void __init fdt_reserved_mem_save_node(unsigned long node, const char *uname,
 	struct reserved_mem *rmem = &reserved_mem[reserved_mem_count];
 
 	if (reserved_mem_count == ARRAY_SIZE(reserved_mem)) {
-		pr_err("not enough space all defined regions.\n");
+		pr_debug("not enough space all defined regions.\n");
 		return;
 	}
 
@@ -110,7 +110,7 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 		return -EINVAL;
 
 	if (len != dt_root_size_cells * sizeof(__be32)) {
-		pr_err("invalid size property in '%s' node.\n", uname);
+		pr_debug("invalid size property in '%s' node.\n", uname);
 		return -EINVAL;
 	}
 	size = dt_mem_next_cell(dt_root_size_cells, &prop);
@@ -120,7 +120,7 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 	prop = of_get_flat_dt_prop(node, "alignment", &len);
 	if (prop) {
 		if (len != dt_root_addr_cells * sizeof(__be32)) {
-			pr_err("invalid alignment property in '%s' node.\n",
+			pr_debug("invalid alignment property in '%s' node.\n",
 				uname);
 			return -EINVAL;
 		}
@@ -142,7 +142,7 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 	if (prop) {
 
 		if (len % t_len != 0) {
-			pr_err("invalid alloc-ranges property in '%s', skipping node.\n",
+			pr_debug("invalid alloc-ranges property in '%s', skipping node.\n",
 			       uname);
 			return -EINVAL;
 		}
@@ -174,7 +174,7 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 	}
 
 	if (base == 0) {
-		pr_info("failed to allocate memory for node '%s'\n", uname);
+		pr_debug("failed to allocate memory for node '%s'\n", uname);
 		return -ENOMEM;
 	}
 
@@ -203,7 +203,7 @@ static int __init __reserved_mem_init_node(struct reserved_mem *rmem)
 			continue;
 
 		if (initfn(rmem) == 0) {
-			pr_info("initialized node %s, compatible id %s\n",
+			pr_debug("initialized node %s, compatible id %s\n",
 				rmem->name, compat);
 			return 0;
 		}
@@ -254,7 +254,7 @@ static void __init __rmem_check_for_overlap(void)
 
 			this_end = this->base + this->size;
 			next_end = next->base + next->size;
-			pr_err("OVERLAP DETECTED!\n%s (%pa--%pa) overlaps with %s (%pa--%pa)\n",
+			pr_debug("OVERLAP DETECTED!\n%s (%pa--%pa) overlaps with %s (%pa--%pa)\n",
 			       this->name, &this->base, &this_end,
 			       next->name, &next->base, &next_end);
 		}
@@ -367,7 +367,7 @@ int of_reserved_mem_device_init_by_idx(struct device *dev,
 		 */
 		of_dma_configure(dev, np, true);
 
-		dev_info(dev, "assigned reserved memory node %s\n", rmem->name);
+		dev_dbg(dev, "assigned reserved memory node %s\n", rmem->name);
 	} else {
 		kfree(rd);
 	}

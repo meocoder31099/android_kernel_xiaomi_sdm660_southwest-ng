@@ -40,7 +40,7 @@ static void touchscreen_set_params(struct input_dev *dev,
 	struct input_absinfo *absinfo;
 
 	if (!test_bit(axis, dev->absbit)) {
-		dev_warn(&dev->dev,
+		dev_dbg(&dev->dev,
 			 "DT specifies parameters but the axis %lu is not set up\n",
 			 axis);
 		return;

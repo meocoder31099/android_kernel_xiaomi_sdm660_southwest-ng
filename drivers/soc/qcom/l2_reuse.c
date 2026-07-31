@@ -30,7 +30,7 @@ static ssize_t sysfs_store(struct kobject *kobj,
 
 	ret = kstrtobool(buf, &l2_reuse_enable);
 	if (ret) {
-		pr_err("Invalid argument passed\n");
+		pr_debug("Invalid argument passed\n");
 		return ret;
 	}
 
@@ -46,7 +46,7 @@ static int __init l2_reuse_driver_init(void)
 	l2_reuse_kobj = kobject_create_and_add("l2_reuse", power_kobj);
 
 	if (!l2_reuse_kobj) {
-		pr_info("kobj creation for l2_reuse failed\n");
+		pr_debug("kobj creation for l2_reuse failed\n");
 		return 0;
 	}
 

@@ -426,7 +426,7 @@ static struct inet6_dev *ipv6_add_dev(struct net_device *dev)
 
 #if IS_ENABLED(CONFIG_IPV6_SIT)
 	if (dev->type == ARPHRD_SIT && (dev->priv_flags & IFF_ISATAP)) {
-		pr_info("%s: Disabled Multicast RS\n", dev->name);
+		pr_debug("%s: Disabled Multicast RS\n", dev->name);
 		ndev->cnf.rtr_solicits = 0;
 	}
 #endif
@@ -924,11 +924,11 @@ void inet6_ifa_finish_destroy(struct inet6_ifaddr *ifp)
 	in6_dev_put(ifp->idev);
 
 	if (cancel_delayed_work(&ifp->dad_work))
-		pr_notice("delayed DAD work was pending while freeing ifa=%p\n",
+		pr_debug("delayed DAD work was pending while freeing ifa=%p\n",
 			  ifp);
 
 	if (ifp->state != INET6_IFADDR_STATE_DEAD) {
-		pr_warn("Freeing alive inet6 address %p\n", ifp);
+		pr_debug("Freeing alive inet6 address %p\n", ifp);
 		return;
 	}
 
@@ -1294,7 +1294,7 @@ retry:
 	in6_dev_hold(idev);
 	if (idev->cnf.use_tempaddr <= 0) {
 		write_unlock_bh(&idev->lock);
-		pr_info("%s: use_tempaddr is disabled\n", __func__);
+		pr_debug("%s: use_tempaddr is disabled\n", __func__);
 		in6_dev_put(idev);
 		ret = -1;
 		goto out;
@@ -1304,7 +1304,7 @@ retry:
 		idev->cnf.use_tempaddr = -1;	/*XXX*/
 		spin_unlock_bh(&ifp->lock);
 		write_unlock_bh(&idev->lock);
-		pr_warn("%s: regeneration time exceeded - disabled temporary address support\n",
+		pr_debug("%s: regeneration time exceeded - disabled temporary address support\n",
 			__func__);
 		in6_dev_put(idev);
 		ret = -1;
@@ -1377,7 +1377,7 @@ retry:
 	if (IS_ERR(ift)) {
 		in6_ifa_put(ifp);
 		in6_dev_put(idev);
-		pr_info("%s: retry temporary address regeneration\n", __func__);
+		pr_debug("%s: retry temporary address regeneration\n", __func__);
 		tmpaddr = &addr;
 		write_lock_bh(&idev->lock);
 		goto retry;
@@ -3548,7 +3548,7 @@ static int addrconf_notify(struct notifier_block *this, unsigned long event,
 
 			if (!addrconf_link_ready(dev)) {
 				/* device is not ready yet. */
-				pr_info("ADDRCONF(NETDEV_UP): %s: link is not ready\n",
+				pr_debug("ADDRCONF(NETDEV_UP): %s: link is not ready\n",
 					dev->name);
 				break;
 			}
@@ -3584,7 +3584,7 @@ static int addrconf_notify(struct notifier_block *this, unsigned long event,
 				idev->if_flags |= IF_READY;
 			}
 
-			pr_info("ADDRCONF(NETDEV_CHANGE): %s: link becomes ready\n",
+			pr_debug("ADDRCONF(NETDEV_CHANGE): %s: link becomes ready\n",
 				dev->name);
 
 			run_pending = 1;
@@ -4079,7 +4079,7 @@ static void addrconf_dad_work(struct work_struct *w)
 				/* DAD failed for link-local based on MAC */
 				idev->cnf.disable_ipv6 = 1;
 
-				pr_info("%s: IPv6 being disabled!\n",
+				pr_debug("%s: IPv6 being disabled!\n",
 					ifp->idev->dev->name);
 				disable_ipv6 = true;
 			}
@@ -5865,7 +5865,7 @@ static void __ipv6_ifa_notify(int event, struct inet6_ifaddr *ifp)
 		if (ifp->rt && !rcu_access_pointer(ifp->rt->fib6_node)) {
 			ip6_ins_rt(net, ifp->rt);
 		} else if (!ifp->rt && (ifp->idev->dev->flags & IFF_UP)) {
-			pr_warn("BUG: Address %pI6c on device %s is missing its host route.\n",
+			pr_debug("BUG: Address %pI6c on device %s is missing its host route.\n",
 				&ifp->addr, ifp->idev->dev->name);
 		}
 
@@ -6903,7 +6903,7 @@ int __init addrconf_init(void)
 
 	err = ipv6_addr_label_init();
 	if (err < 0) {
-		pr_crit("%s: cannot initialize default policy table: %d\n",
+		pr_debug("%s: cannot initialize default policy table: %d\n",
 			__func__, err);
 		goto out;
 	}

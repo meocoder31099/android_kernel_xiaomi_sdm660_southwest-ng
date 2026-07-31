@@ -174,7 +174,7 @@ static void unaccount_page_cache_page(struct address_space *mapping,
 	if (!IS_ENABLED(CONFIG_DEBUG_VM) && unlikely(page_mapped(page))) {
 		int mapcount;
 
-		pr_alert("BUG: Bad page cache in process %s  pfn:%05lx\n",
+		pr_debug("BUG: Bad page cache in process %s  pfn:%05lx\n",
 			 current->comm, page_to_pfn(page));
 		dump_page(page, "still mapped when deleted");
 		dump_stack();

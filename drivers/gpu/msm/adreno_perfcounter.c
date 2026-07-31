@@ -832,7 +832,7 @@ static int _perfcounter_enable_default(struct adreno_device *adreno_dev,
 			if (ret == -EAGAIN)
 				ret = 0;
 			else
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					     "Perfcounter %u/%u/%u start via commands failed %d\n",
 					     group, counter, countable, ret);
 		}

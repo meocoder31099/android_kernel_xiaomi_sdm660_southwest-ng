@@ -66,7 +66,7 @@ static int smp_spin_table_cpu_init(unsigned int cpu)
 	ret = of_property_read_u64(dn, "cpu-release-addr",
 				   &cpu_release_addr[cpu]);
 	if (ret)
-		pr_err("CPU %d: missing or invalid cpu-release-addr property\n",
+		pr_debug("CPU %d: missing or invalid cpu-release-addr property\n",
 		       cpu);
 
 	of_node_put(dn);

@@ -393,7 +393,7 @@ int mfd_clone_cell(const char *cell, const char **clones, size_t n_clones)
 	/* fetch the parent cell's device (should already be registered!) */
 	dev = bus_find_device_by_name(&platform_bus_type, NULL, cell);
 	if (!dev) {
-		printk(KERN_ERR "failed to find device for cell %s\n", cell);
+		no_printk(KERN_ERR "failed to find device for cell %s\n", cell);
 		return -ENODEV;
 	}
 	pdev = to_platform_device(dev);
@@ -406,7 +406,7 @@ int mfd_clone_cell(const char *cell, const char **clones, size_t n_clones)
 		/* don't give up if a single call fails; just report error */
 		if (mfd_add_device(pdev->dev.parent, -1, &cell_entry,
 				   cell_entry.usage_count, NULL, 0, NULL))
-			dev_err(dev, "failed to create platform device '%s'\n",
+			dev_dbg(dev, "failed to create platform device '%s'\n",
 					clones[i]);
 	}
 

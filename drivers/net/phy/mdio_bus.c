@@ -392,7 +392,7 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
 
 	err = device_register(&bus->dev);
 	if (err) {
-		pr_err("mii_bus %s failed to register\n", bus->id);
+		pr_debug("mii_bus %s failed to register\n", bus->id);
 		return -EINVAL;
 	}
 
@@ -401,7 +401,7 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
 	/* de-assert bus level PHY GPIO reset */
 	gpiod = devm_gpiod_get_optional(&bus->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(gpiod)) {
-		dev_err(&bus->dev, "mii_bus %s couldn't get reset GPIO\n",
+		dev_dbg(&bus->dev, "mii_bus %s couldn't get reset GPIO\n",
 			bus->id);
 		device_del(&bus->dev);
 		return PTR_ERR(gpiod);

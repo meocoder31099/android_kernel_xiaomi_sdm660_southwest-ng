@@ -730,7 +730,7 @@ static void tcp_keepalive_timer (struct timer_list *t)
 	}
 
 	if (sk->sk_state == TCP_LISTEN) {
-		pr_err("Hmm... keepalive on a LISTEN ???\n");
+		pr_debug("Hmm... keepalive on a LISTEN ???\n");
 		goto out;
 	}
 

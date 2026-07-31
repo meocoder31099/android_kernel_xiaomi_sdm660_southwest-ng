@@ -261,7 +261,7 @@ static int qpnp_smps_read_voltage(struct spm_vreg *vreg)
 				+ QPNP_FTS426_HFS430_REG_VOLTAGE_VALID_LB,
 				val, 2);
 		if (rc) {
-			dev_err(&vreg->pdev->dev, "%s: could not read voltage setpoint registers, rc=%d\n",
+			dev_dbg(&vreg->pdev->dev, "%s: could not read voltage setpoint registers, rc=%d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -272,7 +272,7 @@ static int qpnp_smps_read_voltage(struct spm_vreg *vreg)
 			vreg->spmi_base_addr + QPNP_SMPS_REG_VOLTAGE_SETPOINT,
 				val, 1);
 		if (rc) {
-			dev_err(&vreg->pdev->dev, "%s: could not read voltage setpoint register, rc=%d\n",
+			dev_dbg(&vreg->pdev->dev, "%s: could not read voltage setpoint register, rc=%d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -306,7 +306,7 @@ static int qpnp_smps_write_voltage(struct spm_vreg *vreg, unsigned int vlevel)
 	}
 
 	if (rc)
-		pr_err("%s: regmap_write failed, rc=%d\n",
+		pr_debug("%s: regmap_write failed, rc=%d\n",
 			vreg->rdesc.name, rc);
 
 	return rc;
@@ -345,7 +345,7 @@ static int qpnp_smps_set_mode(struct spm_vreg *vreg, u8 mode)
 			  vreg->spmi_base_addr + QPNP_SMPS_REG_MODE,
 			  qpnp_mode_to_regval(vreg, mode));
 	if (rc)
-		dev_err(&vreg->pdev->dev,
+		dev_dbg(&vreg->pdev->dev,
 			"%s: could not write to mode register, rc=%d\n",
 			__func__, rc);
 
@@ -366,7 +366,7 @@ static int spm_regulator_get_voltage(struct regulator_dev *rdev)
 
 			rc = qpnp_smps_read_voltage(vreg);
 			if (rc) {
-				pr_err("%s: voltage read failed, rc=%d\n",
+				pr_debug("%s: voltage read failed, rc=%d\n",
 				       vreg->rdesc.name, rc);
 				return rc;
 			}
@@ -403,7 +403,7 @@ static int spm_regulator_write_voltage(struct spm_vreg *vreg, int uV)
 	if (unlikely(vreg->bypass_spm || spm_failed)) {
 		rc = qpnp_smps_write_voltage(vreg, vlevel);
 		if (rc) {
-			pr_err("%s: voltage write failed, rc=%d\n",
+			pr_debug("%s: voltage write failed, rc=%d\n",
 				vreg->rdesc.name, rc);
 			return rc;
 		}
@@ -439,7 +439,7 @@ static int spm_regulator_recalibrate(struct spm_vreg *vreg)
 	arm_smccc_smc(0xC4000020, vreg->recal_cluster_mask,
 		2, 0, 0, 0, 0, 0, &res);
 	if (res.a0)
-		pr_err("%s: recalibration failed, rc=%ld\n", vreg->rdesc.name,
+		pr_debug("%s: recalibration failed, rc=%ld\n", vreg->rdesc.name,
 			res.a0);
 
 	return res.a0;
@@ -506,7 +506,7 @@ static int spm_regulator_set_voltage(struct regulator_dev *rdev, int min_uV,
 		uV = range->set_point_min_uV;
 
 	if (uV < range->set_point_min_uV || uV > range->max_uV) {
-		pr_err("%s: request v=[%d, %d] is outside possible v=[%d, %d]\n",
+		pr_debug("%s: request v=[%d, %d] is outside possible v=[%d, %d]\n",
 			vreg->rdesc.name, min_uV, max_uV,
 			range->set_point_min_uV, range->max_uV);
 		return -EINVAL;
@@ -516,7 +516,7 @@ static int spm_regulator_set_voltage(struct regulator_dev *rdev, int min_uV,
 	uV = spm_regulator_vlevel_to_uv(vreg, vlevel);
 
 	if (uV > max_uV) {
-		pr_err("%s: request v=[%d, %d] cannot be met by any set point\n",
+		pr_debug("%s: request v=[%d, %d] cannot be met by any set point\n",
 			vreg->rdesc.name, min_uV, max_uV);
 		return -EINVAL;
 	}
@@ -620,7 +620,7 @@ static int spm_regulator_avs_set_voltage(struct regulator_dev *rdev, int min_uV,
 		uV = range->set_point_min_uV;
 
 	if (uV < range->set_point_min_uV || uV > range->max_uV) {
-		pr_err("%s: request v=[%d, %d] is outside possible v=[%d, %d]\n",
+		pr_debug("%s: request v=[%d, %d] is outside possible v=[%d, %d]\n",
 			vreg->avs_rdesc.name, min_uV, max_uV,
 			range->set_point_min_uV, range->max_uV);
 		return -EINVAL;
@@ -630,7 +630,7 @@ static int spm_regulator_avs_set_voltage(struct regulator_dev *rdev, int min_uV,
 	avs_min_uV = spm_regulator_vlevel_to_uv(vreg, vlevel_min);
 
 	if (avs_min_uV > max_uV) {
-		pr_err("%s: request v=[%d, %d] cannot be met by any set point\n",
+		pr_debug("%s: request v=[%d, %d] cannot be met by any set point\n",
 			vreg->avs_rdesc.name, min_uV, max_uV);
 		return -EINVAL;
 	}
@@ -641,7 +641,7 @@ static int spm_regulator_avs_set_voltage(struct regulator_dev *rdev, int min_uV,
 		uV = range->max_uV;
 
 	if (uV < range->set_point_min_uV || uV > range->max_uV) {
-		pr_err("%s: request v=[%d, %d] is outside possible v=[%d, %d]\n",
+		pr_debug("%s: request v=[%d, %d] is outside possible v=[%d, %d]\n",
 			vreg->avs_rdesc.name, min_uV, max_uV,
 			range->set_point_min_uV, range->max_uV);
 		return -EINVAL;
@@ -651,7 +651,7 @@ static int spm_regulator_avs_set_voltage(struct regulator_dev *rdev, int min_uV,
 	avs_max_uV = spm_regulator_vlevel_to_uv(vreg, vlevel_max);
 
 	if (avs_max_uV < min_uV) {
-		pr_err("%s: request v=[%d, %d] cannot be met by any set point\n",
+		pr_debug("%s: request v=[%d, %d] cannot be met by any set point\n",
 			vreg->avs_rdesc.name, min_uV, max_uV);
 		return -EINVAL;
 	}
@@ -660,7 +660,7 @@ static int spm_regulator_avs_set_voltage(struct regulator_dev *rdev, int min_uV,
 		rc = msm_spm_avs_set_limit(vreg->cpu_num, vlevel_min,
 						vlevel_max);
 		if (rc) {
-			pr_err("%s: AVS limit setting failed, rc=%d\n",
+			pr_debug("%s: AVS limit setting failed, rc=%d\n",
 				vreg->avs_rdesc.name, rc);
 			return rc;
 		}
@@ -688,7 +688,7 @@ static int spm_regulator_avs_enable(struct regulator_dev *rdev)
 	if (likely(!vreg->bypass_spm)) {
 		rc = msm_spm_avs_enable(vreg->cpu_num);
 		if (rc) {
-			pr_err("%s: AVS enable failed, rc=%d\n",
+			pr_debug("%s: AVS enable failed, rc=%d\n",
 				vreg->avs_rdesc.name, rc);
 			return rc;
 		}
@@ -707,7 +707,7 @@ static int spm_regulator_avs_disable(struct regulator_dev *rdev)
 	if (likely(!vreg->bypass_spm)) {
 		rc = msm_spm_avs_disable(vreg->cpu_num);
 		if (rc) {
-			pr_err("%s: AVS disable failed, rc=%d\n",
+			pr_debug("%s: AVS disable failed, rc=%d\n",
 				vreg->avs_rdesc.name, rc);
 			return rc;
 		}
@@ -744,7 +744,7 @@ static int qpnp_smps_check_type(struct spm_vreg *vreg)
 			      type,
 			      2);
 	if (rc) {
-		dev_err(&vreg->pdev->dev,
+		dev_dbg(&vreg->pdev->dev,
 			"%s: could not read type register, rc=%d\n",
 			__func__, rc);
 		return rc;
@@ -768,7 +768,7 @@ static int qpnp_smps_check_type(struct spm_vreg *vreg)
 					&& type[1] == QPNP_HF_SUBTYPE) {
 		vreg->regulator_type = QPNP_TYPE_HF;
 	} else {
-		dev_err(&vreg->pdev->dev,
+		dev_dbg(&vreg->pdev->dev,
 			"%s: invalid type=0x%02X, subtype=0x%02X register pair\n",
 			 __func__, type[0], type[1]);
 		return -ENODEV;
@@ -788,7 +788,7 @@ static int qpnp_smps_init_range(struct spm_vreg *vreg,
 			 vreg->spmi_base_addr + QPNP_SMPS_REG_VOLTAGE_RANGE,
 			 &val);
 	if (rc) {
-		dev_err(&vreg->pdev->dev,
+		dev_dbg(&vreg->pdev->dev,
 			"%s: could not read voltage range register, rc=%d\n",
 			__func__, rc);
 		return rc;
@@ -800,7 +800,7 @@ static int qpnp_smps_init_range(struct spm_vreg *vreg,
 	} else if (reg == 0x01) {
 		vreg->range = range1;
 	} else {
-		dev_err(&vreg->pdev->dev, "%s: voltage range=%d is invalid\n",
+		dev_dbg(&vreg->pdev->dev, "%s: voltage range=%d is invalid\n",
 			__func__, reg);
 		rc = -EINVAL;
 	}
@@ -818,7 +818,7 @@ static int qpnp_ult_hf_init_range(struct spm_vreg *vreg)
 			 vreg->spmi_base_addr + QPNP_SMPS_REG_VOLTAGE_SETPOINT,
 			 &val);
 	if (rc) {
-		dev_err(&vreg->pdev->dev,
+		dev_dbg(&vreg->pdev->dev,
 			"%s: could not read voltage range register, rc=%d\n",
 			__func__, rc);
 		return rc;
@@ -836,7 +836,7 @@ static int qpnp_smps_init_voltage(struct spm_vreg *vreg)
 
 	rc = qpnp_smps_read_voltage(vreg);
 	if (rc) {
-		pr_err("%s: voltage read failed, rc=%d\n", vreg->rdesc.name,
+		pr_debug("%s: voltage read failed, rc=%d\n", vreg->rdesc.name,
 			rc);
 		return rc;
 	}
@@ -848,7 +848,7 @@ static int qpnp_smps_init_voltage(struct spm_vreg *vreg)
 	if (!vreg->bypass_spm) {
 		rc = msm_spm_set_vdd(vreg->cpu_num, vreg->vlevel);
 		if (rc)
-			pr_err("%s: msm_spm_set_vdd failed, rc=%d\n",
+			pr_debug("%s: msm_spm_set_vdd failed, rc=%d\n",
 			       vreg->rdesc.name, rc);
 	}
 
@@ -870,7 +870,7 @@ static int qpnp_smps_init_mode(struct spm_vreg *vreg)
 				(vreg->regulator_type != QPNP_TYPE_ULT_HF)) {
 			vreg->init_mode = QPNP_LOGICAL_MODE_AUTO;
 		} else {
-			dev_err(&vreg->pdev->dev,
+			dev_dbg(&vreg->pdev->dev,
 				"%s: unknown regulator mode: %s\n",
 				__func__, mode_name);
 			return -EINVAL;
@@ -884,7 +884,7 @@ static int qpnp_smps_init_mode(struct spm_vreg *vreg)
 				 vreg->spmi_base_addr + QPNP_SMPS_REG_MODE,
 				 &val);
 		if (rc)
-			dev_err(&vreg->pdev->dev,
+			dev_dbg(&vreg->pdev->dev,
 				"%s: could not read mode register, rc=%d\n",
 				__func__, rc);
 			 vreg->init_mode = qpnp_regval_to_mode(vreg, val);
@@ -905,7 +905,7 @@ static int qpnp_smps_init_step_rate(struct spm_vreg *vreg)
 	rc = regmap_read(vreg->regmap,
 			 vreg->spmi_base_addr + QPNP_SMPS_REG_STEP_CTRL, &val);
 	if (rc) {
-		dev_err(&vreg->pdev->dev,
+		dev_dbg(&vreg->pdev->dev,
 			"%s: could not read stepping control register, rc=%d\n",
 			__func__, rc);
 		return rc;
@@ -984,7 +984,7 @@ static int qpnp_smps_check_constraints(struct spm_vreg *vreg,
 		rc = regmap_bulk_read(vreg->regmap, vreg->spmi_base_addr
 					+ QPNP_SMPS_REG_UL_LL_CTRL, reg, 1);
 		if (rc) {
-			dev_err(&vreg->pdev->dev, "%s: UL_LL register read failed, rc=%d\n",
+			dev_dbg(&vreg->pdev->dev, "%s: UL_LL register read failed, rc=%d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -993,7 +993,7 @@ static int qpnp_smps_check_constraints(struct spm_vreg *vreg,
 			rc = regmap_bulk_read(vreg->regmap, vreg->spmi_base_addr
 						+ ul_reg, &reg[1], 1);
 			if (rc) {
-				dev_err(&vreg->pdev->dev, "%s: ULS register read failed, rc=%d\n",
+				dev_dbg(&vreg->pdev->dev, "%s: ULS register read failed, rc=%d\n",
 					__func__, rc);
 				return rc;
 			}
@@ -1005,7 +1005,7 @@ static int qpnp_smps_check_constraints(struct spm_vreg *vreg,
 			rc = regmap_bulk_read(vreg->regmap, vreg->spmi_base_addr
 						+ ll_reg, &reg[1], 1);
 			if (rc) {
-				dev_err(&vreg->pdev->dev, "%s: LLS register read failed, rc=%d\n",
+				dev_dbg(&vreg->pdev->dev, "%s: LLS register read failed, rc=%d\n",
 					__func__, rc);
 				return rc;
 			}
@@ -1020,7 +1020,7 @@ static int qpnp_smps_check_constraints(struct spm_vreg *vreg,
 					+ QPNP_FTS426_HFS430_REG_VOLTAGE_ULS_LB,
 					reg, 2);
 		if (rc) {
-			dev_err(&vreg->pdev->dev, "%s: could not read voltage limit registers, rc=%d\n",
+			dev_dbg(&vreg->pdev->dev, "%s: could not read voltage limit registers, rc=%d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -1035,7 +1035,7 @@ static int qpnp_smps_check_constraints(struct spm_vreg *vreg,
 
 	if (init_data->constraints.min_uV < limit_min_uV
 	    || init_data->constraints.max_uV >  limit_max_uV) {
-		dev_err(&vreg->pdev->dev, "regulator min/max(%d/%d) constraints do not fit within HW configured min/max(%d/%d) constraints\n",
+		dev_dbg(&vreg->pdev->dev, "regulator min/max(%d/%d) constraints do not fit within HW configured min/max(%d/%d) constraints\n",
 			init_data->constraints.min_uV,
 			init_data->constraints.max_uV, limit_min_uV,
 			limit_max_uV);
@@ -1076,7 +1076,7 @@ static int spm_regulator_avs_register(struct spm_vreg *vreg,
 
 	init_data = of_get_regulator_init_data(dev, avs_node, &vreg->avs_rdesc);
 	if (!init_data) {
-		dev_err(dev, "%s: unable to allocate memory\n", __func__);
+		dev_dbg(dev, "%s: unable to allocate memory\n", __func__);
 		return -ENOMEM;
 	}
 	init_data->constraints.input_uV = init_data->constraints.max_uV;
@@ -1084,7 +1084,7 @@ static int spm_regulator_avs_register(struct spm_vreg *vreg,
 						| REGULATOR_CHANGE_VOLTAGE;
 
 	if (!init_data->constraints.name) {
-		dev_err(dev, "%s: AVS node is missing regulator name\n",
+		dev_dbg(dev, "%s: AVS node is missing regulator name\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -1105,7 +1105,7 @@ static int spm_regulator_avs_register(struct spm_vreg *vreg,
 	vreg->avs_rdev = regulator_register(&vreg->avs_rdesc, &reg_config);
 	if (IS_ERR(vreg->avs_rdev)) {
 		rc = PTR_ERR(vreg->avs_rdev);
-		dev_err(dev, "%s: AVS regulator_register failed, rc=%d\n",
+		dev_dbg(dev, "%s: AVS regulator_register failed, rc=%d\n",
 			__func__, rc);
 		return rc;
 	}
@@ -1128,7 +1128,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 	int rc;
 
 	if (!node) {
-		dev_err(&pdev->dev, "%s: device node missing\n", __func__);
+		dev_dbg(&pdev->dev, "%s: device node missing\n", __func__);
 		return -ENODEV;
 	}
 
@@ -1137,7 +1137,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 		rc = msm_spm_probe_done();
 		if (rc) {
 			if (rc != -EPROBE_DEFER)
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 					"%s: spm unavailable, rc=%d\n",
 					__func__, rc);
 			return rc;
@@ -1150,7 +1150,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 
 	vreg->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!vreg->regmap) {
-		dev_err(&pdev->dev, "Couldn't get parent's regmap\n");
+		dev_dbg(&pdev->dev, "Couldn't get parent's regmap\n");
 		return -EINVAL;
 	}
 	vreg->pdev = pdev;
@@ -1158,7 +1158,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(pdev->dev.of_node, "reg", &base);
 	if (rc < 0) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"Couldn't find reg in node = %s rc = %d\n",
 			pdev->dev.of_node->full_name, rc);
 		return rc;
@@ -1211,7 +1211,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 
 	init_data = of_get_regulator_init_data(&pdev->dev, node, &vreg->rdesc);
 	if (!init_data) {
-		dev_err(&pdev->dev, "%s: unable to allocate memory\n",
+		dev_dbg(&pdev->dev, "%s: unable to allocate memory\n",
 				__func__);
 		return -ENOMEM;
 	}
@@ -1222,14 +1222,14 @@ static int spm_regulator_probe(struct platform_device *pdev)
 				= REGULATOR_MODE_NORMAL | REGULATOR_MODE_IDLE;
 
 	if (!init_data->constraints.name) {
-		dev_err(&pdev->dev, "%s: node is missing regulator name\n",
+		dev_dbg(&pdev->dev, "%s: node is missing regulator name\n",
 			__func__);
 		return -EINVAL;
 	}
 
 	rc = qpnp_smps_check_constraints(vreg, init_data);
 	if (rc) {
-		dev_err(&pdev->dev, "%s: regulator constraints check failed, rc=%d\n",
+		dev_dbg(&pdev->dev, "%s: regulator constraints check failed, rc=%d\n",
 			__func__, rc);
 		return rc;
 	}
@@ -1261,7 +1261,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 
 	if (IS_ERR(vreg->rdev)) {
 		rc = PTR_ERR(vreg->rdev);
-		dev_err(&pdev->dev, "%s: regulator_register failed, rc=%d\n",
+		dev_dbg(&pdev->dev, "%s: regulator_register failed, rc=%d\n",
 			__func__, rc);
 		return rc;
 	}
@@ -1274,7 +1274,7 @@ static int spm_regulator_probe(struct platform_device *pdev)
 
 	dev_set_drvdata(&pdev->dev, vreg);
 
-	pr_info("name=%s, range=%s, voltage=%d uV, mode=%s, step rate=%d uV/us\n",
+	pr_debug("name=%s, range=%s, voltage=%d uV, mode=%s, step rate=%d uV/us\n",
 		vreg->rdesc.name,
 		spm_regulator_using_range0(vreg) ? "LV" : "MV",
 		vreg->uV,

@@ -3106,7 +3106,7 @@ static unsigned int count_isoc_trbs_needed(struct urb *urb, int i)
 static void check_trb_math(struct urb *urb, int running_total)
 {
 	if (unlikely(running_total != urb->transfer_buffer_length))
-		dev_err(&urb->dev->dev, "%s - ep %#x - Miscalculated tx length, "
+		dev_dbg(&urb->dev->dev, "%s - ep %#x - Miscalculated tx length, "
 				"queued %#x (%d), asked for %#x (%d)\n",
 				__func__,
 				urb->ep->desc.bEndpointAddress,

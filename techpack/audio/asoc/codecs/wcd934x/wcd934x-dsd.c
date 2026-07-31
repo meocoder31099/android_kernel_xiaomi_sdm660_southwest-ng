@@ -170,7 +170,7 @@ int tavil_dsd_set_out_select(struct tavil_dsd_config *dsd_conf,
 	component = dsd_conf->component;
 
 	if (!is_valid_dsd_interpolator(interp_num)) {
-		dev_err(component->dev, "%s: Invalid Interpolator: %d for DSD\n",
+		dev_dbg(component->dev, "%s: Invalid Interpolator: %d for DSD\n",
 			__func__, interp_num);
 		return -EINVAL;
 	}
@@ -312,7 +312,7 @@ static int tavil_set_dsd_mode(struct snd_soc_component *component, int dsd_num,
 		*pcm_rate_val = 0xc;
 		break;
 	default:
-		dev_err(component->dev, "%s: Invalid DSD rate: %d\n",
+		dev_dbg(component->dev, "%s: Invalid DSD rate: %d\n",
 			__func__, sample_rate);
 		return -EINVAL;
 	}
@@ -401,7 +401,7 @@ static int tavil_enable_dsd(struct snd_soc_dapm_widget *w,
 	u8 pcm_rate_val;
 
 	if (!dsd_conf) {
-		dev_err(component->dev, "%s: null dsd_config pointer\n",
+		dev_dbg(component->dev, "%s: null dsd_config pointer\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -424,7 +424,7 @@ static int tavil_enable_dsd(struct snd_soc_dapm_widget *w,
 		else
 			interp_idx = INTERP_HPHR;
 	} else {
-		dev_err(component->dev, "%s: Unsupported DSD:%d\n",
+		dev_dbg(component->dev, "%s: Unsupported DSD:%d\n",
 			__func__, w->shift);
 		return -EINVAL;
 	}
@@ -736,7 +736,7 @@ struct tavil_dsd_config *tavil_dsd_init(struct snd_soc_component *component)
 	val = snd_soc_component_read32(component,
 				WCD934X_CHIP_TIER_CTRL_EFUSE_VAL_OUT14);
 	if (val & 0x80) {
-		dev_info(component->dev, "%s: DSD unsupported for this codec version\n",
+		dev_dbg(component->dev, "%s: DSD unsupported for this codec version\n",
 			 __func__);
 		return NULL;
 	}

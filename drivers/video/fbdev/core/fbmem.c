@@ -1010,7 +1010,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
 		/* verify that virtual resolution >= physical resolution */
 		if (var->xres_virtual < var->xres ||
 		    var->yres_virtual < var->yres) {
-			pr_warn("WARNING: fbcon: Driver '%s' missed to adjust virtual screen size (%ux%u vs. %ux%u)\n",
+			pr_debug("WARNING: fbcon: Driver '%s' missed to adjust virtual screen size (%ux%u vs. %ux%u)\n",
 				info->fix.id,
 				var->xres_virtual, var->yres_virtual,
 				var->xres, var->yres);
@@ -1037,7 +1037,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
 
 				if (ret) {
 					info->var = old_var;
-					printk(KERN_WARNING "detected "
+					no_printk(KERN_WARNING "detected "
 						"fb_set_par error, "
 						"error code: %d\n", ret);
 					goto done;
@@ -1593,11 +1593,11 @@ static int fb_check_foreignness(struct fb_info *fi)
 #endif /* __BIG_ENDIAN */
 
 	if (fi->flags & FBINFO_BE_MATH && !fb_be_math(fi)) {
-		pr_err("%s: enable CONFIG_FB_BIG_ENDIAN to "
+		pr_debug("%s: enable CONFIG_FB_BIG_ENDIAN to "
 		       "support this framebuffer\n", fi->fix.id);
 		return -ENOSYS;
 	} else if (!(fi->flags & FBINFO_BE_MATH) && fb_be_math(fi)) {
-		pr_err("%s: enable CONFIG_FB_LITTLE_ENDIAN to "
+		pr_debug("%s: enable CONFIG_FB_LITTLE_ENDIAN to "
 		       "support this framebuffer\n", fi->fix.id);
 		return -ENOSYS;
 	}
@@ -1627,7 +1627,7 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
 		struct aperture *h = &hwa->ranges[i];
 		for (j = 0; j < gena->count; ++j) {
 			struct aperture *g = &gena->ranges[j];
-			printk(KERN_DEBUG "checking generic (%llx %llx) vs hw (%llx %llx)\n",
+			no_printk(KERN_DEBUG "checking generic (%llx %llx) vs hw (%llx %llx)\n",
 				(unsigned long long)g->base,
 				(unsigned long long)g->size,
 				(unsigned long long)h->base,
@@ -1660,7 +1660,7 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
 			(primary && gen_aper && gen_aper->count &&
 			 gen_aper->ranges[0].base == VGA_FB_PHYS)) {
 
-			printk(KERN_INFO "fb: switching to %s from %s\n",
+			no_printk(KERN_INFO "fb: switching to %s from %s\n",
 			       name, registered_fb[i]->fix.id);
 			ret = do_unregister_framebuffer(registered_fb[i]);
 			if (ret)
@@ -1710,7 +1710,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
 	if (IS_ERR(fb_info->dev)) {
 		/* Not fatal */
-		printk(KERN_WARNING "Unable to create device for framebuffer %d; errno = %ld\n", i, PTR_ERR(fb_info->dev));
+		no_printk(KERN_WARNING "Unable to create device for framebuffer %d; errno = %ld\n", i, PTR_ERR(fb_info->dev));
 		fb_info->dev = NULL;
 	} else
 		fb_init_device(fb_info);
@@ -1958,14 +1958,14 @@ fbmem_init(void)
 
 	ret = register_chrdev(FB_MAJOR, "fb", &fb_fops);
 	if (ret) {
-		printk("unable to get major %d for fb devs\n", FB_MAJOR);
+		no_printk("unable to get major %d for fb devs\n", FB_MAJOR);
 		goto err_chrdev;
 	}
 
 	fb_class = class_create(THIS_MODULE, "graphics");
 	if (IS_ERR(fb_class)) {
 		ret = PTR_ERR(fb_class);
-		pr_warn("Unable to create fb class; errno = %d\n", ret);
+		pr_debug("Unable to create fb class; errno = %d\n", ret);
 		fb_class = NULL;
 		goto err_class;
 	}

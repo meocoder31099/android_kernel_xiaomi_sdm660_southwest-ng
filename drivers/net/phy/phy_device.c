@@ -662,13 +662,13 @@ int phy_device_register(struct phy_device *phydev)
 	/* Run all of the fixups for this PHY */
 	err = phy_scan_fixups(phydev);
 	if (err) {
-		pr_err("PHY %d failed to initialize\n", phydev->mdio.addr);
+		pr_debug("PHY %d failed to initialize\n", phydev->mdio.addr);
 		goto out;
 	}
 
 	err = device_add(&phydev->mdio.dev);
 	if (err) {
-		pr_err("PHY %d failed to add\n", phydev->mdio.addr);
+		pr_debug("PHY %d failed to add\n", phydev->mdio.addr);
 		goto out;
 	}
 
@@ -808,7 +808,7 @@ struct phy_device *phy_connect(struct net_device *dev, const char *bus_id,
 	 */
 	d = bus_find_device_by_name(&mdio_bus_type, NULL, bus_id);
 	if (!d) {
-		pr_err("PHY %s not found\n", bus_id);
+		pr_debug("PHY %s not found\n", bus_id);
 		return ERR_PTR(-ENODEV);
 	}
 	phydev = to_phy_device(d);
@@ -934,13 +934,13 @@ void phy_attached_print(struct phy_device *phydev, const char *fmt, ...)
 
 
 	if (!fmt) {
-		dev_info(&phydev->mdio.dev, ATTACHED_FMT "\n",
+		dev_dbg(&phydev->mdio.dev, ATTACHED_FMT "\n",
 			 drv_name, phydev_name(phydev),
 			 irq_str);
 	} else {
 		va_list ap;
 
-		dev_info(&phydev->mdio.dev, ATTACHED_FMT,
+		dev_dbg(&phydev->mdio.dev, ATTACHED_FMT,
 			 drv_name, phydev_name(phydev),
 			 irq_str);
 
@@ -981,7 +981,7 @@ int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
 	 * unload later on.
 	 */
 	if (ndev_owner != bus->owner && !try_module_get(bus->owner)) {
-		dev_err(&dev->dev, "failed to get the bus module\n");
+		dev_dbg(&dev->dev, "failed to get the bus module\n");
 		return -EIO;
 	}
 
@@ -1000,7 +1000,7 @@ int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
 	}
 
 	if (!try_module_get(d->driver->owner)) {
-		dev_err(&dev->dev, "failed to get the device driver module\n");
+		dev_dbg(&dev->dev, "failed to get the device driver module\n");
 		err = -EIO;
 		goto error_put_device;
 	}
@@ -1015,7 +1015,7 @@ int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
 	}
 
 	if (phydev->attached_dev) {
-		dev_err(&dev->dev, "PHY already attached\n");
+		dev_dbg(&dev->dev, "PHY already attached\n");
 		err = -EBUSY;
 		goto error;
 	}
@@ -1041,7 +1041,7 @@ int phy_attach_direct(struct net_device *dev, struct phy_device *phydev,
 					       &phydev->mdio.dev.kobj,
 					       "phydev");
 		if (err) {
-			dev_err(&dev->dev, "could not add device link to %s err %d\n",
+			dev_dbg(&dev->dev, "could not add device link to %s err %d\n",
 				kobject_name(&phydev->mdio.dev.kobj),
 				err);
 			/* non-fatal - some net drivers can use one netdevice
@@ -1117,7 +1117,7 @@ struct phy_device *phy_attach(struct net_device *dev, const char *bus_id,
 	 */
 	d = bus_find_device_by_name(bus, NULL, bus_id);
 	if (!d) {
-		pr_err("PHY %s not found\n", bus_id);
+		pr_debug("PHY %s not found\n", bus_id);
 		return ERR_PTR(-ENODEV);
 	}
 	phydev = to_phy_device(d);
@@ -1954,7 +1954,7 @@ int phy_driver_register(struct phy_driver *new_driver, struct module *owner)
 
 	retval = driver_register(&new_driver->mdiodrv.driver);
 	if (retval) {
-		pr_err("%s: Error %d in registering driver\n",
+		pr_debug("%s: Error %d in registering driver\n",
 		       new_driver->name, retval);
 
 		return retval;

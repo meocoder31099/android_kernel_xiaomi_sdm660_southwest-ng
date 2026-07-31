@@ -295,7 +295,7 @@ static int msm_jpegdma_update_hw_config(struct jpegdma_ctx *ctx)
 		ret = msm_jpegdma_hw_set_config(ctx->jdma_device,
 			&size, &ctx->plane_config[idx]);
 		if (ret < 0)
-			dev_err(ctx->jdma_device->dev, "Can not get hw cfg\n");
+			dev_dbg(ctx->jdma_device->dev, "Can not get hw cfg\n");
 		else
 			ctx->pending_config = 1;
 	}
@@ -367,13 +367,13 @@ static int msm_jpegdma_start_streaming(struct vb2_queue *q, unsigned int count)
 
 	ret = msm_jpegdma_hw_get(ctx->jdma_device);
 	if (ret < 0) {
-		dev_err(ctx->jdma_device->dev, "Fail to get dma hw\n");
+		dev_dbg(ctx->jdma_device->dev, "Fail to get dma hw\n");
 		return ret;
 	}
 	if (!atomic_read(&ctx->active)) {
 		ret =  msm_jpegdma_update_hw_config(ctx);
 		if (ret < 0) {
-			dev_err(ctx->jdma_device->dev, "Fail to configure hw\n");
+			dev_dbg(ctx->jdma_device->dev, "Fail to configure hw\n");
 			return ret;
 		}
 		atomic_set(&ctx->active, 1);
@@ -397,7 +397,7 @@ static void msm_jpegdma_stop_streaming(struct vb2_queue *q)
 	time = wait_for_completion_timeout(&ctx->completion,
 		msecs_to_jiffies(MSM_JPEGDMA_STREAM_OFF_TIMEOUT_MS));
 	if (!time) {
-		dev_err(ctx->jdma_device->dev, "Ctx wait timeout\n");
+		dev_dbg(ctx->jdma_device->dev, "Ctx wait timeout\n");
 		ret = -ETIME;
 	}
 
@@ -435,14 +435,14 @@ static void *msm_jpegdma_get_userptr(struct device *alloc_ctx,
 	if (!access_ok(VERIFY_READ, up_buff,
 		sizeof(struct msm_jpeg_dma_buff)) ||
 		get_user(kp_buff.fd, &up_buff->fd)) {
-		dev_err(dma->dev, "Error getting user data\n");
+		dev_dbg(dma->dev, "Error getting user data\n");
 		return ERR_PTR(-ENOMEM);
 	}
 
 	if (!access_ok(VERIFY_WRITE, up_buff,
 		sizeof(struct msm_jpeg_dma_buff)) ||
 		put_user(kp_buff.fd, &up_buff->fd)) {
-		dev_err(dma->dev, "Error putting user data\n");
+		dev_dbg(dma->dev, "Error putting user data\n");
 		return ERR_PTR(-ENOMEM);
 	}
 
@@ -502,7 +502,7 @@ static int msm_jpegdma_queue_init(void *priv, struct vb2_queue *src_vq,
 
 	ret = vb2_queue_init(src_vq);
 	if (ret) {
-		dev_err(ctx->jdma_device->dev, "Can not init src queue\n");
+		dev_dbg(ctx->jdma_device->dev, "Can not init src queue\n");
 		return ret;
 	}
 
@@ -516,7 +516,7 @@ static int msm_jpegdma_queue_init(void *priv, struct vb2_queue *src_vq,
 
 	ret = vb2_queue_init(dst_vq);
 	if (ret) {
-		dev_err(ctx->jdma_device->dev, "Can not init dst queue\n");
+		dev_dbg(ctx->jdma_device->dev, "Can not init dst queue\n");
 		return ret;
 	}
 
@@ -560,7 +560,7 @@ static int msm_jpegdma_open(struct file *file)
 	ret = cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_JPEG,
 			CAM_AHB_SVS_VOTE);
 	if (ret < 0) {
-		pr_err("%s: failed to vote for AHB\n", __func__);
+		pr_debug("%s: failed to vote for AHB\n", __func__);
 		goto ahb_vote_fail;
 	}
 	init_completion(&ctx->completion);
@@ -599,7 +599,7 @@ static int msm_jpegdma_release(struct file *file)
 
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_JPEG,
 		CAM_AHB_SUSPEND_VOTE) < 0)
-		pr_err("%s: failed to remove vote for AHB\n", __func__);
+		pr_debug("%s: failed to remove vote for AHB\n", __func__);
 
 	return 0;
 }
@@ -846,7 +846,7 @@ static int msm_jpegdma_qbuf(struct file *file, void *fh,
 		sizeof(struct msm_jpeg_dma_buff)) ||
 		get_user(kp_buff.fd, &up_buff->fd) ||
 		get_user(kp_buff.offset, &up_buff->offset)) {
-		dev_err(ctx->jdma_device->dev, "Error getting user data\n");
+		dev_dbg(ctx->jdma_device->dev, "Error getting user data\n");
 		mutex_unlock(&ctx->lock);
 		return -EFAULT;
 	}
@@ -855,7 +855,7 @@ static int msm_jpegdma_qbuf(struct file *file, void *fh,
 		sizeof(struct msm_jpeg_dma_buff)) ||
 		put_user(kp_buff.fd, &up_buff->fd) ||
 		put_user(kp_buff.offset, &up_buff->offset)) {
-		dev_err(ctx->jdma_device->dev, "Error putting user data\n");
+		dev_dbg(ctx->jdma_device->dev, "Error putting user data\n");
 		mutex_unlock(&ctx->lock);
 		return -EFAULT;
 	}
@@ -878,7 +878,7 @@ static int msm_jpegdma_qbuf(struct file *file, void *fh,
 
 	ret = v4l2_m2m_qbuf(file, ctx->m2m_ctx, buf);
 	if (ret < 0)
-		dev_err(ctx->jdma_device->dev, "QBuf fail\n");
+		dev_dbg(ctx->jdma_device->dev, "QBuf fail\n");
 	mutex_unlock(&ctx->lock);
 	return ret;
 }
@@ -920,7 +920,7 @@ static int msm_jpegdma_streamon(struct file *file,
 	}
 	ret = v4l2_m2m_streamon(file, ctx->m2m_ctx, buf_type);
 	if (ret < 0)
-		dev_err(ctx->jdma_device->dev, "Stream on fail\n");
+		dev_dbg(ctx->jdma_device->dev, "Stream on fail\n");
 	mutex_unlock(&ctx->lock);
 	return ret;
 }
@@ -940,7 +940,7 @@ static int msm_jpegdma_streamoff(struct file *file,
 	mutex_lock(&ctx->lock);
 	ret = v4l2_m2m_streamoff(file, ctx->m2m_ctx, buf_type);
 	if (ret < 0)
-		dev_err(ctx->jdma_device->dev, "Stream off fails\n");
+		dev_dbg(ctx->jdma_device->dev, "Stream off fails\n");
 	mutex_unlock(&ctx->lock);
 	return ret;
 }
@@ -1195,7 +1195,7 @@ static void msm_jpegdma_device_run(void *priv)
 	dst_buf = v4l2_m2m_next_dst_buf(ctx->m2m_ctx);
 	src_buf = v4l2_m2m_next_src_buf(ctx->m2m_ctx);
 	if (src_buf == NULL || dst_buf == NULL) {
-		dev_err(ctx->jdma_device->dev, "Error, buffer list empty\n");
+		dev_dbg(ctx->jdma_device->dev, "Error, buffer list empty\n");
 		return;
 	}
 
@@ -1262,7 +1262,7 @@ void msm_jpegdma_isr_processing_done(struct msm_jpegdma_device *dma)
 			src_buf = v4l2_m2m_src_buf_remove(ctx->m2m_ctx);
 			dst_buf = v4l2_m2m_dst_buf_remove(ctx->m2m_ctx);
 			if (src_buf == NULL || dst_buf == NULL) {
-				dev_err(ctx->jdma_device->dev, "Error, buffer list empty\n");
+				dev_dbg(ctx->jdma_device->dev, "Error, buffer list empty\n");
 				mutex_unlock(&ctx->lock);
 				mutex_unlock(&dma->lock);
 				return;
@@ -1278,7 +1278,7 @@ void msm_jpegdma_isr_processing_done(struct msm_jpegdma_device *dma)
 			dst_buf = v4l2_m2m_next_dst_buf(ctx->m2m_ctx);
 			src_buf = v4l2_m2m_next_src_buf(ctx->m2m_ctx);
 			if (src_buf == NULL || dst_buf == NULL) {
-				dev_err(ctx->jdma_device->dev, "Error, buffer list empty\n");
+				dev_dbg(ctx->jdma_device->dev, "Error, buffer list empty\n");
 				mutex_unlock(&ctx->lock);
 				mutex_unlock(&dma->lock);
 				return;
@@ -1369,7 +1369,7 @@ static int jpegdma_probe(struct platform_device *pdev)
 		jpegdma->bus_client = CAM_BUS_CLIENT_JPEG_DMA;
 		break;
 	default:
-		pr_err("%s: invalid cell id :%d\n",
+		pr_debug("%s: invalid cell id :%d\n",
 			__func__, pdev->id);
 		goto error_reg_bus;
 	}
@@ -1378,7 +1378,7 @@ static int jpegdma_probe(struct platform_device *pdev)
 	ret = msm_camera_register_bus_client(pdev,
 			jpegdma->bus_client);
 	if (ret < 0) {
-		pr_err("Fail to register bus client\n");
+		pr_debug("Fail to register bus client\n");
 		ret = -EINVAL;
 		goto error_reg_bus;
 	}
@@ -1390,7 +1390,7 @@ static int jpegdma_probe(struct platform_device *pdev)
 	/* mem2mem device */
 	jpegdma->m2m_dev = v4l2_m2m_init(&msm_jpegdma_m2m_ops);
 	if (IS_ERR(jpegdma->m2m_dev)) {
-		dev_err(&pdev->dev, "Failed to init mem2mem device\n");
+		dev_dbg(&pdev->dev, "Failed to init mem2mem device\n");
 		ret = PTR_ERR(jpegdma->m2m_dev);
 		goto error_m2m_init;
 	}
@@ -1398,7 +1398,7 @@ static int jpegdma_probe(struct platform_device *pdev)
 	/* v4l2 device */
 	ret = v4l2_device_register(&pdev->dev, &jpegdma->v4l2_dev);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Failed to register v4l2 device\n");
+		dev_dbg(&pdev->dev, "Failed to register v4l2 device\n");
 		goto error_v4l2_register;
 	}
 
@@ -1414,7 +1414,7 @@ static int jpegdma_probe(struct platform_device *pdev)
 
 	ret = video_register_device(&jpegdma->video, VFL_TYPE_GRABBER, -1);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Failed to register video device\n");
+		dev_dbg(&pdev->dev, "Failed to register video device\n");
 		goto error_video_register;
 	}
 
@@ -1462,7 +1462,7 @@ static int jpegdma_device_remove(struct platform_device *pdev)
 
 	dma = platform_get_drvdata(pdev);
 	if (dma == NULL) {
-		dev_err(&pdev->dev, "Can not get jpeg dma drvdata\n");
+		dev_dbg(&pdev->dev, "Can not get jpeg dma drvdata\n");
 		return 0;
 	}
 	video_unregister_device(&dma->video);

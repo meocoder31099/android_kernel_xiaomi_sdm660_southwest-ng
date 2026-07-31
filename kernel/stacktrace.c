@@ -26,7 +26,7 @@ void stack_trace_print(unsigned long *entries, unsigned int nr_entries,
 		return;
 
 	for (i = 0; i < nr_entries; i++)
-		printk("%*c%pS\n", 1 + spaces, ' ', (void *)entries[i]);
+		no_printk("%*c%pS\n", 1 + spaces, ' ', (void *)entries[i]);
 }
 EXPORT_SYMBOL_GPL(stack_trace_print);
 

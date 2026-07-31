@@ -502,7 +502,7 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
 	 * we can be.
 	 */
 	if (q->blk_trace) {
-		pr_warn("Concurrent blktraces are not allowed on %s\n",
+		pr_debug("Concurrent blktraces are not allowed on %s\n",
 			buts->name);
 		return -EBUSY;
 	}
@@ -542,7 +542,7 @@ static int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
 	 * files or directories.
 	 */
 	if (IS_ERR_OR_NULL(dir)) {
-		pr_warn("debugfs_dir not present for %s so skipping\n",
+		pr_debug("debugfs_dir not present for %s so skipping\n",
 			buts->name);
 		ret = -ENOENT;
 		goto err;
@@ -1634,12 +1634,12 @@ static struct trace_event trace_blk_event = {
 static int __init init_blk_tracer(void)
 {
 	if (!register_trace_event(&trace_blk_event)) {
-		pr_warn("Warning: could not register block events\n");
+		pr_debug("Warning: could not register block events\n");
 		return 1;
 	}
 
 	if (register_tracer(&blk_tracer) != 0) {
-		pr_warn("Warning: could not register the block tracer\n");
+		pr_debug("Warning: could not register the block tracer\n");
 		unregister_trace_event(&trace_blk_event);
 		return 1;
 	}

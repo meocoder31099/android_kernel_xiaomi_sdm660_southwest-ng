@@ -197,14 +197,14 @@ static int cpu_isolate_set_cur_state(struct thermal_cooling_device *cdev,
 		if (cpumask_test_and_clear_cpu(cpu, &cpus_pending_online)) {
 			cpu_dev = get_cpu_device(cpu);
 			if (!cpu_dev) {
-				pr_err("CPU:%d cpu dev error\n", cpu);
+				pr_debug("CPU:%d cpu dev error\n", cpu);
 				mutex_unlock(&cpu_isolate_lock);
 				return ret;
 			}
 			mutex_unlock(&cpu_isolate_lock);
 			ret = device_online(cpu_dev);
 			if (ret)
-				pr_err("CPU:%d online error:%d\n", cpu, ret);
+				pr_debug("CPU:%d online error:%d\n", cpu, ret);
 			return ret;
 		} else if (cpumask_test_and_clear_cpu(cpu,
 			&cpus_isolated_by_thermal)) {
@@ -283,7 +283,7 @@ static void cpu_isolate_register_cdev(struct work_struct *work)
 					&cpu_isolate_cooling_ops);
 	if (IS_ERR(cpu_isolate_cdev->cdev)) {
 		ret = PTR_ERR(cpu_isolate_cdev->cdev);
-		pr_err("Cooling register failed for %s, ret:%d\n",
+		pr_debug("Cooling register failed for %s, ret:%d\n",
 			cdev_name, ret);
 		cpu_isolate_cdev->cdev = NULL;
 		return;
@@ -320,7 +320,7 @@ static int cpu_isolate_probe(struct platform_device *pdev)
 		}
 
 		if (cpu_isolate_cdev->cpu_id == -1) {
-			dev_err(&pdev->dev, "Invalid CPU phandle\n");
+			dev_dbg(&pdev->dev, "Invalid CPU phandle\n");
 			continue;
 		}
 

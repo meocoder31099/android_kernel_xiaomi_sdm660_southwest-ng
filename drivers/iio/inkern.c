@@ -115,7 +115,7 @@ static int __of_iio_simple_xlate(struct iio_dev *indio_dev,
 		return 0;
 
 	if (iiospec->args[0] >= indio_dev->num_channels) {
-		dev_err(&indio_dev->dev, "invalid channel index %u\n",
+		dev_dbg(&indio_dev->dev, "invalid channel index %u\n",
 			iiospec->args[0]);
 		return -EINVAL;
 	}
@@ -207,7 +207,7 @@ static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
 		if (!IS_ERR(chan) || PTR_ERR(chan) == -EPROBE_DEFER)
 			break;
 		else if (name && index >= 0) {
-			pr_err("ERROR: could not get IIO channel %pOF:%s(%i)\n",
+			pr_debug("ERROR: could not get IIO channel %pOF:%s(%i)\n",
 				np, name ? name : "", index);
 			return NULL;
 		}

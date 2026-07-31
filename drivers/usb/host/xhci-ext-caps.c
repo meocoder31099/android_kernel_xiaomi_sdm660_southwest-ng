@@ -38,7 +38,7 @@ static int xhci_create_intel_xhci_sw_pdev(struct xhci_hcd *xhci, u32 cap_offset)
 
 	ret = platform_device_add_resources(pdev, &res, 1);
 	if (ret) {
-		dev_err(dev, "couldn't add resources to intel_xhci_usb_sw pdev\n");
+		dev_dbg(dev, "couldn't add resources to intel_xhci_usb_sw pdev\n");
 		platform_device_put(pdev);
 		return ret;
 	}
@@ -47,14 +47,14 @@ static int xhci_create_intel_xhci_sw_pdev(struct xhci_hcd *xhci, u32 cap_offset)
 
 	ret = platform_device_add(pdev);
 	if (ret) {
-		dev_err(dev, "couldn't register intel_xhci_usb_sw pdev\n");
+		dev_dbg(dev, "couldn't register intel_xhci_usb_sw pdev\n");
 		platform_device_put(pdev);
 		return ret;
 	}
 
 	ret = devm_add_action_or_reset(dev, xhci_intel_unregister_pdev, pdev);
 	if (ret) {
-		dev_err(dev, "couldn't add unregister action for intel_xhci_usb_sw pdev\n");
+		dev_dbg(dev, "couldn't add unregister action for intel_xhci_usb_sw pdev\n");
 		return ret;
 	}
 

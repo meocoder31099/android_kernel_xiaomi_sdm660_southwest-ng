@@ -194,7 +194,7 @@ int usb_hcd_pci_probe(struct pci_dev *dev, const struct pci_device_id *id)
 	 */
 	if ((driver->flags & HCD_MASK) < HCD_USB3) {
 		if (!dev->irq) {
-			dev_err(&dev->dev,
+			dev_dbg(&dev->dev,
 			"Found HC with no IRQ. Check BIOS/PCI %s setup!\n",
 				pci_name(dev));
 			retval = -ENODEV;
@@ -287,7 +287,7 @@ put_hcd:
 	usb_put_hcd(hcd);
 disable_pci:
 	pci_disable_device(dev);
-	dev_err(&dev->dev, "init %s fail, %d\n", pci_name(dev), retval);
+	dev_dbg(&dev->dev, "init %s fail, %d\n", pci_name(dev), retval);
 	return retval;
 }
 EXPORT_SYMBOL_GPL(usb_hcd_pci_probe);
@@ -397,13 +397,13 @@ static int check_root_hub_suspended(struct device *dev)
 	struct usb_hcd		*hcd = pci_get_drvdata(pci_dev);
 
 	if (HCD_RH_RUNNING(hcd)) {
-		dev_warn(dev, "Root hub is not suspended\n");
+		dev_dbg(dev, "Root hub is not suspended\n");
 		return -EBUSY;
 	}
 	if (hcd->shared_hcd) {
 		hcd = hcd->shared_hcd;
 		if (HCD_RH_RUNNING(hcd)) {
-			dev_warn(dev, "Secondary root hub is not suspended\n");
+			dev_dbg(dev, "Secondary root hub is not suspended\n");
 			return -EBUSY;
 		}
 	}
@@ -480,7 +480,7 @@ static int resume_common(struct device *dev, int event)
 
 	retval = pci_enable_device(pci_dev);
 	if (retval < 0) {
-		dev_err(dev, "can't re-enable after resume, %d!\n", retval);
+		dev_dbg(dev, "can't re-enable after resume, %d!\n", retval);
 		return retval;
 	}
 
@@ -500,7 +500,7 @@ static int resume_common(struct device *dev, int event)
 		retval = hcd->driver->pci_resume(hcd,
 				event == PM_EVENT_RESTORE);
 		if (retval) {
-			dev_err(dev, "PCI post-resume error %d!\n", retval);
+			dev_dbg(dev, "PCI post-resume error %d!\n", retval);
 			usb_hc_died(hcd);
 		}
 	}

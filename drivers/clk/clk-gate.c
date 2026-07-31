@@ -133,7 +133,7 @@ struct clk_hw *clk_hw_register_gate(struct device *dev, const char *name,
 
 	if (clk_gate_flags & CLK_GATE_HIWORD_MASK) {
 		if (bit_idx > 15) {
-			pr_err("gate bit exceeds LOWORD field\n");
+			pr_debug("gate bit exceeds LOWORD field\n");
 			return ERR_PTR(-EINVAL);
 		}
 	}

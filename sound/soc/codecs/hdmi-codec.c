@@ -416,7 +416,7 @@ static int hdmi_codec_new_stream(struct snd_pcm_substream *substream,
 	if (!hcp->current_stream) {
 		hcp->current_stream = substream;
 	} else if (hcp->current_stream != substream) {
-		dev_err(dai->dev, "Only one simultaneous stream supported!\n");
+		dev_dbg(dai->dev, "Only one simultaneous stream supported!\n");
 		ret = -EINVAL;
 	}
 	mutex_unlock(&hcp->current_stream_lock);
@@ -508,7 +508,7 @@ static int hdmi_codec_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_pcm_create_iec958_consumer_hw_params(params, hp.iec.status,
 						       sizeof(hp.iec.status));
 	if (ret < 0) {
-		dev_err(dai->dev, "Creating IEC958 channel status failed %d\n",
+		dev_dbg(dai->dev, "Creating IEC958 channel status failed %d\n",
 			ret);
 		return ret;
 	}
@@ -526,7 +526,7 @@ static int hdmi_codec_hw_params(struct snd_pcm_substream *substream,
 	/* Select a channel allocation that matches with ELD and pcm channels */
 	idx = hdmi_codec_get_ch_alloc_table_idx(hcp, hp.cea.channels);
 	if (idx < 0) {
-		dev_err(dai->dev, "Not able to map channels to speakers (%d)\n",
+		dev_dbg(dai->dev, "Not able to map channels to speakers (%d)\n",
 			idx);
 		hcp->chmap_idx = HDMI_CODEC_CHMAP_IDX_UNKNOWN;
 		return idx;
@@ -605,7 +605,7 @@ static int hdmi_codec_set_fmt(struct snd_soc_dai *dai,
 		cf.fmt = HDMI_AC97;
 		break;
 	default:
-		dev_err(dai->dev, "Invalid DAI interface format\n");
+		dev_dbg(dai->dev, "Invalid DAI interface format\n");
 		return -EINVAL;
 	}
 
@@ -778,14 +778,14 @@ static int hdmi_codec_probe(struct platform_device *pdev)
 	dev_dbg(dev, "%s()\n", __func__);
 
 	if (!hcd) {
-		dev_err(dev, "%s: No plalform data\n", __func__);
+		dev_dbg(dev, "%s: No plalform data\n", __func__);
 		return -EINVAL;
 	}
 
 	dai_count = hcd->i2s + hcd->spdif;
 	if (dai_count < 1 || !hcd->ops || !hcd->ops->hw_params ||
 	    !hcd->ops->audio_shutdown) {
-		dev_err(dev, "%s: Invalid parameters\n", __func__);
+		dev_dbg(dev, "%s: Invalid parameters\n", __func__);
 		return -EINVAL;
 	}
 
@@ -818,7 +818,7 @@ static int hdmi_codec_probe(struct platform_device *pdev)
 	ret = devm_snd_soc_register_component(dev, &hdmi_driver, hcp->daidrv,
 				     dai_count);
 	if (ret) {
-		dev_err(dev, "%s: snd_soc_register_component() failed (%d)\n",
+		dev_dbg(dev, "%s: snd_soc_register_component() failed (%d)\n",
 			__func__, ret);
 		return ret;
 	}

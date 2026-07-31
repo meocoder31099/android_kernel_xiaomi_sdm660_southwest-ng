@@ -92,7 +92,7 @@ static int __tsens2xxx_hw_init(struct tsens_device *tmdev)
 	srot_addr = TSENS_CTRL_ADDR(tmdev->tsens_srot_addr + 0x4);
 	srot_val = readl_relaxed(srot_addr);
 	if (!(srot_val & TSENS_EN)) {
-		pr_err("TSENS device is not enabled\n");
+		pr_debug("TSENS device is not enabled\n");
 		return -ENODEV;
 	}
 
@@ -160,11 +160,11 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 	if (!((code & TSENS_TM_TRDY_FIRST_ROUND_COMPLETE) >>
 			TSENS_TM_TRDY_FIRST_ROUND_COMPLETE_SHIFT)) {
 		if (atomic_read(&in_tsens_reinit)) {
-			pr_err("%s: tsens re-init is in progress\n", __func__);
+			pr_debug("%s: tsens re-init is in progress\n", __func__);
 			return -EAGAIN;
 		}
 
-		pr_err("%s: tsens device first round not complete0x%x\n",
+		pr_debug("%s: tsens device first round not complete0x%x\n",
 			__func__, code);
 
 		/* Wait for 2.5 ms for tsens controller to recover */
@@ -187,7 +187,7 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 			int scm_cnt = 0, reg_write_cnt = 0;
 
 			if (atomic_read(&in_tsens_reinit)) {
-				pr_err("%s: tsens re-init is in progress\n",
+				pr_debug("%s: tsens re-init is in progress\n",
 					__func__);
 				return -EAGAIN;
 			}
@@ -206,7 +206,7 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 				 */
 				if (reg_write_cnt >= 100) {
 					msleep(100);
-					pr_err(
+					pr_debug(
 					"%s: Tsens write is failed. cnt:%d\n",
 						__func__, reg_write_cnt);
 					BUG();
@@ -233,14 +233,14 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 						"return from scm call\n");
 				if (ret) {
 					msleep(100);
-					pr_err("%s: scm call failed %d\n",
+					pr_debug("%s: scm call failed %d\n",
 						__func__, ret);
 					BUG();
 				}
 				tsens_ret = desc.ret[0];
 				if (tsens_ret) {
 					msleep(100);
-					pr_err("%s: scm call failed, ret:%d\n",
+					pr_debug("%s: scm call failed, ret:%d\n",
 						__func__, tsens_ret);
 					BUG();
 				}
@@ -251,7 +251,7 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 						&tsens_device_list, list) {
 					rc = __tsens2xxx_hw_init(tmdev_itr);
 					if (rc) {
-						pr_err(
+						pr_debug(
 						"%s: TSENS hw_init error\n",
 							__func__);
 						break;
@@ -263,7 +263,7 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 
 				if (scm_cnt >= 100) {
 					msleep(100);
-					pr_err(
+					pr_debug(
 					"%s: Tsens is not up after %d scm\n",
 						__func__, scm_cnt);
 					BUG();
@@ -284,7 +284,7 @@ static int tsens2xxx_get_temp(struct tsens_sensor *sensor, int *temp)
 			}
 
 		} else {
-			pr_err("%s: tsens controller got reset\n", __func__);
+			pr_debug("%s: tsens controller got reset\n", __func__);
 			BUG();
 		}
 		return -EAGAIN;
@@ -356,7 +356,7 @@ int tsens_2xxx_get_min_temp(struct tsens_sensor *sensor, int *temp)
 	code = readl_relaxed_no_log(trdy);
 	if (!((code & TSENS_TM_TRDY_FIRST_ROUND_COMPLETE) >>
 			TSENS_TM_TRDY_FIRST_ROUND_COMPLETE_SHIFT)) {
-		pr_err("tsens device first round not complete0x%x, ctr is %d\n",
+		pr_debug("tsens device first round not complete0x%x, ctr is %d\n",
 			code, tmdev->trdy_fail_ctr);
 		tmdev->trdy_fail_ctr++;
 		if (tmdev->trdy_fail_ctr >= TSENS_MAX_READ_FAIL) {
@@ -534,7 +534,7 @@ static int tsens2xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_HI,
 				THERMAL_DEVICE_ENABLED);
 		if (rc) {
-			pr_err("trip high enable error :%d\n", rc);
+			pr_debug("trip high enable error :%d\n", rc);
 			goto fail;
 		}
 	} else {
@@ -542,7 +542,7 @@ static int tsens2xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_HI,
 				THERMAL_DEVICE_DISABLED);
 		if (rc) {
-			pr_err("trip high disable error :%d\n", rc);
+			pr_debug("trip high disable error :%d\n", rc);
 			goto fail;
 		}
 	}
@@ -552,7 +552,7 @@ static int tsens2xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_LOW,
 				THERMAL_DEVICE_ENABLED);
 		if (rc) {
-			pr_err("trip low enable activation error :%d\n", rc);
+			pr_debug("trip low enable activation error :%d\n", rc);
 			goto fail;
 		}
 	} else {
@@ -560,7 +560,7 @@ static int tsens2xxx_set_trip_temp(struct tsens_sensor *tm_sensor,
 				THERMAL_TRIP_CONFIGURABLE_LOW,
 				THERMAL_DEVICE_DISABLED);
 		if (rc) {
-			pr_err("trip low disable error :%d\n", rc);
+			pr_debug("trip low disable error :%d\n", rc);
 			goto fail;
 		}
 	}
@@ -606,7 +606,7 @@ static irqreturn_t tsens_tm_critical_irq_thread(int irq, void *data)
 				(tm->tsens_tm_addr)));
 			wd_log = readl_relaxed(wd_log_addr);
 			if (wd_log >= TSENS_DEBUG_WDOG_TRIGGER_COUNT) {
-				pr_err("Watchdog count:%d\n", wd_log);
+				pr_debug("Watchdog count:%d\n", wd_log);
 				if (tm->ops->dbg)
 					tm->ops->dbg(tm, 0,
 					TSENS_DBG_LOG_BUS_ID_DATA, NULL);
@@ -719,7 +719,7 @@ static irqreturn_t tsens_tm_irq_thread(int irq, void *data)
 					THERMAL_TRIP_CONFIGURABLE_HI,
 					THERMAL_DEVICE_ENABLED);
 				if (rc)
-					pr_err("high rearm failed:%d\n", rc);
+					pr_debug("high rearm failed:%d\n", rc);
 			} else {
 				upper_thr = true;
 				tm->sensor[i].thr_state.high_th_state =
@@ -751,7 +751,7 @@ static irqreturn_t tsens_tm_irq_thread(int irq, void *data)
 					THERMAL_TRIP_CONFIGURABLE_LOW,
 					THERMAL_DEVICE_ENABLED);
 				if (rc)
-					pr_err("low rearm failed:%d\n", rc);
+					pr_debug("low rearm failed:%d\n", rc);
 			} else {
 				lower_thr = true;
 				tm->sensor[i].thr_state.low_th_state =
@@ -863,7 +863,7 @@ static int tsens2xxx_register_interrupts(struct tsens_device *tmdev)
 
 		irq = platform_get_irq_byname(pdev, tsens2xxx_irqs[i].name);
 		if (irq < 0) {
-			dev_err(&pdev->dev, "failed to get irq %s\n",
+			dev_dbg(&pdev->dev, "failed to get irq %s\n",
 					tsens2xxx_irqs[i].name);
 			return irq;
 		}
@@ -875,7 +875,7 @@ static int tsens2xxx_register_interrupts(struct tsens_device *tmdev)
 				tsens2xxx_irqs[i].handler,
 				irqflags, tsens2xxx_irqs[i].name, tmdev);
 		if (rc) {
-			dev_err(&pdev->dev, "failed to get irq %s\n",
+			dev_dbg(&pdev->dev, "failed to get irq %s\n",
 					tsens2xxx_irqs[i].name);
 			return rc;
 		}

@@ -154,7 +154,7 @@ static void *vb2_vmalloc_vaddr(void *buf_priv)
 	struct vb2_vmalloc_buf *buf = buf_priv;
 
 	if (!buf->vaddr) {
-		pr_err("Address of an unallocated plane requested or cannot map user pointer\n");
+		pr_debug("Address of an unallocated plane requested or cannot map user pointer\n");
 		return NULL;
 	}
 
@@ -173,13 +173,13 @@ static int vb2_vmalloc_mmap(void *buf_priv, struct vm_area_struct *vma)
 	int ret;
 
 	if (!buf) {
-		pr_err("No memory to map\n");
+		pr_debug("No memory to map\n");
 		return -EINVAL;
 	}
 
 	ret = remap_vmalloc_range(vma, buf->vaddr, 0);
 	if (ret) {
-		pr_err("Remapping vmalloc memory, error: %d\n", ret);
+		pr_debug("Remapping vmalloc memory, error: %d\n", ret);
 		return ret;
 	}
 
@@ -296,7 +296,7 @@ static struct sg_table *vb2_vmalloc_dmabuf_ops_map(
 	sgt->nents = dma_map_sg(db_attach->dev, sgt->sgl, sgt->orig_nents,
 				dma_dir);
 	if (!sgt->nents) {
-		pr_err("failed to map scatterlist\n");
+		pr_debug("failed to map scatterlist\n");
 		mutex_unlock(lock);
 		return ERR_PTR(-EIO);
 	}

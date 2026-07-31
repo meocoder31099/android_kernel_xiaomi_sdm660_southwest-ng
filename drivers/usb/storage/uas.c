@@ -317,13 +317,13 @@ static void uas_stat_cmplt(struct urb *urb)
 
 	if (status) {
 		if (status != -ENOENT && status != -ECONNRESET && status != -ESHUTDOWN)
-			dev_err(&urb->dev->dev, "stat urb: status %d\n", status);
+			dev_dbg(&urb->dev->dev, "stat urb: status %d\n", status);
 		goto out;
 	}
 
 	idx = be16_to_cpup(&iu->tag) - 1;
 	if (idx >= MAX_CMNDS || !devinfo->cmnd[idx]) {
-		dev_err(&urb->dev->dev,
+		dev_dbg(&urb->dev->dev,
 			"stat urb: no pending cmd for uas-tag %d\n", idx + 1);
 		goto out;
 	}
@@ -442,7 +442,7 @@ out:
 static void uas_cmd_cmplt(struct urb *urb)
 {
 	if (urb->status)
-		dev_err(&urb->dev->dev, "cmd cmplt err %d\n", urb->status);
+		dev_dbg(&urb->dev->dev, "cmd cmplt err %d\n", urb->status);
 
 	usb_free_urb(urb);
 }

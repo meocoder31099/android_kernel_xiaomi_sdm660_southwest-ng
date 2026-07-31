@@ -290,7 +290,7 @@ static void irq_sysfs_add(int irq, struct irq_desc *desc)
 		 * crucial.
 		 */
 		if (kobject_add(&desc->kobj, irq_kobj_base, "%d", irq))
-			pr_warn("Failed to add kobject for irq %d\n", irq);
+			pr_debug("Failed to add kobject for irq %d\n", irq);
 	}
 }
 
@@ -521,7 +521,7 @@ int __init early_irq_init(void)
 
 	/* Let arch update nr_irqs and return the nr of preallocated irqs */
 	initcnt = arch_probe_nr_irqs();
-	printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
+	no_printk(KERN_INFO "NR_IRQS: %d, nr_irqs: %d, preallocated irqs: %d\n",
 	       NR_IRQS, nr_irqs, initcnt);
 
 	if (WARN_ON(nr_irqs > IRQ_BITMAP_BITS))
@@ -558,7 +558,7 @@ int __init early_irq_init(void)
 
 	init_irq_default_affinity();
 
-	printk(KERN_INFO "NR_IRQS: %d\n", NR_IRQS);
+	no_printk(KERN_INFO "NR_IRQS: %d\n", NR_IRQS);
 
 	desc = irq_desc;
 	count = ARRAY_SIZE(irq_desc);

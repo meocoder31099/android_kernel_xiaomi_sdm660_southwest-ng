@@ -92,7 +92,7 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 	consumer->reg = regulator_get(reg_dev, "proxy");
 	if (IS_ERR_OR_NULL(consumer->reg)) {
 		rc = PTR_ERR(consumer->reg);
-		pr_err("regulator_get() failed for %s, rc=%d\n", reg_name, rc);
+		pr_debug("regulator_get() failed for %s, rc=%d\n", reg_name, rc);
 		goto unlock;
 	}
 
@@ -100,7 +100,7 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 		rc = regulator_set_voltage(consumer->reg, consumer->min_uV,
 						consumer->max_uV);
 		if (rc) {
-			pr_err("regulator_set_voltage %s failed, rc=%d\n",
+			pr_debug("regulator_set_voltage %s failed, rc=%d\n",
 				reg_name, rc);
 			goto free_regulator;
 		}
@@ -110,7 +110,7 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 		rc = regulator_set_load(consumer->reg,
 						consumer->current_uA);
 		if (rc < 0) {
-			pr_err("regulator_set_load %s failed, rc=%d\n",
+			pr_debug("regulator_set_load %s failed, rc=%d\n",
 				reg_name, rc);
 			goto remove_voltage;
 		}
@@ -119,7 +119,7 @@ struct proxy_consumer *regulator_proxy_consumer_register(struct device *reg_dev,
 	if (consumer->enable) {
 		rc = regulator_enable(consumer->reg);
 		if (rc) {
-			pr_err("regulator_enable %s failed, rc=%d\n", reg_name,
+			pr_debug("regulator_enable %s failed, rc=%d\n", reg_name,
 				rc);
 			goto remove_current;
 		}
@@ -150,20 +150,20 @@ static int regulator_proxy_consumer_remove(struct proxy_consumer *consumer)
 	if (consumer->enable) {
 		rc = regulator_disable(consumer->reg);
 		if (rc)
-			pr_err("regulator_disable failed, rc=%d\n", rc);
+			pr_debug("regulator_disable failed, rc=%d\n", rc);
 	}
 
 	if (consumer->current_uA > 0) {
 		rc = regulator_set_load(consumer->reg, 0);
 		if (rc < 0)
-			pr_err("regulator_set_load failed, rc=%d\n",
+			pr_debug("regulator_set_load failed, rc=%d\n",
 				rc);
 	}
 
 	if (consumer->max_uV > 0 && consumer->min_uV <= consumer->max_uV) {
 		rc = regulator_set_voltage(consumer->reg, 0, INT_MAX);
 		if (rc)
-			pr_err("regulator_set_voltage failed, rc=%d\n", rc);
+			pr_debug("regulator_set_voltage failed, rc=%d\n", rc);
 	}
 
 	regulator_put(consumer->reg);
@@ -210,7 +210,7 @@ static int __init regulator_proxy_consumer_remove_all(void)
 	proxy_consumers_removed = true;
 
 	if (!list_empty(&proxy_consumer_list))
-		pr_info("removing regulator proxy consumer requests\n");
+		pr_debug("removing regulator proxy consumer requests\n");
 
 	list_for_each_entry_safe(consumer, temp, &proxy_consumer_list, list) {
 		regulator_proxy_consumer_remove(consumer);

@@ -160,7 +160,7 @@ void __iomem *devm_ioremap_resource(struct device *dev,
 	BUG_ON(!dev);
 
 	if (!res || resource_type(res) != IORESOURCE_MEM) {
-		dev_err(dev, "invalid resource\n");
+		dev_dbg(dev, "invalid resource\n");
 		return IOMEM_ERR_PTR(-EINVAL);
 	}
 
@@ -168,13 +168,13 @@ void __iomem *devm_ioremap_resource(struct device *dev,
 	name = res->name ?: dev_name(dev);
 
 	if (!devm_request_mem_region(dev, res->start, size, name)) {
-		dev_err(dev, "can't request region for resource %pR\n", res);
+		dev_dbg(dev, "can't request region for resource %pR\n", res);
 		return IOMEM_ERR_PTR(-EBUSY);
 	}
 
 	dest_ptr = devm_ioremap(dev, res->start, size);
 	if (!dest_ptr) {
-		dev_err(dev, "ioremap failed for resource %pR\n", res);
+		dev_dbg(dev, "ioremap failed for resource %pR\n", res);
 		devm_release_mem_region(dev, res->start, size);
 		dest_ptr = IOMEM_ERR_PTR(-ENOMEM);
 	}

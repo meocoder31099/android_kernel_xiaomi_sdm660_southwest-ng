@@ -100,7 +100,7 @@ struct mdss_mdp_cdm *mdss_mdp_cdm_init(struct mdss_mdp_ctl *ctl, u32 intf_type)
 	}
 
 	if (!cdm) {
-		pr_err("%s: Unable to allocate cdm\n", __func__);
+		pr_debug("%s: Unable to allocate cdm\n", __func__);
 		return ERR_PTR(-EBUSY);
 	}
 
@@ -204,7 +204,7 @@ static int mdss_mdp_cdm_cdwn_setup(struct mdss_mdp_cdm *cdm,
 			       MDSS_MDP_REG_CDM_CDWN2_COEFF_OFFSITE_H_2);
 		break;
 	default:
-		pr_err("%s invalid horz down sampling type\n", __func__);
+		pr_debug("%s invalid horz down sampling type\n", __func__);
 		return -EINVAL;
 	}
 
@@ -245,7 +245,7 @@ static int mdss_mdp_cdm_cdwn_setup(struct mdss_mdp_cdm *cdm,
 			       MDSS_MDP_REG_CDM_CDWN2_COEFF_OFFSITE_V);
 		break;
 	default:
-		pr_err("%s invalid vert down sampling type\n", __func__);
+		pr_debug("%s invalid vert down sampling type\n", __func__);
 		return -EINVAL;
 	}
 
@@ -283,7 +283,7 @@ static int mdss_mdp_cdm_out_packer_setup(struct mdss_mdp_cdm *cdm,
 		opmode |= BIT(0);
 		fmt = mdss_mdp_get_format_params(data->out_format);
 		if (!fmt) {
-			pr_err("cdm format = %d, not supported\n",
+			pr_debug("cdm format = %d, not supported\n",
 			       data->out_format);
 			return -EINVAL;
 		}
@@ -318,7 +318,7 @@ int mdss_mdp_cdm_setup(struct mdss_mdp_cdm *cdm, struct mdp_cdm_cfg *data)
 	int rc = 0;
 
 	if (!cdm || !data) {
-		pr_err("%s: invalid arguments\n", __func__);
+		pr_debug("%s: invalid arguments\n", __func__);
 		return -EINVAL;
 	}
 
@@ -327,21 +327,21 @@ int mdss_mdp_cdm_setup(struct mdss_mdp_cdm *cdm, struct mdp_cdm_cfg *data)
 	/* Setup CSC block */
 	rc = mdss_mdp_cdm_csc_setup(cdm, data);
 	if (rc) {
-		pr_err("%s: csc configuration failure\n", __func__);
+		pr_debug("%s: csc configuration failure\n", __func__);
 		goto fail;
 	}
 
 	/* Setup chroma down sampler */
 	rc = mdss_mdp_cdm_cdwn_setup(cdm, data);
 	if (rc) {
-		pr_err("%s: cdwn configuration failure\n", __func__);
+		pr_debug("%s: cdwn configuration failure\n", __func__);
 		goto fail;
 	}
 
 	/* Setup HDMI packer */
 	rc = mdss_mdp_cdm_out_packer_setup(cdm, data);
 	if (rc) {
-		pr_err("%s: out packer configuration failure\n", __func__);
+		pr_debug("%s: out packer configuration failure\n", __func__);
 		goto fail;
 	}
 
@@ -363,7 +363,7 @@ int mdss_mdp_cdm_destroy(struct mdss_mdp_cdm *cdm)
 	int rc = 0;
 
 	if (!cdm) {
-		pr_err("%s: invalid parameters\n", __func__);
+		pr_debug("%s: invalid parameters\n", __func__);
 		return -EINVAL;
 	}
 

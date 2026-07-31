@@ -208,7 +208,7 @@ static void neigh_add_timer(struct neighbour *n, unsigned long when)
 {
 	neigh_hold(n);
 	if (unlikely(mod_timer(&n->timer, when))) {
-		printk("NEIGH: BUG, double timer add, state is %x\n",
+		no_printk("NEIGH: BUG, double timer add, state is %x\n",
 		       n->nud_state);
 		dump_stack();
 	}
@@ -743,13 +743,13 @@ void neigh_destroy(struct neighbour *neigh)
 	NEIGH_CACHE_STAT_INC(neigh->tbl, destroys);
 
 	if (!neigh->dead) {
-		pr_warn("Destroying alive neighbour %pK\n", neigh);
+		pr_debug("Destroying alive neighbour %pK\n", neigh);
 		dump_stack();
 		return;
 	}
 
 	if (neigh_del_timer(neigh))
-		pr_warn("Impossible event\n");
+		pr_debug("Impossible event\n");
 
 	write_lock_bh(&neigh->lock);
 	__skb_queue_purge(&neigh->arp_queue);
@@ -1621,7 +1621,7 @@ int neigh_table_clear(int index, struct neigh_table *tbl)
 	pneigh_queue_purge(&tbl->proxy_queue, NULL);
 	neigh_ifdown(tbl, NULL);
 	if (atomic_read(&tbl->entries))
-		pr_crit("neighbour leakage\n");
+		pr_debug("neighbour leakage\n");
 
 	call_rcu(&rcu_dereference_protected(tbl->nht, 1)->rcu,
 		 neigh_hash_free_rcu);

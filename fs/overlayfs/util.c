@@ -599,7 +599,7 @@ int ovl_check_setxattr(struct dentry *dentry, struct dentry *upperdentry,
 	err = ovl_do_setxattr(upperdentry, name, value, size, 0);
 
 	if (err == -EOPNOTSUPP) {
-		pr_warn("overlayfs: cannot set %s xattr on upper\n", name);
+		pr_debug("overlayfs: cannot set %s xattr on upper\n", name);
 		ofs->noxattr = true;
 		return xerr;
 	}
@@ -762,7 +762,7 @@ out:
 	return;
 
 fail:
-	pr_err("overlayfs: cleanup index of '%pd2' failed (%i)\n", dentry, err);
+	pr_debug("overlayfs: cleanup index of '%pd2' failed (%i)\n", dentry, err);
 	goto out;
 }
 
@@ -856,7 +856,7 @@ int ovl_lock_rename_workdir(struct dentry *workdir, struct dentry *upperdir)
 err_unlock:
 	unlock_rename(workdir, upperdir);
 err:
-	pr_err("overlayfs: failed to lock workdir+upperdir\n");
+	pr_debug("overlayfs: failed to lock workdir+upperdir\n");
 	return -EIO;
 }
 

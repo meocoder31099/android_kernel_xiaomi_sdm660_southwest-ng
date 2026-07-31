@@ -211,7 +211,7 @@ struct dentry *incfs_lookup_dentry(struct dentry *parent, const char *name)
 	inode_unlock(inode);
 
 	if (IS_ERR(result))
-		pr_warn("%s err:%ld\n", __func__, PTR_ERR(result));
+		pr_debug("%s err:%ld\n", __func__, PTR_ERR(result));
 
 	return result;
 }
@@ -359,7 +359,7 @@ void incfs_free_data_file(struct data_file *df)
 
 		if (error)
 			/* Nothing can be done, just warn */
-			pr_warn("incfs: failed to write status to backing file\n");
+			pr_debug("incfs: failed to write status to backing file\n");
 	}
 
 	incfs_free_mtree(df->df_hash_tree);
@@ -742,7 +742,7 @@ static int validate_hash_tree(struct backing_file_context *bfc, struct file *f,
 			int i;
 			bool zero = true;
 
-			pr_warn("incfs: Hash mismatch lvl:%d blk:%d\n",
+			pr_debug("incfs: Hash mismatch lvl:%d blk:%d\n",
 				lvl, block_index);
 			for (i = 0; i < digest_size; i++)
 				if (stored_digest[i]) {
@@ -1163,7 +1163,7 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 
 	/* Rest of function only applies if timeouts != NULL */
 	if (!timeouts) {
-		pr_warn("incfs: timeouts unexpectedly NULL\n");
+		pr_debug("incfs: timeouts unexpectedly NULL\n");
 		return -EFSCORRUPTED;
 	}
 
@@ -1213,7 +1213,7 @@ static int wait_for_data_block(struct data_file *df, int block_index,
 			 * Somehow wait finished successfully but block still
 			 * can't be found. It's not normal.
 			 */
-			pr_warn("incfs: Wait succeeded but block not found.\n");
+			pr_debug("incfs: Wait succeeded but block not found.\n");
 			error = -ENODATA;
 		}
 	}
@@ -1663,7 +1663,7 @@ static int incfs_scan_metadata_chain(struct data_file *df)
 	while (handler->md_record_offset > 0) {
 		error = incfs_read_next_metadata_record(bfc, handler);
 		if (error) {
-			pr_warn("incfs: Error during reading incfs-metadata record. Offset: %lld Record #%d Error code: %d\n",
+			pr_debug("incfs: Error during reading incfs-metadata record. Offset: %lld Record #%d Error code: %d\n",
 				handler->md_record_offset, records_count + 1,
 				-error);
 			break;
@@ -1671,7 +1671,7 @@ static int incfs_scan_metadata_chain(struct data_file *df)
 		records_count++;
 	}
 	if (error) {
-		pr_warn("incfs: Error %d after reading %d incfs-metadata records.\n",
+		pr_debug("incfs: Error %d after reading %d incfs-metadata records.\n",
 			 -error, records_count);
 		result = error;
 	} else

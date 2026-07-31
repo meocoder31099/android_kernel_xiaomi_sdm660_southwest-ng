@@ -61,12 +61,12 @@ void adreno_drawctxt_dump(struct kgsl_device *device,
 	 * deadlock. To prevent this use spin_trylock_bh.
 	 */
 	if (!spin_trylock_bh(&drawctxt->lock)) {
-		dev_err(device->dev, "  context[%u]: could not get lock\n",
+		dev_dbg(device->dev, "  context[%u]: could not get lock\n",
 			context->id);
 		return;
 	}
 
-	dev_err(device->dev,
+	dev_dbg(device->dev,
 		"  context[%u]: queue=%u, submit=%u, start=%u, retire=%u\n",
 		context->id, queue, drawctxt->submitted_timestamp,
 		start, retire);
@@ -76,7 +76,7 @@ void adreno_drawctxt_dump(struct kgsl_device *device,
 			drawctxt->drawqueue[drawctxt->drawqueue_head];
 
 		if (test_bit(ADRENO_CONTEXT_FENCE_LOG, &context->priv)) {
-			dev_err(device->dev,
+			dev_dbg(device->dev,
 				"  possible deadlock. Context %u might be blocked for itself\n",
 				context->id);
 			goto stats;
@@ -89,7 +89,7 @@ void adreno_drawctxt_dump(struct kgsl_device *device,
 			struct kgsl_drawobj_sync *syncobj = SYNCOBJ(drawobj);
 
 			if (kgsl_drawobj_events_pending(syncobj)) {
-				dev_err(device->dev,
+				dev_dbg(device->dev,
 					"  context[%u] (ts=%u) Active sync points:\n",
 					context->id, drawobj->timestamp);
 
@@ -502,7 +502,7 @@ void adreno_drawctxt_detach(struct kgsl_context *context)
 	 * -EAGAIN error.
 	 */
 	if (ret && ret != -EAGAIN) {
-		dev_err(device->dev,
+		dev_dbg(device->dev,
 				"Wait for global ctx=%u ts=%u type=%d error=%d\n",
 				drawctxt->base.id, drawctxt->internal_timestamp,
 				drawctxt->type, ret);

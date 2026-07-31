@@ -93,7 +93,7 @@ int compute_ecdh_secret(struct crypto_kpp *tfm, const u8 public_key[64],
 		err = result.err;
 	}
 	if (err < 0) {
-		pr_err("alg: ecdh: compute shared secret failed. err %d\n",
+		pr_debug("alg: ecdh: compute shared secret failed. err %d\n",
 		       err);
 		goto free_all;
 	}

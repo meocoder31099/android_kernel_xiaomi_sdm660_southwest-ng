@@ -126,16 +126,16 @@ static int qcedev_control_clocks(struct qcedev_control *podev, bool enable)
 	case QCE_CLK_ENABLE_FIRST:
 		ret = qce_enable_clk(podev->qce);
 		if (ret) {
-			pr_err("%s Unable enable clk\n", __func__);
+			pr_debug("%s Unable enable clk\n", __func__);
 			return ret;
 		}
 		ret = msm_bus_scale_client_update_request(
 				podev->bus_scale_handle, 1);
 		if (ret) {
-			pr_err("%s Unable to set high bw\n", __func__);
+			pr_debug("%s Unable to set high bw\n", __func__);
 			ret = qce_disable_clk(podev->qce);
 			if (ret)
-				pr_err("%s Unable disable clk\n", __func__);
+				pr_debug("%s Unable disable clk\n", __func__);
 			return ret;
 		}
 		break;
@@ -143,32 +143,32 @@ static int qcedev_control_clocks(struct qcedev_control *podev, bool enable)
 		ret = msm_bus_scale_client_update_request(
 				podev->bus_scale_handle, 1);
 		if (ret) {
-			pr_err("%s Unable to set high bw\n", __func__);
+			pr_debug("%s Unable to set high bw\n", __func__);
 			return ret;
 		}
 		ret = qce_enable_clk(podev->qce);
 		if (ret) {
-			pr_err("%s Unable enable clk\n", __func__);
+			pr_debug("%s Unable enable clk\n", __func__);
 			ret = msm_bus_scale_client_update_request(
 				podev->bus_scale_handle, 0);
 			if (ret)
-				pr_err("%s Unable to set low bw\n", __func__);
+				pr_debug("%s Unable to set low bw\n", __func__);
 			return ret;
 		}
 		break;
 	case QCE_CLK_DISABLE_FIRST:
 		ret = qce_disable_clk(podev->qce);
 		if (ret) {
-			pr_err("%s Unable to disable clk\n", __func__);
+			pr_debug("%s Unable to disable clk\n", __func__);
 			return ret;
 		}
 		ret = msm_bus_scale_client_update_request(
 				podev->bus_scale_handle, 0);
 		if (ret) {
-			pr_err("%s Unable to set low bw\n", __func__);
+			pr_debug("%s Unable to set low bw\n", __func__);
 			ret = qce_enable_clk(podev->qce);
 			if (ret)
-				pr_err("%s Unable enable clk\n", __func__);
+				pr_debug("%s Unable enable clk\n", __func__);
 			return ret;
 		}
 		break;
@@ -176,16 +176,16 @@ static int qcedev_control_clocks(struct qcedev_control *podev, bool enable)
 		ret = msm_bus_scale_client_update_request(
 				podev->bus_scale_handle, 0);
 		if (ret) {
-			pr_err("%s Unable to set low bw\n", __func__);
+			pr_debug("%s Unable to set low bw\n", __func__);
 			return ret;
 		}
 		ret = qce_disable_clk(podev->qce);
 		if (ret) {
-			pr_err("%s Unable to disable clk\n", __func__);
+			pr_debug("%s Unable to disable clk\n", __func__);
 			ret = msm_bus_scale_client_update_request(
 				podev->bus_scale_handle, 1);
 			if (ret)
-				pr_err("%s Unable to set high bw\n", __func__);
+				pr_debug("%s Unable to set high bw\n", __func__);
 			return ret;
 		}
 		break;
@@ -287,7 +287,7 @@ static int qcedev_open(struct inode *inode, struct file *file)
 
 	podev = qcedev_minor_to_control(MINOR(inode->i_rdev));
 	if (podev == NULL) {
-		pr_err("%s: no such device %d\n", __func__,
+		pr_debug("%s: no such device %d\n", __func__,
 					MINOR(inode->i_rdev));
 		return -ENOENT;
 	}
@@ -312,12 +312,12 @@ static int qcedev_release(struct inode *inode, struct file *file)
 	handle =  file->private_data;
 	podev =  handle->cntl;
 	if (podev != NULL && podev->magic != QCEDEV_MAGIC) {
-		pr_err("%s: invalid handle %pK\n",
+		pr_debug("%s: invalid handle %pK\n",
 					__func__, podev);
 	}
 
 	if (qcedev_unmap_all_buffers(handle))
-		pr_err("%s: failed to unmap all ion buffers\n", __func__);
+		pr_debug("%s: failed to unmap all ion buffers\n", __func__);
 
 	kzfree(handle);
 	file->private_data = NULL;
@@ -422,7 +422,7 @@ static int start_cipher_req(struct qcedev_control *podev)
 	qcedev_areq = podev->active_command;
 	qcedev_areq->cipher_req.cookie = qcedev_areq->handle;
 	if (qcedev_areq->cipher_op_req.use_pmem == QCEDEV_USE_PMEM) {
-		pr_err("%s: Use of PMEM is not supported\n", __func__);
+		pr_debug("%s: Use of PMEM is not supported\n", __func__);
 		goto unsupported;
 	}
 	creq.pmem = NULL;
@@ -584,7 +584,7 @@ static int start_sha_req(struct qcedev_control *podev)
 		sreq.authklen = qcedev_areq->sha_op_req.authklen;
 		break;
 	default:
-		pr_err("Algorithm %d not supported, exiting\n",
+		pr_debug("Algorithm %d not supported, exiting\n",
 			qcedev_areq->sha_op_req.alg);
 		return -EINVAL;
 	}
@@ -844,7 +844,7 @@ static int qcedev_sha_update(struct qcedev_async_req *qcedev_areq,
 	uint32_t total = 0;
 
 	if (!handle->sha_ctxt.init_done) {
-		pr_err("%s Init was not called\n", __func__);
+		pr_debug("%s Init was not called\n", __func__);
 		return -EINVAL;
 	}
 
@@ -858,7 +858,7 @@ static int qcedev_sha_update(struct qcedev_async_req *qcedev_areq,
 		saved_req =
 			kmalloc(sizeof(struct qcedev_sha_op_req), GFP_KERNEL);
 		if (saved_req == NULL) {
-			pr_err("%s:Can't Allocate mem:saved_req 0x%lx\n",
+			pr_debug("%s:Can't Allocate mem:saved_req 0x%lx\n",
 						__func__, (uintptr_t)saved_req);
 			return -ENOMEM;
 		}
@@ -953,7 +953,7 @@ static int qcedev_sha_final(struct qcedev_async_req *qcedev_areq,
 	uint8_t *k_align_src = NULL;
 
 	if (!handle->sha_ctxt.init_done) {
-		pr_err("%s Init was not called\n", __func__);
+		pr_debug("%s Init was not called\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1009,7 +1009,7 @@ static int qcedev_hash_cmac(struct qcedev_async_req *qcedev_areq,
 
 	if ((qcedev_areq->sha_op_req.authklen != QCEDEV_AES_KEY_128) &&
 		(qcedev_areq->sha_op_req.authklen != QCEDEV_AES_KEY_256)) {
-		pr_err("%s: unsupported key length\n", __func__);
+		pr_debug("%s: unsupported key length\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1538,7 +1538,7 @@ static int qcedev_check_cipher_key(struct qcedev_cipher_op_req *req,
 
 		for (i = 0; i < QCEDEV_MAX_KEY_SIZE; i++) {
 			if (req->enckey[i]) {
-				pr_err("%s: Invalid key: non-zero key input\n",
+				pr_debug("%s: Invalid key: non-zero key input\n",
 								__func__);
 				goto error;
 			}
@@ -1546,14 +1546,14 @@ static int qcedev_check_cipher_key(struct qcedev_cipher_op_req *req,
 		if ((req->op != QCEDEV_OPER_ENC_NO_KEY) &&
 			(req->op != QCEDEV_OPER_DEC_NO_KEY))
 			if (!podev->platform_support.hw_key_support) {
-				pr_err("%s: Invalid op %d\n", __func__,
+				pr_debug("%s: Invalid op %d\n", __func__,
 						(uint32_t)req->op);
 				goto error;
 			}
 	} else {
 		if (req->encklen == QCEDEV_AES_KEY_192) {
 			if (!podev->ce_support.aes_key_192) {
-				pr_err("%s: AES-192 not supported\n", __func__);
+				pr_debug("%s: AES-192 not supported\n", __func__);
 				goto error;
 			}
 		} else {
@@ -1563,14 +1563,14 @@ static int qcedev_check_cipher_key(struct qcedev_cipher_op_req *req,
 			if (req->mode == QCEDEV_AES_MODE_XTS) {
 				if ((req->encklen != QCEDEV_AES_KEY_128*2) &&
 				(req->encklen != QCEDEV_AES_KEY_256*2)) {
-					pr_err("%s: unsupported key size: %d\n",
+					pr_debug("%s: unsupported key size: %d\n",
 							__func__, req->encklen);
 					goto error;
 				}
 			} else {
 				if ((req->encklen != QCEDEV_AES_KEY_128) &&
 					(req->encklen != QCEDEV_AES_KEY_256)) {
-					pr_err("%s: unsupported key size %d\n",
+					pr_debug("%s: unsupported key size %d\n",
 							__func__, req->encklen);
 					goto error;
 				}
@@ -1589,23 +1589,23 @@ static int qcedev_check_cipher_params(struct qcedev_cipher_op_req *req,
 	uint32_t i;
 
 	if (req->use_pmem) {
-		pr_err("%s: Use of PMEM is not supported\n", __func__);
+		pr_debug("%s: Use of PMEM is not supported\n", __func__);
 		goto error;
 	}
 	if ((req->entries == 0) || (req->data_len == 0) ||
 			(req->entries > QCEDEV_MAX_BUFFERS)) {
-		pr_err("%s: Invalid cipher length/entries\n", __func__);
+		pr_debug("%s: Invalid cipher length/entries\n", __func__);
 		goto error;
 	}
 	if ((req->alg >= QCEDEV_ALG_LAST) ||
 		(req->mode >= QCEDEV_AES_DES_MODE_LAST)) {
-		pr_err("%s: Invalid algorithm %d\n", __func__,
+		pr_debug("%s: Invalid algorithm %d\n", __func__,
 						(uint32_t)req->alg);
 		goto error;
 	}
 	if ((req->mode == QCEDEV_AES_MODE_XTS) &&
 				(!podev->ce_support.aes_xts)) {
-		pr_err("%s: XTS algorithm is not supported\n", __func__);
+		pr_debug("%s: XTS algorithm is not supported\n", __func__);
 		goto error;
 	}
 	if (req->alg == QCEDEV_ALG_AES) {
@@ -1616,18 +1616,18 @@ static int qcedev_check_cipher_params(struct qcedev_cipher_op_req *req,
 	/* if using a byteoffset, make sure it is CTR mode using vbuf */
 	if (req->byteoffset) {
 		if (req->mode != QCEDEV_AES_MODE_CTR) {
-			pr_err("%s: Operation on byte offset not supported\n",
+			pr_debug("%s: Operation on byte offset not supported\n",
 								 __func__);
 			goto error;
 		}
 		if (req->byteoffset >= AES_CE_BLOCK_SIZE) {
-			pr_err("%s: Invalid byte offset\n", __func__);
+			pr_debug("%s: Invalid byte offset\n", __func__);
 			goto error;
 		}
 		total = req->byteoffset;
 		for (i = 0; i < req->entries; i++) {
 			if (total > U32_MAX - req->vbuf.src[i].len) {
-				pr_err("%s:Integer overflow on total src len\n",
+				pr_debug("%s:Integer overflow on total src len\n",
 					__func__);
 				goto error;
 			}
@@ -1636,20 +1636,20 @@ static int qcedev_check_cipher_params(struct qcedev_cipher_op_req *req,
 	}
 
 	if (req->data_len < req->byteoffset) {
-		pr_err("%s: req data length %u is less than byteoffset %u\n",
+		pr_debug("%s: req data length %u is less than byteoffset %u\n",
 				__func__, req->data_len, req->byteoffset);
 		goto error;
 	}
 
 	/* Ensure IV size */
 	if (req->ivlen > QCEDEV_MAX_IV_SIZE) {
-		pr_err("%s: ivlen is not correct: %u\n", __func__, req->ivlen);
+		pr_debug("%s: ivlen is not correct: %u\n", __func__, req->ivlen);
 		goto error;
 	}
 
 	/* Ensure Key size */
 	if (req->encklen > QCEDEV_MAX_KEY_SIZE) {
-		pr_err("%s: Klen is not correct: %u\n", __func__, req->encklen);
+		pr_debug("%s: Klen is not correct: %u\n", __func__, req->encklen);
 		goto error;
 	}
 
@@ -1657,51 +1657,51 @@ static int qcedev_check_cipher_params(struct qcedev_cipher_op_req *req,
 	if (req->ivlen > 0) {
 		if ((req->mode == QCEDEV_AES_MODE_ECB) ||
 				(req->mode == QCEDEV_DES_MODE_ECB)) {
-			pr_err("%s: Expecting a zero length IV\n", __func__);
+			pr_debug("%s: Expecting a zero length IV\n", __func__);
 			goto error;
 		}
 	} else {
 		if ((req->mode != QCEDEV_AES_MODE_ECB) &&
 				(req->mode != QCEDEV_DES_MODE_ECB)) {
-			pr_err("%s: Expecting a non-zero ength IV\n", __func__);
+			pr_debug("%s: Expecting a non-zero ength IV\n", __func__);
 			goto error;
 		}
 	}
 	/* Check for sum of all dst length is equal to data_len  */
 	for (i = 0, total = 0; i < req->entries; i++) {
 		if (!req->vbuf.dst[i].vaddr && req->vbuf.dst[i].len) {
-			pr_err("%s: NULL req dst vbuf[%d] with length %d\n",
+			pr_debug("%s: NULL req dst vbuf[%d] with length %d\n",
 				__func__, i, req->vbuf.dst[i].len);
 			goto error;
 		}
 		if (req->vbuf.dst[i].len >= U32_MAX - total) {
-			pr_err("%s: Integer overflow on total req dst vbuf length\n",
+			pr_debug("%s: Integer overflow on total req dst vbuf length\n",
 				__func__);
 			goto error;
 		}
 		total += req->vbuf.dst[i].len;
 	}
 	if (total != req->data_len) {
-		pr_err("%s: Total (i=%d) dst(%d) buf size != data_len (%d)\n",
+		pr_debug("%s: Total (i=%d) dst(%d) buf size != data_len (%d)\n",
 			__func__, i, total, req->data_len);
 		goto error;
 	}
 	/* Check for sum of all src length is equal to data_len  */
 	for (i = 0, total = 0; i < req->entries; i++) {
 		if (!req->vbuf.src[i].vaddr && req->vbuf.src[i].len) {
-			pr_err("%s: NULL req src vbuf[%d] with length %d\n",
+			pr_debug("%s: NULL req src vbuf[%d] with length %d\n",
 				__func__, i, req->vbuf.src[i].len);
 			goto error;
 		}
 		if (req->vbuf.src[i].len > U32_MAX - total) {
-			pr_err("%s: Integer overflow on total req src vbuf length\n",
+			pr_debug("%s: Integer overflow on total req src vbuf length\n",
 				__func__);
 			goto error;
 		}
 		total += req->vbuf.src[i].len;
 	}
 	if (total != req->data_len) {
-		pr_err("%s: Total src(%d) buf size != data_len (%d)\n",
+		pr_debug("%s: Total src(%d) buf size != data_len (%d)\n",
 			__func__, total, req->data_len);
 		goto error;
 	}
@@ -1719,17 +1719,17 @@ static int qcedev_check_sha_params(struct qcedev_sha_op_req *req,
 
 	if ((req->alg == QCEDEV_ALG_AES_CMAC) &&
 				(!podev->ce_support.cmac)) {
-		pr_err("%s: CMAC not supported\n", __func__);
+		pr_debug("%s: CMAC not supported\n", __func__);
 		goto sha_error;
 	}
 	if ((!req->entries) || (req->entries > QCEDEV_MAX_BUFFERS)) {
-		pr_err("%s: Invalid num entries (%d)\n",
+		pr_debug("%s: Invalid num entries (%d)\n",
 						__func__, req->entries);
 		goto sha_error;
 	}
 
 	if (req->alg >= QCEDEV_ALG_SHA_ALG_LAST) {
-		pr_err("%s: Invalid algorithm (%d)\n", __func__, req->alg);
+		pr_debug("%s: Invalid algorithm (%d)\n", __func__, req->alg);
 		goto sha_error;
 	}
 	if ((req->alg == QCEDEV_ALG_SHA1_HMAC) ||
@@ -1737,11 +1737,11 @@ static int qcedev_check_sha_params(struct qcedev_sha_op_req *req,
 			(req->alg == QCEDEV_ALG_SHA384_HMAC) ||
 			(req->alg == QCEDEV_ALG_SHA512_HMAC)) {
 		if (req->authkey == NULL) {
-			pr_err("%s: Invalid authkey pointer\n", __func__);
+			pr_debug("%s: Invalid authkey pointer\n", __func__);
 			goto sha_error;
 		}
 		if (req->authklen <= 0) {
-			pr_err("%s: Invalid authkey length (%d)\n",
+			pr_debug("%s: Invalid authkey length (%d)\n",
 						__func__, req->authklen);
 			goto sha_error;
 		}
@@ -1750,7 +1750,7 @@ static int qcedev_check_sha_params(struct qcedev_sha_op_req *req,
 	if (req->alg == QCEDEV_ALG_AES_CMAC) {
 		if ((req->authklen != QCEDEV_AES_KEY_128) &&
 					(req->authklen != QCEDEV_AES_KEY_256)) {
-			pr_err("%s: unsupported key length\n", __func__);
+			pr_debug("%s: unsupported key length\n", __func__);
 			goto sha_error;
 		}
 	}
@@ -1758,7 +1758,7 @@ static int qcedev_check_sha_params(struct qcedev_sha_op_req *req,
 	/* Check for sum of all src length is equal to data_len  */
 	for (i = 0, total = 0; i < req->entries; i++) {
 		if (req->data[i].len > U32_MAX - total) {
-			pr_err("%s: Integer overflow on total req buf length\n",
+			pr_debug("%s: Integer overflow on total req buf length\n",
 				__func__);
 			goto sha_error;
 		}
@@ -1766,7 +1766,7 @@ static int qcedev_check_sha_params(struct qcedev_sha_op_req *req,
 	}
 
 	if (total != req->data_len) {
-		pr_err("%s: Total src(%d) buf size != data_len (%d)\n",
+		pr_debug("%s: Total src(%d) buf size != data_len (%d)\n",
 			__func__, total, req->data_len);
 		goto sha_error;
 	}
@@ -1792,7 +1792,7 @@ static inline long qcedev_ioctl(struct file *file,
 	podev =  handle->cntl;
 	qcedev_areq->handle = handle;
 	if (podev == NULL || podev->magic != QCEDEV_MAGIC) {
-		pr_err("%s: invalid handle %pK\n",
+		pr_debug("%s: invalid handle %pK\n",
 			__func__, podev);
 		err = -ENOENT;
 		goto exit_free_qcedev_areq;
@@ -1903,7 +1903,7 @@ static inline long qcedev_ioctl(struct file *file,
 			}
 		} else {
 			if (!handle->sha_ctxt.init_done) {
-				pr_err("%s Init was not called\n", __func__);
+				pr_debug("%s Init was not called\n", __func__);
 				mutex_unlock(&hash_access_lock);
 				err = -EINVAL;
 				goto exit_free_qcedev_areq;
@@ -1916,7 +1916,7 @@ static inline long qcedev_ioctl(struct file *file,
 		}
 
 		if (handle->sha_ctxt.diglen > QCEDEV_MAX_SHA_DIGEST) {
-			pr_err("Invalid sha_ctxt.diglen %d\n",
+			pr_debug("Invalid sha_ctxt.diglen %d\n",
 					handle->sha_ctxt.diglen);
 			mutex_unlock(&hash_access_lock);
 			err = -EINVAL;
@@ -1937,7 +1937,7 @@ static inline long qcedev_ioctl(struct file *file,
 	case QCEDEV_IOCTL_SHA_FINAL_REQ:
 
 		if (!handle->sha_ctxt.init_done) {
-			pr_err("%s Init was not called\n", __func__);
+			pr_debug("%s Init was not called\n", __func__);
 			err = -EINVAL;
 			goto exit_free_qcedev_areq;
 		}
@@ -1960,7 +1960,7 @@ static inline long qcedev_ioctl(struct file *file,
 			goto exit_free_qcedev_areq;
 		}
 		if (handle->sha_ctxt.diglen > QCEDEV_MAX_SHA_DIGEST) {
-			pr_err("Invalid sha_ctxt.diglen %d\n",
+			pr_debug("Invalid sha_ctxt.diglen %d\n",
 					handle->sha_ctxt.diglen);
 			mutex_unlock(&hash_access_lock);
 			err = -EINVAL;
@@ -2008,7 +2008,7 @@ static inline long qcedev_ioctl(struct file *file,
 			goto exit_free_qcedev_areq;
 		}
 		if (handle->sha_ctxt.diglen > QCEDEV_MAX_SHA_DIGEST) {
-			pr_err("Invalid sha_ctxt.diglen %d\n",
+			pr_debug("Invalid sha_ctxt.diglen %d\n",
 					handle->sha_ctxt.diglen);
 			mutex_unlock(&hash_access_lock);
 			err = -EINVAL;
@@ -2040,7 +2040,7 @@ static inline long qcedev_ioctl(struct file *file,
 			}
 
 			if (map_buf.num_fds > ARRAY_SIZE(map_buf.fd)) {
-				pr_err("%s: err: num_fds = %d exceeds max value\n",
+				pr_debug("%s: err: num_fds = %d exceeds max value\n",
 				__func__, map_buf.num_fds);
 				err = -EINVAL;
 				goto exit_free_qcedev_areq;
@@ -2053,13 +2053,13 @@ static inline long qcedev_ioctl(struct file *file,
 						map_buf.fd_size[i],
 						&vaddr);
 				if (err) {
-					pr_err(
+					pr_debug(
 						"%s: err: failed to map fd(%d) - %d\n",
 						__func__, map_buf.fd[i], err);
 					goto exit_free_qcedev_areq;
 				}
 				map_buf.buf_vaddr[i] = vaddr;
-				pr_info("%s: info: vaddr = %llx\n",
+				pr_debug("%s: info: vaddr = %llx\n",
 					__func__, vaddr);
 			}
 
@@ -2082,7 +2082,7 @@ static inline long qcedev_ioctl(struct file *file,
 				goto exit_free_qcedev_areq;
 			}
 			if (unmap_buf.num_fds > ARRAY_SIZE(unmap_buf.fd)) {
-				pr_err("%s: err: num_fds = %d exceeds max value\n",
+				pr_debug("%s: err: num_fds = %d exceeds max value\n",
 				__func__, unmap_buf.num_fds);
 				err = -EINVAL;
 				goto exit_free_qcedev_areq;
@@ -2092,7 +2092,7 @@ static inline long qcedev_ioctl(struct file *file,
 				err = qcedev_check_and_unmap_buffer(handle,
 						unmap_buf.fd[i]);
 				if (err) {
-					pr_err(
+					pr_debug(
 						"%s: err: failed to unmap fd(%d) - %d\n",
 						 __func__,
 						unmap_buf.fd[i], err);
@@ -2129,21 +2129,21 @@ static int qcedev_probe_device(struct platform_device *pdev)
 
 	rc = alloc_chrdev_region(&qcedev_device_no, 0, 1, QCEDEV_DEV);
 	if (rc < 0) {
-		pr_err("alloc_chrdev_region failed %d\n", rc);
+		pr_debug("alloc_chrdev_region failed %d\n", rc);
 		return rc;
 	}
 
 	driver_class = class_create(THIS_MODULE, QCEDEV_DEV);
 	if (IS_ERR(driver_class)) {
 		rc = -ENOMEM;
-		pr_err("class_create failed %d\n", rc);
+		pr_debug("class_create failed %d\n", rc);
 		goto exit_unreg_chrdev_region;
 	}
 
 	class_dev = device_create(driver_class, NULL, qcedev_device_no, NULL,
 			QCEDEV_DEV);
 	if (IS_ERR(class_dev)) {
-		pr_err("class_device_create failed %d\n", rc);
+		pr_debug("class_device_create failed %d\n", rc);
 		rc = -ENOMEM;
 		goto exit_destroy_class;
 	}
@@ -2153,7 +2153,7 @@ static int qcedev_probe_device(struct platform_device *pdev)
 
 	rc = cdev_add(&podev->cdev, MKDEV(MAJOR(qcedev_device_no), 0), 1);
 	if (rc < 0) {
-		pr_err("cdev_add failed %d\n", rc);
+		pr_debug("cdev_add failed %d\n", rc);
 		goto exit_destroy_device;
 	}
 	podev->minor = 0;
@@ -2171,7 +2171,7 @@ static int qcedev_probe_device(struct platform_device *pdev)
 	podev->platform_support.bus_scale_table = (struct msm_bus_scale_pdata *)
 					msm_bus_cl_get_pdata(pdev);
 	if (!podev->platform_support.bus_scale_table) {
-		pr_err("bus_scale_table is NULL\n");
+		pr_debug("bus_scale_table is NULL\n");
 		rc = -ENODATA;
 		goto exit_del_cdev;
 	}
@@ -2179,14 +2179,14 @@ static int qcedev_probe_device(struct platform_device *pdev)
 				(struct msm_bus_scale_pdata *)
 				podev->platform_support.bus_scale_table);
 	if (!podev->bus_scale_handle) {
-		pr_err("%s not able to get bus scale\n", __func__);
+		pr_debug("%s not able to get bus scale\n", __func__);
 		rc = -ENOMEM;
 		goto exit_del_cdev;
 	}
 
 	rc = msm_bus_scale_client_update_request(podev->bus_scale_handle, 1);
 	if (rc) {
-		pr_err("%s Unable to set to high bandwidth\n", __func__);
+		pr_debug("%s Unable to set to high bandwidth\n", __func__);
 		goto exit_unregister_bus_scale;
 	}
 	handle = qce_open(pdev, &rc);
@@ -2196,7 +2196,7 @@ static int qcedev_probe_device(struct platform_device *pdev)
 	}
 	rc = msm_bus_scale_client_update_request(podev->bus_scale_handle, 0);
 	if (rc) {
-		pr_err("%s Unable to set to low bandwidth\n", __func__);
+		pr_debug("%s Unable to set to low bandwidth\n", __func__);
 		goto exit_qce_close;
 	}
 
@@ -2224,14 +2224,14 @@ static int qcedev_probe_device(struct platform_device *pdev)
 
 	podev->mem_client = qcedev_mem_new_client(MEM_ION);
 	if (!podev->mem_client) {
-		pr_err("%s: err: qcedev_mem_new_client failed\n", __func__);
+		pr_debug("%s: err: qcedev_mem_new_client failed\n", __func__);
 		goto exit_qce_close;
 	}
 
 	rc = of_platform_populate(pdev->dev.of_node, qcedev_match,
 			NULL, &pdev->dev);
 	if (rc) {
-		pr_err("%s: err: of_platform_populate failed: %d\n",
+		pr_debug("%s: err: of_platform_populate failed: %d\n",
 			__func__, rc);
 		goto exit_mem_new_client;
 	}

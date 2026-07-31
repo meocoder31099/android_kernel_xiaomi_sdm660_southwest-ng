@@ -356,7 +356,7 @@ static int inode_set(struct inode *inode, void *opaque)
 	inode->i_atime = backing_inode->i_atime;
 	inode->i_ino = backing_inode->i_ino;
 	if (backing_inode->i_ino < INCFS_START_INO_RANGE) {
-		pr_warn("incfs: ino conflict with backing FS %ld\n",
+		pr_debug("incfs: ino conflict with backing FS %ld\n",
 			backing_inode->i_ino);
 	}
 
@@ -412,7 +412,7 @@ static int iterate_incfs_dir(struct file *file, struct dir_context *ctx)
 	file->f_pos = dir->backing_dir->f_pos;
 out:
 	if (error)
-		pr_warn("incfs: %s %s %d\n", __func__,
+		pr_debug("incfs: %s %s %d\n", __func__,
 			file->f_path.dentry->d_name.name, error);
 	return error;
 }
@@ -676,7 +676,7 @@ static void notify_unlink(struct dentry *dentry, const char *file_id_str,
 
 out:
 	if (error)
-		pr_warn("%s failed with error %d\n", __func__, error);
+		pr_debug("%s failed with error %d\n", __func__, error);
 
 	dput(dir);
 	dput(file);
@@ -702,7 +702,7 @@ static void handle_file_completed(struct file *f, struct data_file *df)
 			error = vfs_truncate(&f->f_path, size);
 			if (error)
 				/* No useful action on failure */
-				pr_warn("incfs: Failed to truncate complete file: %d\n",
+				pr_debug("incfs: Failed to truncate complete file: %d\n",
 					error);
 		}
 	}
@@ -726,7 +726,7 @@ static void handle_file_completed(struct file *f, struct data_file *df)
 	vfs_fsync(df->df_backing_file_context->bc_file, 0);
 	error = incfs_unlink(incomplete_file_dentry);
 	if (error) {
-		pr_warn("incfs: Deleting incomplete file failed: %d\n", error);
+		pr_debug("incfs: Deleting incomplete file failed: %d\n", error);
 		goto out;
 	}
 
@@ -1787,20 +1787,20 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 	BUILD_BUG_ON(PAGE_SIZE != INCFS_DATA_FILE_BLOCK_SIZE);
 
 	if (!dev_name) {
-		pr_err("incfs: Backing dir is not set, filesystem can't be mounted.\n");
+		pr_debug("incfs: Backing dir is not set, filesystem can't be mounted.\n");
 		error = -ENOENT;
 		goto err_deactivate;
 	}
 
 	error = parse_options(&options, (char *)data);
 	if (error != 0) {
-		pr_err("incfs: Options parsing error. %d\n", error);
+		pr_debug("incfs: Options parsing error. %d\n", error);
 		goto err_deactivate;
 	}
 
 	sb->s_bdi->ra_pages = options.readahead_pages;
 	if (!dev_name) {
-		pr_err("incfs: Backing dir is not set, filesystem can't be mounted.\n");
+		pr_debug("incfs: Backing dir is not set, filesystem can't be mounted.\n");
 		error = -ENOENT;
 		goto err_free_opts;
 	}
@@ -1809,7 +1809,7 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 			&backing_dir_path);
 	if (error || backing_dir_path.dentry == NULL ||
 		!d_really_is_positive(backing_dir_path.dentry)) {
-		pr_err("incfs: Error accessing: %s.\n",
+		pr_debug("incfs: Error accessing: %s.\n",
 			dev_name);
 		goto err_free_opts;
 	}
@@ -1825,7 +1825,7 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 	mi = incfs_alloc_mount_info(sb, &options, &backing_dir_path);
 	if (IS_ERR_OR_NULL(mi)) {
 		error = PTR_ERR(mi);
-		pr_err("incfs: Error allocating mount info. %d\n", error);
+		pr_debug("incfs: Error allocating mount info. %d\n", error);
 		goto err_put_path;
 	}
 
@@ -1835,7 +1835,7 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 					       INCFS_INDEX_NAME, &dir_created);
 	if (IS_ERR_OR_NULL(index_dir)) {
 		error = PTR_ERR(index_dir);
-		pr_err("incfs: Can't find or create .index dir in %s\n",
+		pr_debug("incfs: Can't find or create .index dir in %s\n",
 			dev_name);
 		/* No need to null index_dir since we don't put it */
 		goto err_put_path;
@@ -1849,7 +1849,7 @@ struct dentry *incfs_mount_fs(struct file_system_type *type, int flags,
 						    &dir_created);
 	if (IS_ERR_OR_NULL(incomplete_dir)) {
 		error = PTR_ERR(incomplete_dir);
-		pr_err("incfs: Can't find or create .incomplete dir in %s\n",
+		pr_debug("incfs: Can't find or create .incomplete dir in %s\n",
 			dev_name);
 		/* No need to null incomplete_dir since we don't put it */
 		goto err_put_path;
@@ -1885,7 +1885,7 @@ err_free_opts:
 	free_options(&options);
 err_deactivate:
 	deactivate_locked_super(sb);
-	pr_err("incfs: mount failed %d\n", error);
+	pr_debug("incfs: mount failed %d\n", error);
 	return ERR_PTR(error);
 }
 
@@ -1901,7 +1901,7 @@ static int incfs_remount_fs(struct super_block *sb, int *flags, char *data)
 		return err;
 
 	if (options.report_uid != mi->mi_options.report_uid) {
-		pr_err("incfs: Can't change report_uid mount option on remount\n");
+		pr_debug("incfs: Can't change report_uid mount option on remount\n");
 		err = -EOPNOTSUPP;
 		goto out;
 	}

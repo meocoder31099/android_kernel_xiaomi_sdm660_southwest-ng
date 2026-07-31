@@ -2353,7 +2353,7 @@ static int cprh_kbss_regulator_probe(struct platform_device *pdev)
 	int rc;
 
 	if (!dev->of_node) {
-		dev_err(dev, "Device tree node is missing\n");
+		dev_dbg(dev, "Device tree node is missing\n");
 		return -EINVAL;
 	}
 

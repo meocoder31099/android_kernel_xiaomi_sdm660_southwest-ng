@@ -180,7 +180,7 @@ static struct dev_node *pld_get_dev_node(struct device *dev)
 	pld_context = pld_get_global_context();
 
 	if (!dev || !pld_context) {
-		pr_err("Invalid info: dev %pK, context %pK\n",
+		pr_debug("Invalid info: dev %pK, context %pK\n",
 		       dev, pld_context);
 		return NULL;
 	}
@@ -249,20 +249,20 @@ int pld_register_driver(struct pld_driver_ops *ops)
 	pld_context = pld_get_global_context();
 
 	if (!pld_context) {
-		pr_err("global context is NULL\n");
+		pr_debug("global context is NULL\n");
 		ret = -ENODEV;
 		goto out;
 	}
 
 	if (pld_context->ops) {
-		pr_err("driver already registered\n");
+		pr_debug("driver already registered\n");
 		ret = -EEXIST;
 		goto out;
 	}
 
 	if (!ops || !ops->probe || !ops->remove ||
 	    !ops->suspend || !ops->resume) {
-		pr_err("Required callback functions are missing\n");
+		pr_debug("Required callback functions are missing\n");
 		ret = -EINVAL;
 		goto out;
 	}
@@ -272,42 +272,42 @@ int pld_register_driver(struct pld_driver_ops *ops)
 
 	ret = pld_pcie_register_driver();
 	if (ret) {
-		pr_err("Fail to register pcie driver\n");
+		pr_debug("Fail to register pcie driver\n");
 		goto fail_pcie;
 	}
 	pld_context->pld_driver_state |= PLD_PCIE_REGISTERED;
 
 	ret = pld_snoc_register_driver();
 	if (ret) {
-		pr_err("Fail to register snoc driver\n");
+		pr_debug("Fail to register snoc driver\n");
 		goto fail_snoc;
 	}
 	pld_context->pld_driver_state |= PLD_SNOC_REGISTERED;
 
 	ret = pld_sdio_register_driver();
 	if (ret) {
-		pr_err("Fail to register sdio driver\n");
+		pr_debug("Fail to register sdio driver\n");
 		goto fail_sdio;
 	}
 	pld_context->pld_driver_state |= PLD_SDIO_REGISTERED;
 
 	ret = pld_snoc_fw_sim_register_driver();
 	if (ret) {
-		pr_err("Fail to register snoc fw sim driver\n");
+		pr_debug("Fail to register snoc fw sim driver\n");
 		goto fail_snoc_fw_sim;
 	}
 	pld_context->pld_driver_state |= PLD_SNOC_FW_SIM_REGISTERED;
 
 	ret = pld_pcie_fw_sim_register_driver();
 	if (ret) {
-		pr_err("Fail to register pcie fw sim driver\n");
+		pr_debug("Fail to register pcie fw sim driver\n");
 		goto fail_pcie_fw_sim;
 	}
 	pld_context->pld_driver_state |= PLD_PCIE_FW_SIM_REGISTERED;
 
 	ret = pld_usb_register_driver();
 	if (ret) {
-		pr_err("Fail to register usb driver\n");
+		pr_debug("Fail to register usb driver\n");
 		goto fail_usb;
 	}
 	pld_context->pld_driver_state |= PLD_USB_REGISTERED;
@@ -347,12 +347,12 @@ void pld_unregister_driver(void)
 	pld_context = pld_get_global_context();
 
 	if (!pld_context) {
-		pr_err("global context is NULL\n");
+		pr_debug("global context is NULL\n");
 		return;
 	}
 
 	if (!pld_context->ops) {
-		pr_err("driver not registered\n");
+		pr_debug("driver not registered\n");
 		return;
 	}
 
@@ -579,7 +579,7 @@ int pld_prevent_l1(struct device *dev)
 		break;
 	default:
 		ret = -EINVAL;
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -601,7 +601,7 @@ void pld_allow_l1(struct device *dev)
 		pld_pcie_allow_l1(dev);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -626,7 +626,7 @@ void pld_is_pci_link_down(struct device *dev)
 	case PLD_BUS_TYPE_SNOC:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -652,7 +652,7 @@ void pld_schedule_recovery_work(struct device *dev,
 	case PLD_BUS_TYPE_SNOC:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -714,7 +714,7 @@ void *pld_get_virt_ramdump_mem(struct device *dev, unsigned long *size)
 		mem = pld_sdio_get_virt_ramdump_mem(dev, size);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -735,7 +735,7 @@ void pld_release_virt_ramdump_mem(struct device *dev, void *address)
 		pld_sdio_release_virt_ramdump_mem(address);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -763,7 +763,7 @@ void pld_device_crashed(struct device *dev)
 		pld_sdio_device_crashed(dev);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -790,7 +790,7 @@ void pld_device_self_recovery(struct device *dev,
 		pld_sdio_device_self_recovery(dev);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -814,7 +814,7 @@ void pld_intr_notify_q6(struct device *dev)
 	case PLD_BUS_TYPE_SNOC:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -844,7 +844,7 @@ void pld_request_pm_qos(struct device *dev, u32 qos_val)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -871,7 +871,7 @@ void pld_remove_pm_qos(struct device *dev)
 		/* To do Add call cns API */
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1001,7 +1001,7 @@ void *pld_get_fw_ptr(struct device *dev)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -1089,7 +1089,7 @@ int pld_force_wake_request(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1121,7 +1121,7 @@ int pld_force_wake_request_sync(struct device *dev, int timeout_us)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1153,7 +1153,7 @@ int pld_is_device_awake(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1184,7 +1184,7 @@ int pld_force_wake_release(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1283,7 +1283,7 @@ void pld_enable_irq(struct device *dev, unsigned int ce_id)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1310,7 +1310,7 @@ void pld_disable_irq(struct device *dev, unsigned int ce_id)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1432,7 +1432,7 @@ void pld_lock_pm_sem(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1458,7 +1458,7 @@ void pld_release_pm_sem(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1487,7 +1487,7 @@ void pld_lock_reg_window(struct device *dev, unsigned long *flags)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1516,7 +1516,7 @@ void pld_unlock_reg_window(struct device *dev, unsigned long *flags)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1546,7 +1546,7 @@ int pld_power_on(struct device *dev)
 		ret = pld_snoc_power_on(dev);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -1578,7 +1578,7 @@ int pld_power_off(struct device *dev)
 		ret = pld_snoc_power_off(dev);
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -1687,10 +1687,10 @@ void *pld_smmu_get_domain(struct device *dev)
 		break;
 	case PLD_BUS_TYPE_SDIO:
 	case PLD_BUS_TYPE_USB:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		break;
 	}
 
@@ -1719,7 +1719,7 @@ void *pld_smmu_get_mapping(struct device *dev)
 		ptr = pld_pcie_smmu_get_mapping(dev);
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		break;
 	}
 
@@ -1754,7 +1754,7 @@ int pld_smmu_map(struct device *dev, phys_addr_t paddr,
 		ret = pld_pcie_smmu_map(dev, paddr, iova_addr, size);
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1785,11 +1785,11 @@ int pld_smmu_unmap(struct device *dev,
 	case PLD_BUS_TYPE_PCIE_FW_SIM:
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
 	case PLD_BUS_TYPE_PCIE:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		ret = -ENODEV;
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1834,11 +1834,11 @@ int pld_get_user_msi_assignment(struct device *dev, char *user_name,
 	case PLD_BUS_TYPE_SDIO:
 	case PLD_BUS_TYPE_USB:
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		ret = -ENODEV;
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1879,11 +1879,11 @@ int pld_srng_request_irq(struct device *dev, int irq, irq_handler_t handler,
 	case PLD_BUS_TYPE_SDIO:
 	case PLD_BUS_TYPE_USB:
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		ret = -ENODEV;
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1919,11 +1919,11 @@ int pld_srng_free_irq(struct device *dev, int irq, void *dev_data)
 	case PLD_BUS_TYPE_SDIO:
 	case PLD_BUS_TYPE_USB:
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		ret = -ENODEV;
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -1953,7 +1953,7 @@ void pld_srng_enable_irq(struct device *dev, int irq)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -1980,7 +1980,7 @@ void pld_srng_disable_irq(struct device *dev, int irq)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 }
@@ -2010,7 +2010,7 @@ int pld_pci_read_config_word(struct pci_dev *pdev, int offset, uint16_t *val)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -2042,7 +2042,7 @@ int pld_pci_write_config_word(struct pci_dev *pdev, int offset, uint16_t val)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -2074,7 +2074,7 @@ int pld_pci_read_config_dword(struct pci_dev *pdev, int offset, uint32_t *val)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -2106,7 +2106,7 @@ int pld_pci_write_config_dword(struct pci_dev *pdev, int offset, uint32_t val)
 	case PLD_BUS_TYPE_SDIO:
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -2137,11 +2137,11 @@ int pld_get_msi_irq(struct device *dev, unsigned int vector)
 	case PLD_BUS_TYPE_SDIO:
 	case PLD_BUS_TYPE_USB:
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		ret = -ENODEV;
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -2174,10 +2174,10 @@ void pld_get_msi_address(struct device *dev, uint32_t *msi_addr_low,
 	case PLD_BUS_TYPE_SDIO:
 	case PLD_BUS_TYPE_USB:
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		break;
 	}
 }
@@ -2206,7 +2206,7 @@ int pld_is_drv_connected(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -2231,12 +2231,12 @@ unsigned int pld_socinfo_get_serial_number(struct device *dev)
 		break;
 	case PLD_BUS_TYPE_PCIE_FW_SIM:
 	case PLD_BUS_TYPE_PCIE:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		break;
 	case PLD_BUS_TYPE_SNOC_FW_SIM:
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		break;
 	}
 
@@ -2265,11 +2265,11 @@ int pld_is_qmi_disable(struct device *dev)
 	case PLD_BUS_TYPE_PCIE_FW_SIM:
 	case PLD_BUS_TYPE_PCIE:
 	case PLD_BUS_TYPE_SDIO:
-		pr_err("Not supported on type %d\n", type);
+		pr_debug("Not supported on type %d\n", type);
 		ret = -EINVAL;
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -2313,7 +2313,7 @@ int pld_is_fw_down(struct device *dev)
 		ret = pld_usb_is_fw_down(ifdev);
 		break;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		ret = -EINVAL;
 		break;
 	}
@@ -2345,7 +2345,7 @@ int pld_force_assert_target(struct device *dev)
 	case PLD_BUS_TYPE_SDIO:
 		return -EINVAL;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		return -EINVAL;
 	}
 }
@@ -2372,7 +2372,7 @@ int pld_collect_rddm(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		return 0;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		return -EINVAL;
 	}
 }
@@ -2399,7 +2399,7 @@ int pld_qmi_send_get(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		return 0;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		return -EINVAL;
 	}
 }
@@ -2426,7 +2426,7 @@ int pld_qmi_send_put(struct device *dev)
 	case PLD_BUS_TYPE_USB:
 		return 0;
 	default:
-		pr_err("Invalid device type %d\n", type);
+		pr_debug("Invalid device type %d\n", type);
 		return -EINVAL;
 	}
 }
@@ -2459,7 +2459,7 @@ int pld_qmi_send(struct device *dev, int type, void *cmd,
 	case PLD_BUS_TYPE_USB:
 		return -EINVAL;
 	default:
-		pr_err("Invalid device type %d\n", bus_type);
+		pr_debug("Invalid device type %d\n", bus_type);
 		return -EINVAL;
 	}
 }
@@ -2542,7 +2542,7 @@ bool pld_have_platform_driver_support(struct device *dev)
 		ret = pld_sdio_platform_driver_support();
 		break;
 	default:
-		pr_err("Invalid device type\n");
+		pr_debug("Invalid device type\n");
 		break;
 	}
 
@@ -2575,7 +2575,7 @@ int pld_idle_shutdown(struct device *dev,
 			errno = pld_snoc_fw_sim_idle_shutdown(dev);
 			break;
 		default:
-			pr_err("Invalid device type %d\n", type);
+			pr_debug("Invalid device type %d\n", type);
 			break;
 	}
 
@@ -2608,7 +2608,7 @@ int pld_idle_restart(struct device *dev,
 			errno = pld_snoc_fw_sim_idle_restart(dev);
 			break;
 		default:
-			pr_err("Invalid device type %d\n", type);
+			pr_debug("Invalid device type %d\n", type);
 			break;
 	}
 

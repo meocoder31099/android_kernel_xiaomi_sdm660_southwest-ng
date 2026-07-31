@@ -189,7 +189,7 @@ static void set_dload_mode(int on)
 
 	ret = scm_set_dload_mode(on ? dload_type : 0, 0);
 	if (ret)
-		pr_err("Failed to set secure DLOAD mode: %d\n", ret);
+		pr_debug("Failed to set secure DLOAD mode: %d\n", ret);
 
 	dload_mode_enabled = on;
 }
@@ -223,7 +223,7 @@ static void enable_emergency_dload_mode(void)
 
 	ret = scm_set_dload_mode(SCM_EDLOAD_MODE, 0);
 	if (ret)
-		pr_err("Failed to set secure EDLOAD mode: %d\n", ret);
+		pr_debug("Failed to set secure EDLOAD mode: %d\n", ret);
 }
 
 static int dload_set(const char *val, const struct kernel_param *kp)
@@ -266,7 +266,7 @@ static void *map_prop_mem(const char *propname)
 
 	addr = of_iomap(np, 0);
 	if (!addr)
-		pr_err("Unable to map memory for DT property: %s\n", propname);
+		pr_debug("Unable to map memory for DT property: %s\n", propname);
 
 	return addr;
 }
@@ -315,14 +315,14 @@ static void setup_dload_mode_support(void)
 	ret = kobject_init_and_add(&dload_kobj, &reset_ktype,
 			kernel_kobj, "%s", "dload");
 	if (ret) {
-		pr_err("%s:Error in creation kobject_add\n", __func__);
+		pr_debug("%s:Error in creation kobject_add\n", __func__);
 		kobject_put(&dload_kobj);
 		return;
 	}
 
 	ret = sysfs_create_group(&dload_kobj, &reset_attr_group);
 	if (ret) {
-		pr_err("%s:Error in creation sysfs_create_group\n", __func__);
+		pr_debug("%s:Error in creation sysfs_create_group\n", __func__);
 		kobject_del(&dload_kobj);
 	}
 }
@@ -410,20 +410,20 @@ static size_t store_dload_mode(struct kobject *kobj, struct attribute *attr,
 		dload_type = SCM_DLOAD_FULLDUMP;
 	} else if (sysfs_streq(buf, "mini")) {
 		if (!msm_minidump_enabled()) {
-			pr_err("Minidump is not enabled\n");
+			pr_debug("Minidump is not enabled\n");
 			return -ENODEV;
 		}
 		dload_type = SCM_DLOAD_MINIDUMP;
 	} else if (sysfs_streq(buf, "both")) {
 		if (!msm_minidump_enabled()) {
-			pr_err("Minidump not enabled, setting fulldump only\n");
+			pr_debug("Minidump not enabled, setting fulldump only\n");
 			dload_type = SCM_DLOAD_FULLDUMP;
 			return count;
 		}
 		dload_type = SCM_DLOAD_BOTHDUMPS;
 	} else {
-		pr_err("Invalid Dump setup request..\n");
-		pr_err("Supported dumps:'full', 'mini', or 'both'\n");
+		pr_debug("Invalid Dump setup request..\n");
+		pr_debug("Supported dumps:'full', 'mini', or 'both'\n");
 		return -EINVAL;
 	}
 
@@ -448,7 +448,7 @@ static void scm_disable_sdi(void)
 	ret = scm_call2_atomic(SCM_SIP_FNID(SCM_SVC_BOOT,
 			  SCM_WDOG_DEBUG_BOOT_PART), &desc);
 	if (ret)
-		pr_err("Failed to disable secure wdog debug: %d\n", ret);
+		pr_debug("Failed to disable secure wdog debug: %d\n", ret);
 }
 
 void msm_set_restart_mode(int mode)
@@ -471,7 +471,7 @@ static void halt_spmi_pmic_arbiter(void)
 	};
 
 	if (scm_pmic_arbiter_disable_supported) {
-		pr_crit("Calling SCM to disable SPMI PMIC arbiter\n");
+		pr_debug("Calling SCM to disable SPMI PMIC arbiter\n");
 		scm_call2_atomic(SCM_SIP_FNID(SCM_SVC_PWR,
 				SCM_IO_DISABLE_PMIC_ARBITER), &desc);
 	}
@@ -500,7 +500,7 @@ static void msm_restart_prepare(const char *cmd)
 	}
 
 	if (force_warm_reboot)
-		pr_info("Forcing a warm reset of the system\n");
+		pr_debug("Forcing a warm reset of the system\n");
 
 	/* Hard reset the PMIC unless memory contents must be maintained. */
 	if (force_warm_reboot || need_warm_reset)
@@ -561,7 +561,7 @@ static void msm_restart_prepare(const char *cmd)
 			if (0)
 				enable_emergency_dload_mode();
 			else
-				pr_notice("This command already been disabled\n");
+				pr_debug("This command already been disabled\n");
 #else
 			enable_emergency_dload_mode();
 #endif
@@ -616,7 +616,7 @@ static void deassert_ps_hold(void)
 
 static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
 {
-	pr_notice("Going down for restart now\n");
+	pr_debug("Going down for restart now\n");
 
 	msm_restart_prepare(cmd);
 
@@ -636,7 +636,7 @@ static void do_msm_restart(enum reboot_mode reboot_mode, const char *cmd)
 
 static void do_msm_poweroff(void)
 {
-	pr_notice("Powering off the SoC\n");
+	pr_debug("Powering off the SoC\n");
 
 	set_dload_mode(0);
 	scm_disable_sdi();
@@ -650,7 +650,7 @@ static void do_msm_poweroff(void)
 	deassert_ps_hold();
 
 	msleep(10000);
-	pr_err("Powering off has failed\n");
+	pr_debug("Powering off has failed\n");
 }
 
 static int msm_restart_probe(struct platform_device *pdev)
@@ -665,11 +665,11 @@ static int msm_restart_probe(struct platform_device *pdev)
 	np = of_find_compatible_node(NULL, NULL,
 				"qcom,msm-imem-restart_reason");
 	if (!np) {
-		pr_err("unable to find DT imem restart reason node\n");
+		pr_debug("unable to find DT imem restart reason node\n");
 	} else {
 		restart_reason = of_iomap(np, 0);
 		if (!restart_reason) {
-			pr_err("unable to map imem restart reason offset\n");
+			pr_debug("unable to map imem restart reason offset\n");
 			ret = -ENOMEM;
 			goto err_restart_reason;
 		}

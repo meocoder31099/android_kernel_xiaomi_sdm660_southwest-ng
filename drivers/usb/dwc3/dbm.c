@@ -193,7 +193,7 @@ static int find_matching_dbm_ep(struct dbm *dbm, u8 usb_ep)
 int dbm_soft_reset(struct dbm *dbm, bool reset)
 {
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
@@ -219,7 +219,7 @@ static int ep_soft_reset(struct dbm *dbm, u8 dbm_ep, bool enter_reset)
 	pr_debug("Setting DBM ep %d reset to %d\n", dbm_ep, enter_reset);
 
 	if (dbm_ep >= dbm->dbm_num_eps) {
-		pr_err("Invalid DBM ep index %d\n", dbm_ep);
+		pr_debug("Invalid DBM ep index %d\n", dbm_ep);
 		return -ENODEV;
 	}
 
@@ -253,7 +253,7 @@ int dbm_ep_soft_reset(struct dbm *dbm, u8 usb_ep, bool enter_reset)
 	int dbm_ep;
 
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
@@ -283,7 +283,7 @@ int dbm_ep_config(struct dbm *dbm, u8 usb_ep, u8 bam_pipe, bool producer,
 	u32 data;
 
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
@@ -292,13 +292,13 @@ int dbm_ep_config(struct dbm *dbm, u8 usb_ep, u8 bam_pipe, bool producer,
 	dbm_ep = find_matching_dbm_ep(dbm, usb_ep);
 
 	if (dbm_ep < 0) {
-		pr_err("usb ep index %d has no corresponding dbm ep\n", usb_ep);
+		pr_debug("usb ep index %d has no corresponding dbm ep\n", usb_ep);
 		return -ENODEV;
 	}
 
 	/* Due to HW issue, EP 7 can be set as IN EP only */
 	if (!dbm->is_1p4 && dbm_ep == 7 && producer) {
-		pr_err("last DBM EP can't be OUT EP\n");
+		pr_debug("last DBM EP can't be OUT EP\n");
 		return -ENODEV;
 	}
 
@@ -340,7 +340,7 @@ int dbm_get_num_of_eps_configured(struct dbm *dbm)
 	int count = 0;
 
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
@@ -363,7 +363,7 @@ int dbm_ep_unconfig(struct dbm *dbm, u8 usb_ep)
 	u32 data;
 
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
@@ -400,14 +400,14 @@ int dbm_ep_unconfig(struct dbm *dbm, u8 usb_ep)
 int dbm_event_buffer_config(struct dbm *dbm, u32 addr_lo, u32 addr_hi, int size)
 {
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
 	pr_debug("Configuring event buffer\n");
 
 	if (size < 0) {
-		pr_err("Invalid size. size = %d", size);
+		pr_debug("Invalid size. size = %d", size);
 		return -EINVAL;
 	}
 
@@ -439,14 +439,14 @@ int dwc3_dbm_disable_update_xfer(struct dbm *dbm, u8 usb_ep)
 	int dbm_ep;
 
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
 	dbm_ep = find_matching_dbm_ep(dbm, usb_ep);
 
 	if (dbm_ep < 0) {
-		pr_err("usb ep index %d has no corresponding dbm ep\n", usb_ep);
+		pr_debug("usb ep index %d has no corresponding dbm ep\n", usb_ep);
 		return -ENODEV;
 	}
 
@@ -465,7 +465,7 @@ int dbm_data_fifo_config(struct dbm *dbm, u8 dep_num, unsigned long addr,
 	u32 hi = upper_32_bits(addr);
 
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return -EPERM;
 	}
 
@@ -487,7 +487,7 @@ int dbm_data_fifo_config(struct dbm *dbm, u8 dep_num, unsigned long addr,
 void dbm_set_speed(struct dbm *dbm, bool speed)
 {
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return;
 	}
 
@@ -497,7 +497,7 @@ void dbm_set_speed(struct dbm *dbm, bool speed)
 void dbm_enable(struct dbm *dbm)
 {
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return;
 	}
 
@@ -511,7 +511,7 @@ void dbm_enable(struct dbm *dbm)
 bool dbm_reset_ep_after_lpm(struct dbm *dbm)
 {
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return false;
 	}
 
@@ -521,7 +521,7 @@ bool dbm_reset_ep_after_lpm(struct dbm *dbm)
 bool dbm_l1_lpm_interrupt(struct dbm *dbm)
 {
 	if (!dbm) {
-		pr_err("%s: dbm pointer is NULL!\n", __func__);
+		pr_debug("%s: dbm pointer is NULL!\n", __func__);
 		return false;
 	}
 

@@ -1472,7 +1472,7 @@ tc_qdisc_flow_control(struct net_device *dev, u32 tcm_handle, int enable_flow)
 		if (likely(q->ops->change)) {
 			qdisc_len = q->q.qlen;
 			if (q->ops->change(q, &req.attr, NULL))
-				pr_err("%s(): qdisc change failed\n", __func__);
+				pr_debug("%s(): qdisc change failed\n", __func__);
 		}
 	}
 	return qdisc_len;
@@ -2261,7 +2261,7 @@ static int __init pktsched_init(void)
 
 	err = register_pernet_subsys(&psched_net_ops);
 	if (err) {
-		pr_err("pktsched_init: "
+		pr_debug("pktsched_init: "
 		       "cannot initialize per netns operations\n");
 		return err;
 	}

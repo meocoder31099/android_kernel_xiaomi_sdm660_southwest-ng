@@ -200,7 +200,7 @@ static void vadc_show_status(struct vadc_priv *vadc)
 	if (ret)
 		return;
 
-	dev_err(vadc->dev,
+	dev_dbg(vadc->dev,
 		"mode:%02x en:%02x chan:%02x dig:%02x req:%02x sta1:%02x\n",
 		mode, en, chan, dig, req, sta1);
 }
@@ -343,7 +343,7 @@ static int vadc_do_conversion(struct vadc_priv *vadc,
 err_disable:
 	vadc_set_state(vadc, false);
 	if (ret)
-		dev_err(vadc->dev, "conversion failed\n");
+		dev_dbg(vadc->dev, "conversion failed\n");
 unlock:
 	mutex_unlock(&vadc->lock);
 	return ret;
@@ -400,7 +400,7 @@ static int vadc_measure_ref_points(struct vadc_priv *vadc)
 	vadc->graph[VADC_CALIB_RATIOMETRIC].gnd = read_2;
 err:
 	if (ret)
-		dev_err(vadc->dev, "measure reference points failed\n");
+		dev_dbg(vadc->dev, "measure reference points failed\n");
 
 	return ret;
 }
@@ -658,12 +658,12 @@ static int vadc_get_dt_channel_data(struct device *dev,
 
 	ret = of_property_read_u32(node, "reg", &chan);
 	if (ret) {
-		dev_err(dev, "invalid channel number %s\n", name);
+		dev_dbg(dev, "invalid channel number %s\n", name);
 		return ret;
 	}
 
 	if (chan > VADC_CHAN_MAX || chan < VADC_CHAN_MIN) {
-		dev_err(dev, "%s invalid channel number %d\n", name, chan);
+		dev_dbg(dev, "%s invalid channel number %d\n", name, chan);
 		return -EINVAL;
 	}
 
@@ -674,7 +674,7 @@ static int vadc_get_dt_channel_data(struct device *dev,
 	if (!ret) {
 		ret = qcom_vadc_decimation_from_dt(value);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid decimation %d\n",
+			dev_dbg(dev, "%02x invalid decimation %d\n",
 				chan, value);
 			return ret;
 		}
@@ -687,7 +687,7 @@ static int vadc_get_dt_channel_data(struct device *dev,
 	if (!ret) {
 		ret = vadc_prescaling_from_dt(varr[0], varr[1]);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid pre-scaling <%d %d>\n",
+			dev_dbg(dev, "%02x invalid pre-scaling <%d %d>\n",
 				chan, varr[0], varr[1]);
 			return ret;
 		}
@@ -700,7 +700,7 @@ static int vadc_get_dt_channel_data(struct device *dev,
 	if (!ret) {
 		ret = vadc_hw_settle_time_from_dt(value);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid hw-settle-time %d us\n",
+			dev_dbg(dev, "%02x invalid hw-settle-time %d us\n",
 				chan, value);
 			return ret;
 		}
@@ -713,7 +713,7 @@ static int vadc_get_dt_channel_data(struct device *dev,
 	if (!ret) {
 		ret = vadc_avg_samples_from_dt(value);
 		if (ret < 0) {
-			dev_err(dev, "%02x invalid avg-samples %d\n",
+			dev_dbg(dev, "%02x invalid avg-samples %d\n",
 				chan, value);
 			return ret;
 		}
@@ -798,22 +798,22 @@ static int vadc_get_dt_data(struct vadc_priv *vadc, struct device_node *node)
 
 	/* These channels are mandatory, they are used as reference points */
 	if (!vadc_get_channel(vadc, VADC_REF_1250MV)) {
-		dev_err(vadc->dev, "Please define 1.25V channel\n");
+		dev_dbg(vadc->dev, "Please define 1.25V channel\n");
 		return -ENODEV;
 	}
 
 	if (!vadc_get_channel(vadc, VADC_REF_625MV)) {
-		dev_err(vadc->dev, "Please define 0.625V channel\n");
+		dev_dbg(vadc->dev, "Please define 0.625V channel\n");
 		return -ENODEV;
 	}
 
 	if (!vadc_get_channel(vadc, VADC_VDD_VADC)) {
-		dev_err(vadc->dev, "Please define VDD channel\n");
+		dev_dbg(vadc->dev, "Please define VDD channel\n");
 		return -ENODEV;
 	}
 
 	if (!vadc_get_channel(vadc, VADC_GND_REF)) {
-		dev_err(vadc->dev, "Please define GND channel\n");
+		dev_dbg(vadc->dev, "Please define GND channel\n");
 		return -ENODEV;
 	}
 
@@ -839,7 +839,7 @@ static int vadc_check_revision(struct vadc_priv *vadc)
 		return ret;
 
 	if (val < VADC_PERPH_TYPE_ADC) {
-		dev_err(vadc->dev, "%d is not ADC\n", val);
+		dev_dbg(vadc->dev, "%d is not ADC\n", val);
 		return -ENODEV;
 	}
 
@@ -848,7 +848,7 @@ static int vadc_check_revision(struct vadc_priv *vadc)
 		return ret;
 
 	if (val < VADC_PERPH_SUBTYPE_VADC) {
-		dev_err(vadc->dev, "%d is not VADC\n", val);
+		dev_dbg(vadc->dev, "%d is not VADC\n", val);
 		return -ENODEV;
 	}
 
@@ -857,7 +857,7 @@ static int vadc_check_revision(struct vadc_priv *vadc)
 		return ret;
 
 	if (val < VADC_REVISION2_SUPPORTED_VADC) {
-		dev_err(vadc->dev, "revision %d not supported\n", val);
+		dev_dbg(vadc->dev, "revision %d not supported\n", val);
 		return -ENODEV;
 	}
 
@@ -916,7 +916,7 @@ static int vadc_probe(struct platform_device *pdev)
 
 	ret = vadc_reset(vadc);
 	if (ret) {
-		dev_err(dev, "reset failed\n");
+		dev_dbg(dev, "reset failed\n");
 		return ret;
 	}
 

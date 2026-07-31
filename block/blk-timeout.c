@@ -99,7 +99,7 @@ static void blk_rq_timed_out(struct request *req)
 		 */
 		break;
 	default:
-		printk(KERN_ERR "block: bad eh return: %d\n", ret);
+		no_printk(KERN_ERR "block: bad eh return: %d\n", ret);
 		break;
 	}
 }

@@ -1830,7 +1830,7 @@ static void ip_handle_martian_source(struct net_device *dev,
 		 *	RFC1812 recommendation, if source is martian,
 		 *	the only hint is MAC header.
 		 */
-		pr_warn("martian source %pI4 from %pI4, on dev %s\n",
+		pr_debug("martian source %pI4 from %pI4, on dev %s\n",
 			&daddr, &saddr, dev->name);
 		if (dev->hard_header_len && skb_mac_header_was_set(skb)) {
 			print_hex_dump(KERN_WARNING, "ll header: ",
@@ -3623,7 +3623,7 @@ int __init ip_rt_init(void)
 	ip_fib_init();
 
 	if (ip_rt_proc_init())
-		pr_err("Unable to create route proc files\n");
+		pr_debug("Unable to create route proc files\n");
 #ifdef CONFIG_XFRM
 	xfrm_init();
 	xfrm4_init();

@@ -65,13 +65,13 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 	pstatus_data = container_of(to_delayed_work(work),
 		struct dsi_status_data, check_status);
 	if (!pstatus_data || !(pstatus_data->mfd)) {
-		pr_err("%s: mfd not available\n", __func__);
+		pr_debug("%s: mfd not available\n", __func__);
 		return;
 	}
 
 	pdata = dev_get_platdata(&pstatus_data->mfd->pdev->dev);
 	if (!pdata) {
-		pr_err("%s: Panel data not available\n", __func__);
+		pr_debug("%s: Panel data not available\n", __func__);
 		return;
 	}
 	mipi = &pdata->panel_info.mipi;
@@ -80,7 +80,7 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 							panel_data);
 	if (!ctrl_pdata || (!ctrl_pdata->check_status &&
 		(ctrl_pdata->status_mode != ESD_TE))) {
-		pr_err("%s: DSI ctrl or status_check callback not available\n",
+		pr_debug("%s: DSI ctrl or status_check callback not available\n",
 								__func__);
 		return;
 	}
@@ -97,7 +97,7 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 	ctl = mfd_to_ctl(pstatus_data->mfd);
 
 	if (!ctl) {
-		pr_err("%s: Display is off\n", __func__);
+		pr_debug("%s: Display is off\n", __func__);
 		return;
 	}
 
@@ -129,7 +129,7 @@ void mdss_check_dsi_ctrl_status(struct work_struct *work, uint32_t interval)
 		if ((mipi->mode == DSI_CMD_MODE) &&
 		    !ctrl_pdata->burst_mode_enabled)
 			mutex_unlock(&mdp5_data->ov_lock);
-		pr_err("%s: DSI turning off, avoiding panel status check\n",
+		pr_debug("%s: DSI turning off, avoiding panel status check\n",
 							__func__);
 		return;
 	}

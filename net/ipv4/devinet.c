@@ -236,7 +236,7 @@ void in_dev_finish_destroy(struct in_device *idev)
 #endif
 	dev_put(dev);
 	if (!idev->dead)
-		pr_err("Freeing alive in_device %p\n", idev);
+		pr_debug("Freeing alive in_device %p\n", idev);
 	else
 		kfree(idev);
 }

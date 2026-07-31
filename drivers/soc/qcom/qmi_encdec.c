@@ -206,7 +206,7 @@ static int qmi_encode_struct_elem(struct qmi_elem_info *ei_array,
 		rc = qmi_encode(temp_ei->ei_array, buf_dst, buf_src,
 				out_buf_len - encoded_bytes, enc_level);
 		if (rc < 0) {
-			pr_err("%s: STRUCT Encode failure\n", __func__);
+			pr_debug("%s: STRUCT Encode failure\n", __func__);
 			return rc;
 		}
 		buf_dst = buf_dst + rc;
@@ -247,7 +247,7 @@ static int qmi_encode_string_elem(struct qmi_elem_info *ei_array,
 	string_len_sz = temp_ei->elem_len <= U8_MAX ?
 			sizeof(u8) : sizeof(u16);
 	if (string_len > temp_ei->elem_len) {
-		pr_err("%s: String to be encoded is longer - %d > %d\n",
+		pr_debug("%s: String to be encoded is longer - %d > %d\n",
 		       __func__, string_len, temp_ei->elem_len);
 		return -EINVAL;
 	}
@@ -255,13 +255,13 @@ static int qmi_encode_string_elem(struct qmi_elem_info *ei_array,
 	if (enc_level == 1) {
 		if (string_len + TLV_LEN_SIZE + TLV_TYPE_SIZE >
 		    out_buf_len) {
-			pr_err("%s: Output len %d > Out Buf len %d\n",
+			pr_debug("%s: Output len %d > Out Buf len %d\n",
 			       __func__, string_len, out_buf_len);
 			return -ETOOSMALL;
 		}
 	} else {
 		if (string_len + string_len_sz > out_buf_len) {
-			pr_err("%s: Output len %d > Out Buf len %d\n",
+			pr_debug("%s: Output len %d > Out Buf len %d\n",
 			       __func__, string_len, out_buf_len);
 			return -ETOOSMALL;
 		}
@@ -323,7 +323,7 @@ static int qmi_encode(struct qmi_elem_info *ei_array, void *out_buf,
 			data_len_value = temp_ei->elem_len;
 		} else if (data_len_value <= 0 ||
 			    temp_ei->elem_len < data_len_value) {
-			pr_err("%s: Invalid data length\n", __func__);
+			pr_debug("%s: Invalid data length\n", __func__);
 			return -EINVAL;
 		}
 
@@ -344,7 +344,7 @@ static int qmi_encode(struct qmi_elem_info *ei_array, void *out_buf,
 			/* Check to avoid out of range buffer access */
 			if ((data_len_sz + encoded_bytes + TLV_LEN_SIZE +
 			    TLV_TYPE_SIZE) > out_buf_len) {
-				pr_err("%s: Too Small Buffer @DATA_LEN\n",
+				pr_debug("%s: Too Small Buffer @DATA_LEN\n",
 				       __func__);
 				return -ETOOSMALL;
 			}
@@ -369,7 +369,7 @@ static int qmi_encode(struct qmi_elem_info *ei_array, void *out_buf,
 			if (((data_len_value * temp_ei->elem_size) +
 			    encoded_bytes + TLV_LEN_SIZE + TLV_TYPE_SIZE) >
 			    out_buf_len) {
-				pr_err("%s: Too Small Buffer @data_type:%d\n",
+				pr_debug("%s: Too Small Buffer @data_type:%d\n",
 				       __func__, temp_ei->data_type);
 				return -ETOOSMALL;
 			}
@@ -404,7 +404,7 @@ static int qmi_encode(struct qmi_elem_info *ei_array, void *out_buf,
 						encode_tlv, rc);
 			break;
 		default:
-			pr_err("%s: Unrecognized data type\n", __func__);
+			pr_debug("%s: Unrecognized data type\n", __func__);
 			return -EINVAL;
 		}
 
@@ -497,7 +497,7 @@ static int qmi_decode_struct_elem(struct qmi_elem_info *ei_array,
 
 	if ((dec_level <= 2 && decoded_bytes != tlv_len) ||
 	    (dec_level > 2 && (i < elem_len || decoded_bytes > tlv_len))) {
-		pr_err("%s: Fault in decoding: dl(%d), db(%d), tl(%d), i(%d), el(%d)\n",
+		pr_debug("%s: Fault in decoding: dl(%d), db(%d), tl(%d), i(%d), el(%d)\n",
 		       __func__, dec_level, decoded_bytes, tlv_len,
 		       i, elem_len);
 		return -EFAULT;
@@ -548,11 +548,11 @@ static int qmi_decode_string_elem(struct qmi_elem_info *ei_array,
 	}
 
 	if (string_len >= temp_ei->elem_len) {
-		pr_err("%s: String len %d >= Max Len %d\n",
+		pr_debug("%s: String len %d >= Max Len %d\n",
 		       __func__, string_len, temp_ei->elem_len);
 		return -ETOOSMALL;
 	} else if (string_len > tlv_len) {
-		pr_err("%s: String len %d > Input Buffer Len %d\n",
+		pr_debug("%s: String len %d > Input Buffer Len %d\n",
 		       __func__, string_len, tlv_len);
 		return -EFAULT;
 	}
@@ -638,7 +638,7 @@ static int qmi_decode(struct qmi_elem_info *ei_array, void *out_c_struct,
 			decoded_bytes += (TLV_TYPE_SIZE + TLV_LEN_SIZE);
 			temp_ei = find_ei(ei_array, tlv_type);
 			if (!temp_ei && tlv_type < OPTIONAL_TLV_TYPE_START) {
-				pr_err("%s: Inval element info\n", __func__);
+				pr_debug("%s: Inval element info\n", __func__);
 				return -EINVAL;
 			} else if (!temp_ei) {
 				UPDATE_DECODE_VARIABLES(buf_src,
@@ -681,7 +681,7 @@ static int qmi_decode(struct qmi_elem_info *ei_array, void *out_c_struct,
 		} else if (temp_ei->array_type == STATIC_ARRAY) {
 			data_len_value = temp_ei->elem_len;
 		} else if (data_len_value > temp_ei->elem_len) {
-			pr_err("%s: Data len %d > max spec %d\n",
+			pr_debug("%s: Data len %d > max spec %d\n",
 			       __func__, data_len_value, temp_ei->elem_len);
 			return -ETOOSMALL;
 		}
@@ -725,7 +725,7 @@ static int qmi_decode(struct qmi_elem_info *ei_array, void *out_c_struct,
 			break;
 
 		default:
-			pr_err("%s: Unrecognized data type\n", __func__);
+			pr_debug("%s: Unrecognized data type\n", __func__);
 			return -EINVAL;
 		}
 		temp_ei = temp_ei + 1;
@@ -758,7 +758,7 @@ void *qmi_encode_message(int type, unsigned int msg_id, size_t *len,
 	if (!c_struct) {
 		ret = qmi_calc_min_msg_len(ei, 1);
 		if (ret) {
-			pr_err("%s: Calc. len %d != 0, but NULL c_struct\n",
+			pr_debug("%s: Calc. len %d != 0, but NULL c_struct\n",
 			       __func__, ret);
 			return ERR_PTR(-EINVAL);
 		}

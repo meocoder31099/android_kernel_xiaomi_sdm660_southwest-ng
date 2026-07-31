@@ -348,7 +348,7 @@ static void acc_complete_set_string(struct usb_ep *ep, struct usb_request *req)
 	int length = req->actual;
 
 	if (req->status != 0) {
-		pr_err("acc_complete_set_string, err %d\n", req->status);
+		pr_debug("acc_complete_set_string, err %d\n", req->status);
 		return;
 	}
 
@@ -384,7 +384,7 @@ static void acc_complete_set_string(struct usb_ep *ep, struct usb_request *req)
 		string_dest[length] = 0;
 		spin_unlock_irqrestore(&dev->lock, flags);
 	} else {
-		pr_err("unknown accessory string index %d\n",
+		pr_debug("unknown accessory string index %d\n",
 			dev->string_index);
 	}
 }
@@ -397,7 +397,7 @@ static void acc_complete_set_hid_report_desc(struct usb_ep *ep,
 	int length = req->actual;
 
 	if (req->status != 0) {
-		pr_err("acc_complete_set_hid_report_desc, err %d\n",
+		pr_debug("acc_complete_set_hid_report_desc, err %d\n",
 			req->status);
 		return;
 	}
@@ -419,7 +419,7 @@ static void acc_complete_send_hid_event(struct usb_ep *ep,
 	int length = req->actual;
 
 	if (req->status != 0) {
-		pr_err("acc_complete_send_hid_event, err %d\n", req->status);
+		pr_debug("acc_complete_send_hid_event, err %d\n", req->status);
 		return;
 	}
 
@@ -598,7 +598,7 @@ static int create_bulk_endpoints(struct acc_dev *dev,
 	return 0;
 
 fail:
-	pr_err("acc_bind() could not allocate requests\n");
+	pr_debug("acc_bind() could not allocate requests\n");
 	while ((req = req_get(dev, &dev->tx_idle)))
 		acc_request_free(req, dev->ep_in);
 	for (i = 0; i < RX_REQ_MAX; i++) {
@@ -637,7 +637,7 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 	}
 
 	if (!dev->rx_req[0]) {
-		pr_warn("acc_read: USB request already handled/freed");
+		pr_debug("acc_read: USB request already handled/freed");
 		r = -EINVAL;
 		goto done;
 	}
@@ -1161,7 +1161,7 @@ static int acc_hid_init(struct acc_hid_dev *hdev)
 	hid->driver_data = hdev;
 	ret = hid_add_device(hid);
 	if (ret) {
-		pr_err("can't add hid device: %d\n", ret);
+		pr_debug("can't add hid device: %d\n", ret);
 		hid_destroy_device(hid);
 		return ret;
 	}
@@ -1215,7 +1215,7 @@ static void acc_hid_work(struct work_struct *data)
 	list_for_each_safe(entry, temp, &new_list) {
 		hid = list_entry(entry, struct acc_hid_dev, list);
 		if (acc_hid_init(hid)) {
-			pr_err("can't add HID device %pK\n", hid);
+			pr_debug("can't add HID device %pK\n", hid);
 			acc_hid_delete(hid);
 		} else {
 			spin_lock_irqsave(&dev->lock, flags);
@@ -1329,7 +1329,7 @@ err_zap_ptr:
 	ref->acc_dev = NULL;
 err_free_dev:
 	kfree(dev);
-	pr_err("USB accessory gadget driver failed to initialize\n");
+	pr_debug("USB accessory gadget driver failed to initialize\n");
 	return ret;
 }
 

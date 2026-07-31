@@ -240,7 +240,7 @@ int mdss_dsi_phy_v3_wait_for_lanes_stop_state(struct mdss_dsi_ctrl_pdata *ctrl,
 	u32 const timeout_us = 100;
 
 	if (!ctrl || !lane_status) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -258,7 +258,7 @@ int mdss_dsi_phy_v3_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl, bool enable)
 	u32 lane_status = 0;
 
 	if (!ctrl) {
-		pr_err("invalid input\n");
+		pr_debug("invalid input\n");
 		return -EINVAL;
 	}
 
@@ -286,7 +286,7 @@ int mdss_dsi_phy_v3_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl, bool enable)
 		/* Check to make sure that all active data lanes are in ULPS */
 		lane_status = DSI_PHY_R32(ctrl->phy_io.base, CMN_LANE_STATUS0);
 		if (lane_status & active_lanes) {
-			pr_err("ULPS entry req failed for ctrl%d. Lane status=0x%08x\n",
+			pr_debug("ULPS entry req failed for ctrl%d. Lane status=0x%08x\n",
 				ctrl->ndx, lane_status);
 			rc = -EINVAL;
 			goto error;
@@ -353,7 +353,7 @@ int mdss_dsi_phy_v3_shutdown(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	/* ensure that the PLL is already off */
 	if (mdss_dsi_phy_v3_is_pll_on(ctrl))
-		pr_warn("Disabling phy with PLL still enabled\n");
+		pr_debug("Disabling phy with PLL still enabled\n");
 
 	mdss_dsi_phy_v3_config_lpcdrx(ctrl, false);
 	mdss_dsi_phy_v3_lanes_disable(ctrl);
@@ -376,18 +376,18 @@ int mdss_dsi_phy_v3_init(struct mdss_dsi_ctrl_pdata *ctrl,
 	u32 const timeout_us = 1000;
 
 	if (phy_mode != DSI_PHY_MODE_DPHY) {
-		pr_err("PHY mode(%d) is not supported\n", phy_mode);
+		pr_debug("PHY mode(%d) is not supported\n", phy_mode);
 		return -ENOTSUPP;
 	}
 
 	if (mdss_dsi_phy_v3_is_pll_on(ctrl))
-		pr_warn("PLL already on prior to configuring phy\n");
+		pr_debug("PLL already on prior to configuring phy\n");
 
 	/* wait for REFGEN READY */
 	rc = readl_poll_timeout_atomic(ctrl->phy_io.base + CMN_PHY_STATUS,
 		status, (status & BIT(0)), delay_us, timeout_us);
 	if (rc) {
-		pr_err("Ref gen not ready. Aborting\n");
+		pr_debug("Ref gen not ready. Aborting\n");
 		return rc;
 	}
 

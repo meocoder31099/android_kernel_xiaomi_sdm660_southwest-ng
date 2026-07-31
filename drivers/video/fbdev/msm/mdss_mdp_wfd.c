@@ -53,7 +53,7 @@ int mdss_mdp_acquire_wb(struct mdss_mdp_ctl *ctl)
 		rc = wait_event_timeout(mdp5_data->wb_waitq,
 			atomic_read(&mdp5_data->wb_busy) == 0, KOFF_TIMEOUT);
 		if (!rc) {
-			pr_err("%s: Wait for WB timed out. wb_busy=%d\n",
+			pr_debug("%s: Wait for WB timed out. wb_busy=%d\n",
 				__func__, atomic_read(&mdp5_data->wb_busy));
 			ret = -ETIMEDOUT;
 		} else if (!atomic_read(&mdp5_data->wb_busy))
@@ -156,7 +156,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 		pr_debug("config change, wait for pending buffer done\n");
 		ret = mdss_mdp_wfd_wait_for_finish(wfd);
 		if (ret) {
-			pr_err("fail to wait for outstanding request\n");
+			pr_debug("fail to wait for outstanding request\n");
 			return ret;
 		}
 		mdss_mdp_wfd_destroy(wfd);
@@ -169,7 +169,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 
 	wb = mdss_mdp_wb_assign(wb_idx, ctl->num);
 	if (!wb) {
-		pr_err("could not allocate wb\n");
+		pr_debug("could not allocate wb\n");
 		ret = -EINVAL;
 		goto wfd_setup_error;
 	}
@@ -184,7 +184,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 	fmt = mdss_mdp_get_format_params(layer->buffer.format);
 
 	if (fmt == NULL) {
-		pr_err("invalid buffer format\n");
+		pr_debug("invalid buffer format\n");
 		ret = -EINVAL;
 		goto wfd_setup_error;
 	}
@@ -219,7 +219,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 			ctl->mfd->split_mode = MDP_SPLIT_MODE_NONE;
 		}
 	} else if (width > max_mixer_width) {
-		pr_err("width > max_mixer_width supported only in MDSS_MDP_WB_INTF\n");
+		pr_debug("width > max_mixer_width supported only in MDSS_MDP_WB_INTF\n");
 		goto wfd_setup_error;
 	} else if (ctl->mdata->wfd_mode == MDSS_MDP_WFD_DEDICATED) {
 		ctl->mixer_left = mdss_mdp_mixer_alloc(ctl,
@@ -235,7 +235,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 			mdss_mdp_mixer_free(ctl->mixer_left);
 		if (ctl->mixer_right)
 			mdss_mdp_mixer_free(ctl->mixer_right);
-		pr_err("could not allocate mixer(s) for ctl:%d\n", ctl->num);
+		pr_debug("could not allocate mixer(s) for ctl:%d\n", ctl->num);
 		ret = -ENODEV;
 		goto wfd_setup_error;
 	}
@@ -252,7 +252,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 			ctl->opmode = MDSS_MDP_CTL_OP_WB1_MODE;
 			break;
 		default:
-			pr_err("Incorrect writeback config num=%d\n",
+			pr_debug("Incorrect writeback config num=%d\n",
 					ctl->mixer_left->num);
 			ret = -EINVAL;
 			goto wfd_setup_error;
@@ -285,7 +285,7 @@ int mdss_mdp_wfd_setup(struct mdss_mdp_wfd *wfd,
 	if (ctl->ops.start_fnc) {
 		ret = ctl->ops.start_fnc(ctl);
 		if (ret) {
-			pr_err("wfd start failed %d\n", ret);
+			pr_debug("wfd start failed %d\n", ret);
 			goto wfd_setup_error;
 		}
 	}
@@ -311,7 +311,7 @@ int mdss_mdp_wb_import_data(struct device *device,
 		flags = MDP_SECURE_OVERLAY_SESSION;
 
 	if (buffer->plane_count > MAX_PLANES) {
-		pr_err("buffer plane_count exceeds MAX_PLANES limit:%d\n",
+		pr_debug("buffer plane_count exceeds MAX_PLANES limit:%d\n",
 				buffer->plane_count);
 		return -EINVAL;
 	}
@@ -338,7 +338,7 @@ struct mdss_mdp_wb_data *mdss_mdp_wfd_add_data(
 	struct mdss_mdp_wb_data *wfd_data;
 
 	if (!wfd->ctl || !wfd->ctl->wb) {
-		pr_err("wfd not setup\n");
+		pr_debug("wfd not setup\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -349,7 +349,7 @@ struct mdss_mdp_wb_data *mdss_mdp_wfd_add_data(
 	wfd_data->layer = *layer;
 	ret = mdss_mdp_wb_import_data(wfd->device, wfd_data);
 	if (ret) {
-		pr_err("fail to import data\n");
+		pr_debug("fail to import data\n");
 		mdss_mdp_data_free(&wfd_data->data, true, DMA_FROM_DEVICE);
 		kfree(wfd_data);
 		return ERR_PTR(ret);
@@ -384,13 +384,13 @@ static int mdss_mdp_wfd_validate_out_configuration(struct mdss_mdp_wfd *wfd,
 	if (mdss_mdp_is_wb_mdp_intf(wb_idx, ctl->num)) {
 		fmt = mdss_mdp_get_format_params(layer->buffer.format);
 		if (fmt && !(fmt->flag & VALID_MDP_WB_INTF_FORMAT)) {
-			pr_err("wb=%d does not support dst fmt:%d\n", wb_idx,
+			pr_debug("wb=%d does not support dst fmt:%d\n", wb_idx,
 				layer->buffer.format);
 			return -EINVAL;
 		}
 
 		if (!ctl->mdata->has_wb_ubwc && mdss_mdp_is_ubwc_format(fmt)) {
-			pr_err("wb=%d does not support UBWC fmt:%d\n", wb_idx,
+			pr_debug("wb=%d does not support UBWC fmt:%d\n", wb_idx,
 				layer->buffer.format);
 			return -EINVAL;
 		}
@@ -405,32 +405,32 @@ int mdss_mdp_cwb_check_resource(struct mdss_mdp_ctl *ctl, u32 wb_idx)
 	struct mdss_mdp_writeback *wb = NULL;
 
 	if (!mdata) {
-		pr_err("Invalid mdata\n");
+		pr_debug("Invalid mdata\n");
 		return -EINVAL;
 	}
 
 	if (wb_idx != (mdata->nwb - 1)) {
-		pr_err("Invalid wb index for cwb: %d\n", wb_idx);
+		pr_debug("Invalid wb index for cwb: %d\n", wb_idx);
 		return -EINVAL;
 	}
 
 	wb = mdata->wb + wb_idx;
 	if (refcount_read(&wb->kref.refcount)) {
-		pr_err("WB block busy\n");
+		pr_debug("WB block busy\n");
 		return -EBUSY;
 	}
 
 	/* CWB path is hardwired from mixer0 to mixer2 and mixer1 to mixer5 */
 	cwb_mixer = mdata->mixer_intf + ctl->mixer_left->num + 2;
 	if (cwb_mixer->ref_cnt) {
-		pr_err("mixer 2 is busy\n");
+		pr_debug("mixer 2 is busy\n");
 		return -EBUSY;
 	}
 
 	if (ctl->mixer_right) {
 		cwb_mixer = mdata->mixer_intf + ctl->mixer_right->num + 2;
 		if (cwb_mixer->ref_cnt) {
-			pr_err("mixer 5 is busy\n");
+			pr_debug("mixer 5 is busy\n");
 			return -EBUSY;
 		}
 	}
@@ -450,7 +450,7 @@ int mdss_mdp_cwb_validate(struct msm_fb_data_type *mfd,
 
 	fmt = mdss_mdp_get_format_params(layer->buffer.format);
 	if (!fmt || (fmt && !(fmt->flag & VALID_MDP_WB_INTF_FORMAT))) {
-		pr_err("wb does not support dst fmt:%d\n",
+		pr_debug("wb does not support dst fmt:%d\n",
 				layer->buffer.format);
 		return -EINVAL;
 	}
@@ -463,7 +463,7 @@ int mdss_mdp_wfd_validate(struct mdss_mdp_wfd *wfd,
 	u32 wb_idx = layer->writeback_ndx;
 
 	if (mdss_mdp_wfd_validate_out_configuration(wfd, layer)) {
-		pr_err("failed to validate output config\n");
+		pr_debug("failed to validate output config\n");
 		return -EINVAL;
 	}
 
@@ -483,17 +483,17 @@ int mdss_mdp_wfd_kickoff(struct mdss_mdp_wfd *wfd,
 	int ret = 0;
 
 	if (!ctl) {
-		pr_err("no ctl\n");
+		pr_debug("no ctl\n");
 		return -EINVAL;
 	}
 
 	if (!ctl->wb) {
-		pr_err("wfd not prepared\n");
+		pr_debug("wfd not prepared\n");
 		return -EINVAL;
 	}
 
 	if (mdp5_data->cwb.valid) {
-		pr_err("Skipping the frame as WB is in use\n");
+		pr_debug("Skipping the frame as WB is in use\n");
 		mdss_mdp_ctl_notify(ctl, MDP_NOTIFY_FRAME_DONE);
 		return 0;
 	}
@@ -511,7 +511,7 @@ int mdss_mdp_wfd_kickoff(struct mdss_mdp_wfd *wfd,
 
 	ret = mdss_mdp_data_map(&wfd_data->data, true, DMA_FROM_DEVICE);
 	if (ret) {
-		pr_err("fail to acquire output buffer\n");
+		pr_debug("fail to acquire output buffer\n");
 		goto kickoff_error;
 	}
 
@@ -520,7 +520,7 @@ int mdss_mdp_wfd_kickoff(struct mdss_mdp_wfd *wfd,
 
 	ret = mdss_mdp_writeback_display_commit(ctl, &wb_args);
 	if (ret) {
-		pr_err("wfd commit error = %d, ctl=%d\n", ret, ctl->num);
+		pr_debug("wfd commit error = %d, ctl=%d\n", ret, ctl->num);
 		goto kickoff_error;
 	}
 
@@ -546,7 +546,7 @@ int mdss_mdp_wfd_commit_done(struct mdss_mdp_wfd *wfd)
 
 	mutex_lock(&wfd->lock);
 	if (list_empty(&wfd->data_queue)) {
-		pr_err("no output buffer\n");
+		pr_debug("no output buffer\n");
 		mutex_unlock(&wfd->lock);
 		return -EINVAL;
 	}

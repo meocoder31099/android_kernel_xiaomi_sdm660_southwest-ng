@@ -68,13 +68,13 @@ static void notify_netlink_uevent(const char *iface,
 	res = snprintf(iface_msg, NLMSG_MAX_SIZE, "INTERFACE=%s",
 		       iface);
 	if (res >= NLMSG_MAX_SIZE) {
-		pr_err("message too long (%d)", res);
+		pr_debug("message too long (%d)", res);
 		return;
 	}
 	res = snprintf(state_msg, NLMSG_MAX_SIZE, "STATE=%s",
 		       timer->active ? "active" : "inactive");
 	if (res >= NLMSG_MAX_SIZE) {
-		pr_err("message too long (%d)", res);
+		pr_debug("message too long (%d)", res);
 		return;
 	}
 	pr_debug("putting nlmsg: <%s> <%s>\n", iface_msg, state_msg);

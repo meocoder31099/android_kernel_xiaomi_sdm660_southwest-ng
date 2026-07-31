@@ -127,7 +127,7 @@ static u64 mem_acc_read_efuse_row(struct mem_acc_regulator *mem_acc_vreg,
 
 	rc = scm_call2(SCM_SIP_FNID(SCM_SVC_FUSE, SCM_FUSE_READ), &desc);
 	if (rc) {
-		pr_err("read row %d failed, err code = %d\n", row_num, rc);
+		pr_debug("read row %d failed, err code = %d\n", row_num, rc);
 	} else {
 		efuse_bits = ((u64)(desc.ret[1]) << 32) + (u64)desc.ret[0];
 	}
@@ -175,7 +175,7 @@ static void __update_acc_type(struct mem_acc_regulator *mem_acc_vreg,
 				mem_acc_vreg->mem_acc_type_data[corner - 1 + i *
 				mem_acc_vreg->num_corners]);
 			if (rc)
-				pr_err("scm_io_write: %pa failure rc:%d\n",
+				pr_debug("scm_io_write: %pa failure rc:%d\n",
 					&(mem_acc_vreg->mem_acc_type_addr[i]),
 					rc);
 		}
@@ -249,7 +249,7 @@ static int mem_acc_regulator_set_voltage(struct regulator_dev *rdev,
 	int i;
 
 	if (corner > mem_acc_vreg->num_corners) {
-		pr_err("Invalid corner=%d requested\n", corner);
+		pr_debug("Invalid corner=%d requested\n", corner);
 		return -EINVAL;
 	}
 
@@ -327,7 +327,7 @@ static int mem_acc_sel_init(struct mem_acc_regulator *mem_acc_vreg)
 		if (mem_acc_vreg->mem_acc_supported[i]) {
 			rc = __mem_acc_sel_init(mem_acc_vreg, i);
 			if (rc) {
-				pr_err("Unable to initialize mem_type=%d rc=%d\n",
+				pr_debug("Unable to initialize mem_type=%d rc=%d\n",
 					i, rc);
 				return rc;
 			}
@@ -358,19 +358,19 @@ static int populate_acc_data(struct mem_acc_regulator *mem_acc_vreg,
 	int rc;
 
 	if (!of_get_property(mem_acc_vreg->dev->of_node, prop_name, len)) {
-		pr_err("Unable to find %s property\n", prop_name);
+		pr_debug("Unable to find %s property\n", prop_name);
 		return -EINVAL;
 	}
 	*len /= sizeof(u32);
 	if (!(*len)) {
-		pr_err("Incorrect entries in %s\n", prop_name);
+		pr_debug("Incorrect entries in %s\n", prop_name);
 		return -EINVAL;
 	}
 
 	*value = devm_kzalloc(mem_acc_vreg->dev, (*len) * sizeof(u32),
 							GFP_KERNEL);
 	if (!(*value)) {
-		pr_err("Unable to allocate memory for %s\n", prop_name);
+		pr_debug("Unable to allocate memory for %s\n", prop_name);
 		return -ENOMEM;
 	}
 
@@ -379,7 +379,7 @@ static int populate_acc_data(struct mem_acc_regulator *mem_acc_vreg,
 	rc = of_property_read_u32_array(mem_acc_vreg->dev->of_node,
 					prop_name, *value, *len);
 	if (rc) {
-		pr_err("Unable to populate %s rc=%d\n", prop_name, rc);
+		pr_debug("Unable to populate %s rc=%d\n", prop_name, rc);
 		return rc;
 	}
 
@@ -401,7 +401,7 @@ static int mem_acc_sel_setup(struct mem_acc_regulator *mem_acc_vreg,
 	mem_acc_vreg->acc_sel_base[mem_type] = devm_ioremap(mem_acc_vreg->dev,
 			mem_acc_vreg->acc_sel_addr[mem_type], len);
 	if (!mem_acc_vreg->acc_sel_base[mem_type]) {
-		pr_err("Unable to map 'acc_sel_addr' %pa for mem_type=%d\n",
+		pr_debug("Unable to map 'acc_sel_addr' %pa for mem_type=%d\n",
 			&mem_acc_vreg->acc_sel_addr[mem_type], mem_type);
 		return -EINVAL;
 	}
@@ -416,7 +416,7 @@ static int mem_acc_sel_setup(struct mem_acc_regulator *mem_acc_vreg,
 		mem_select_size_str = "qcom,acc-sel-l2-bit-size";
 		break;
 	default:
-		pr_err("Invalid memory type: %d\n", mem_type);
+		pr_debug("Invalid memory type: %d\n", mem_type);
 		return -EINVAL;
 	}
 
@@ -428,7 +428,7 @@ static int mem_acc_sel_setup(struct mem_acc_regulator *mem_acc_vreg,
 			&mem_acc_vreg->acc_sel_bit_pos[mem_type],
 			&mem_acc_vreg->num_acc_sel[mem_type]);
 	if (rc)
-		pr_err("Unable to populate '%s' rc=%d\n", mem_select_str, rc);
+		pr_debug("Unable to populate '%s' rc=%d\n", mem_select_str, rc);
 
 	return rc;
 }
@@ -449,12 +449,12 @@ static int mem_acc_efuse_init(struct platform_device *pdev,
 	mem_acc_vreg->efuse_addr = res->start;
 	len = resource_size(res);
 
-	pr_info("efuse_addr = %pa (len=0x%x)\n", &res->start, len);
+	pr_debug("efuse_addr = %pa (len=0x%x)\n", &res->start, len);
 
 	mem_acc_vreg->efuse_base = devm_ioremap(&pdev->dev,
 						mem_acc_vreg->efuse_addr, len);
 	if (!mem_acc_vreg->efuse_base) {
-		pr_err("Unable to map efuse_addr %pa\n",
+		pr_debug("Unable to map efuse_addr %pa\n",
 				&mem_acc_vreg->efuse_addr);
 		return -EINVAL;
 	}
@@ -480,7 +480,7 @@ static int mem_acc_custom_data_init(struct platform_device *pdev,
 		custom_apc_data_str = "qcom,l2-acc-custom-data";
 		break;
 	default:
-		pr_err("Invalid memory type: %d\n", mem_type);
+		pr_debug("Invalid memory type: %d\n", mem_type);
 		return -EINVAL;
 	}
 
@@ -501,7 +501,7 @@ static int mem_acc_custom_data_init(struct platform_device *pdev,
 	mem_acc_vreg->acc_custom_addr[mem_type] =
 		devm_ioremap(mem_acc_vreg->dev, res->start, len);
 	if (!mem_acc_vreg->acc_custom_addr[mem_type]) {
-		pr_err("Unable to map %s %pa\n",
+		pr_debug("Unable to map %s %pa\n",
 			custom_apc_addr_str, &res->start);
 		return -EINVAL;
 	}
@@ -509,12 +509,12 @@ static int mem_acc_custom_data_init(struct platform_device *pdev,
 	rc = populate_acc_data(mem_acc_vreg, custom_apc_data_str,
 				&mem_acc_vreg->acc_custom_data[mem_type], &len);
 	if (rc) {
-		pr_err("Unable to find %s rc=%d\n", custom_apc_data_str, rc);
+		pr_debug("Unable to find %s rc=%d\n", custom_apc_data_str, rc);
 		return rc;
 	}
 
 	if (mem_acc_vreg->num_corners != len) {
-		pr_err("Custom data is not present for all the corners\n");
+		pr_debug("Custom data is not present for all the corners\n");
 		return -EINVAL;
 	}
 
@@ -539,7 +539,7 @@ static int override_mem_acc_custom_data(struct mem_acc_regulator *mem_acc_vreg,
 		custom_apc_data_str = "qcom,override-l2-acc-custom-data";
 		break;
 	default:
-		pr_err("Invalid memory type: %d\n", mem_type);
+		pr_debug("Invalid memory type: %d\n", mem_type);
 		return -EINVAL;
 	}
 
@@ -560,7 +560,7 @@ static int override_mem_acc_custom_data(struct mem_acc_regulator *mem_acc_vreg,
 	}
 
 	if (len != mem_acc_vreg->num_corners * tuple_count * sizeof(u32)) {
-		pr_err("%s length=%d is invalid\n", custom_apc_data_str, len);
+		pr_debug("%s length=%d is invalid\n", custom_apc_data_str, len);
 		return -EINVAL;
 	}
 
@@ -569,7 +569,7 @@ static int override_mem_acc_custom_data(struct mem_acc_regulator *mem_acc_vreg,
 		rc = of_property_read_u32_index(mem_acc_vreg->dev->of_node,
 					custom_apc_data_str, index, &value);
 		if (rc) {
-			pr_err("Unable read %s index %u, rc=%d\n",
+			pr_debug("Unable read %s index %u, rc=%d\n",
 					custom_apc_data_str, index, rc);
 			return rc;
 		}
@@ -600,7 +600,7 @@ static int mem_acc_override_corner_map(struct mem_acc_regulator *mem_acc_vreg)
 	}
 
 	if (len != mem_acc_vreg->num_corners * tuple_count * sizeof(u32)) {
-		pr_err("%s length=%d is invalid\n", prop_str, len);
+		pr_debug("%s length=%d is invalid\n", prop_str, len);
 		return -EINVAL;
 	}
 
@@ -609,7 +609,7 @@ static int mem_acc_override_corner_map(struct mem_acc_regulator *mem_acc_vreg)
 		rc = of_property_read_u32_index(mem_acc_vreg->dev->of_node,
 						prop_str, index, &value);
 		if (rc) {
-			pr_err("Unable read %s index %u, rc=%d\n",
+			pr_debug("Unable read %s index %u, rc=%d\n",
 						prop_str, index, rc);
 			return rc;
 		}
@@ -649,7 +649,7 @@ static int mem_acc_parse_override_fuse_version_map(
 	rc = of_property_read_u32_array(of_node, prop_str, fuse_sel,
 					FUSE_TUPLE_SIZE);
 	if (rc < 0) {
-		pr_err("Read failed - %s rc=%d\n", prop_str, rc);
+		pr_debug("Read failed - %s rc=%d\n", prop_str, rc);
 		return rc;
 	}
 
@@ -663,7 +663,7 @@ static int mem_acc_parse_override_fuse_version_map(
 	tuple_size = 1;
 	mem_acc_vreg->override_map_count = len / (sizeof(u32) * tuple_size);
 	if (len == 0 || len % (sizeof(u32) * tuple_size)) {
-		pr_err("%s length=%d is invalid\n", prop_str, len);
+		pr_debug("%s length=%d is invalid\n", prop_str, len);
 		return -EINVAL;
 	}
 
@@ -674,7 +674,7 @@ static int mem_acc_parse_override_fuse_version_map(
 	rc = of_property_read_u32_array(of_node, prop_str, tmp,
 			mem_acc_vreg->override_map_count * tuple_size);
 	if (rc) {
-		pr_err("could not read %s rc=%d\n", prop_str, rc);
+		pr_debug("could not read %s rc=%d\n", prop_str, rc);
 		goto done;
 	}
 
@@ -689,11 +689,11 @@ static int mem_acc_parse_override_fuse_version_map(
 	}
 
 	if (mem_acc_vreg->override_map_match != FUSE_MAP_NO_MATCH)
-		pr_info("override_fuse_val=%d, %s tuple match found: %d\n",
+		pr_debug("override_fuse_val=%d, %s tuple match found: %d\n",
 			mem_acc_vreg->override_fuse_value, prop_str,
 			mem_acc_vreg->override_map_match);
 	else
-		pr_err("%s tuple match not found\n", prop_str);
+		pr_debug("%s tuple match not found\n", prop_str);
 
 done:
 	kfree(tmp);
@@ -714,13 +714,13 @@ static int mem_acc_parse_override_fuse_version_range(
 
 	prop_str = "qcom,override-acc-range-fuse-list";
 	if (!of_find_property(of_node, prop_str, &len)) {
-		pr_err("%s property is missing\n", prop_str);
+		pr_debug("%s property is missing\n", prop_str);
 		return -EINVAL;
 	}
 
 	size = len / sizeof(u32);
 	if (len == 0 || (size % FUSE_TUPLE_SIZE)) {
-		pr_err("%s property length (%d) is invalid\n", prop_str, len);
+		pr_debug("%s property length (%d) is invalid\n", prop_str, len);
 		return -EINVAL;
 	}
 
@@ -741,7 +741,7 @@ static int mem_acc_parse_override_fuse_version_range(
 	rc = of_property_read_u32_array(of_node, prop_str, fuse_sel,
 					size);
 	if (rc) {
-		pr_err("%s read failed, rc=%d\n", prop_str, rc);
+		pr_debug("%s read failed, rc=%d\n", prop_str, rc);
 		goto done;
 	}
 
@@ -758,7 +758,7 @@ static int mem_acc_parse_override_fuse_version_range(
 	mem_acc_vreg->override_map_count = len / (sizeof(u32) * row_size);
 
 	if (len == 0 || len % (sizeof(u32) * row_size)) {
-		pr_err("%s length=%d is invalid\n", prop_str, len);
+		pr_debug("%s length=%d is invalid\n", prop_str, len);
 		rc = -EINVAL;
 		goto done;
 	}
@@ -772,7 +772,7 @@ static int mem_acc_parse_override_fuse_version_range(
 	rc = of_property_read_u32_array(of_node, prop_str, tmp,
 				mem_acc_vreg->override_map_count * row_size);
 	if (rc) {
-		pr_err("could not read %s rc=%d\n", prop_str, rc);
+		pr_debug("could not read %s rc=%d\n", prop_str, rc);
 		goto done;
 	}
 
@@ -803,10 +803,10 @@ static int mem_acc_parse_override_fuse_version_range(
 				 j, fuse_val[j]);
 	buf[pos] = '\0';
 	if (mem_acc_vreg->override_map_match != FUSE_MAP_NO_MATCH)
-		pr_info("%s %s tuple match found: %d\n", buf, prop_str,
+		pr_debug("%s %s tuple match found: %d\n", buf, prop_str,
 			mem_acc_vreg->override_map_match);
 	else
-		pr_err("%s %s tuple match not found\n", buf, prop_str);
+		pr_debug("%s %s tuple match not found\n", buf, prop_str);
 
 done:
 	kfree(fuse_sel);
@@ -837,7 +837,7 @@ static int mem_acc_reg_addr_val_dump(struct mem_acc_regulator *mem_acc_vreg,
 	buflen = max_reg_config_len * (MAX_CHARS_PER_INT + 6) * sizeof(*buf);
 	buf = kzalloc(buflen, GFP_KERNEL);
 	if (buf == NULL) {
-		pr_err("Could not allocate memory for acc register and value logging\n");
+		pr_debug("Could not allocate memory for acc register and value logging\n");
 		return -ENOMEM;
 	}
 
@@ -880,7 +880,7 @@ static int mem_acc_get_reg_addr_val(struct device_node *of_node,
 		rc |= of_property_read_u32_index(of_node, prop_str, index + 1,
 					&reg_config_list[i].reg_val);
 		if (rc) {
-			pr_err("could not read %s at tuple %u: rc=%d\n",
+			pr_debug("could not read %s at tuple %u: rc=%d\n",
 				prop_str, index, rc);
 			return rc;
 		}
@@ -890,7 +890,7 @@ static int mem_acc_get_reg_addr_val(struct device_node *of_node,
 
 		if ((!reg_config_list[i].addr_index) ||
 			reg_config_list[i].addr_index > max_reg_index) {
-			pr_err("Invalid register index %u in %s at tuple %u\n",
+			pr_debug("Invalid register index %u in %s at tuple %u\n",
 				reg_config_list[i].addr_index, prop_str, index);
 			return -EINVAL;
 		}
@@ -936,7 +936,7 @@ static int mem_acc_override_reg_addr_val_init(
 		}
 
 		if ((!list_size) || list_size < (num_corners * 2)) {
-			pr_err("qcom,override-corner%d-addr-val-map property is missed or invalid length: len=%d\n",
+			pr_debug("qcom,override-corner%d-addr-val-map property is missed or invalid length: len=%d\n",
 			i, len);
 			return -EINVAL;
 		}
@@ -968,7 +968,7 @@ static int mem_acc_override_reg_addr_val_init(
 					override_reg_config_list, tuple_match,
 					list_size, mem_acc_vreg->num_acc_reg);
 		if (rc) {
-			pr_err("Failed to read %s property: rc=%d\n",
+			pr_debug("Failed to read %s property: rc=%d\n",
 				prop_str, rc);
 			return rc;
 		}
@@ -976,7 +976,7 @@ static int mem_acc_override_reg_addr_val_init(
 		rc = mem_acc_reg_addr_val_dump(mem_acc_vreg,
 						&corner_acc_reg_config[i], i);
 		if (rc) {
-			pr_err("could not dump acc address-value dump for corner=%d: rc=%d\n",
+			pr_debug("could not dump acc address-value dump for corner=%d: rc=%d\n",
 				i, rc);
 			return rc;
 		}
@@ -998,7 +998,7 @@ static int mem_acc_parse_override_config(struct mem_acc_regulator *mem_acc_vreg)
 			     NULL)) {
 		rc = mem_acc_parse_override_fuse_version_range(mem_acc_vreg);
 		if (rc) {
-			pr_err("parsing qcom,override-fuse-range-map property failed, rc=%d\n",
+			pr_debug("parsing qcom,override-fuse-range-map property failed, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1006,7 +1006,7 @@ static int mem_acc_parse_override_config(struct mem_acc_regulator *mem_acc_vreg)
 				    NULL)) {
 		rc = mem_acc_parse_override_fuse_version_map(mem_acc_vreg);
 		if (rc) {
-			pr_err("parsing qcom,override-fuse-version-map property failed, rc=%d\n",
+			pr_debug("parsing qcom,override-fuse-version-map property failed, rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1020,13 +1020,13 @@ static int mem_acc_parse_override_config(struct mem_acc_regulator *mem_acc_vreg)
 
 	rc = mem_acc_override_corner_map(mem_acc_vreg);
 	if (rc) {
-		pr_err("Unable to override corner map rc=%d\n", rc);
+		pr_debug("Unable to override corner map rc=%d\n", rc);
 		return rc;
 	}
 
 	rc = mem_acc_override_reg_addr_val_init(mem_acc_vreg);
 	if (rc) {
-		pr_err("Unable to override reg_config_list init rc=%d\n",
+		pr_debug("Unable to override reg_config_list init rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -1034,7 +1034,7 @@ static int mem_acc_parse_override_config(struct mem_acc_regulator *mem_acc_vreg)
 	for (i = 0; i < MEMORY_MAX; i++) {
 		rc = override_mem_acc_custom_data(mem_acc_vreg, i);
 		if (rc) {
-			pr_err("Unable to override custom data for mem_type=%d rc=%d\n",
+			pr_debug("Unable to override custom data for mem_type=%d rc=%d\n",
 				i, rc);
 			return rc;
 		}
@@ -1057,7 +1057,7 @@ static int mem_acc_init_reg_config(struct mem_acc_regulator *mem_acc_vreg)
 
 	size = len / sizeof(u32);
 	if ((!size) || (size % 2)) {
-		pr_err("%s specified with invalid length: %d\n",
+		pr_debug("%s specified with invalid length: %d\n",
 			prop_str, size);
 		return -EINVAL;
 	}
@@ -1069,13 +1069,13 @@ static int mem_acc_init_reg_config(struct mem_acc_regulator *mem_acc_vreg)
 		rc |= of_property_read_u32_index(of_node, prop_str, index + 1,
 						&reg_val);
 		if (rc) {
-			pr_err("could not read %s at tuple %u: rc=%d\n",
+			pr_debug("could not read %s at tuple %u: rc=%d\n",
 				prop_str, index, rc);
 			return rc;
 		}
 
 		if ((!addr_index) || addr_index > mem_acc_vreg->num_acc_reg) {
-			pr_err("Invalid register index %u in %s at tuple %u\n",
+			pr_debug("Invalid register index %u in %s at tuple %u\n",
 				addr_index, prop_str, index);
 			return -EINVAL;
 		}
@@ -1106,7 +1106,7 @@ static int mem_acc_get_reg_addr(struct mem_acc_regulator *mem_acc_vreg)
 
 	num_acc_reg = len / sizeof(u32);
 	if (!num_acc_reg) {
-		pr_err("qcom,acc-reg-addr-list has invalid len = %d\n", len);
+		pr_debug("qcom,acc-reg-addr-list has invalid len = %d\n", len);
 		return -EINVAL;
 	}
 
@@ -1123,7 +1123,7 @@ static int mem_acc_get_reg_addr(struct mem_acc_regulator *mem_acc_vreg)
 	rc = of_property_read_u32_array(of_node, "qcom,acc-reg-addr-list",
 					&phys_reg_addr_list[1], num_acc_reg);
 	if (rc) {
-		pr_err("Read- qcom,acc-reg-addr-list failed: rc=%d\n", rc);
+		pr_debug("Read- qcom,acc-reg-addr-list failed: rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1131,7 +1131,7 @@ static int mem_acc_get_reg_addr(struct mem_acc_regulator *mem_acc_vreg)
 		remap_reg_addr_list[i] = devm_ioremap(mem_acc_vreg->dev,
 						phys_reg_addr_list[i], 0x4);
 		if (!remap_reg_addr_list[i]) {
-			pr_err("Unable to map register address 0x%x\n",
+			pr_debug("Unable to map register address 0x%x\n",
 					phys_reg_addr_list[i]);
 			return -EINVAL;
 		}
@@ -1156,7 +1156,7 @@ static int mem_acc_reg_config_init(struct mem_acc_regulator *mem_acc_vreg)
 	rc = of_property_read_u32(of_node, "qcom,num-acc-corners",
 				&num_corners);
 	if (rc) {
-		pr_err("could not read qcom,num-acc-corners: rc=%d\n", rc);
+		pr_debug("could not read qcom,num-acc-corners: rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1165,7 +1165,7 @@ static int mem_acc_reg_config_init(struct mem_acc_regulator *mem_acc_vreg)
 	rc = of_property_read_u32(of_node, "qcom,boot-acc-corner",
 				&mem_acc_vreg->corner);
 	if (rc) {
-		pr_err("could not read qcom,boot-acc-corner: rc=%d\n", rc);
+		pr_debug("could not read qcom,boot-acc-corner: rc=%d\n", rc);
 		return rc;
 	}
 	pr_debug("boot acc corner = %d\n", mem_acc_vreg->corner);
@@ -1182,7 +1182,7 @@ static int mem_acc_reg_config_init(struct mem_acc_regulator *mem_acc_vreg)
 		prop = of_find_property(of_node, prop_str, &len);
 		size = len / sizeof(u32);
 		if ((!prop) || (!size) || size < (num_corners * 2)) {
-			pr_err("%s property is missed or invalid length: len=%d\n",
+			pr_debug("%s property is missed or invalid length: len=%d\n",
 				prop_str, len);
 			return -EINVAL;
 		}
@@ -1196,7 +1196,7 @@ static int mem_acc_reg_config_init(struct mem_acc_regulator *mem_acc_vreg)
 						reg_config_list, 0, size,
 						mem_acc_vreg->num_acc_reg);
 		if (rc) {
-			pr_err("Failed to read %s property: rc=%d\n",
+			pr_debug("Failed to read %s property: rc=%d\n",
 				prop_str, rc);
 			return rc;
 		}
@@ -1208,7 +1208,7 @@ static int mem_acc_reg_config_init(struct mem_acc_regulator *mem_acc_vreg)
 		rc = mem_acc_reg_addr_val_dump(mem_acc_vreg,
 						&corner_acc_reg_config[i], i);
 		if (rc) {
-			pr_err("could not dump acc address-value dump for corner=%d: rc=%d\n",
+			pr_debug("could not dump acc address-value dump for corner=%d: rc=%d\n",
 				i, rc);
 			return rc;
 		}
@@ -1240,7 +1240,7 @@ static int mem_acc_init(struct platform_device *pdev,
 		mem_acc_vreg->acc_en_base = devm_ioremap(mem_acc_vreg->dev,
 				mem_acc_vreg->acc_en_addr, len);
 		if (!mem_acc_vreg->acc_en_base) {
-			pr_err("Unable to map 'acc_en_addr' %pa\n",
+			pr_debug("Unable to map 'acc_en_addr' %pa\n",
 					&mem_acc_vreg->acc_en_addr);
 			return -EINVAL;
 		}
@@ -1249,7 +1249,7 @@ static int mem_acc_init(struct platform_device *pdev,
 				&mem_acc_vreg->acc_en_bit_pos,
 				&mem_acc_vreg->num_acc_en);
 		if (rc) {
-			pr_err("Unable to populate 'qcom,acc-en-bit-pos' rc=%d\n",
+			pr_debug("Unable to populate 'qcom,acc-en-bit-pos' rc=%d\n",
 					rc);
 			return rc;
 		}
@@ -1257,7 +1257,7 @@ static int mem_acc_init(struct platform_device *pdev,
 
 	rc = mem_acc_efuse_init(pdev, mem_acc_vreg);
 	if (rc) {
-		pr_err("Wrong eFuse address specified: rc=%d\n", rc);
+		pr_debug("Wrong eFuse address specified: rc=%d\n", rc);
 		return rc;
 	}
 
@@ -1267,7 +1267,7 @@ static int mem_acc_init(struct platform_device *pdev,
 	} else {
 		rc = mem_acc_sel_setup(mem_acc_vreg, res, MEMORY_L1);
 		if (rc) {
-			pr_err("Unable to setup mem-acc for mem_type=%d rc=%d\n",
+			pr_debug("Unable to setup mem-acc for mem_type=%d rc=%d\n",
 					MEMORY_L1, rc);
 			return rc;
 		}
@@ -1280,7 +1280,7 @@ static int mem_acc_init(struct platform_device *pdev,
 	} else {
 		rc = mem_acc_sel_setup(mem_acc_vreg, res, MEMORY_L2);
 		if (rc) {
-			pr_err("Unable to setup mem-acc for mem_type=%d rc=%d\n",
+			pr_debug("Unable to setup mem-acc for mem_type=%d rc=%d\n",
 					MEMORY_L2, rc);
 			return rc;
 		}
@@ -1301,14 +1301,14 @@ static int mem_acc_init(struct platform_device *pdev,
 
 	rc = mem_acc_get_reg_addr(mem_acc_vreg);
 	if (rc) {
-		pr_err("Unable to get acc register addresses: rc=%d\n", rc);
+		pr_debug("Unable to get acc register addresses: rc=%d\n", rc);
 		return rc;
 	}
 
 	if (mem_acc_vreg->phys_reg_addr_list) {
 		rc = mem_acc_reg_config_init(mem_acc_vreg);
 		if (rc) {
-			pr_err("acc register address-value map failed: rc=%d\n",
+			pr_debug("acc register address-value map failed: rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1325,7 +1325,7 @@ static int mem_acc_init(struct platform_device *pdev,
 				break;
 		}
 		if (i == MEMORY_MAX && !acc_type_present) {
-			pr_err("No mem-acc configuration specified\n");
+			pr_debug("No mem-acc configuration specified\n");
 			return -EINVAL;
 		}
 
@@ -1334,7 +1334,7 @@ static int mem_acc_init(struct platform_device *pdev,
 
 	if ((mem_acc_vreg->flags & MEM_ACC_USE_CORNER_ACC_MAP) &&
 		(mem_acc_vreg->flags & MEM_ACC_USE_ADDR_VAL_MAP)) {
-		pr_err("Invalid configuration, both qcom,corner-acc-map and qcom,cornerX-addr-val-map specified\n");
+		pr_debug("Invalid configuration, both qcom,corner-acc-map and qcom,cornerX-addr-val-map specified\n");
 		return -EINVAL;
 	}
 
@@ -1346,7 +1346,7 @@ static int mem_acc_init(struct platform_device *pdev,
 	if (mem_acc_vreg->phys_reg_addr_list) {
 		rc = mem_acc_init_reg_config(mem_acc_vreg);
 		if (rc) {
-			pr_err("acc initial register configuration failed: rc=%d\n",
+			pr_debug("acc initial register configuration failed: rc=%d\n",
 				rc);
 			return rc;
 		}
@@ -1354,14 +1354,14 @@ static int mem_acc_init(struct platform_device *pdev,
 
 	rc = mem_acc_sel_init(mem_acc_vreg);
 	if (rc) {
-		pr_err("Unable to initialize mem_acc_sel reg rc=%d\n", rc);
+		pr_debug("Unable to initialize mem_acc_sel reg rc=%d\n", rc);
 		return rc;
 	}
 
 	for (i = 0; i < MEMORY_MAX; i++) {
 		rc = mem_acc_custom_data_init(pdev, mem_acc_vreg, i);
 		if (rc) {
-			pr_err("Unable to initialize custom data for mem_type=%d rc=%d\n",
+			pr_debug("Unable to initialize custom data for mem_type=%d rc=%d\n",
 					i, rc);
 			return rc;
 		}
@@ -1369,7 +1369,7 @@ static int mem_acc_init(struct platform_device *pdev,
 
 	rc = mem_acc_parse_override_config(mem_acc_vreg);
 	if (rc) {
-		pr_err("Unable to parse mem acc override configuration, rc=%d\n",
+		pr_debug("Unable to parse mem acc override configuration, rc=%d\n",
 			rc);
 		return rc;
 	}
@@ -1379,7 +1379,7 @@ static int mem_acc_init(struct platform_device *pdev,
 			MEM_ACC_TYPE_MAX * sizeof(u32), GFP_KERNEL);
 
 		if (!mem_acc_vreg->mem_acc_type_data) {
-			pr_err("Unable to allocate memory for mem_acc_type\n");
+			pr_debug("Unable to allocate memory for mem_acc_type\n");
 			return -ENOMEM;
 		}
 
@@ -1395,7 +1395,7 @@ static int mem_acc_init(struct platform_device *pdev,
 					&mem_acc_vreg->mem_acc_type_data[j],
 					mem_acc_vreg->num_corners);
 				if (rc) {
-					pr_err("Unable to get property %s rc=%d\n",
+					pr_debug("Unable to get property %s rc=%d\n",
 						tmps, rc);
 					return rc;
 				}
@@ -1415,14 +1415,14 @@ static int mem_acc_regulator_probe(struct platform_device *pdev)
 	int rc;
 
 	if (!pdev->dev.of_node) {
-		pr_err("Device tree node is missing\n");
+		pr_debug("Device tree node is missing\n");
 		return -EINVAL;
 	}
 
 	init_data = of_get_regulator_init_data(&pdev->dev, pdev->dev.of_node,
 					NULL);
 	if (!init_data) {
-		pr_err("regulator init data is missing\n");
+		pr_debug("regulator init data is missing\n");
 		return -EINVAL;
 	}
 
@@ -1438,7 +1438,7 @@ static int mem_acc_regulator_probe(struct platform_device *pdev)
 
 	rc = mem_acc_init(pdev, mem_acc_vreg);
 	if (rc) {
-		pr_err("Unable to initialize mem_acc configuration rc=%d\n",
+		pr_debug("Unable to initialize mem_acc configuration rc=%d\n",
 				rc);
 		return rc;
 	}
@@ -1457,7 +1457,7 @@ static int mem_acc_regulator_probe(struct platform_device *pdev)
 	if (IS_ERR(mem_acc_vreg->rdev)) {
 		rc = PTR_ERR(mem_acc_vreg->rdev);
 		if (rc != -EPROBE_DEFER)
-			pr_err("regulator_register failed: rc=%d\n", rc);
+			pr_debug("regulator_register failed: rc=%d\n", rc);
 		return rc;
 	}
 

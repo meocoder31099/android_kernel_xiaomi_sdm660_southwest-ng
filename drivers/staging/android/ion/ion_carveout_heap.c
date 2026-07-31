@@ -249,7 +249,7 @@ static int ion_sc_get_dt_token(struct ion_sc_entry *entry,
 
 	ret = ion_hyp_assign_from_flags(base, size, token);
 	if (ret)
-		pr_err("secure_carveout_heap: Assign token 0x%x failed\n",
+		pr_debug("secure_carveout_heap: Assign token 0x%x failed\n",
 		       token);
 	else
 		entry->token = token;
@@ -300,7 +300,7 @@ static int ion_sc_add_child(struct ion_sc_heap *manager,
 		goto out_free_carveout;
 
 	list_add(&entry->list, &manager->children);
-	dev_info(dev, "ion_secure_carveout: creating heap@0x%llx, size 0x%llx\n",
+	dev_dbg(dev, "ion_secure_carveout: creating heap@0x%llx, size 0x%llx\n",
 		 base, size);
 	return 0;
 
@@ -342,7 +342,7 @@ ion_secure_carveout_heap_create(struct ion_platform_heap *heap_data)
 	for_each_child_of_node(dev->of_node, np) {
 		ret = ion_sc_add_child(manager, np);
 		if (ret) {
-			dev_err(dev, "Creating child pool %s failed\n",
+			dev_dbg(dev, "Creating child pool %s failed\n",
 				np->name);
 			goto err;
 		}

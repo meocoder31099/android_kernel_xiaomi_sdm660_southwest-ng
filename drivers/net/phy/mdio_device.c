@@ -89,7 +89,7 @@ int mdio_device_register(struct mdio_device *mdiodev)
 
 	err = device_add(&mdiodev->dev);
 	if (err) {
-		pr_err("MDIO %d failed to add\n", mdiodev->addr);
+		pr_debug("MDIO %d failed to add\n", mdiodev->addr);
 		goto out;
 	}
 
@@ -204,7 +204,7 @@ int mdio_driver_register(struct mdio_driver *drv)
 
 	retval = driver_register(&mdiodrv->driver);
 	if (retval) {
-		pr_err("%s: Error %d in registering driver\n",
+		pr_debug("%s: Error %d in registering driver\n",
 		       mdiodrv->driver.name, retval);
 
 		return retval;

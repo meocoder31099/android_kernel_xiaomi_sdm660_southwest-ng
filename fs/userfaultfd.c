@@ -469,7 +469,7 @@ vm_fault_t handle_userfault(struct vm_fault *vmf, unsigned long reason)
 		BUG_ON(vmf->flags & FAULT_FLAG_RETRY_NOWAIT);
 #ifdef CONFIG_DEBUG_VM
 		if (printk_ratelimit()) {
-			printk(KERN_WARNING
+			no_printk(KERN_WARNING
 			       "FAULT_FLAG_ALLOW_RETRY missing %x\n",
 			       vmf->flags);
 			dump_stack();

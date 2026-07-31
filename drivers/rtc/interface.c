@@ -379,14 +379,14 @@ int __rtc_read_alarm(struct rtc_device *rtc, struct rtc_wkalrm *alarm)
 		break;
 
 	default:
-		dev_warn(&rtc->dev, "alarm rollover not handled\n");
+		dev_dbg(&rtc->dev, "alarm rollover not handled\n");
 	}
 
 	err = rtc_valid_tm(&alarm->time);
 
 done:
 	if (err) {
-		dev_warn(&rtc->dev, "invalid alarm value: %d-%d-%d %d:%d:%d\n",
+		dev_dbg(&rtc->dev, "invalid alarm value: %d-%d-%d %d:%d:%d\n",
 			alarm->time.tm_year + 1900, alarm->time.tm_mon + 1,
 			alarm->time.tm_mday, alarm->time.tm_hour, alarm->time.tm_min,
 			alarm->time.tm_sec);
@@ -1000,7 +1000,7 @@ reprogram:
 			timerqueue_del(&rtc->timerqueue, &timer->node);
 			trace_rtc_timer_dequeue(timer);
 			timer->enabled = 0;
-			dev_err(&rtc->dev, "__rtc_set_alarm: err=%d\n", err);
+			dev_dbg(&rtc->dev, "__rtc_set_alarm: err=%d\n", err);
 			goto again;
 		}
 	} else

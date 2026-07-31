@@ -90,7 +90,7 @@ static void msm_ispif_io_dump_reg(struct ispif_device *ispif)
 		return;
 
 	if (!ispif->base) {
-		pr_err("%s: null pointer for the ispif base\n", __func__);
+		pr_debug("%s: null pointer for the ispif base\n", __func__);
 		return;
 	}
 
@@ -160,13 +160,13 @@ static int msm_ispif_config2(struct ispif_device *ispif,
 		return -EINVAL;
 
 	if (ispif->ispif_state != ISPIF_POWER_UP) {
-		pr_err("%s: ispif invalid state %d\n", __func__,
+		pr_debug("%s: ispif invalid state %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
 	}
 	if (params->num > MAX_PARAM_ENTRIES) {
-		pr_err("%s: invalid param entries %d\n", __func__,
+		pr_debug("%s: invalid param entries %d\n", __func__,
 			params->num);
 		rc = -EINVAL;
 		return rc;
@@ -194,7 +194,7 @@ static int msm_ispif_config2(struct ispif_device *ispif,
 			(vfe_intf >=  ispif->vfe_info.num_vfe) ||
 			(ispif->csid_version <= CSID_VERSION_V22 &&
 			(vfe_intf > VFE0))) {
-			pr_err("%s: VFEID %d and CSID version %d mismatch\n",
+			pr_debug("%s: VFEID %d and CSID version %d mismatch\n",
 				__func__, vfe_intf, ispif->csid_version);
 			return -EINVAL;
 		}
@@ -222,7 +222,7 @@ static long msm_ispif_cmd_ext(struct v4l2_subdev *sd,
 			(struct ispif_cfg_data_ext_32 *)arg;
 
 		if (pcdata32 == NULL) {
-			pr_err("Invalid params passed from user\n");
+			pr_debug("Invalid params passed from user\n");
 			return -EINVAL;
 		}
 		pcdata.cfg_type  = pcdata32->cfg_type;
@@ -234,7 +234,7 @@ static long msm_ispif_cmd_ext(struct v4l2_subdev *sd,
 		(struct ispif_cfg_data_ext *)arg;
 
 		if (pcdata64 == NULL) {
-			pr_err("Invalid params passed from user\n");
+			pr_debug("Invalid params passed from user\n");
 			return -EINVAL;
 		}
 		pcdata.cfg_type  = pcdata64->cfg_type;
@@ -242,7 +242,7 @@ static long msm_ispif_cmd_ext(struct v4l2_subdev *sd,
 		pcdata.data = pcdata64->data;
 	}
 	if (pcdata.size != sizeof(struct msm_ispif_param_data_ext)) {
-		pr_err("%s: payload size mismatch\n", __func__);
+		pr_debug("%s: payload size mismatch\n", __func__);
 		return -EINVAL;
 	}
 
@@ -316,7 +316,7 @@ static inline int __get_vdd(struct platform_device *pdev,
 	if (IS_ERR_OR_NULL(*reg)) {
 		rc = PTR_ERR(*reg);
 		rc = rc ? rc : -EINVAL;
-		pr_err("%s: Regulator %s get failed %d\n", __func__, vdd, rc);
+		pr_debug("%s: Regulator %s get failed %d\n", __func__, vdd, rc);
 		*reg = NULL;
 	}
 	return rc;
@@ -336,12 +336,12 @@ static int msm_ispif_get_regulator_info(struct ispif_device *ispif_dev,
 	count = of_property_count_strings(of_node,
 					"qcom,vdd-names");
 	if (count == 0) {
-		pr_err("%s: no regulators found\n", __func__);
+		pr_debug("%s: no regulators found\n", __func__);
 		return -EINVAL;
 	}
 
 	if (WARN_ON(count > (ISPIF_VDD_INFO_MAX + ISPIF_VFE_VDD_INFO_MAX)))
-		pr_err("%s: count is greater is 4\n", __func__);
+		pr_debug("%s: count is greater is 4\n", __func__);
 	ispif_dev->vfe_vdd_count = 0;
 	ispif_dev->ispif_vdd_count = 0;
 
@@ -350,14 +350,14 @@ static int msm_ispif_get_regulator_info(struct ispif_device *ispif_dev,
 				of_node, "qcom,vdd-names",
 				i, &vdd_name);
 		if (rc < 0) {
-			pr_err("%s: read property qcom,ispif-vdd-names at index %d failed\n",
+			pr_debug("%s: read property qcom,ispif-vdd-names at index %d failed\n",
 				__func__, i);
 			goto err;
 		}
 		if (strnstr(vdd_name, "vfe", strlen(vdd_name))) {
 			if (WARN_ON((ispif_dev->vfe_vdd_count >=
 				ISPIF_VFE_VDD_INFO_MAX))) {
-				pr_err("%s: count is greater is 4\n", __func__);
+				pr_debug("%s: count is greater is 4\n", __func__);
 				return -EINVAL;
 			}
 			rc = __get_vdd(pdev,
@@ -368,7 +368,7 @@ static int msm_ispif_get_regulator_info(struct ispif_device *ispif_dev,
 		} else {
 			if (WARN_ON((ispif_dev->vfe_vdd_count >=
 				ISPIF_VFE_VDD_INFO_MAX))) {
-				pr_err("%s: count is greater is 4\n", __func__);
+				pr_debug("%s: count is greater is 4\n", __func__);
 				return -EINVAL;
 			}
 			rc = __get_vdd(pdev,
@@ -412,10 +412,10 @@ static int msm_ispif_set_regulators(struct regulator **regs, int count,
 		}
 	}
 	if (rc)
-		pr_err("%s: Regulator disable failed\n", __func__);
+		pr_debug("%s: Regulator disable failed\n", __func__);
 	return rc;
 err:
-	pr_err("%s: Regulator enable failed\n", __func__);
+	pr_debug("%s: Regulator enable failed\n", __func__);
 	for (i--; i >= 0; i--)
 		regulator_disable(regs[i]);
 	return rc;
@@ -437,7 +437,7 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 		ispif->clk_info, ispif->clks,
 		ispif->num_clk, 1);
 	if (rc < 0) {
-		pr_err("%s: cannot enable clock, error = %d\n",
+		pr_debug("%s: cannot enable clock, error = %d\n",
 			__func__, rc);
 		goto reg_disable;
 	} else {
@@ -456,7 +456,7 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 
 	if (timeout <= 0) {
 		rc = -ETIMEDOUT;
-		pr_err("%s: VFE0 reset wait timeout\n", __func__);
+		pr_debug("%s: VFE0 reset wait timeout\n", __func__);
 		goto clk_disable;
 	}
 
@@ -469,7 +469,7 @@ static int msm_ispif_reset_hw(struct ispif_device *ispif)
 				msecs_to_jiffies(500));
 		CDBG("%s: VFE1 done\n", __func__);
 		if (timeout <= 0) {
-			pr_err("%s: VFE1 reset wait timeout\n", __func__);
+			pr_debug("%s: VFE1 reset wait timeout\n", __func__);
 			rc = -ETIMEDOUT;
 		}
 	}
@@ -570,7 +570,7 @@ static int msm_ispif_clk_ahb_enable(struct ispif_device *ispif, int enable)
 		ispif->ahb_clk_info, ispif->ahb_clk,
 		ispif->num_ahb_clk, enable);
 	if (rc < 0) {
-		pr_err("%s: cannot enable clock, error = %d\n",
+		pr_debug("%s: cannot enable clock, error = %d\n",
 			__func__, rc);
 	}
 
@@ -639,7 +639,7 @@ static void msm_ispif_sel_csid_core(struct ispif_device *ispif,
 		return;
 
 	if (!msm_ispif_is_intf_valid(ispif->csid_version, vfe_intf)) {
-		pr_err("%s: invalid interface type\n", __func__);
+		pr_debug("%s: invalid interface type\n", __func__);
 		return;
 	}
 
@@ -681,7 +681,7 @@ static void msm_ispif_enable_crop(struct ispif_device *ispif,
 		return;
 
 	if (!msm_ispif_is_intf_valid(ispif->csid_version, vfe_intf)) {
-		pr_err("%s: invalid interface type\n", __func__);
+		pr_debug("%s: invalid interface type\n", __func__);
 		return;
 	}
 
@@ -699,7 +699,7 @@ static void msm_ispif_enable_crop(struct ispif_device *ispif,
 		msm_camera_io_w_mb(start_pixel | (end_pixel << 16),
 			ispif->base + ISPIF_VFE_m_PIX_INTF_n_CROP(vfe_intf, 1));
 	else {
-		pr_err("%s: invalid intftype=%d\n", __func__, intftype);
+		pr_debug("%s: invalid intftype=%d\n", __func__, intftype);
 		WARN_ON(1);
 		return;
 	}
@@ -714,7 +714,7 @@ static void msm_ispif_enable_intf_cids(struct ispif_device *ispif,
 		return;
 
 	if (!msm_ispif_is_intf_valid(ispif->csid_version, vfe_intf)) {
-		pr_err("%s: invalid interface type\n", __func__);
+		pr_debug("%s: invalid interface type\n", __func__);
 		return;
 	}
 
@@ -735,7 +735,7 @@ static void msm_ispif_enable_intf_cids(struct ispif_device *ispif,
 		intf_addr = ISPIF_VFE_m_RDI_INTF_n_CID_MASK(vfe_intf, 2);
 		break;
 	default:
-		pr_err("%s: invalid intftype=%d\n", __func__, intftype);
+		pr_debug("%s: invalid intftype=%d\n", __func__, intftype);
 		WARN_ON(1);
 		return;
 	}
@@ -758,7 +758,7 @@ static int msm_ispif_validate_intf_status(struct ispif_device *ispif,
 		return -EINVAL;
 
 	if (!msm_ispif_is_intf_valid(ispif->csid_version, vfe_intf)) {
-		pr_err("%s: invalid interface type\n", __func__);
+		pr_debug("%s: invalid interface type\n", __func__);
 		return -EINVAL;
 	}
 
@@ -848,7 +848,7 @@ static uint16_t msm_ispif_get_cids_mask_from_cfg(
 	uint16_t cids_mask = 0;
 
 	if (WARN_ON(!entry)) {
-		pr_err("%s: invalid entry\n", __func__);
+		pr_debug("%s: invalid entry\n", __func__);
 		return cids_mask;
 	}
 
@@ -890,13 +890,13 @@ static int msm_ispif_config(struct ispif_device *ispif,
 		return -EINVAL;
 
 	if (ispif->ispif_state != ISPIF_POWER_UP) {
-		pr_err("%s: ispif invalid state %d\n", __func__,
+		pr_debug("%s: ispif invalid state %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
 	}
 	if (params->num > MAX_PARAM_ENTRIES) {
-		pr_err("%s: invalid param entries %d\n", __func__,
+		pr_debug("%s: invalid param entries %d\n", __func__,
 			params->num);
 		rc = -EINVAL;
 		return rc;
@@ -906,7 +906,7 @@ static int msm_ispif_config(struct ispif_device *ispif,
 		vfe_intf = params->entries[i].vfe_intf;
 		if (!msm_ispif_is_intf_valid(ispif->csid_version,
 				vfe_intf)) {
-			pr_err("%s: invalid interface type\n", __func__);
+			pr_debug("%s: invalid interface type\n", __func__);
 			return -EINVAL;
 		}
 		msm_camera_io_w(0x0, ispif->base +
@@ -929,7 +929,7 @@ static int msm_ispif_config(struct ispif_device *ispif,
 			(vfe_intf >=  ispif->vfe_info.num_vfe) ||
 			(ispif->csid_version <= CSID_VERSION_V22 &&
 			(vfe_intf > VFE0))) {
-			pr_err("%s: VFEID %d and CSID version %d mismatch\n",
+			pr_debug("%s: VFEID %d and CSID version %d mismatch\n",
 				__func__, vfe_intf, ispif->csid_version);
 			return -EINVAL;
 		}
@@ -946,7 +946,7 @@ static int msm_ispif_config(struct ispif_device *ispif,
 
 		rc = msm_ispif_validate_intf_status(ispif, intftype, vfe_intf);
 		if (rc) {
-			pr_err("%s:validate_intf_status failed, rc = %d\n",
+			pr_debug("%s:validate_intf_status failed, rc = %d\n",
 				__func__, rc);
 			return rc;
 		}
@@ -1018,7 +1018,7 @@ static void msm_ispif_config_stereo(struct ispif_device *ispif,
 	for (i = 0; i < params->num; i++) {
 		vfe_intf = params->entries[i].vfe_intf;
 		if (!msm_ispif_is_intf_valid(ispif->csid_version, vfe_intf)) {
-			pr_err("%s: invalid interface type %d\n", __func__,
+			pr_debug("%s: invalid interface type %d\n", __func__,
 				vfe_intf);
 			return;
 		}
@@ -1056,11 +1056,11 @@ static void msm_ispif_intf_cmd(struct ispif_device *ispif, uint32_t cmd_bits,
 	for (i = 0; i < params->num; i++) {
 		vfe_intf = params->entries[i].vfe_intf;
 		if (!msm_ispif_is_intf_valid(ispif->csid_version, vfe_intf)) {
-			pr_err("%s: invalid interface type\n", __func__);
+			pr_debug("%s: invalid interface type\n", __func__);
 			return;
 		}
 		if (params->entries[i].num_cids > MAX_CID_CH_PARAM_ENTRY) {
-			pr_err("%s: out of range of cid_num %d\n",
+			pr_debug("%s: out of range of cid_num %d\n",
 				__func__, params->entries[i].num_cids);
 			return;
 		}
@@ -1125,14 +1125,14 @@ static int msm_ispif_stop_immediately(struct ispif_device *ispif,
 		return -EINVAL;
 
 	if (ispif->ispif_state != ISPIF_POWER_UP) {
-		pr_err("%s: ispif invalid state %d\n", __func__,
+		pr_debug("%s: ispif invalid state %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
 	}
 
 	if (params->num > MAX_PARAM_ENTRIES) {
-		pr_err("%s: invalid param entries %d\n", __func__,
+		pr_debug("%s: invalid param entries %d\n", __func__,
 			params->num);
 		rc = -EINVAL;
 		return rc;
@@ -1167,13 +1167,13 @@ static int msm_ispif_start_frame_boundary(struct ispif_device *ispif,
 	int rc = 0;
 
 	if (ispif->ispif_state != ISPIF_POWER_UP) {
-		pr_err("%s: ispif invalid state %d\n", __func__,
+		pr_debug("%s: ispif invalid state %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
 	}
 	if (params->num > MAX_PARAM_ENTRIES) {
-		pr_err("%s: invalid param entries %d\n", __func__,
+		pr_debug("%s: invalid param entries %d\n", __func__,
 			params->num);
 		rc = -EINVAL;
 		return rc;
@@ -1197,13 +1197,13 @@ static int msm_ispif_restart_frame_boundary(struct ispif_device *ispif,
 	uint32_t intf_addr;
 
 	if (ispif->ispif_state != ISPIF_POWER_UP) {
-		pr_err("%s: ispif invalid state %d\n", __func__,
+		pr_debug("%s: ispif invalid state %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
 	}
 	if (params->num > MAX_PARAM_ENTRIES) {
-		pr_err("%s: invalid param entries %d\n", __func__,
+		pr_debug("%s: invalid param entries %d\n", __func__,
 			params->num);
 		rc = -EINVAL;
 		return rc;
@@ -1212,7 +1212,7 @@ static int msm_ispif_restart_frame_boundary(struct ispif_device *ispif,
 	for (i = 0; i < params->num; i++) {
 		vfe_intf = params->entries[i].vfe_intf;
 		if (vfe_intf >= VFE_MAX) {
-			pr_err("%s: %d invalid i %d vfe_intf %d\n", __func__,
+			pr_debug("%s: %d invalid i %d vfe_intf %d\n", __func__,
 				__LINE__, i, vfe_intf);
 			return -EINVAL;
 		}
@@ -1239,7 +1239,7 @@ static int msm_ispif_restart_frame_boundary(struct ispif_device *ispif,
 		timeout = wait_for_completion_interruptible_timeout(
 			&ispif->reset_complete[VFE0], msecs_to_jiffies(500));
 		if (timeout <= 0) {
-			pr_err("%s: VFE0 reset wait timeout\n", __func__);
+			pr_debug("%s: VFE0 reset wait timeout\n", __func__);
 			rc = -ETIMEDOUT;
 			goto disable_clk;
 		}
@@ -1253,13 +1253,13 @@ static int msm_ispif_restart_frame_boundary(struct ispif_device *ispif,
 				&ispif->reset_complete[VFE1],
 				msecs_to_jiffies(500));
 		if (timeout <= 0) {
-			pr_err("%s: VFE1 reset wait timeout\n", __func__);
+			pr_debug("%s: VFE1 reset wait timeout\n", __func__);
 			rc = -ETIMEDOUT;
 			goto disable_clk;
 		}
 	}
 
-	pr_info("%s: ISPIF reset hw done, Restarting\n", __func__);
+	pr_debug("%s: ISPIF reset hw done, Restarting\n", __func__);
 	rc = msm_camera_clk_enable(&ispif->pdev->dev,
 		ispif->clk_info, ispif->clks,
 		ispif->num_clk, 0);
@@ -1292,7 +1292,7 @@ static int msm_ispif_restart_frame_boundary(struct ispif_device *ispif,
 			intf_addr = ISPIF_VFE_m_RDI_INTF_n_STATUS(vfe_intf, 2);
 			break;
 		default:
-			pr_err("%s: invalid intftype=%d\n", __func__,
+			pr_debug("%s: invalid intftype=%d\n", __func__,
 			params->entries[i].intftype);
 			rc = -EPERM;
 			goto end;
@@ -1341,14 +1341,14 @@ static int msm_ispif_stop_frame_boundary(struct ispif_device *ispif,
 		return -EINVAL;
 
 	if (ispif->ispif_state != ISPIF_POWER_UP) {
-		pr_err("%s: ispif invalid state %d\n", __func__,
+		pr_debug("%s: ispif invalid state %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
 	}
 
 	if (params->num > MAX_PARAM_ENTRIES) {
-		pr_err("%s: invalid param entries %d\n", __func__,
+		pr_debug("%s: invalid param entries %d\n", __func__,
 			params->num);
 		rc = -EINVAL;
 		return rc;
@@ -1357,7 +1357,7 @@ static int msm_ispif_stop_frame_boundary(struct ispif_device *ispif,
 	for (i = 0; i < params->num; i++) {
 		if (!msm_ispif_is_intf_valid(ispif->csid_version,
 				params->entries[i].vfe_intf)) {
-			pr_err("%s: invalid interface type\n", __func__);
+			pr_debug("%s: invalid interface type\n", __func__);
 			rc = -EINVAL;
 			goto end;
 		}
@@ -1395,7 +1395,7 @@ static int msm_ispif_stop_frame_boundary(struct ispif_device *ispif,
 			intf_addr = ISPIF_VFE_m_RDI_INTF_n_STATUS(vfe_intf, 2);
 			break;
 		default:
-			pr_err("%s: invalid intftype=%d\n", __func__,
+			pr_debug("%s: invalid intftype=%d\n", __func__,
 				params->entries[i].intftype);
 			rc = -EPERM;
 			goto end;
@@ -1437,7 +1437,7 @@ static void ispif_process_irq(struct ispif_device *ispif,
 	struct ispif_irq_status *out, enum msm_ispif_vfe_intf vfe_id)
 {
 	if (WARN_ON(!ispif) || WARN_ON(!out)) {
-		pr_err("%s: invalid params\n", __func__);
+		pr_debug("%s: invalid params\n", __func__);
 		return;
 	}
 
@@ -1492,11 +1492,11 @@ static int msm_ispif_reconfig_3d_output(struct ispif_device *ispif,
 		return -EINVAL;
 
 	if (!((vfe_id == VFE0) ||  (vfe_id == VFE1))) {
-		pr_err("%s;%d Cannot reconfigure 3D mode for VFE%d\n", __func__,
+		pr_debug("%s;%d Cannot reconfigure 3D mode for VFE%d\n", __func__,
 				__LINE__, vfe_id);
 		return -EINVAL;
 	}
-	pr_info("%s;%d Reconfiguring 3D mode for VFE%d\n", __func__, __LINE__,
+	pr_debug("%s;%d Reconfiguring 3D mode for VFE%d\n", __func__, __LINE__,
 			vfe_id);
 	reg_data =  0xFFFCFFFC;
 	msm_camera_io_w_mb(reg_data, ispif->base +
@@ -1534,7 +1534,7 @@ static inline void msm_ispif_read_irq_status(struct ispif_irq_status *out,
 	uint32_t reg_data;
 
 	if (WARN_ON(!ispif) || WARN_ON(!out)) {
-		pr_err("%s: invalid params\n", __func__);
+		pr_debug("%s: invalid params\n", __func__);
 		return;
 	}
 
@@ -1717,7 +1717,7 @@ static int msm_ispif_set_vfe_info(struct ispif_device *ispif,
 {
 	if (!vfe_info || (vfe_info->num_vfe == 0) ||
 		(vfe_info->num_vfe > ispif->hw_num_isps)) {
-		pr_err("Invalid VFE info: %pK %d\n", vfe_info,
+		pr_debug("Invalid VFE info: %pK %d\n", vfe_info,
 			   (vfe_info ? vfe_info->num_vfe : 0));
 		return -EINVAL;
 	}
@@ -1733,12 +1733,12 @@ static int msm_ispif_init(struct ispif_device *ispif,
 	int rc = 0;
 
 	if (WARN_ON(!ispif)) {
-		pr_err("%s: invalid ispif params\n", __func__);
+		pr_debug("%s: invalid ispif params\n", __func__);
 		return -EINVAL;
 	}
 
 	if (ispif->ispif_state == ISPIF_POWER_UP) {
-		pr_err("%s: ispif already initted state = %d\n", __func__,
+		pr_debug("%s: ispif already initted state = %d\n", __func__,
 			ispif->ispif_state);
 		rc = -EPERM;
 		return rc;
@@ -1746,7 +1746,7 @@ static int msm_ispif_init(struct ispif_device *ispif,
 
 	rc = msm_camera_enable_irq(ispif->irq, 1);
 	if (rc < 0) {
-		pr_err("%s:Error enabling IRQs\n", __func__);
+		pr_debug("%s:Error enabling IRQs\n", __func__);
 		return rc;
 	}
 	/* can we set to zero? */
@@ -1768,7 +1768,7 @@ static int msm_ispif_init(struct ispif_device *ispif,
 	rc = cam_config_ahb_clk(NULL, 0,
 			CAM_AHB_CLIENT_ISPIF, CAM_AHB_SVS_VOTE);
 	if (rc < 0) {
-		pr_err("%s: failed to vote for AHB\n", __func__);
+		pr_debug("%s: failed to vote for AHB\n", __func__);
 		return rc;
 	}
 
@@ -1785,14 +1785,14 @@ static int msm_ispif_init(struct ispif_device *ispif,
 error_ahb:
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_ISPIF,
 		CAM_AHB_SUSPEND_VOTE) < 0)
-		pr_err("%s: failed to remove vote for AHB\n", __func__);
+		pr_debug("%s: failed to remove vote for AHB\n", __func__);
 	return rc;
 }
 
 static void msm_ispif_release(struct ispif_device *ispif)
 {
 	if (WARN_ON(!ispif)) {
-		pr_err("%s: invalid ispif params\n", __func__);
+		pr_debug("%s: invalid ispif params\n", __func__);
 		return;
 	}
 
@@ -1802,7 +1802,7 @@ static void msm_ispif_release(struct ispif_device *ispif)
 
 	if (cam_config_ahb_clk(NULL, 0, CAM_AHB_CLIENT_ISPIF,
 		CAM_AHB_SUSPEND_VOTE) < 0)
-		pr_err("%s: failed to remove vote for AHB\n", __func__);
+		pr_debug("%s: failed to remove vote for AHB\n", __func__);
 }
 
 static long msm_ispif_dispatch_cmd(enum ispif_cfg_type_t cmd,
@@ -1845,7 +1845,7 @@ static long msm_ispif_dispatch_cmd(enum ispif_cfg_type_t cmd,
 						ISPIF_CALCULATE_THRESHOLD);
 		break;
 	default:
-		pr_err("%s: invalid cfg_type\n", __func__);
+		pr_debug("%s: invalid cfg_type\n", __func__);
 		rc = -EINVAL;
 		break;
 	}
@@ -1880,7 +1880,7 @@ static long msm_ispif_cmd(struct v4l2_subdev *sd, void *arg)
 	default:
 		memset(&params, 0, sizeof(params));
 		if (pcdata->params.num > MAX_PARAM_ENTRIES) {
-			pr_err("%s: invalid num entries %u\n", __func__,
+			pr_debug("%s: invalid num entries %u\n", __func__,
 					 pcdata->params.num);
 			rc = -EINVAL;
 		} else {
@@ -1978,13 +1978,13 @@ static int ispif_close_node(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	struct ispif_device *ispif = v4l2_get_subdevdata(sd);
 
 	if (!ispif) {
-		pr_err("%s: invalid input\n", __func__);
+		pr_debug("%s: invalid input\n", __func__);
 		return -EINVAL;
 	}
 
 	mutex_lock(&ispif->mutex);
 	if (ispif->open_cnt == 0) {
-		pr_err("%s: Invalid close\n", __func__);
+		pr_debug("%s: Invalid close\n", __func__);
 		rc = -ENODEV;
 		goto end;
 	}
@@ -2041,7 +2041,7 @@ static int ispif_probe(struct platform_device *pdev)
 
 	rc = msm_ispif_get_clk_info(ispif, pdev);
 	if (rc < 0) {
-		pr_err("%s: msm_isp_get_clk_info() failed\n", __func__);
+		pr_debug("%s: msm_isp_get_clk_info() failed\n", __func__);
 		rc = -EFAULT;
 		goto get_clk_fail;
 	}
@@ -2085,7 +2085,7 @@ static int ispif_probe(struct platform_device *pdev)
 	ispif->msm_sd.close_seq = MSM_SD_CLOSE_1ST_CATEGORY | 0x1;
 	rc = msm_sd_register(&ispif->msm_sd);
 	if (rc) {
-		pr_err("%s: msm_sd_register error = %d\n", __func__, rc);
+		pr_debug("%s: msm_sd_register error = %d\n", __func__, rc);
 		goto sd_reg_fail;
 	}
 	msm_cam_copy_v4l2_subdev_fops(&msm_ispif_v4l2_subdev_fops);

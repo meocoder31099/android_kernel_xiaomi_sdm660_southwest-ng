@@ -114,7 +114,7 @@ static int a6xx_rgmu_oob_set(struct kgsl_device *device,
 		unsigned int status;
 
 		gmu_core_regread(device, A6XX_RGMU_CX_PCC_DEBUG, &status);
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"Timed out while setting OOB req:%s status:0x%x\n",
 				gmu_core_oob_type_str(req), status);
 		return ret;
@@ -295,20 +295,20 @@ static int a6xx_rgmu_wait_for_lowest_idle(struct kgsl_device *device)
 	kgsl_regread(device, A6XX_CP_CONTEXT_SWITCH_CNTL, &reg[8]);
 	gmu_core_regread(device, A6XX_GMU_AO_SPARE_CNTL, &reg[9]);
 
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev,
 		"----------------------[ RGMU error ]----------------------\n");
-	dev_err(&rgmu->pdev->dev, "Timeout waiting for lowest idle level\n");
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev, "Timeout waiting for lowest idle level\n");
+	dev_dbg(&rgmu->pdev->dev,
 			"Timestamps: %llx %llx %llx\n", ts1, ts2, ts3);
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev,
 			"SPTPRAC_PWR_CLK_STATUS=%x PCC_DEBUG=%x PCC_STATUS=%x\n",
 			reg[0], reg[1], reg[2]);
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev,
 			"CX_BUSY_STATUS=%x CP_STATUS_1=%x\n", reg[3], reg[4]);
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev,
 			"RBBM_INT_UNMASKED_STATUS=%x PWR_COL_KEEPALIVE=%x\n",
 			reg[5], reg[6]);
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev,
 			"CP2GMU_STATUS=%x CONTEXT_SWITCH_CNTL=%x AO_SPARE_CNTL=%x\n",
 			reg[7], reg[8], reg[9]);
 
@@ -404,7 +404,7 @@ static int a6xx_rgmu_fw_start(struct kgsl_device *device,
 	if (timed_poll_check(device, A6XX_RGMU_CX_PCC_INIT_RESULT,
 			BIT(0), RGMU_START_TIMEOUT, BIT(0))) {
 		gmu_core_regread(device, A6XX_RGMU_CX_PCC_DEBUG, &status);
-		dev_err(&rgmu->pdev->dev,
+		dev_dbg(&rgmu->pdev->dev,
 				"rgmu boot Failed. status:%08x\n", status);
 		return -ETIMEDOUT;
 	}
@@ -430,16 +430,16 @@ static int a6xx_rgmu_suspend(struct kgsl_device *device)
 		 */
 		ret = regulator_enable(rgmu->gx_gdsc);
 		if (ret)
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 				"Fail to enable gx gdsc, error:%d\n", ret);
 
 		ret = regulator_disable(rgmu->gx_gdsc);
 		if (ret)
-			dev_err(&rgmu->pdev->dev,
+			dev_dbg(&rgmu->pdev->dev,
 				"Fail to disable gx gdsc, error:%d\n", ret);
 
 		if (a6xx_rgmu_gx_is_on(device))
-			dev_err(&rgmu->pdev->dev, "gx is stuck on\n");
+			dev_dbg(&rgmu->pdev->dev, "gx is stuck on\n");
 	}
 
 	return ret;
@@ -500,7 +500,7 @@ static int a6xx_rgmu_load_firmware(struct kgsl_device *device)
 
 	ret = request_firmware(&fw, a6xx_core->gmufw_name, device->dev);
 	if (ret < 0) {
-		pr_err("request_firmware (%s) failed: %d\n",
+		pr_debug("request_firmware (%s) failed: %d\n",
 				a6xx_core->gmufw_name, ret);
 		return ret;
 	}
@@ -525,7 +525,7 @@ static void a6xx_rgmu_halt_execution(struct kgsl_device *device)
 	gmu_core_regread(device, A6XX_RGMU_CX_PCC_STATUS, &status);
 	gmu_core_regread(device, A6XX_GMU_AO_AHB_FENCE_CTRL, &fence);
 
-	dev_err(&rgmu->pdev->dev,
+	dev_dbg(&rgmu->pdev->dev,
 			"RGMU Fault PCC_DEBUG:0x%x PCC_STATUS:0x%x FENCE_CTRL:0x%x\n",
 			index, status, fence);
 

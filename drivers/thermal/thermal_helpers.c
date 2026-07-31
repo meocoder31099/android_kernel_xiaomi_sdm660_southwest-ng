@@ -199,7 +199,7 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz)
 	 */
 	ret = tz->ops->set_trips(tz, low, high);
 	if (ret)
-		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
+		dev_dbg(&tz->device, "Failed to set trips: %d\n", ret);
 	trace_thermal_set_trip(tz);
 
 exit:

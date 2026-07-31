@@ -123,13 +123,13 @@ static int __init its_pci_msi_init_one(struct fwnode_handle *handle,
 
 	parent = irq_find_matching_fwnode(handle, DOMAIN_BUS_NEXUS);
 	if (!parent || !msi_get_domain_info(parent)) {
-		pr_err("%s: Unable to locate ITS domain\n", name);
+		pr_debug("%s: Unable to locate ITS domain\n", name);
 		return -ENXIO;
 	}
 
 	if (!pci_msi_create_irq_domain(handle, &its_pci_msi_domain_info,
 				       parent)) {
-		pr_err("%s: Unable to create PCI domain\n", name);
+		pr_debug("%s: Unable to create PCI domain\n", name);
 		return -ENOMEM;
 	}
 
@@ -150,7 +150,7 @@ static int __init its_pci_of_msi_init(void)
 		if (its_pci_msi_init_one(of_node_to_fwnode(np), np->full_name))
 			continue;
 
-		pr_info("PCI/MSI: %pOF domain created\n", np);
+		pr_debug("PCI/MSI: %pOF domain created\n", np);
 	}
 
 	return 0;
@@ -172,13 +172,13 @@ its_pci_msi_parse_madt(struct acpi_subtable_header *header,
 			      (long)its_entry->base_address);
 	dom_handle = iort_find_domain_token(its_entry->translation_id);
 	if (!dom_handle) {
-		pr_err("%s: Unable to locate ITS domain handle\n", node_name);
+		pr_debug("%s: Unable to locate ITS domain handle\n", node_name);
 		goto out;
 	}
 
 	err = its_pci_msi_init_one(dom_handle, node_name);
 	if (!err)
-		pr_info("PCI/MSI: %s domain created\n", node_name);
+		pr_debug("PCI/MSI: %s domain created\n", node_name);
 
 out:
 	kfree(node_name);

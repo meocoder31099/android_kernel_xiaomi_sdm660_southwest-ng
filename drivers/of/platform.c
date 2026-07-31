@@ -268,14 +268,14 @@ static struct amba_device *of_amba_device_create(struct device_node *node,
 
 	ret = of_address_to_resource(node, 0, &dev->res);
 	if (ret) {
-		pr_err("amba: of_address_to_resource() failed (%d) for %pOF\n",
+		pr_debug("amba: of_address_to_resource() failed (%d) for %pOF\n",
 		       ret, node);
 		goto err_free;
 	}
 
 	ret = amba_device_add(dev, &iomem_resource);
 	if (ret) {
-		pr_err("amba_device_add() failed (%d) for %pOF\n",
+		pr_debug("amba_device_add() failed (%d) for %pOF\n",
 		       ret, node);
 		goto err_free;
 	}
@@ -700,7 +700,7 @@ static int of_platform_notify(struct notifier_block *nb,
 		of_dev_put(pdev_parent);
 
 		if (pdev == NULL) {
-			pr_err("%s: failed to create for '%pOF'\n",
+			pr_debug("%s: failed to create for '%pOF'\n",
 					__func__, rd->dn);
 			/* of_platform_device_create tosses the error code */
 			return notifier_from_errno(-EINVAL);

@@ -41,7 +41,7 @@ static int mdss_mdp_splash_alloc_memory(struct msm_fb_data_type *mfd,
 
 	sinfo->dma_buf = ion_alloc(size, ION_HEAP(ION_SYSTEM_HEAP_ID), 0);
 	if (IS_ERR_OR_NULL(sinfo->dma_buf)) {
-		pr_err("ion memory allocation failed\n");
+		pr_debug("ion memory allocation failed\n");
 		rc = PTR_RET(sinfo->dma_buf);
 		goto end;
 	}
@@ -64,7 +64,7 @@ static int mdss_mdp_splash_alloc_memory(struct msm_fb_data_type *mfd,
 			MDSS_IOMMU_DOMAIN_UNSECURE, &sinfo->iova,
 			&buf_size, DMA_BIDIRECTIONAL);
 	if (rc) {
-		pr_err("mdss smmu map dma buf failed!\n");
+		pr_debug("mdss smmu map dma buf failed!\n");
 		goto err_unmap;
 	}
 	sinfo->size = buf_size;
@@ -72,7 +72,7 @@ static int mdss_mdp_splash_alloc_memory(struct msm_fb_data_type *mfd,
 	dma_buf_begin_cpu_access(sinfo->dma_buf, DMA_BIDIRECTIONAL);
 	sinfo->splash_buffer = dma_buf_kmap(sinfo->dma_buf, 0);
 	if (IS_ERR(sinfo->splash_buffer)) {
-		pr_err("ion kernel memory mapping failed\n");
+		pr_debug("ion kernel memory mapping failed\n");
 		rc = IS_ERR(sinfo->splash_buffer);
 		goto kmap_err;
 	}
@@ -151,7 +151,7 @@ static int mdss_mdp_splash_iommu_attach(struct msm_fb_data_type *mfd)
 
 	ret = mdss_iommu_ctrl(1);
 	if (IS_ERR_VALUE((unsigned long) ret)) {
-		pr_err("mdss iommu attach failed\n");
+		pr_debug("mdss iommu attach failed\n");
 		goto end;
 	}
 
@@ -161,7 +161,7 @@ static int mdss_mdp_splash_iommu_attach(struct msm_fb_data_type *mfd)
 				mdp5_data->splash_mem_size,
 				IOMMU_READ | IOMMU_NOEXEC);
 	if (ret) {
-		pr_err("iommu memory mapping failed ret=%d\n", ret);
+		pr_debug("iommu memory mapping failed ret=%d\n", ret);
 	} else {
 		pr_debug("iommu map passed for PA=VA\n");
 		mfd->splash_info.iommu_dynamic_attached = true;
@@ -169,7 +169,7 @@ static int mdss_mdp_splash_iommu_attach(struct msm_fb_data_type *mfd)
 
 	ret = mdss_smmu_set_attribute(MDSS_IOMMU_DOMAIN_UNSECURE, EARLY_MAP, 0);
 	if (ret)
-		pr_err("mdss reset attribute failed for early map\n");
+		pr_debug("mdss reset attribute failed for early map\n");
 
 end:
 	mdata->handoff_pending = true;
@@ -279,7 +279,7 @@ int mdss_mdp_splash_cleanup(struct msm_fb_data_type *mfd,
 				 * MDP timing generator before attaching
 				 * iommu
 				 */
-				pr_err("failed to set BF at handoff\n");
+				pr_debug("failed to set BF at handoff\n");
 				mdp5_data->handoff = false;
 			}
 		}
@@ -324,14 +324,14 @@ static struct mdss_mdp_pipe *mdss_mdp_splash_get_pipe(
 		return NULL;
 
 	if (mdss_mdp_pipe_map(pipe)) {
-		pr_err("unable to map base pipe\n");
+		pr_debug("unable to map base pipe\n");
 		return NULL;
 	}
 
 	mutex_lock(&mdp5_data->list_lock);
 	buf = mdss_mdp_overlay_buf_alloc(mfd, pipe);
 	if (!buf) {
-		pr_err("unable to allocate memory for splash buffer\n");
+		pr_debug("unable to allocate memory for splash buffer\n");
 		mdss_mdp_pipe_unmap(pipe);
 		mutex_unlock(&mdp5_data->list_lock);
 		return NULL;
@@ -376,13 +376,13 @@ static int mdss_mdp_splash_kickoff(struct msm_fb_data_type *mfd,
 
 	ret = mdss_mdp_overlay_start(mfd);
 	if (ret) {
-		pr_err("unable to start overlay %d (%d)\n", mfd->index, ret);
+		pr_debug("unable to start overlay %d (%d)\n", mfd->index, ret);
 		goto end;
 	}
 
 	mixer = mdss_mdp_mixer_get(mdp5_data->ctl, MDSS_MDP_MIXER_MUX_LEFT);
 	if (!mixer) {
-		pr_err("unable to retrieve mixer\n");
+		pr_debug("unable to retrieve mixer\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -427,7 +427,7 @@ static int mdss_mdp_splash_kickoff(struct msm_fb_data_type *mfd,
 
 	pipe = mdss_mdp_splash_get_pipe(mfd, req);
 	if (!pipe) {
-		pr_err("unable to allocate base pipe\n");
+		pr_debug("unable to allocate base pipe\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -441,7 +441,7 @@ static int mdss_mdp_splash_kickoff(struct msm_fb_data_type *mfd,
 		req->dst_rect.x = mixer->width;
 		pipe = mdss_mdp_splash_get_pipe(mfd, req);
 		if (!pipe) {
-			pr_err("unable to allocate right base pipe\n");
+			pr_debug("unable to allocate right base pipe\n");
 			mdss_mdp_overlay_release(mfd, sinfo->pipe_ndx[0]);
 			ret = -EINVAL;
 			goto end;
@@ -452,7 +452,7 @@ static int mdss_mdp_splash_kickoff(struct msm_fb_data_type *mfd,
 
 	ret = mfd->mdp.kickoff_fnc(mfd, NULL);
 	if (ret) {
-		pr_err("error in displaying image\n");
+		pr_debug("error in displaying image\n");
 		mdss_mdp_overlay_release(mfd, sinfo->pipe_ndx[0] |
 					sinfo->pipe_ndx[1]);
 	}
@@ -477,7 +477,7 @@ static int mdss_mdp_display_splash_image(struct msm_fb_data_type *mfd)
 	struct msm_fb_splash_info *sinfo;
 
 	if (!mfd || !mfd->fbi) {
-		pr_err("invalid input parameter\n");
+		pr_debug("invalid input parameter\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -488,7 +488,7 @@ static int mdss_mdp_display_splash_image(struct msm_fb_data_type *mfd)
 	if (fbi->var.xres < SPLASH_IMAGE_WIDTH ||
 		  fbi->var.yres < SPLASH_IMAGE_HEIGHT ||
 		  (fbi->var.bits_per_pixel >> 3) < SPLASH_IMAGE_BPP) {
-		pr_err("invalid splash parameter configuration\n");
+		pr_debug("invalid splash parameter configuration\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -505,7 +505,7 @@ static int mdss_mdp_display_splash_image(struct msm_fb_data_type *mfd)
 
 	rc = mdss_mdp_splash_alloc_memory(mfd, image_len);
 	if (rc) {
-		pr_err("splash buffer allocation failed\n");
+		pr_debug("splash buffer allocation failed\n");
 		goto end;
 	}
 
@@ -517,7 +517,7 @@ static int mdss_mdp_display_splash_image(struct msm_fb_data_type *mfd)
 
 	rc = mdss_mdp_splash_kickoff(mfd, &src_rect, &dest_rect);
 	if (rc)
-		pr_err("splash image display failed\n");
+		pr_debug("splash image display failed\n");
 	else
 		sinfo->splash_pipe_allocated = true;
 end:
@@ -566,7 +566,7 @@ static int mdss_mdp_splash_thread(void *data)
 	int ret = -EINVAL;
 
 	if (!mfd) {
-		pr_err("invalid input parameter\n");
+		pr_debug("invalid input parameter\n");
 		goto end;
 	}
 
@@ -574,7 +574,7 @@ static int mdss_mdp_splash_thread(void *data)
 	lock_fb_info(mfd->fbi);
 	ret = fb_blank(mfd->fbi, FB_BLANK_UNBLANK);
 	if (ret) {
-		pr_err("can't turn on fb!\n");
+		pr_debug("can't turn on fb!\n");
 		goto end;
 	}
 	unlock_fb_info(mfd->fbi);
@@ -596,7 +596,7 @@ static int mdss_mdp_splash_thread(void *data)
 		 * keep thread alive to release dynamically allocated
 		 * resources
 		 */
-		pr_err("splash image display failed\n");
+		pr_debug("splash image display failed\n");
 	}
 
 	/* wait for second display complete to release splash resources */
@@ -629,14 +629,14 @@ static __ref int mdss_mdp_splash_parse_dt(struct msm_fb_data_type *mfd)
 		rc = of_property_read_u32_array(pdev->dev.of_node,
 			"qcom,memblock-reserve", offsets, len);
 		if (rc) {
-			pr_err("error reading mem reserve settings for fb\n");
+			pr_debug("error reading mem reserve settings for fb\n");
 			goto error;
 		}
 	} else {
 		child_node = of_get_child_by_name(pdev->dev.of_node,
 					"qcom,cont-splash-memory");
 		if (!child_node) {
-			pr_err("splash mem child node is not present\n");
+			pr_debug("splash mem child node is not present\n");
 			rc = -EINVAL;
 			goto error;
 		}
@@ -649,7 +649,7 @@ static __ref int mdss_mdp_splash_parse_dt(struct msm_fb_data_type *mfd)
 
 			addr = of_get_address(pnode, 0, &size, NULL);
 			if (!addr) {
-				pr_err("failed to parse the splash memory address\n");
+				pr_debug("failed to parse the splash memory address\n");
 				of_node_put(pnode);
 				rc = -EINVAL;
 				goto error;
@@ -658,7 +658,7 @@ static __ref int mdss_mdp_splash_parse_dt(struct msm_fb_data_type *mfd)
 			offsets[1] = (u32) size;
 			of_node_put(pnode);
 		} else {
-			pr_err("mem reservation for splash screen fb not present\n");
+			pr_debug("mem reservation for splash screen fb not present\n");
 			rc = -EINVAL;
 			goto error;
 		}
@@ -684,7 +684,7 @@ error:
 		mdss_free_bootmem(mdp5_mdata->splash_mem_addr,
 					mdp5_mdata->splash_mem_size);
 	} else if (rc && mfd->panel_info->cont_splash_enabled) {
-		pr_err("no rsvd mem found in DT for splash screen\n");
+		pr_debug("no rsvd mem found in DT for splash screen\n");
 	} else {
 		rc = 0;
 	}
@@ -703,7 +703,7 @@ int mdss_mdp_splash_init(struct msm_fb_data_type *mfd)
 
 	rc = mdss_mdp_splash_parse_dt(mfd);
 	if (rc) {
-		pr_err("splash memory reserve failed\n");
+		pr_debug("splash memory reserve failed\n");
 		goto end;
 	}
 
@@ -716,7 +716,7 @@ int mdss_mdp_splash_init(struct msm_fb_data_type *mfd)
 							mfd, "mdss_fb_splash");
 
 	if (IS_ERR(mfd->splash_info.splash_thread)) {
-		pr_err("unable to start splash thread %d\n", mfd->index);
+		pr_debug("unable to start splash thread %d\n", mfd->index);
 		mfd->splash_info.splash_thread = NULL;
 	}
 

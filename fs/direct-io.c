@@ -235,8 +235,8 @@ void dio_warn_stale_pagecache(struct file *filp)
 		path = file_path(filp, pathname, sizeof(pathname));
 		if (IS_ERR(path))
 			path = "(unknown)";
-		pr_crit("Page cache invalidation failure on direct I/O.  Possible data corruption due to collision with buffered I/O!\n");
-		pr_crit("File: %s PID: %d Comm: %.20s\n", path, current->pid,
+		pr_debug("Page cache invalidation failure on direct I/O.  Possible data corruption due to collision with buffered I/O!\n");
+		pr_debug("File: %s PID: %d Comm: %.20s\n", path, current->pid,
 			current->comm);
 	}
 }

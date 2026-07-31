@@ -229,7 +229,7 @@ void of_pci_check_probe_only(void)
 	ret = of_property_read_u32(of_chosen, "linux,pci-probe-only", &val);
 	if (ret) {
 		if (ret == -ENODATA || ret == -EOVERFLOW)
-			pr_warn("linux,pci-probe-only without valid value, ignoring\n");
+			pr_debug("linux,pci-probe-only without valid value, ignoring\n");
 		return;
 	}
 
@@ -238,7 +238,7 @@ void of_pci_check_probe_only(void)
 	else
 		pci_clear_flags(PCI_PROBE_ONLY);
 
-	pr_info("PROBE_ONLY %sabled\n", val ? "en" : "dis");
+	pr_debug("PROBE_ONLY %sabled\n", val ? "en" : "dis");
 }
 EXPORT_SYMBOL_GPL(of_pci_check_probe_only);
 
@@ -280,14 +280,14 @@ int devm_of_pci_get_host_bridge_resources(struct device *dev,
 	if (!bus_range)
 		return -ENOMEM;
 
-	dev_info(dev, "host bridge %pOF ranges:\n", dev_node);
+	dev_dbg(dev, "host bridge %pOF ranges:\n", dev_node);
 
 	err = of_pci_parse_bus_range(dev_node, bus_range);
 	if (err) {
 		bus_range->start = busno;
 		bus_range->end = bus_max;
 		bus_range->flags = IORESOURCE_BUS;
-		dev_info(dev, "  No bus range found for %pOF, using %pR\n",
+		dev_dbg(dev, "  No bus range found for %pOF, using %pR\n",
 			 dev_node, bus_range);
 	} else {
 		if (bus_range->end > bus_range->start + bus_max)
@@ -309,7 +309,7 @@ int devm_of_pci_get_host_bridge_resources(struct device *dev,
 			snprintf(range_type, 4, "MEM");
 		else
 			snprintf(range_type, 4, "err");
-		dev_info(dev, "  %s %#010llx..%#010llx -> %#010llx\n",
+		dev_dbg(dev, "  %s %#010llx..%#010llx -> %#010llx\n",
 			 range_type, range.cpu_addr,
 			 range.cpu_addr + range.size - 1, range.pci_addr);
 
@@ -332,13 +332,13 @@ int devm_of_pci_get_host_bridge_resources(struct device *dev,
 
 		if (resource_type(res) == IORESOURCE_IO) {
 			if (!io_base) {
-				dev_err(dev, "I/O range found for %pOF. Please provide an io_base pointer to save CPU base address\n",
+				dev_dbg(dev, "I/O range found for %pOF. Please provide an io_base pointer to save CPU base address\n",
 					dev_node);
 				err = -EINVAL;
 				goto failed;
 			}
 			if (*io_base != (resource_size_t)OF_BAD_ADDR)
-				dev_warn(dev, "More than one I/O resource converted for %pOF. CPU base address for old range lost!\n",
+				dev_dbg(dev, "More than one I/O resource converted for %pOF. CPU base address for old range lost!\n",
 					 dev_node);
 			*io_base = range.cpu_addr;
 		}
@@ -395,7 +395,7 @@ int of_pci_map_rid(struct device_node *np, u32 rid,
 	}
 
 	if (!map_len || map_len % (4 * sizeof(*map))) {
-		pr_err("%pOF: Error: Bad %s length: %d\n", np,
+		pr_debug("%pOF: Error: Bad %s length: %d\n", np,
 			map_name, map_len);
 		return -EINVAL;
 	}
@@ -419,7 +419,7 @@ int of_pci_map_rid(struct device_node *np, u32 rid,
 		u32 rid_len = be32_to_cpup(map + 3);
 
 		if (rid_base & ~map_mask) {
-			pr_err("%pOF: Invalid %s translation - %s-mask (0x%x) ignores rid-base (0x%x)\n",
+			pr_debug("%pOF: Invalid %s translation - %s-mask (0x%x) ignores rid-base (0x%x)\n",
 				np, map_name, map_name,
 				map_mask, rid_base);
 			return -EFAULT;
@@ -451,7 +451,7 @@ int of_pci_map_rid(struct device_node *np, u32 rid,
 		return 0;
 	}
 
-	pr_err("%pOF: Invalid %s translation - no match for rid 0x%x on %pOF\n",
+	pr_debug("%pOF: Invalid %s translation - no match for rid 0x%x on %pOF\n",
 		np, map_name, rid, target && *target ? *target : NULL);
 	return -EFAULT;
 }
@@ -552,13 +552,13 @@ static int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *
 	return 0;
 err:
 	if (rc == -ENOENT) {
-		dev_warn(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: no interrupt-map found, INTx interrupts not available\n",
 			__func__);
 		pr_warn_once("%s: possibly some PCI slots don't have level triggered interrupts capability\n",
 			__func__);
 	} else {
-		dev_err(&pdev->dev, "%s: failed with rc=%d\n", __func__, rc);
+		dev_dbg(&pdev->dev, "%s: failed with rc=%d\n", __func__, rc);
 	}
 	return rc;
 }
@@ -612,7 +612,7 @@ int pci_parse_request_of_pci_ranges(struct device *dev,
 		case IORESOURCE_IO:
 			err = devm_pci_remap_iospace(dev, res, iobase);
 			if (err) {
-				dev_warn(dev, "error %d: failed to map resource %pR\n",
+				dev_dbg(dev, "error %d: failed to map resource %pR\n",
 					 err, res);
 				resource_list_destroy_entry(win);
 			}
@@ -630,7 +630,7 @@ int pci_parse_request_of_pci_ranges(struct device *dev,
 	if (res_valid)
 		return 0;
 
-	dev_err(dev, "non-prefetchable memory resource required\n");
+	dev_dbg(dev, "non-prefetchable memory resource required\n");
 	err = -EINVAL;
 
  out_release_res:

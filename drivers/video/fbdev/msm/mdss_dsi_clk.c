@@ -61,34 +61,34 @@ static int dsi_core_clk_start(struct dsi_core_clks *c_clks)
 
 	rc = clk_prepare_enable(c_clks->clks.mdp_core_clk);
 	if (rc) {
-		pr_err("failed to enable mdp_core_clock. rc=%d\n", rc);
+		pr_debug("failed to enable mdp_core_clock. rc=%d\n", rc);
 		goto error;
 	}
 
 	if (c_clks->clks.mnoc_clk) {
 		rc = clk_prepare_enable(c_clks->clks.mnoc_clk);
 		if (rc) {
-			pr_err("failed to enable mnoc clock. rc=%d\n", rc);
+			pr_debug("failed to enable mnoc clock. rc=%d\n", rc);
 			goto disable_core_clk;
 		}
 	}
 
 	rc = clk_prepare_enable(c_clks->clks.ahb_clk);
 	if (rc) {
-		pr_err("%s: failed to enable ahb clock. rc=%d\n", __func__, rc);
+		pr_debug("%s: failed to enable ahb clock. rc=%d\n", __func__, rc);
 		goto disable_mnoc_clk;
 	}
 
 	rc = clk_prepare_enable(c_clks->clks.axi_clk);
 	if (rc) {
-		pr_err("failed to enable ahb clock. rc=%d\n", rc);
+		pr_debug("failed to enable ahb clock. rc=%d\n", rc);
 		goto disable_ahb_clk;
 	}
 
 	if (c_clks->clks.mmss_misc_ahb_clk) {
 		rc = clk_prepare_enable(c_clks->clks.mmss_misc_ahb_clk);
 		if (rc) {
-			pr_err("failed to enable mmss misc ahb clk.rc=%d\n",
+			pr_debug("failed to enable mmss misc ahb clk.rc=%d\n",
 				rc);
 			goto disable_axi_clk;
 		}
@@ -96,7 +96,7 @@ static int dsi_core_clk_start(struct dsi_core_clks *c_clks)
 
 	rc = mdss_update_reg_bus_vote(mngr->reg_bus_clt, VOTE_INDEX_LOW);
 	if (rc) {
-		pr_err("failed to vote for reg bus\n");
+		pr_debug("failed to vote for reg bus\n");
 		goto disable_mmss_misc_clk;
 	}
 
@@ -164,13 +164,13 @@ static int dsi_link_hs_clk_set_rate(
 
 	rc = clk_set_rate(link_hs_clks->byte_clk, link_hs_clks->byte_clk_rate);
 	if (rc) {
-		pr_err("clk_set_rate failed for byte_clk rc = %d\n", rc);
+		pr_debug("clk_set_rate failed for byte_clk rc = %d\n", rc);
 		goto error;
 	}
 
 	rc = clk_set_rate(link_hs_clks->pixel_clk, link_hs_clks->pix_clk_rate);
 	if (rc) {
-		pr_err("clk_set_rate failed for pixel_clk rc = %d\n", rc);
+		pr_debug("clk_set_rate failed for pixel_clk rc = %d\n", rc);
 		goto error;
 	}
 
@@ -184,7 +184,7 @@ static int dsi_link_hs_clk_set_rate(
 		rc = clk_set_rate(link_hs_clks->byte_intf_clk,
 			link_hs_clks->byte_clk_rate / 2);
 		if (rc) {
-			pr_err("set rate failed for byte intf clk rc=%d\n", rc);
+			pr_debug("set rate failed for byte intf clk rc=%d\n", rc);
 			goto error;
 		}
 	}
@@ -200,20 +200,20 @@ static int dsi_link_hs_clk_prepare(
 
 	rc = clk_prepare(link_hs_clks->byte_clk);
 	if (rc) {
-		pr_err("Failed to prepare dsi byte clk\n");
+		pr_debug("Failed to prepare dsi byte clk\n");
 		goto byte_clk_err;
 	}
 
 	rc = clk_prepare(link_hs_clks->pixel_clk);
 	if (rc) {
-		pr_err("Failed to prepare dsi pixel_clk\n");
+		pr_debug("Failed to prepare dsi pixel_clk\n");
 		goto pixel_clk_err;
 	}
 
 	if (link_hs_clks->byte_intf_clk) {
 		rc = clk_prepare(link_hs_clks->byte_intf_clk);
 		if (rc) {
-			pr_err("%s: Failed to prepare dsi byte_intf clk\n",
+			pr_debug("%s: Failed to prepare dsi byte_intf clk\n",
 				__func__);
 			goto byte_intf_clk_err;
 		}
@@ -247,20 +247,20 @@ static int dsi_link_hs_clk_enable(
 
 	rc = clk_enable(link_hs_clks->byte_clk);
 	if (rc) {
-		pr_err("Failed to enable dsi byte clk\n");
+		pr_debug("Failed to enable dsi byte clk\n");
 		goto byte_clk_err;
 	}
 
 	rc = clk_enable(link_hs_clks->pixel_clk);
 	if (rc) {
-		pr_err("Failed to enable dsi pixel_clk\n");
+		pr_debug("Failed to enable dsi pixel_clk\n");
 		goto pixel_clk_err;
 	}
 
 	if (link_hs_clks->byte_intf_clk) {
 		rc = clk_enable(link_hs_clks->byte_intf_clk);
 		if (rc) {
-			pr_err("%s: Failed to enable dsi byte_intf clk\n",
+			pr_debug("%s: Failed to enable dsi byte_intf clk\n",
 				__func__);
 			goto byte_intf_clk_err;
 		}
@@ -302,7 +302,7 @@ static int dsi_link_hs_clk_start(
 	if (op_type & MDSS_DSI_LINK_CLK_SET_RATE) {
 		rc = dsi_link_hs_clk_set_rate(link_hs_clks);
 		if (rc) {
-			pr_err("failed to set HS clk rates, rc = %d\n", rc);
+			pr_debug("failed to set HS clk rates, rc = %d\n", rc);
 			goto error;
 		}
 	}
@@ -310,7 +310,7 @@ static int dsi_link_hs_clk_start(
 	if (op_type & MDSS_DSI_LINK_CLK_PREPARE) {
 		rc = dsi_link_hs_clk_prepare(link_hs_clks);
 		if (rc) {
-			pr_err("failed to prepare link HS clks, rc = %d\n", rc);
+			pr_debug("failed to prepare link HS clks, rc = %d\n", rc);
 			goto error;
 		}
 	}
@@ -318,7 +318,7 @@ static int dsi_link_hs_clk_start(
 	if (op_type & MDSS_DSI_LINK_CLK_ENABLE) {
 		rc = dsi_link_hs_clk_enable(link_hs_clks);
 		if (rc) {
-			pr_err("failed to enable link HS clks, rc = %d\n", rc);
+			pr_debug("failed to enable link HS clks, rc = %d\n", rc);
 			goto error_unprepare;
 		}
 	}
@@ -355,20 +355,20 @@ static int dsi_link_lp_clk_start(
 
 	rc = clk_set_rate(link_lp_clks->esc_clk, link_lp_clks->esc_clk_rate);
 	if (rc) {
-		pr_err("clk_set_rate failed for esc_clk rc = %d\n", rc);
+		pr_debug("clk_set_rate failed for esc_clk rc = %d\n", rc);
 		goto error;
 	}
 
 prepare:
 	rc = clk_prepare(link_lp_clks->esc_clk);
 	if (rc) {
-		pr_err("Failed to prepare dsi esc clk\n");
+		pr_debug("Failed to prepare dsi esc clk\n");
 		goto error;
 	}
 
 	rc = clk_enable(link_lp_clks->esc_clk);
 	if (rc) {
-		pr_err("Failed to enable dsi esc clk\n");
+		pr_debug("Failed to enable dsi esc clk\n");
 		clk_unprepare(l_clks->lp_clks.esc_clk);
 		goto error;
 	}
@@ -444,13 +444,13 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 				MDSS_DSI_CORE_CLK, MDSS_DSI_LINK_NONE,
 				MDSS_DSI_CLK_ON);
 			if (rc) {
-				pr_err("failed to turn on MDP FS rc= %d\n", rc);
+				pr_debug("failed to turn on MDP FS rc= %d\n", rc);
 				goto error;
 			}
 		}
 		rc = dsi_core_clk_start(c_clks);
 		if (rc) {
-			pr_err("failed to turn on core clks rc = %d\n", rc);
+			pr_debug("failed to turn on core clks rc = %d\n", rc);
 			goto error;
 		}
 
@@ -459,7 +459,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 				 MDSS_DSI_CORE_CLK, MDSS_DSI_LINK_NONE,
 				 MDSS_DSI_CLK_ON);
 			if (rc)
-				pr_err("post clk on cb failed, rc = %d\n", rc);
+				pr_debug("post clk on cb failed, rc = %d\n", rc);
 		}
 		c_clks->current_clk_state = MDSS_DSI_CLK_ON;
 	}
@@ -472,11 +472,11 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_LP_CLK,
 					l_state);
 				if (rc)
-					pr_err("pre link LP clk on cb failed\n");
+					pr_debug("pre link LP clk on cb failed\n");
 			}
 			rc = dsi_link_lp_clk_start(&l_clks->lp_clks);
 			if (rc) {
-				pr_err("failed to start LP link clk clk\n");
+				pr_debug("failed to start LP link clk clk\n");
 				goto error;
 			}
 			if (mngr->post_clkon_cb) {
@@ -484,7 +484,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_LP_CLK,
 					l_state);
 				if (rc)
-					pr_err("post LP clk on cb failed\n");
+					pr_debug("post LP clk on cb failed\n");
 			}
 
 			if (mngr->pre_clkon_cb) {
@@ -492,13 +492,13 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_HS_CLK,
 					l_state);
 				if (rc)
-					pr_err("pre HS clk on cb failed\n");
+					pr_debug("pre HS clk on cb failed\n");
 			}
 			rc = dsi_link_hs_clk_start(&l_clks->hs_clks,
 				(MDSS_DSI_LINK_CLK_SET_RATE |
 				MDSS_DSI_LINK_CLK_PREPARE));
 			if (rc) {
-				pr_err("failed to prepare HS clk rc= %d\n", rc);
+				pr_debug("failed to prepare HS clk rc= %d\n", rc);
 				goto error;
 			}
 			if (mngr->post_clkon_cb) {
@@ -506,12 +506,12 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_HS_CLK,
 					l_state);
 				if (rc)
-					pr_err("post HS clk on cb failed\n");
+					pr_debug("post HS clk on cb failed\n");
 			}
 			rc = dsi_link_hs_clk_start(&l_clks->hs_clks,
 				MDSS_DSI_LINK_CLK_ENABLE);
 			if (rc) {
-				pr_err("failed to enable HS clk rc= %d\n", rc);
+				pr_debug("failed to enable HS clk rc= %d\n", rc);
 				goto error;
 			}
 		} else {
@@ -537,20 +537,20 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 			    MDSS_DSI_CLK_ON)) {
 				rc = dsi_core_clk_start(&mngr->core_clks);
 				if (rc) {
-					pr_err("core clks did not start\n");
+					pr_debug("core clks did not start\n");
 					goto error;
 				}
 
 				rc = dsi_link_lp_clk_start(&l_clks->lp_clks);
 				if (rc) {
-					pr_err("LP Link clks did not start\n");
+					pr_debug("LP Link clks did not start\n");
 					goto error;
 				}
 
 				rc = dsi_link_hs_clk_start(&l_clks->hs_clks,
 						MDSS_DSI_LINK_CLK_START);
 				if (rc) {
-					pr_err("HS Link clks did not start\n");
+					pr_debug("HS Link clks did not start\n");
 					goto error;
 				}
 				l_c_on = true;
@@ -562,12 +562,12 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_HS_CLK,
 					l_state);
 				if (rc)
-					pr_err("pre HS clk off cb failed\n");
+					pr_debug("pre HS clk off cb failed\n");
 			}
 
 			rc = dsi_link_hs_clk_stop(&l_clks->hs_clks);
 			if (rc) {
-				pr_err("failed to stop HS clk, rc = %d\n",
+				pr_debug("failed to stop HS clk, rc = %d\n",
 				       rc);
 				goto error;
 			}
@@ -577,7 +577,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_HS_CLK,
 					l_state);
 				if (rc)
-					pr_err("post HS clk off cb failed\n");
+					pr_debug("post HS clk off cb failed\n");
 			}
 
 			if (mngr->pre_clkoff_cb) {
@@ -585,12 +585,12 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_LP_CLK,
 					l_state);
 				if (rc)
-					pr_err("pre LP clk off cb failed\n");
+					pr_debug("pre LP clk off cb failed\n");
 			}
 
 			rc = dsi_link_lp_clk_stop(&l_clks->lp_clks);
 			if (rc) {
-				pr_err("failed to stop LP link clk, rc = %d\n",
+				pr_debug("failed to stop LP link clk, rc = %d\n",
 				       rc);
 				goto error;
 			}
@@ -600,7 +600,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_LINK_CLK, MDSS_DSI_LINK_LP_CLK,
 					l_state);
 				if (rc)
-					pr_err("post LP clk off cb failed\n");
+					pr_debug("post LP clk off cb failed\n");
 			}
 
 			/*
@@ -620,7 +620,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					     MDSS_DSI_CLK_EARLY_GATE)))) {
 				rc = dsi_core_clk_stop(&mngr->core_clks);
 				if (rc) {
-					pr_err("core clks did not stop\n");
+					pr_debug("core clks did not stop\n");
 					goto error;
 				}
 
@@ -649,7 +649,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 		    MDSS_DSI_CLK_EARLY_GATE) && !l_c_on) {
 			rc = dsi_core_clk_start(&mngr->core_clks);
 			if (rc) {
-				pr_err("core clks did not start\n");
+				pr_debug("core clks did not start\n");
 				goto error;
 			}
 			pr_debug("ECG: core on\n");
@@ -661,12 +661,12 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 				 MDSS_DSI_CORE_CLK, MDSS_DSI_LINK_NONE,
 				 c_state);
 			if (rc)
-				pr_err("pre core clk off cb failed\n");
+				pr_debug("pre core clk off cb failed\n");
 		}
 
 		rc = dsi_core_clk_stop(c_clks);
 		if (rc) {
-			pr_err("failed to turn off core clks rc = %d\n", rc);
+			pr_debug("failed to turn off core clks rc = %d\n", rc);
 			goto error;
 		}
 
@@ -676,7 +676,7 @@ static int dsi_update_clk_state(struct dsi_core_clks *c_clks, u32 c_state,
 					MDSS_DSI_CORE_CLK, MDSS_DSI_LINK_NONE,
 						MDSS_DSI_CLK_OFF);
 				if (rc)
-					pr_err("post clkoff cb fail, rc = %d\n",
+					pr_debug("post clkoff cb fail, rc = %d\n",
 					       rc);
 			}
 		}
@@ -746,7 +746,7 @@ static int dsi_recheck_clk_state(struct mdss_dsi_clk_mngr *mngr)
 		rc = dsi_update_clk_state(c_clks, new_core_clk_state,
 					  l_clks, new_link_clk_state);
 		if (rc) {
-			pr_err("failed to update clock state, rc = %d\n", rc);
+			pr_debug("failed to update clock state, rc = %d\n", rc);
 			goto error;
 		}
 	}
@@ -771,7 +771,7 @@ static int dsi_set_clk_rate(struct mdss_dsi_clk_mngr *mngr, int clk, u32 rate,
 			rc = clk_set_rate(mngr->link_clks.lp_clks.esc_clk,
 				rate);
 			if (rc)
-				pr_err("set rate failed for esc clk rc=%d\n",
+				pr_debug("set rate failed for esc clk rc=%d\n",
 				       rc);
 		}
 		break;
@@ -781,7 +781,7 @@ static int dsi_set_clk_rate(struct mdss_dsi_clk_mngr *mngr, int clk, u32 rate,
 			rc = clk_set_rate(mngr->link_clks.hs_clks.byte_clk,
 				rate);
 			if (rc) {
-				pr_err("set rate failed for byte clk rc=%d\n",
+				pr_debug("set rate failed for byte clk rc=%d\n",
 				       rc);
 				goto error;
 			}
@@ -798,7 +798,7 @@ static int dsi_set_clk_rate(struct mdss_dsi_clk_mngr *mngr, int clk, u32 rate,
 					mngr->link_clks.hs_clks.byte_intf_clk,
 					rate / 2);
 				if (rc)
-					pr_err("set rate failed for byte intf clk rc=%d\n",
+					pr_debug("set rate failed for byte intf clk rc=%d\n",
 					       rc);
 			}
 		}
@@ -809,12 +809,12 @@ static int dsi_set_clk_rate(struct mdss_dsi_clk_mngr *mngr, int clk, u32 rate,
 			rc = clk_set_rate(mngr->link_clks.hs_clks.pixel_clk,
 				rate);
 			if (rc)
-				pr_err("failed to set rate for pix clk rc=%d\n",
+				pr_debug("failed to set rate for pix clk rc=%d\n",
 				       rc);
 		}
 		break;
 	default:
-		pr_err("Unsupported clock (%d)\n", clk);
+		pr_debug("Unsupported clock (%d)\n", clk);
 		rc = -ENOTSUPP;
 		break;
 	}
@@ -830,7 +830,7 @@ void *mdss_dsi_clk_register(void *clk_mngr, struct mdss_dsi_clk_client *client)
 	struct mdss_dsi_clk_client_info *c;
 
 	if (!mngr) {
-		pr_err("bad params\n");
+		pr_debug("bad params\n");
 		return ERR_PTR(-EINVAL);
 	}
 
@@ -867,7 +867,7 @@ int mdss_dsi_clk_deregister(void *client)
 	struct mdss_dsi_clk_client_info *node;
 
 	if (!client) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -879,7 +879,7 @@ int mdss_dsi_clk_deregister(void *client)
 
 	rc = dsi_recheck_clk_state(mngr);
 	if (rc) {
-		pr_err("clock state recheck failed rc = %d\n", rc);
+		pr_debug("clock state recheck failed rc = %d\n", rc);
 		goto error;
 	}
 
@@ -907,7 +907,7 @@ bool is_dsi_clk_in_ecg_state(void *client)
 	bool is_ecg = false;
 
 	if (!client) {
-		pr_err("Invalid client params\n");
+		pr_debug("Invalid client params\n");
 		goto end;
 	}
 
@@ -931,7 +931,7 @@ int mdss_dsi_clk_req_state(void *client, enum mdss_dsi_clk_type clk,
 
 	if (!client || !clk || clk > (MDSS_DSI_CORE_CLK | MDSS_DSI_LINK_CLK) ||
 	    state > MDSS_DSI_CLK_EARLY_GATE) {
-		pr_err("Invalid params, client = %pK, clk = 0x%x, state = %d\n",
+		pr_debug("Invalid params, client = %pK, clk = 0x%x, state = %d\n",
 		       client, clk, state);
 		return -EINVAL;
 	}
@@ -975,7 +975,7 @@ int mdss_dsi_clk_req_state(void *client, enum mdss_dsi_clk_type clk,
 					changed = true;
 					c->core_clk_state = MDSS_DSI_CLK_OFF;
 				} else {
-					pr_warn("Core refcount is zero for %s\n",
+					pr_debug("Core refcount is zero for %s\n",
 						c->name);
 				}
 			} else {
@@ -994,7 +994,7 @@ int mdss_dsi_clk_req_state(void *client, enum mdss_dsi_clk_type clk,
 					changed = true;
 					c->link_clk_state = MDSS_DSI_CLK_OFF;
 				} else {
-					pr_warn("Link refcount is zero for %s\n",
+					pr_debug("Link refcount is zero for %s\n",
 						c->name);
 				}
 			} else {
@@ -1014,7 +1014,7 @@ int mdss_dsi_clk_req_state(void *client, enum mdss_dsi_clk_type clk,
 	if (changed) {
 		rc = dsi_recheck_clk_state(mngr);
 		if (rc)
-			pr_err("Failed to adjust clock state rc = %d\n", rc);
+			pr_debug("Failed to adjust clock state rc = %d\n", rc);
 	}
 
 	mutex_unlock(&mngr->clk_mutex);
@@ -1029,7 +1029,7 @@ int mdss_dsi_clk_set_link_rate(void *client, enum mdss_dsi_link_clk_type clk,
 	struct mdss_dsi_clk_mngr *mngr;
 
 	if (!client || (clk > MDSS_DSI_LINK_CLK_MAX)) {
-		pr_err("Invalid params, client = %pK, clk = 0x%x\n",
+		pr_debug("Invalid params, client = %pK, clk = 0x%x\n",
 					 client, clk);
 		return -EINVAL;
 	}
@@ -1040,7 +1040,7 @@ int mdss_dsi_clk_set_link_rate(void *client, enum mdss_dsi_link_clk_type clk,
 
 	rc = dsi_set_clk_rate(mngr, clk, rate, flags);
 	if (rc)
-		pr_err("Failed to set rate for clk %d, rate = %d, rc = %d\n",
+		pr_debug("Failed to set rate for clk %d, rate = %d, rc = %d\n",
 		       clk, rate, rc);
 
 	mutex_unlock(&mngr->clk_mutex);
@@ -1053,7 +1053,7 @@ void *mdss_dsi_clk_init(struct mdss_dsi_clk_info *info)
 	struct mdss_dsi_clk_mngr *mngr;
 
 	if (!info) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return ERR_PTR(-EINVAL);
 	}
 	pr_debug("ENTER %s\n", info->name);
@@ -1079,7 +1079,7 @@ void *mdss_dsi_clk_init(struct mdss_dsi_clk_info *info)
 	mngr->priv_data = info->priv_data;
 	mngr->reg_bus_clt = mdss_reg_bus_vote_client_create(info->name);
 	if (IS_ERR(mngr->reg_bus_clt)) {
-		pr_err("Unable to get handle for reg bus vote\n");
+		pr_debug("Unable to get handle for reg bus vote\n");
 		kfree(mngr);
 		mngr = ERR_PTR(-EINVAL);
 		goto error;
@@ -1099,7 +1099,7 @@ int mdss_dsi_clk_deinit(void *clk_mngr)
 	struct mdss_dsi_clk_client_info *node;
 
 	if (!mngr) {
-		pr_err("Invalid params\n");
+		pr_debug("Invalid params\n");
 		return -EINVAL;
 	}
 
@@ -1116,7 +1116,7 @@ int mdss_dsi_clk_deinit(void *clk_mngr)
 
 	rc = dsi_recheck_clk_state(mngr);
 	if (rc)
-		pr_err("failed to disable all clocks\n");
+		pr_debug("failed to disable all clocks\n");
 	mdss_reg_bus_vote_client_destroy(mngr->reg_bus_clt);
 	mutex_unlock(&mngr->clk_mutex);
 	pr_debug("%s: EXIT, rc = %d\n", mngr->name, rc);
@@ -1131,7 +1131,7 @@ int mdss_dsi_clk_force_toggle(void *client, u32 clk)
 	struct mdss_dsi_clk_mngr *mngr;
 
 	if (!client || !clk || clk >= MDSS_DSI_CLKS_MAX) {
-		pr_err("Invalid params, client = %pK, clk = 0x%x\n",
+		pr_debug("Invalid params, client = %pK, clk = 0x%x\n",
 		       client, clk);
 		return -EINVAL;
 	}
@@ -1144,16 +1144,16 @@ int mdss_dsi_clk_force_toggle(void *client, u32 clk)
 
 		rc = dsi_core_clk_stop(&mngr->core_clks);
 		if (rc) {
-			pr_err("failed to stop core clks\n");
+			pr_debug("failed to stop core clks\n");
 			goto error;
 		}
 
 		rc = dsi_core_clk_start(&mngr->core_clks);
 		if (rc)
-			pr_err("failed to start core clks\n");
+			pr_debug("failed to start core clks\n");
 
 	} else if (clk & MDSS_DSI_CORE_CLK) {
-		pr_err("cannot reset, core clock is off\n");
+		pr_debug("cannot reset, core clock is off\n");
 		rc = -ENOTSUPP;
 		goto error;
 	}
@@ -1163,27 +1163,27 @@ int mdss_dsi_clk_force_toggle(void *client, u32 clk)
 
 		rc = dsi_link_hs_clk_stop(&mngr->link_clks.hs_clks);
 		if (rc) {
-			pr_err("failed to stop HS link clks\n");
+			pr_debug("failed to stop HS link clks\n");
 			goto error;
 		}
 
 		rc = dsi_link_lp_clk_stop(&mngr->link_clks.lp_clks);
 		if (rc) {
-			pr_err("failed to stop LP link clks\n");
+			pr_debug("failed to stop LP link clks\n");
 			goto error;
 		}
 
 		rc = dsi_link_lp_clk_start(&mngr->link_clks.lp_clks);
 		if (rc)
-			pr_err("failed to start LP link clks\n");
+			pr_debug("failed to start LP link clks\n");
 
 		rc = dsi_link_hs_clk_start(&mngr->link_clks.hs_clks,
 				MDSS_DSI_LINK_CLK_START);
 		if (rc)
-			pr_err("failed to start HS link clks\n");
+			pr_debug("failed to start HS link clks\n");
 
 	} else if (clk & MDSS_DSI_LINK_CLK) {
-		pr_err("cannot reset, link clock is off\n");
+		pr_debug("cannot reset, link clock is off\n");
 		rc = -ENOTSUPP;
 		goto error;
 	}

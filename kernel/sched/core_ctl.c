@@ -1276,10 +1276,10 @@ static int cluster_init(const struct cpumask *mask)
 	if (!dev)
 		return -ENODEV;
 
-	pr_info("Creating CPU group %d\n", first_cpu);
+	pr_debug("Creating CPU group %d\n", first_cpu);
 
 	if (num_clusters == MAX_CLUSTERS) {
-		pr_err("Unsupported number of clusters. Only %u supported\n",
+		pr_debug("Unsupported number of clusters. Only %u supported\n",
 								MAX_CLUSTERS);
 		return -EINVAL;
 	}
@@ -1289,7 +1289,7 @@ static int cluster_init(const struct cpumask *mask)
 	cpumask_copy(&cluster->cpu_mask, mask);
 	cluster->num_cpus = cpumask_weight(mask);
 	if (cluster->num_cpus > MAX_CPUS_PER_CLUSTER) {
-		pr_err("HW configuration not supported\n");
+		pr_debug("HW configuration not supported\n");
 		return -EINVAL;
 	}
 	cluster->first_cpu = first_cpu;
@@ -1307,7 +1307,7 @@ static int cluster_init(const struct cpumask *mask)
 	spin_lock_init(&cluster->pending_lock);
 
 	for_each_cpu(cpu, mask) {
-		pr_info("Init CPU%u state\n", cpu);
+		pr_debug("Init CPU%u state\n", cpu);
 
 		state = &per_cpu(cpu_state, cpu);
 		state->cluster = cluster;
@@ -1346,7 +1346,7 @@ static int __init core_ctl_init(void)
 	for_each_sched_cluster(cluster) {
 		ret = cluster_init(&cluster->cpus);
 		if (ret)
-			pr_warn("unable to create core ctl group: %d\n", ret);
+			pr_debug("unable to create core ctl group: %d\n", ret);
 	}
 
 	initialized = true;

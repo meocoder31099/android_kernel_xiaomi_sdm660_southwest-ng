@@ -86,7 +86,7 @@ static int msm_wcn_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_get_channel_map(codec_dai,
 				 &tx_ch_cnt, tx_ch, &rx_ch_cnt, rx_ch);
 	if (ret) {
-		dev_err(rtd->dev,
+		dev_dbg(rtd->dev,
 			"%s: failed to get BTFM codec chan map\n, err:%d\n",
 			__func__, ret);
 		goto exit;
@@ -98,7 +98,7 @@ static int msm_wcn_hw_params(struct snd_pcm_substream *substream,
 	ret = snd_soc_dai_set_channel_map(cpu_dai,
 					  tx_ch_cnt, tx_ch, rx_ch_cnt, rx_ch);
 	if (ret)
-		dev_err(rtd->dev, "%s: failed to set cpu chan map, err:%d\n",
+		dev_dbg(rtd->dev, "%s: failed to set cpu chan map, err:%d\n",
 			__func__, ret);
 
 exit:
@@ -1891,7 +1891,7 @@ struct snd_soc_card *populate_snd_card_dailinks(struct device *dev,
 	} else if (snd_card_val == EXT_SND_CARD_TAVIL) {
 		card = &snd_soc_card_msm_card_tavil;
 	} else {
-		dev_err(dev, "%s: failing as no matching card name\n",
+		dev_dbg(dev, "%s: failing as no matching card name\n",
 			__func__);
 		return NULL;
 	}
@@ -1899,7 +1899,7 @@ struct snd_soc_card *populate_snd_card_dailinks(struct device *dev,
 	card->dev = dev;
 	ret = snd_soc_of_parse_card_name(card, "qcom,model");
 	if (ret) {
-		dev_err(dev, "%s: parse card name failed, err:%d\n",
+		dev_dbg(dev, "%s: parse card name failed, err:%d\n",
 			__func__, ret);
 		return NULL;
 	}
@@ -1909,7 +1909,7 @@ struct snd_soc_card *populate_snd_card_dailinks(struct device *dev,
 		if (codec_ver == WCD9326) {
 			card->name = "sdm670-tashalite-snd-card";
 		} else if (codec_ver == WCD9XXX) {
-			dev_err(dev, "%s: Invalid codec version %d\n",
+			dev_dbg(dev, "%s: Invalid codec version %d\n",
 				__func__, codec_ver);
 			return NULL;
 		}
@@ -2004,7 +2004,7 @@ struct snd_soc_card *populate_snd_card_dailinks(struct device *dev,
 		}
 		msm_ext_dai_links = msm_ext_tavil_dai_links;
 	} else {
-		dev_err(dev, "%s: failing as no matching card name\n",
+		dev_dbg(dev, "%s: failing as no matching card name\n",
 			__func__);
 		return NULL;
 	}

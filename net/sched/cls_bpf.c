@@ -218,7 +218,7 @@ static void cls_bpf_stop_offload(struct tcf_proto *tp,
 
 	err = cls_bpf_offload_cmd(tp, NULL, prog, extack);
 	if (err)
-		pr_err("Stopping hardware offload failed: %d\n", err);
+		pr_debug("Stopping hardware offload failed: %d\n", err);
 }
 
 static void cls_bpf_offload_update_stats(struct tcf_proto *tp,

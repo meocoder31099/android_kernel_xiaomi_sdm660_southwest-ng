@@ -264,13 +264,13 @@ static int __init iio_init(void)
 	/* Register sysfs bus */
 	ret  = bus_register(&iio_bus_type);
 	if (ret < 0) {
-		pr_err("could not register bus type\n");
+		pr_debug("could not register bus type\n");
 		goto error_nothing;
 	}
 
 	ret = alloc_chrdev_region(&iio_devt, 0, IIO_DEV_MAX, "iio");
 	if (ret < 0) {
-		pr_err("failed to allocate char dev region\n");
+		pr_debug("failed to allocate char dev region\n");
 		goto error_unregister_bus_type;
 	}
 
@@ -306,7 +306,7 @@ static ssize_t iio_debugfs_read_reg(struct file *file, char __user *userbuf,
 						  indio_dev->cached_reg_addr,
 						  0, &val);
 	if (ret) {
-		dev_err(indio_dev->dev.parent, "%s: read failed\n", __func__);
+		dev_dbg(indio_dev->dev.parent, "%s: read failed\n", __func__);
 		return ret;
 	}
 
@@ -340,7 +340,7 @@ static ssize_t iio_debugfs_write_reg(struct file *file,
 		ret = indio_dev->info->debugfs_reg_access(indio_dev, reg,
 							  val, NULL);
 		if (ret) {
-			dev_err(indio_dev->dev.parent, "%s: write failed\n",
+			dev_dbg(indio_dev->dev.parent, "%s: write failed\n",
 				__func__);
 			return ret;
 		}
@@ -377,7 +377,7 @@ static int iio_device_register_debugfs(struct iio_dev *indio_dev)
 		debugfs_create_dir(dev_name(&indio_dev->dev),
 				   iio_debugfs_dentry);
 	if (indio_dev->debugfs_dentry == NULL) {
-		dev_warn(indio_dev->dev.parent,
+		dev_dbg(indio_dev->dev.parent,
 			 "Failed to create debugfs directory\n");
 		return -EFAULT;
 	}
@@ -501,7 +501,7 @@ static int iio_setup_mount_idmatrix(const struct device *dev,
 				    struct iio_mount_matrix *matrix)
 {
 	*matrix = iio_mount_idmatrix;
-	dev_info(dev, "mounting matrix not found: using identity...\n");
+	dev_dbg(dev, "mounting matrix not found: using identity...\n");
 	return 0;
 }
 
@@ -1059,7 +1059,7 @@ int __iio_add_chan_devattr(const char *postfix,
 		if (strcmp(t->dev_attr.attr.name,
 			   iio_attr->dev_attr.attr.name) == 0) {
 			if (shared_by == IIO_SEPARATE)
-				dev_err(dev, "tried to double register : %s\n",
+				dev_dbg(dev, "tried to double register : %s\n",
 					t->dev_attr.attr.name);
 			ret = -EBUSY;
 			goto error_device_attr_deinit;
@@ -1469,7 +1469,7 @@ struct iio_dev *iio_device_alloc(int sizeof_priv)
 		dev->id = ida_simple_get(&iio_ida, 0, 0, GFP_KERNEL);
 		if (dev->id < 0) {
 			/* cannot use a dev_err as the name isn't available */
-			pr_err("failed to get device id\n");
+			pr_debug("failed to get device id\n");
 			kfree(dev);
 			return NULL;
 		}
@@ -1646,7 +1646,7 @@ static int iio_check_unique_scan_index(struct iio_dev *indio_dev)
 			continue;
 		for (j = i + 1; j < indio_dev->num_channels; j++)
 			if (channels[i].scan_index == channels[j].scan_index) {
-				dev_err(&indio_dev->dev,
+				dev_dbg(&indio_dev->dev,
 					"Duplicate scan index %d\n",
 					channels[i].scan_index);
 				return -EINVAL;
@@ -1676,27 +1676,27 @@ int __iio_device_register(struct iio_dev *indio_dev, struct module *this_mod)
 
 	ret = iio_device_register_debugfs(indio_dev);
 	if (ret) {
-		dev_err(indio_dev->dev.parent,
+		dev_dbg(indio_dev->dev.parent,
 			"Failed to register debugfs interfaces\n");
 		return ret;
 	}
 
 	ret = iio_buffer_alloc_sysfs_and_mask(indio_dev);
 	if (ret) {
-		dev_err(indio_dev->dev.parent,
+		dev_dbg(indio_dev->dev.parent,
 			"Failed to create buffer sysfs interfaces\n");
 		goto error_unreg_debugfs;
 	}
 
 	ret = iio_device_register_sysfs(indio_dev);
 	if (ret) {
-		dev_err(indio_dev->dev.parent,
+		dev_dbg(indio_dev->dev.parent,
 			"Failed to register sysfs interfaces\n");
 		goto error_buffer_free_sysfs;
 	}
 	ret = iio_device_register_eventset(indio_dev);
 	if (ret) {
-		dev_err(indio_dev->dev.parent,
+		dev_dbg(indio_dev->dev.parent,
 			"Failed to register event set\n");
 		goto error_free_sysfs;
 	}

@@ -24,7 +24,7 @@ void q6asm_in_cb(uint32_t opcode, uint32_t token,
 
 	spin_lock_irqsave(&enc_dec_lock, en_de_flags);
 	if (audio == NULL) {
-		pr_err("%s: failed to get q6audio value\n", __func__);
+		pr_debug("%s: failed to get q6audio value\n", __func__);
 		goto error;
 	}
 	pr_debug("%s:session id %d: opcode[0x%x]\n", __func__,
@@ -46,7 +46,7 @@ void q6asm_in_cb(uint32_t opcode, uint32_t token,
 	case ASM_STREAM_CMDRSP_GET_PP_PARAMS_V2:
 		break;
 	case ASM_SESSION_EVENTX_OVERFLOW:
-		pr_err("%s:session id %d: ASM_SESSION_EVENT_TX_OVERFLOW\n",
+		pr_debug("%s:session id %d: ASM_SESSION_EVENT_TX_OVERFLOW\n",
 			__func__, audio->ac->session);
 		break;
 	case RESET_EVENTS:
@@ -87,7 +87,7 @@ void  audio_in_get_dsp_frames(void *priv,
 
 	/* Ensure the index is within max array size: FRAME_NUM */
 	if (index >= FRAME_NUM) {
-		pr_err("%s: Invalid index %d\n",
+		pr_debug("%s: Invalid index %d\n",
 			__func__, index);
 		return;
 	}

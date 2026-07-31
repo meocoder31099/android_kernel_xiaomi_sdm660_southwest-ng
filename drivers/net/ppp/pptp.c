@@ -468,7 +468,7 @@ static int pptp_connect(struct socket *sock, struct sockaddr *uservaddr,
 	po->chan.hdrlen = 2 + sizeof(struct pptp_gre_header);
 	error = ppp_register_channel(&po->chan);
 	if (error) {
-		pr_err("PPTP: failed to register PPP channel (%d)\n", error);
+		pr_debug("PPTP: failed to register PPP channel (%d)\n", error);
 		goto end;
 	}
 
@@ -649,7 +649,7 @@ static const struct gre_protocol gre_pptp_protocol = {
 static int __init pptp_init_module(void)
 {
 	int err = 0;
-	pr_info("PPTP driver version " PPTP_DRIVER_VERSION "\n");
+	pr_debug("PPTP driver version " PPTP_DRIVER_VERSION "\n");
 
 	callid_sock = vzalloc(array_size(sizeof(void *), (MAX_CALLID + 1)));
 	if (!callid_sock)
@@ -657,19 +657,19 @@ static int __init pptp_init_module(void)
 
 	err = gre_add_protocol(&gre_pptp_protocol, GREPROTO_PPTP);
 	if (err) {
-		pr_err("PPTP: can't add gre protocol\n");
+		pr_debug("PPTP: can't add gre protocol\n");
 		goto out_mem_free;
 	}
 
 	err = proto_register(&pptp_sk_proto, 0);
 	if (err) {
-		pr_err("PPTP: can't register sk_proto\n");
+		pr_debug("PPTP: can't register sk_proto\n");
 		goto out_gre_del_protocol;
 	}
 
 	err = register_pppox_proto(PX_PROTO_PPTP, &pppox_pptp_proto);
 	if (err) {
-		pr_err("PPTP: can't register pppox_proto\n");
+		pr_debug("PPTP: can't register pppox_proto\n");
 		goto out_unregister_sk_proto;
 	}
 

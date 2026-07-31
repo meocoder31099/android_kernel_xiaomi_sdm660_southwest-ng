@@ -89,38 +89,38 @@ static inline int notify_page_fault(struct pt_regs *regs, unsigned int esr)
 
 static void data_abort_decode(unsigned int esr)
 {
-	pr_alert("Data abort info:\n");
+	pr_debug("Data abort info:\n");
 
 	if (esr & ESR_ELx_ISV) {
-		pr_alert("  Access size = %u byte(s)\n",
+		pr_debug("  Access size = %u byte(s)\n",
 			 1U << ((esr & ESR_ELx_SAS) >> ESR_ELx_SAS_SHIFT));
-		pr_alert("  SSE = %lu, SRT = %lu\n",
+		pr_debug("  SSE = %lu, SRT = %lu\n",
 			 (esr & ESR_ELx_SSE) >> ESR_ELx_SSE_SHIFT,
 			 (esr & ESR_ELx_SRT_MASK) >> ESR_ELx_SRT_SHIFT);
-		pr_alert("  SF = %lu, AR = %lu\n",
+		pr_debug("  SF = %lu, AR = %lu\n",
 			 (esr & ESR_ELx_SF) >> ESR_ELx_SF_SHIFT,
 			 (esr & ESR_ELx_AR) >> ESR_ELx_AR_SHIFT);
 	} else {
-		pr_alert("  ISV = 0, ISS = 0x%08lx\n", esr & ESR_ELx_ISS_MASK);
+		pr_debug("  ISV = 0, ISS = 0x%08lx\n", esr & ESR_ELx_ISS_MASK);
 	}
 
-	pr_alert("  CM = %lu, WnR = %lu\n",
+	pr_debug("  CM = %lu, WnR = %lu\n",
 		 (esr & ESR_ELx_CM) >> ESR_ELx_CM_SHIFT,
 		 (esr & ESR_ELx_WNR) >> ESR_ELx_WNR_SHIFT);
 }
 
 static void mem_abort_decode(unsigned int esr)
 {
-	pr_alert("Mem abort info:\n");
+	pr_debug("Mem abort info:\n");
 
-	pr_alert("  ESR = 0x%08x\n", esr);
-	pr_alert("  Exception class = %s, IL = %u bits\n",
+	pr_debug("  ESR = 0x%08x\n", esr);
+	pr_debug("  Exception class = %s, IL = %u bits\n",
 		 esr_get_class_string(esr),
 		 (esr & ESR_ELx_IL) ? 32 : 16);
-	pr_alert("  SET = %lu, FnV = %lu\n",
+	pr_debug("  SET = %lu, FnV = %lu\n",
 		 (esr & ESR_ELx_SET_MASK) >> ESR_ELx_SET_SHIFT,
 		 (esr & ESR_ELx_FnV) >> ESR_ELx_FnV_SHIFT);
-	pr_alert("  EA = %lu, S1PTW = %lu\n",
+	pr_debug("  EA = %lu, S1PTW = %lu\n",
 		 (esr & ESR_ELx_EA) >> ESR_ELx_EA_SHIFT,
 		 (esr & ESR_ELx_S1PTW) >> ESR_ELx_S1PTW_SHIFT);
 
@@ -153,7 +153,7 @@ void show_pte(unsigned long addr)
 		/* TTBR0 */
 		mm = current->active_mm;
 		if (mm == &init_mm) {
-			pr_alert("[%016lx] user address but active_mm is swapper\n",
+			pr_debug("[%016lx] user address but active_mm is swapper\n",
 				 addr);
 			return;
 		}
@@ -161,17 +161,17 @@ void show_pte(unsigned long addr)
 		/* TTBR1 */
 		mm = &init_mm;
 	} else {
-		pr_alert("[%016lx] address between user and kernel address ranges\n",
+		pr_debug("[%016lx] address between user and kernel address ranges\n",
 			 addr);
 		return;
 	}
 
-	pr_alert("%s pgtable: %luk pages, %u-bit VAs, pgdp = %p\n",
+	pr_debug("%s pgtable: %luk pages, %u-bit VAs, pgdp = %p\n",
 		 mm == &init_mm ? "swapper" : "user", PAGE_SIZE / SZ_1K,
 		 VA_BITS, mm->pgd);
 	pgdp = pgd_offset(mm, addr);
 	pgd = READ_ONCE(*pgdp);
-	pr_alert("[%016lx] pgd=%016llx", addr, pgd_val(pgd));
+	pr_debug("[%016lx] pgd=%016llx", addr, pgd_val(pgd));
 
 	do {
 		pud_t *pudp, pud;
@@ -183,23 +183,23 @@ void show_pte(unsigned long addr)
 
 		pudp = pud_offset(pgdp, addr);
 		pud = READ_ONCE(*pudp);
-		pr_cont(", pud=%016llx", pud_val(pud));
+		pr_debug(", pud=%016llx", pud_val(pud));
 		if (pud_none(pud) || pud_bad(pud))
 			break;
 
 		pmdp = pmd_offset(pudp, addr);
 		pmd = READ_ONCE(*pmdp);
-		pr_cont(", pmd=%016llx", pmd_val(pmd));
+		pr_debug(", pmd=%016llx", pmd_val(pmd));
 		if (pmd_none(pmd) || pmd_bad(pmd))
 			break;
 
 		ptep = pte_offset_map(pmdp, addr);
 		pte = READ_ONCE(*ptep);
-		pr_cont(", pte=%016llx", pte_val(pte));
+		pr_debug(", pte=%016llx", pte_val(pte));
 		pte_unmap(ptep);
 	} while(0);
 
-	pr_cont("\n");
+	pr_debug("\n");
 }
 
 /*
@@ -275,7 +275,7 @@ static void die_kernel_fault(const char *msg, unsigned long addr,
 {
 	bust_spinlocks(1);
 
-	pr_alert("Unable to handle kernel %s at virtual address %016lx\n", msg,
+	pr_debug("Unable to handle kernel %s at virtual address %016lx\n", msg,
 		 addr);
 
 	mem_abort_decode(esr);
@@ -765,7 +765,7 @@ asmlinkage void __exception do_mem_abort(unsigned long addr, unsigned int esr,
 		return;
 
 	if (!user_mode(regs)) {
-		pr_alert("Unhandled fault at 0x%016lx\n", addr);
+		pr_debug("Unhandled fault at 0x%016lx\n", addr);
 		mem_abort_decode(esr);
 		show_pte(addr);
 	}

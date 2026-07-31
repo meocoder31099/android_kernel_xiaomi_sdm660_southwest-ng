@@ -719,9 +719,9 @@ static void __cold _credit_init_bits(size_t bits)
 		process_random_ready_list();
 		wake_up_interruptible(&crng_init_wait);
 		kill_fasync(&fasync, SIGIO, POLL_IN);
-		pr_notice("crng init done\n");
+		pr_debug("crng init done\n");
 		if (urandom_warning.missed)
-			pr_notice("%d urandom warning(s) missed due to ratelimiting\n",
+			pr_debug("%d urandom warning(s) missed due to ratelimiting\n",
 				  urandom_warning.missed);
 	} else if (orig < POOL_EARLY_BITS && new >= POOL_EARLY_BITS) {
 		spin_lock_irqsave(&base_crng.lock, flags);
@@ -1301,7 +1301,7 @@ static ssize_t urandom_read_iter(struct kiocb *kiocb, struct iov_iter *iter)
 			++urandom_warning.missed;
 		else if (ratelimit_disable || __ratelimit(&urandom_warning)) {
 			--maxwarn;
-			pr_notice("%s: uninitialized urandom read (%zu bytes read)\n",
+			pr_debug("%s: uninitialized urandom read (%zu bytes read)\n",
 				  current->comm, iov_iter_count(iter));
 		}
 	}

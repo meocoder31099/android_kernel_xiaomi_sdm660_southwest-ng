@@ -59,7 +59,7 @@ static int msm_isp_axi_create_stream(struct vfe_device *vfe_dev,
 	int rc = 0;
 
 	if (stream_info->state != AVAILABLE) {
-		pr_err("%s:%d invalid state %d expected %d\n",
+		pr_debug("%s:%d invalid state %d expected %d\n",
 			__func__, __LINE__, stream_info->state,
 			AVAILABLE);
 		return -EINVAL;
@@ -80,32 +80,32 @@ static int msm_isp_axi_create_stream(struct vfe_device *vfe_dev,
 	} else {
 		/* check if the stream has been added for the vfe-device */
 		if (stream_info->vfe_mask & (1 << vfe_dev->pdev->id)) {
-			pr_err("%s: stream %pK/%x is already added for vfe dev %d vfe_mask %x\n",
+			pr_debug("%s: stream %pK/%x is already added for vfe dev %d vfe_mask %x\n",
 				__func__, stream_info, stream_info->stream_id,
 				vfe_dev->pdev->id, stream_info->vfe_mask);
 			return -EINVAL;
 		}
 		if (stream_info->session_id != stream_cfg_cmd->session_id) {
-			pr_err("%s: dual stream session id mismatch %d/%d\n",
+			pr_debug("%s: dual stream session id mismatch %d/%d\n",
 				__func__, stream_info->session_id,
 				stream_cfg_cmd->session_id);
 			rc = -EINVAL;
 		}
 		if (stream_info->stream_id != stream_cfg_cmd->stream_id) {
-			pr_err("%s: dual stream stream id mismatch %d/%d\n",
+			pr_debug("%s: dual stream stream id mismatch %d/%d\n",
 				__func__, stream_info->stream_id,
 				stream_cfg_cmd->stream_id);
 			rc = -EINVAL;
 		}
 		if (stream_info->controllable_output !=
 			stream_cfg_cmd->controllable_output) {
-			pr_err("%s: dual stream controllable_op mismatch %d/%d\n",
+			pr_debug("%s: dual stream controllable_op mismatch %d/%d\n",
 				__func__, stream_info->controllable_output,
 				stream_cfg_cmd->controllable_output);
 			rc = -EINVAL;
 		}
 		if (stream_info->buf_divert != stream_cfg_cmd->buf_divert) {
-			pr_err("%s: dual stream buf_divert mismatch %d/%d\n",
+			pr_debug("%s: dual stream buf_divert mismatch %d/%d\n",
 				__func__, stream_info->buf_divert,
 				stream_cfg_cmd->buf_divert);
 			rc = -EINVAL;
@@ -285,24 +285,24 @@ static int msm_isp_validate_axi_request(struct vfe_device *vfe_dev,
 
 	if (axi_data->hw_info->num_wm - axi_data->num_used_wm <
 		stream_info->num_planes) {
-		pr_err("%s: No free write masters\n", __func__);
+		pr_debug("%s: No free write masters\n", __func__);
 		return rc;
 	}
 
 	if ((stream_info->num_planes > 1) &&
 			(axi_data->hw_info->num_comp_mask -
 			axi_data->num_used_composite_mask < 1)) {
-		pr_err("%s: No free composite mask\n", __func__);
+		pr_debug("%s: No free composite mask\n", __func__);
 		return rc;
 	}
 
 	if (stream_cfg_cmd->init_frame_drop >= MAX_INIT_FRAME_DROP) {
-		pr_err("%s: Invalid skip pattern\n", __func__);
+		pr_debug("%s: Invalid skip pattern\n", __func__);
 		return rc;
 	}
 
 	if (stream_cfg_cmd->frame_skip_pattern >= MAX_SKIP) {
-		pr_err("%s: Invalid skip pattern\n", __func__);
+		pr_debug("%s: Invalid skip pattern\n", __func__);
 		return rc;
 	}
 
@@ -543,7 +543,7 @@ static void msm_isp_cfg_framedrop_reg(
 	int i;
 
 	if (vfe_dev == NULL) {
-		pr_err("%s %d returning vfe_dev is NULL\n",
+		pr_debug("%s %d returning vfe_dev is NULL\n",
 			__func__,  __LINE__);
 		return;
 	}
@@ -567,7 +567,7 @@ static void msm_isp_cfg_framedrop_reg(
 	}
 
 	if (WARN_ON(framedrop_period == 0))
-		pr_err("%s framedrop_period is 0\n", __func__);
+		pr_debug("%s framedrop_period is 0\n", __func__);
 
 	for (i = 0; i < stream_info->num_isp; i++) {
 		vfe_dev = stream_info->vfe_dev[i];
@@ -591,7 +591,7 @@ static int msm_isp_composite_irq(struct vfe_device *vfe_dev,
 	/* interrupt recv on same vfe w/o recv on other vfe */
 	if (stream_info->composite_irq[irq] & (1 << vfe_dev->pdev->id)) {
 		msm_isp_dump_ping_pong_mismatch(vfe_dev);
-		pr_err("%s: irq %d out of sync for dual vfe on vfe %d\n",
+		pr_debug("%s: irq %d out of sync for dual vfe on vfe %d\n",
 			__func__, irq, vfe_dev->pdev->id);
 		return -EINVAL;
 	}
@@ -760,7 +760,7 @@ void msm_isp_check_for_output_error(struct vfe_device *vfe_dev,
 	uint32_t stream_idx;
 
 	if (!vfe_dev || !sof_info) {
-		pr_err("%s %d failed: vfe_dev %pK sof_info %pK\n", __func__,
+		pr_debug("%s %d failed: vfe_dev %pK sof_info %pK\n", __func__,
 			__LINE__, vfe_dev, sof_info);
 		return;
 	}
@@ -797,10 +797,10 @@ void msm_isp_check_for_output_error(struct vfe_device *vfe_dev,
 				 */
 				sof_info->regs_not_updated =
 					!vfe_dev->reg_updated;
-				pr_err("Drop frame no reg update\n");
+				pr_debug("Drop frame no reg update\n");
 				if (msm_isp_drop_frame(vfe_dev, stream_info, ts,
 					sof_info)) {
-					pr_err("drop frame failed\n");
+					pr_debug("drop frame failed\n");
 				}
 			}
 		}
@@ -999,7 +999,7 @@ void msm_isp_increment_frame_id(struct vfe_device *vfe_dev,
 
 	if (frame_src == VFE_PIX_0) {
 		if (vfe_dev->isp_page == NULL)
-			pr_err("Invalid ISP PAGE\n");
+			pr_debug("Invalid ISP PAGE\n");
 		else
 			vfe_dev->isp_page->kernel_sofid =
 				vfe_dev->axi_data.src_info[frame_src].frame_id;
@@ -1010,7 +1010,7 @@ void msm_isp_increment_frame_id(struct vfe_device *vfe_dev,
 			src_info->reg_update_frame_id) >
 			(MAX_REG_UPDATE_THRESHOLD *
 			src_info->sof_counter_step))) {
-			pr_err("%s:%d reg_update not received for %d frames\n",
+			pr_debug("%s:%d reg_update not received for %d frames\n",
 				__func__, __LINE__,
 				src_info->frame_id -
 				src_info->reg_update_frame_id);
@@ -1072,22 +1072,22 @@ void msm_isp_notify(struct vfe_device *vfe_dev, uint32_t event_type,
 	case ISP_EVENT_SOF:
 		if (frame_src == VFE_PIX_0) {
 			if (vfe_dev->isp_sof_debug < ISP_SOF_DEBUG_COUNT)
-				pr_err("%s: PIX0 frame id: %u\n", __func__,
+				pr_debug("%s: PIX0 frame id: %u\n", __func__,
 				vfe_dev->axi_data.src_info[VFE_PIX_0].frame_id);
 			vfe_dev->isp_sof_debug++;
 		} else if (frame_src == VFE_RAW_0) {
 			if (vfe_dev->isp_raw0_debug < ISP_SOF_DEBUG_COUNT)
-				pr_err("%s: RAW_0 frame id: %u\n", __func__,
+				pr_debug("%s: RAW_0 frame id: %u\n", __func__,
 				vfe_dev->axi_data.src_info[VFE_RAW_0].frame_id);
 			vfe_dev->isp_raw0_debug++;
 		} else if (frame_src == VFE_RAW_1) {
 			if (vfe_dev->isp_raw1_debug < ISP_SOF_DEBUG_COUNT)
-				pr_err("%s: RAW_1 frame id: %u\n", __func__,
+				pr_debug("%s: RAW_1 frame id: %u\n", __func__,
 				vfe_dev->axi_data.src_info[VFE_RAW_1].frame_id);
 			vfe_dev->isp_raw1_debug++;
 		} else if (frame_src == VFE_RAW_2) {
 			if (vfe_dev->isp_raw2_debug < ISP_SOF_DEBUG_COUNT)
-				pr_err("%s: RAW_2 frame id: %u\n", __func__,
+				pr_debug("%s: RAW_2 frame id: %u\n", __func__,
 				vfe_dev->axi_data.src_info[VFE_RAW_2].frame_id);
 			vfe_dev->isp_raw2_debug++;
 		}
@@ -1191,11 +1191,11 @@ static int msm_isp_calculate_framedrop(
 		stream_info = msm_isp_get_stream_common_data(vfe_dev,
 			HANDLE_TO_IDX(stream_cfg_cmd->axi_stream_handle));
 	} else {
-		pr_err("%s: Invalid stream handle\n", __func__);
+		pr_debug("%s: Invalid stream handle\n", __func__);
 		return -EINVAL;
 	}
 	if (!stream_info) {
-		pr_err("%s: Stream info is NULL\n", __func__);
+		pr_debug("%s: Stream info is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1252,7 +1252,7 @@ static void msm_isp_calculate_bandwidth(
 				vfe_dev->hw_info->vfe_clk_idx].clk_rate /
 				8) * bpp;
 			} else {
-				pr_err("%s: Invalid rdi interface\n", __func__);
+				pr_debug("%s: Invalid rdi interface\n", __func__);
 			}
 		}
 	}
@@ -1315,7 +1315,7 @@ void msm_isp_get_avtimer_ts(
 #else
 void msm_isp_start_avtimer(void)
 {
-	pr_err("AV Timer is not supported\n");
+	pr_debug("AV Timer is not supported\n");
 }
 
 void msm_isp_get_avtimer_ts(
@@ -1340,7 +1340,7 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 	struct msm_vfe_axi_stream *stream_info;
 
 	if (stream_cfg_cmd->stream_src >= VFE_AXI_SRC_MAX) {
-		pr_err("%s:%d invalid stream_src %d\n", __func__, __LINE__,
+		pr_debug("%s:%d invalid stream_src %d\n", __func__, __LINE__,
 			stream_cfg_cmd->stream_src);
 		return -EINVAL;
 	}
@@ -1353,7 +1353,7 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 	}
 
 	if (rc) {
-		pr_err("%s: create stream failed\n", __func__);
+		pr_debug("%s: create stream failed\n", __func__);
 		return rc;
 	}
 
@@ -1361,7 +1361,7 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		vfe_dev, stream_info, stream_cfg_cmd);
 	if (rc) {
 		msm_isp_axi_destroy_stream(vfe_dev, stream_info);
-		pr_err("%s: Request validation failed\n", __func__);
+		pr_debug("%s: Request validation failed\n", __func__);
 		return rc;
 	}
 
@@ -1385,7 +1385,7 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		rc = vfe_dev->hw_info->vfe_ops.axi_ops.cfg_io_format(
 			vfe_dev, stream_info->stream_src, io_format);
 		if (rc) {
-			pr_err("%s: cfg io format failed\n", __func__);
+			pr_debug("%s: cfg io format failed\n", __func__);
 			goto done;
 		}
 	}
@@ -1400,7 +1400,7 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		if (stream_info->num_isp > 1) {
 			if (stream_cfg_cmd->init_frame_drop !=
 				stream_info->init_frame_drop) {
-				pr_err("%s: stream %d init drop mismatch %d/%d\n",
+				pr_debug("%s: stream %d init drop mismatch %d/%d\n",
 					__func__, stream_info->stream_id,
 					stream_info->init_frame_drop,
 					stream_cfg_cmd->init_frame_drop);
@@ -1408,7 +1408,7 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			}
 			if (stream_cfg_cmd->frame_skip_pattern !=
 				stream_info->frame_skip_pattern) {
-				pr_err("%s: stream %d skip pattern mismatch %d/%d\n",
+				pr_debug("%s: stream %d skip pattern mismatch %d/%d\n",
 					__func__, stream_info->stream_id,
 					stream_info->frame_skip_pattern,
 					stream_cfg_cmd->frame_skip_pattern);
@@ -1416,14 +1416,14 @@ int msm_isp_request_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			}
 			if (stream_info->stream_type == CONTINUOUS_STREAM &&
 				stream_cfg_cmd->burst_count > 0) {
-				pr_err("%s: stream %d stream type mismatch\n",
+				pr_debug("%s: stream %d stream type mismatch\n",
 					__func__, stream_info->stream_id);
 				rc = -EINVAL;
 			}
 			if (stream_info->stream_type == BURST_STREAM &&
 				stream_info->num_burst_capture !=
 				stream_cfg_cmd->burst_count) {
-				pr_err("%s: stream %d stream burst count mismatch %d/%d\n",
+				pr_debug("%s: stream %d stream burst count mismatch %d/%d\n",
 					__func__, stream_info->stream_id,
 					stream_info->num_burst_capture,
 					stream_cfg_cmd->burst_count);
@@ -1484,7 +1484,7 @@ int msm_isp_release_axi_stream(struct vfe_device *vfe_dev, void *arg)
 
 	if (HANDLE_TO_IDX(stream_release_cmd->stream_handle) >=
 		VFE_AXI_SRC_MAX) {
-		pr_err("%s: Invalid stream handle\n", __func__);
+		pr_debug("%s: Invalid stream handle\n", __func__);
 		return -EINVAL;
 	}
 	stream_info = msm_isp_get_stream_common_data(vfe_dev,
@@ -1494,7 +1494,7 @@ int msm_isp_release_axi_stream(struct vfe_device *vfe_dev, void *arg)
 	if (vfe_idx == -ENOTTY ||
 		stream_release_cmd->stream_handle !=
 		stream_info->stream_handle[vfe_idx]) {
-		pr_err("%s: Invalid stream %pK handle %x/%x vfe_idx %d vfe_dev %d num_isp %d\n",
+		pr_debug("%s: Invalid stream %pK handle %x/%x vfe_idx %d vfe_dev %d num_isp %d\n",
 			__func__, stream_info,
 			stream_release_cmd->stream_handle,
 			vfe_idx != -ENOTTY ?
@@ -1830,7 +1830,7 @@ static int msm_isp_update_deliver_count(struct vfe_device *vfe_dev,
 		if (done_buf->is_drop_reconfig != 1)
 			stream_info->undelivered_request_cnt--;
 		if (pingpong_bit != stream_info->sw_ping_pong_bit) {
-			pr_err("%s:%d ping pong bit actual %d sw %d\n",
+			pr_debug("%s:%d ping pong bit actual %d sw %d\n",
 				__func__, __LINE__, pingpong_bit,
 				stream_info->sw_ping_pong_bit);
 			rc = -EINVAL;
@@ -1877,7 +1877,7 @@ void msm_isp_halt_send_error(struct vfe_device *vfe_dev, uint32_t event)
 			spin_unlock_irqrestore(
 				&vfe_dev->common_data->common_dev_data_lock,
 				flags);
-			pr_err("%s:skip the recovery as no active streams\n",
+			pr_debug("%s:skip the recovery as no active streams\n",
 				 __func__);
 			return;
 		}
@@ -1888,7 +1888,7 @@ void msm_isp_halt_send_error(struct vfe_device *vfe_dev, uint32_t event)
 
 	if (event == ISP_EVENT_PING_PONG_MISMATCH &&
 		vfe_dev->axi_data.recovery_count < MAX_RECOVERY_THRESHOLD) {
-		pr_err("%s: ping pong mismatch on vfe%d recovery count %d\n",
+		pr_debug("%s: ping pong mismatch on vfe%d recovery count %d\n",
 			__func__, vfe_dev->pdev->id,
 			vfe_dev->axi_data.recovery_count);
 		msm_isp_process_overflow_irq(vfe_dev,
@@ -1902,7 +1902,7 @@ void msm_isp_halt_send_error(struct vfe_device *vfe_dev, uint32_t event)
 	halt_cmd.overflow_detected = 0;
 	halt_cmd.blocking_halt = 0;
 
-	pr_err("%s: vfe%d fatal error!\n", __func__, vfe_dev->pdev->id);
+	pr_debug("%s: vfe%d fatal error!\n", __func__, vfe_dev->pdev->id);
 
 	atomic_set(&vfe_dev->error_info.overflow_state,
 		HALT_ENFORCED);
@@ -1944,7 +1944,7 @@ int msm_isp_print_ping_pong_address(struct vfe_device *vfe_dev,
 
 			buf = stream_info->buf[pingpong_bit];
 			if (buf == NULL) {
-				pr_err("%s: buf NULL for stream %x num_isp %d\n",
+				pr_debug("%s: buf NULL for stream %x num_isp %d\n",
 					__func__,
 					stream_info->stream_src,
 					stream_info->num_isp);
@@ -1952,7 +1952,7 @@ int msm_isp_print_ping_pong_address(struct vfe_device *vfe_dev,
 			}
 			temp = buf->mapped_info[0].paddr +
 				buf->mapped_info[0].len;
-			pr_err("%s: stream %x ping bit %d uses buffer %pK-%pK, num_isp %d\n",
+			pr_debug("%s: stream %x ping bit %d uses buffer %pK-%pK, num_isp %d\n",
 				__func__, stream_info->stream_src,
 				pingpong_bit,
 				&buf->mapped_info[0].paddr, &temp,
@@ -2027,7 +2027,7 @@ static struct msm_isp_buffer *msm_isp_get_stream_buffer(
 		return buf;
 
 	if (buf->num_planes != stream_info->num_planes) {
-		pr_err("%s: Invalid buffer\n", __func__);
+		pr_debug("%s: Invalid buffer\n", __func__);
 		vfe_dev->buf_mgr->ops->put_buf(vfe_dev->buf_mgr,
 				bufq_handle, buf->buf_idx);
 		buf = NULL;
@@ -2054,13 +2054,13 @@ int msm_isp_cfg_offline_ping_pong_address(struct vfe_device *vfe_dev,
 		rc = vfe_dev->buf_mgr->ops->get_buf_by_index(
 			vfe_dev->buf_mgr, bufq_handle, buf_idx, &buf);
 		if (rc < 0 || !buf) {
-			pr_err("%s: No fetch buffer rc= %d buf= %pK\n",
+			pr_debug("%s: No fetch buffer rc= %d buf= %pK\n",
 				__func__, rc, buf);
 			return -EINVAL;
 		}
 
 		if (buf->num_planes != stream_info->num_planes) {
-			pr_err("%s: Invalid buffer\n", __func__);
+			pr_debug("%s: Invalid buffer\n", __func__);
 			vfe_dev->buf_mgr->ops->put_buf(vfe_dev->buf_mgr,
 				bufq_handle, buf->buf_idx);
 			return -EINVAL;
@@ -2123,7 +2123,7 @@ static int msm_isp_cfg_ping_pong_address(
 
 	/* return if buffer already present */
 	if (stream_info->buf[!pingpong_bit]) {
-		pr_err("stream %x buffer already set for pingpong %d\n",
+		pr_debug("stream %x buffer already set for pingpong %d\n",
 			stream_info->stream_src, !pingpong_bit);
 		return 1;
 	}
@@ -2204,7 +2204,7 @@ static void msm_isp_handle_done_buf_frame_id_mismatch(
 	}
 	msm_isp_send_event(vfe_dev, ISP_EVENT_ERROR,
 		&error_event);
-	pr_err("%s: Error! frame id mismatch!! 1st buf frame %d,curr frame %d\n",
+	pr_debug("%s: Error! frame id mismatch!! 1st buf frame %d,curr frame %d\n",
 		__func__, buf->frame_id, frame_id);
 	vfe_dev->buf_mgr->frameId_mismatch_recovery = 1;
 }
@@ -2314,7 +2314,7 @@ static int msm_isp_process_done_buf(struct vfe_device *vfe_dev,
 		bufq = vfe_dev->buf_mgr->ops->get_bufq(vfe_dev->buf_mgr,
 			buf->bufq_handle);
 		if (!bufq) {
-			pr_err("%s: Invalid bufq buf_handle %x\n",
+			pr_debug("%s: Invalid bufq buf_handle %x\n",
 				__func__, buf->bufq_handle);
 			return -EINVAL;
 		}
@@ -2367,7 +2367,7 @@ int msm_isp_drop_frame(struct vfe_device *vfe_dev,
 	int rc = -1;
 
 	if (!vfe_dev || !stream_info || !ts || !sof_info) {
-		pr_err("%s %d vfe_dev %pK stream_info %pK ts %pK op_info %pK\n",
+		pr_debug("%s %d vfe_dev %pK stream_info %pK ts %pK op_info %pK\n",
 			 __func__, __LINE__, vfe_dev, stream_info, ts,
 			sof_info);
 		return -EINVAL;
@@ -2397,7 +2397,7 @@ int msm_isp_drop_frame(struct vfe_device *vfe_dev,
 					spin_unlock_irqrestore(
 						&stream_info->lock,
 						flags);
-					pr_err("%s: Invalid bufq buf_handle %x\n",
+					pr_debug("%s: Invalid bufq buf_handle %x\n",
 						__func__,
 						done_buf->bufq_handle);
 					return -EINVAL;
@@ -2669,7 +2669,7 @@ static int msm_isp_update_stream_bandwidth(
 			(total_bandwidth + vfe_dev->hw_info->min_ib));
 
 		if (rc < 0)
-			pr_err("%s: update failed rc %d stream src %d vfe dev %d\n",
+			pr_debug("%s: update failed rc %d stream src %d vfe dev %d\n",
 				__func__, rc, stream_info->stream_src,
 				vfe_dev->pdev->id);
 	}
@@ -2686,18 +2686,18 @@ int msm_isp_ab_ib_update_lpm_mode(struct vfe_device *vfe_dev, void *arg)
 
 	ab_ib_vote = (struct msm_vfe_dual_lpm_mode *)arg;
 	if (!ab_ib_vote) {
-		pr_err("%s: ab_ib_vote is NULL !!!\n", __func__);
+		pr_debug("%s: ab_ib_vote is NULL !!!\n", __func__);
 		rc = -1;
 		return rc;
 	}
 	if (ab_ib_vote->num_src >= VFE_AXI_SRC_MAX) {
-		pr_err("%s: ab_ib_vote num_src is exceeding limit\n",
+		pr_debug("%s: ab_ib_vote num_src is exceeding limit\n",
 			__func__);
 		rc = -1;
 		return rc;
 	}
 	if (ab_ib_vote->num_src >= VFE_AXI_SRC_MAX) {
-		pr_err("%s: ab_ib_vote num_src is exceeding limit\n",
+		pr_debug("%s: ab_ib_vote num_src is exceeding limit\n",
 			__func__);
 		rc = -1;
 		return rc;
@@ -2761,7 +2761,7 @@ static int msm_isp_init_stream_ping_pong_reg(
 	if (rc == -ENOMEM && stream_info->stream_type != BURST_STREAM)
 		return 0;
 	if (rc < 0) {
-		pr_err("%s: No free buffer for ping\n",
+		pr_debug("%s: No free buffer for ping\n",
 			   __func__);
 		return rc;
 	}
@@ -2775,7 +2775,7 @@ static int msm_isp_init_stream_ping_pong_reg(
 	}
 
 	if (rc < 0) {
-		pr_err("%s: No free buffer for pong\n",
+		pr_debug("%s: No free buffer for pong\n",
 			__func__);
 		return rc;
 	}
@@ -2802,7 +2802,7 @@ int msm_isp_axi_halt(struct vfe_device *vfe_dev,
 
 	if (atomic_read(&vfe_dev->error_info.overflow_state) ==
 		OVERFLOW_DETECTED)
-		pr_err("%s: VFE%d Bus overflow detected: start recovery!\n",
+		pr_debug("%s: VFE%d Bus overflow detected: start recovery!\n",
 			__func__, vfe_dev->pdev->id);
 
 	/* take care of pending items in tasklet before halt */
@@ -2835,7 +2835,7 @@ int msm_isp_axi_reset(struct vfe_device *vfe_dev,
 	struct timeval *time_stamp;
 
 	if (!reset_cmd) {
-		pr_err("%s: NULL pointer reset cmd %pK\n", __func__, reset_cmd);
+		pr_debug("%s: NULL pointer reset cmd %pK\n", __func__, reset_cmd);
 		rc = -1;
 		return rc;
 	}
@@ -2848,7 +2848,7 @@ int msm_isp_axi_reset(struct vfe_device *vfe_dev,
 						vfe_dev, i);
 		if (stream_info->stream_src >= VFE_AXI_SRC_MAX) {
 			rc = -1;
-			pr_err("%s invalid  stream src = %d\n",
+			pr_debug("%s invalid  stream src = %d\n",
 				__func__,
 				stream_info->stream_src);
 			break;
@@ -2962,7 +2962,7 @@ int msm_isp_axi_reset(struct vfe_device *vfe_dev,
 			0, reset_cmd->blocking);
 
 	if (rc < 0)
-		pr_err("%s Error! reset hw Timed out\n", __func__);
+		pr_debug("%s Error! reset hw Timed out\n", __func__);
 
 	return 0;
 }
@@ -3042,7 +3042,7 @@ static int msm_isp_axi_update_cgc_override(struct vfe_device *vfe_dev_ioctl,
 		stream_info = msm_isp_get_stream_common_data(vfe_dev_ioctl,
 			HANDLE_TO_IDX(stream_cfg_cmd->stream_handle[i]));
 		if (!stream_info) {
-			pr_err("%s: stream_info is NULL\n", __func__);
+			pr_debug("%s: stream_info is NULL\n", __func__);
 			return -EINVAL;
 		}
 		for (j = 0; j < stream_info->num_planes; j++) {
@@ -3093,7 +3093,7 @@ static int msm_isp_axi_wait_for_stream_cfg_done(
 
 	if (rc <= 0) {
 		rc = rc ? rc : -ETIMEDOUT;
-		pr_err("%s: wait for stream %x/%x state %d config failed %d\n",
+		pr_debug("%s: wait for stream %x/%x state %d config failed %d\n",
 			__func__,
 			stream_info->stream_id,
 			stream_info->stream_src,
@@ -3280,7 +3280,7 @@ static void __msm_isp_stop_axi_streams(struct vfe_device *vfe_dev,
 
 	rc = msm_isp_axi_wait_for_streams(streams, num_streams, 0);
 	if (rc) {
-		pr_err("%s: wait for stream comp failed, retry...\n", __func__);
+		pr_debug("%s: wait for stream comp failed, retry...\n", __func__);
 		for (i = 0; i < num_streams; i++) {
 			stream_info = streams[i];
 			if (stream_info->state == INACTIVE)
@@ -3292,7 +3292,7 @@ static void __msm_isp_stop_axi_streams(struct vfe_device *vfe_dev,
 		}
 		rc = msm_isp_axi_wait_for_streams(streams, num_streams, 0);
 		if (rc) {
-			pr_err("%s: wait for stream comp failed, force streams to inactive\n",
+			pr_debug("%s: wait for stream comp failed, force streams to inactive\n",
 				__func__);
 			for (i = 0; i < num_streams; i++) {
 				stream_info = streams[i];
@@ -3369,7 +3369,7 @@ static int msm_isp_start_axi_stream(struct vfe_device *vfe_dev_ioctl,
 		stream_info = msm_isp_get_stream_common_data(vfe_dev_ioctl,
 			HANDLE_TO_IDX(stream_cfg_cmd->stream_handle[i]));
 		if (!stream_info) {
-			pr_err("%s: stream_info is NULL\n", __func__);
+			pr_debug("%s: stream_info is NULL\n", __func__);
 			mutex_unlock(&vfe_dev_ioctl->buf_mgr->lock);
 			return -EINVAL;
 		}
@@ -3410,7 +3410,7 @@ static int msm_isp_start_axi_stream(struct vfe_device *vfe_dev_ioctl,
 		msm_isp_reset_framedrop(vfe_dev_ioctl, stream_info);
 		rc = msm_isp_init_stream_ping_pong_reg(stream_info);
 		if (rc < 0) {
-			pr_err("%s: No buffer for stream%x\n", __func__,
+			pr_debug("%s: No buffer for stream%x\n", __func__,
 				stream_info->stream_id);
 			spin_unlock_irqrestore(&stream_info->lock, flags);
 			mutex_unlock(&vfe_dev_ioctl->buf_mgr->lock);
@@ -3495,7 +3495,7 @@ static int msm_isp_start_axi_stream(struct vfe_device *vfe_dev_ioctl,
 
 	rc = msm_isp_axi_wait_for_streams(streams, num_streams, 1);
 	if (rc < 0) {
-		pr_err("%s: wait for config done failed\n", __func__);
+		pr_debug("%s: wait for config done failed\n", __func__);
 		goto error;
 	}
 
@@ -3526,7 +3526,7 @@ static int msm_isp_stop_axi_stream(struct vfe_device *vfe_dev_ioctl,
 		stream_info = msm_isp_get_stream_common_data(vfe_dev_ioctl,
 			HANDLE_TO_IDX(stream_cfg_cmd->stream_handle[i]));
 		if (!stream_info) {
-			pr_err("%s: stream_info is NULL\n", __func__);
+			pr_debug("%s: stream_info is NULL\n", __func__);
 			return -EINVAL;
 		}
 		spin_lock_irqsave(&stream_info->lock, flags);
@@ -3566,14 +3566,14 @@ int msm_isp_cfg_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		stream_info = msm_isp_get_stream_common_data(vfe_dev,
 			HANDLE_TO_IDX(stream_cfg_cmd->stream_handle[i]));
 		if (!stream_info) {
-			pr_err("%s: stream_info is NULL\n", __func__);
+			pr_debug("%s: stream_info is NULL\n", __func__);
 			return -EINVAL;
 		}
 		vfe_idx = msm_isp_get_vfe_idx_for_stream_user(vfe_dev,
 								stream_info);
 		if (vfe_idx == -ENOTTY || stream_info->stream_handle[vfe_idx] !=
 					stream_cfg_cmd->stream_handle[i]) {
-			pr_err("%s: Invalid stream handle %x vfe_idx %d expected %x\n",
+			pr_debug("%s: Invalid stream handle %x vfe_idx %d expected %x\n",
 				__func__, stream_cfg_cmd->stream_handle[i],
 				vfe_idx,
 				(vfe_idx != -ENOTTY) ?
@@ -3615,7 +3615,7 @@ int msm_isp_cfg_axi_stream(struct vfe_device *vfe_dev, void *arg)
 	}
 
 	if (rc < 0)
-		pr_err("%s: start/stop %d stream failed\n", __func__,
+		pr_debug("%s: start/stop %d stream failed\n", __func__,
 			stream_cfg_cmd->cmd);
 	return rc;
 }
@@ -3633,7 +3633,7 @@ static int msm_isp_return_empty_buffer(struct vfe_device *vfe_dev,
 	struct msm_isp_timestamp timestamp;
 
 	if (!vfe_dev || !stream_info) {
-		pr_err("%s %d failed: vfe_dev %pK stream_info %pK\n", __func__,
+		pr_debug("%s %d failed: vfe_dev %pK stream_info %pK\n", __func__,
 			__LINE__, vfe_dev, stream_info);
 		return -EINVAL;
 	}
@@ -3643,12 +3643,12 @@ static int msm_isp_return_empty_buffer(struct vfe_device *vfe_dev,
 		return -EINVAL;
 
 	if (frame_src >= VFE_SRC_MAX) {
-		pr_err("%s: Invalid frame_src %d\n", __func__, frame_src);
+		pr_debug("%s: Invalid frame_src %d\n", __func__, frame_src);
 		return -EINVAL;
 	}
 
 	if (stream_idx >= VFE_AXI_SRC_MAX) {
-		pr_err("%s: Invalid stream_idx\n", __func__);
+		pr_debug("%s: Invalid stream_idx\n", __func__);
 		return rc;
 	}
 
@@ -3666,7 +3666,7 @@ static int msm_isp_return_empty_buffer(struct vfe_device *vfe_dev,
 	}
 
 	if (rc < 0 || buf == NULL) {
-		pr_err("Skip framedrop report due to no buffer\n");
+		pr_debug("Skip framedrop report due to no buffer\n");
 		return rc;
 	}
 
@@ -3711,7 +3711,7 @@ static int msm_isp_request_frame(struct vfe_device *vfe_dev,
 	uint32_t pingpong_bit = 0;
 
 	if (!vfe_dev || !stream_info) {
-		pr_err("%s %d failed: vfe_dev %pK stream_info %pK\n", __func__,
+		pr_debug("%s %d failed: vfe_dev %pK stream_info %pK\n", __func__,
 			__LINE__, vfe_dev, stream_info);
 		return -EINVAL;
 	}
@@ -3727,7 +3727,7 @@ static int msm_isp_request_frame(struct vfe_device *vfe_dev,
 		return 0;
 
 	if (stream_info->stream_src >= VFE_AXI_SRC_MAX) {
-		pr_err("%s:%d invalid stream src %d\n", __func__, __LINE__,
+		pr_debug("%s:%d invalid stream src %d\n", __func__, __LINE__,
 			stream_info->stream_src);
 		return -EINVAL;
 	}
@@ -3739,7 +3739,7 @@ static int msm_isp_request_frame(struct vfe_device *vfe_dev,
 	/* As MCT is still processing it, need to drop the additional requests*/
 	if (vfe_dev->isp_page->drop_reconfig &&
 		frame_src == VFE_PIX_0) {
-		pr_err("%s: MCT has not yet delayed %d drop request %d\n",
+		pr_debug("%s: MCT has not yet delayed %d drop request %d\n",
 			__func__, vfe_dev->isp_page->drop_reconfig, frame_id);
 		goto error;
 	}
@@ -3849,7 +3849,7 @@ static int msm_isp_request_frame(struct vfe_device *vfe_dev,
 
 	if (!stream_info->bufq_handle[queue_req->buff_queue_id]) {
 		spin_unlock_irqrestore(&stream_info->lock, flags);
-		pr_err("%s:%d request frame failed on hw stream 0x%x, request stream %d due to no bufq idx: %d\n",
+		pr_debug("%s:%d request frame failed on hw stream 0x%x, request stream %d due to no bufq idx: %d\n",
 			__func__, __LINE__,
 			stream_info->stream_handle[0],
 			user_stream_id, queue_req->buff_queue_id);
@@ -3953,7 +3953,7 @@ error:
 	rc = msm_isp_return_empty_buffer(vfe_dev, stream_info,
 		user_stream_id, frame_id, buf_index, frame_src);
 	if (rc < 0)
-		pr_err("%s:%d failed: return_empty_buffer src %d\n",
+		pr_debug("%s:%d failed: return_empty_buffer src %d\n",
 		__func__, __LINE__, frame_src);
 	return 0;
 
@@ -3979,7 +3979,7 @@ static int msm_isp_add_buf_queue(struct vfe_device *vfe_dev,
 				stream_info->session_id, stream_id);
 		if (stream_info->bufq_handle[bufq_id] == 0) {
 			spin_unlock_irqrestore(&stream_info->lock, flags);
-			pr_err("%s: failed: No valid buffer queue for stream: 0x%x\n",
+			pr_debug("%s: failed: No valid buffer queue for stream: 0x%x\n",
 				__func__, stream_id);
 			return -EINVAL;
 		}
@@ -3990,7 +3990,7 @@ static int msm_isp_add_buf_queue(struct vfe_device *vfe_dev,
 						stream_id);
 		if (bufq_handle != stream_info->bufq_handle[bufq_id]) {
 			spin_unlock_irqrestore(&stream_info->lock, flags);
-			pr_err("%s: Stream %x already has buffer q %x cannot add handle %x\n",
+			pr_debug("%s: Stream %x already has buffer q %x cannot add handle %x\n",
 				__func__, stream_id,
 				stream_info->bufq_handle[bufq_id], bufq_handle);
 			return -EINVAL;
@@ -4056,14 +4056,14 @@ static int msm_isp_stream_axi_cfg_update(struct vfe_device *vfe_dev,
 	spin_lock_irqsave(&stream_info->lock, flags);
 	if (stream_info->state != ACTIVE) {
 		spin_unlock_irqrestore(&stream_info->lock, flags);
-		pr_err("Invalid stream state for axi update %d\n",
+		pr_debug("Invalid stream state for axi update %d\n",
 			stream_info->state);
 		return -EINVAL;
 	}
 	if (stream_info->update_vfe_mask) {
 		if (stream_info->update_vfe_mask & (1 << vfe_dev->pdev->id)) {
 			spin_unlock_irqrestore(&stream_info->lock, flags);
-			pr_err("%s: Stream %pK/%x Update already in progress for vfe %d\n",
+			pr_debug("%s: Stream %pK/%x Update already in progress for vfe %d\n",
 				__func__, stream_info, stream_info->stream_src,
 				vfe_dev->pdev->id);
 			return -EINVAL;
@@ -4131,7 +4131,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		stream_info = msm_isp_get_stream_common_data(vfe_dev,
 			HANDLE_TO_IDX(update_info->stream_handle));
 		if (!stream_info) {
-			pr_err("%s: stream_info is null\n", __func__);
+			pr_debug("%s: stream_info is null\n", __func__);
 			return -EINVAL;
 		}
 		if (SRC_TO_INTF(stream_info->stream_src) >= VFE_SRC_MAX)
@@ -4150,14 +4150,14 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			UPDATE_STREAM_SW_FRAME_DROP &&
 			update_cmd->update_type !=
 			UPDATE_STREAM_REQUEST_FRAMES_VER2) {
-			pr_err("%s: Invalid stream state %d, update cmd %d\n",
+			pr_debug("%s: Invalid stream state %d, update cmd %d\n",
 				__func__, stream_info->state,
 				stream_info->stream_id);
 			return -EINVAL;
 		}
 		if (update_cmd->update_type == UPDATE_STREAM_AXI_CONFIG &&
 			stream_info->state != ACTIVE) {
-			pr_err("%s: AXI stream config updating\n", __func__);
+			pr_debug("%s: AXI stream config updating\n", __func__);
 			return -EBUSY;
 		}
 	}
@@ -4171,7 +4171,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			stream_info->buf_divert = 1;
@@ -4185,7 +4185,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			stream_info->buf_divert = 0;
@@ -4223,7 +4223,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			spin_lock_irqsave(&stream_info->lock, flags);
@@ -4235,7 +4235,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 				break;
 			}
 			if (stream_info->controllable_output) {
-				pr_err("Controllable output streams does not support custom frame skip pattern\n");
+				pr_debug("Controllable output streams does not support custom frame skip pattern\n");
 				spin_unlock_irqrestore(&stream_info->lock,
 					flags);
 				return -EINVAL;
@@ -4260,7 +4260,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			sw_skip_info = &update_info->sw_skip_info;
@@ -4289,7 +4289,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			rc = msm_isp_stream_axi_cfg_update(vfe_dev, stream_info,
@@ -4307,7 +4307,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			mutex_lock(&vfe_dev->buf_mgr->lock);
@@ -4317,7 +4317,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 				MSM_ISP_INVALID_BUF_INDEX);
 			mutex_unlock(&vfe_dev->buf_mgr->lock);
 			if (rc)
-				pr_err("%s failed to request frame!\n",
+				pr_debug("%s failed to request frame!\n",
 					__func__);
 		}
 		break;
@@ -4330,13 +4330,13 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			rc = msm_isp_add_buf_queue(vfe_dev, stream_info,
 				update_info->user_stream_id);
 			if (rc)
-				pr_err("%s failed to add bufq!\n", __func__);
+				pr_debug("%s failed to add bufq!\n", __func__);
 		}
 		break;
 	}
@@ -4348,7 +4348,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			msm_isp_remove_buf_queue(vfe_dev, stream_info,
@@ -4364,7 +4364,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(req_frm->stream_handle));
 		if (!stream_info) {
-			pr_err("%s: stream_info is null\n", __func__);
+			pr_debug("%s: stream_info is null\n", __func__);
 			return -EINVAL;
 		}
 		mutex_lock(&vfe_dev->buf_mgr->lock);
@@ -4374,7 +4374,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			req_frm->buf_index);
 		mutex_unlock(&vfe_dev->buf_mgr->lock);
 		if (rc)
-			pr_err("%s failed to request frame!\n",
+			pr_debug("%s failed to request frame!\n",
 				__func__);
 		break;
 	}
@@ -4386,7 +4386,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 			stream_info = msm_isp_get_stream_common_data(vfe_dev,
 				HANDLE_TO_IDX(update_info->stream_handle));
 			if (!stream_info) {
-				pr_err("%s: stream_info is null\n", __func__);
+				pr_debug("%s: stream_info is null\n", __func__);
 				return -EINVAL;
 			}
 			vfe_idx = msm_isp_get_vfe_idx_for_stream(
@@ -4405,7 +4405,7 @@ int msm_isp_update_axi_stream(struct vfe_device *vfe_dev, void *arg)
 		break;
 	}
 	default:
-		pr_err("%s: Invalid update type %d\n", __func__,
+		pr_debug("%s: Invalid update type %d\n", __func__,
 			update_cmd->update_type);
 		return -EINVAL;
 	}
@@ -4429,7 +4429,7 @@ void msm_isp_process_axi_irq_stream(struct vfe_device *vfe_dev,
 	int other_vfe_id;
 
 	if (!ts) {
-		pr_err("%s: Error! Invalid argument\n", __func__);
+		pr_debug("%s: Error! Invalid argument\n", __func__);
 		return;
 	}
 
@@ -4453,7 +4453,7 @@ void msm_isp_process_axi_irq_stream(struct vfe_device *vfe_dev,
 			stream_info->wm[vfe_idx][i]) & 0x1)) {
 			spin_unlock_irqrestore(&stream_info->lock, flags);
 			msm_isp_dump_ping_pong_mismatch(vfe_dev);
-			pr_err("%s: Write master ping pong mismatch. Status: 0x%x %x\n",
+			pr_debug("%s: Write master ping pong mismatch. Status: 0x%x %x\n",
 				__func__, pingpong_status,
 				stream_info->stream_src);
 			msm_isp_halt_send_error(vfe_dev,
@@ -4694,7 +4694,7 @@ void msm_isp_process_axi_irq(struct vfe_device *vfe_dev,
 			stream_idx = HANDLE_TO_IDX(axi_data->free_wm[i]);
 			if ((!axi_data->free_wm[i]) ||
 				(stream_idx >= VFE_AXI_SRC_MAX)) {
-				pr_err("%s: Invalid handle for wm irq\n",
+				pr_debug("%s: Invalid handle for wm irq\n",
 					__func__);
 				msm_isp_cfg_wm_scratch(vfe_dev, i,
 					pingpong_status);
@@ -4716,7 +4716,7 @@ void msm_isp_axi_disable_all_wm(struct vfe_device *vfe_dev)
 	int vfe_idx;
 
 	if (!vfe_dev || !axi_data) {
-		pr_err("%s: error  %pK %pK\n", __func__, vfe_dev, axi_data);
+		pr_debug("%s: error  %pK %pK\n", __func__, vfe_dev, axi_data);
 		return;
 	}
 

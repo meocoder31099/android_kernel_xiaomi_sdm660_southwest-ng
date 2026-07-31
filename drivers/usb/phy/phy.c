@@ -117,7 +117,7 @@ static void usb_phy_notify_charger_work(struct work_struct *work)
 			 "USB_CHARGER_STATE=%s", "USB_CHARGER_ABSENT");
 		break;
 	default:
-		dev_warn(usb_phy->dev, "Unknown USB charger state: %d\n",
+		dev_dbg(usb_phy->dev, "Unknown USB charger state: %d\n",
 			 usb_phy->chg_state);
 		return;
 	}
@@ -324,7 +324,7 @@ static int usb_add_extcon(struct usb_phy *x)
 		x->id_edev = extcon_get_edev_by_phandle(x->dev, 1);
 		if (IS_ERR(x->id_edev)) {
 			x->id_edev = NULL;
-			dev_info(x->dev, "No separate ID extcon device\n");
+			dev_dbg(x->dev, "No separate ID extcon device\n");
 		}
 
 		if (x->vbus_nb.notifier_call) {
@@ -332,7 +332,7 @@ static int usb_add_extcon(struct usb_phy *x)
 							    EXTCON_USB,
 							    &x->vbus_nb);
 			if (ret < 0) {
-				dev_err(x->dev,
+				dev_dbg(x->dev,
 					"register VBUS notifier failed\n");
 				return ret;
 			}
@@ -343,7 +343,7 @@ static int usb_add_extcon(struct usb_phy *x)
 							    EXTCON_CHG_USB_SDP,
 							    &x->type_nb);
 			if (ret) {
-				dev_err(x->dev,
+				dev_dbg(x->dev,
 					"register extcon USB SDP failed.\n");
 				return ret;
 			}
@@ -352,7 +352,7 @@ static int usb_add_extcon(struct usb_phy *x)
 							    EXTCON_CHG_USB_CDP,
 							    &x->type_nb);
 			if (ret) {
-				dev_err(x->dev,
+				dev_dbg(x->dev,
 					"register extcon USB CDP failed.\n");
 				return ret;
 			}
@@ -361,7 +361,7 @@ static int usb_add_extcon(struct usb_phy *x)
 							    EXTCON_CHG_USB_DCP,
 							    &x->type_nb);
 			if (ret) {
-				dev_err(x->dev,
+				dev_dbg(x->dev,
 					"register extcon USB DCP failed.\n");
 				return ret;
 			}
@@ -370,7 +370,7 @@ static int usb_add_extcon(struct usb_phy *x)
 							    EXTCON_CHG_USB_ACA,
 							    &x->type_nb);
 			if (ret) {
-				dev_err(x->dev,
+				dev_dbg(x->dev,
 					"register extcon USB ACA failed.\n");
 				return ret;
 			}
@@ -388,7 +388,7 @@ static int usb_add_extcon(struct usb_phy *x)
 							    EXTCON_USB_HOST,
 							    &x->id_nb);
 			if (ret < 0) {
-				dev_err(x->dev,
+				dev_dbg(x->dev,
 					"register ID notifier failed\n");
 				return ret;
 			}
@@ -619,7 +619,7 @@ int usb_add_phy(struct usb_phy *x, enum usb_phy_type type)
 	struct usb_phy	*phy;
 
 	if (x->type != USB_PHY_TYPE_UNDEFINED) {
-		dev_err(x->dev, "not accepting initialized PHY %s\n", x->label);
+		dev_dbg(x->dev, "not accepting initialized PHY %s\n", x->label);
 		return -EINVAL;
 	}
 
@@ -637,7 +637,7 @@ int usb_add_phy(struct usb_phy *x, enum usb_phy_type type)
 	list_for_each_entry(phy, &phy_list, head) {
 		if (phy->type == type) {
 			ret = -EBUSY;
-			dev_err(x->dev, "transceiver type %s already exists\n",
+			dev_dbg(x->dev, "transceiver type %s already exists\n",
 						usb_phy_type_string(type));
 			goto out;
 		}
@@ -666,7 +666,7 @@ int usb_add_phy_dev(struct usb_phy *x)
 	int ret;
 
 	if (!x->dev) {
-		dev_err(x->dev, "no device provided for PHY\n");
+		dev_dbg(x->dev, "no device provided for PHY\n");
 		return -EINVAL;
 	}
 

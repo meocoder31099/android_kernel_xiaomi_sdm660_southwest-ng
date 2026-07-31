@@ -32,7 +32,7 @@ int mmc_pwrseq_alloc(struct mmc_host *host)
 	list_for_each_entry(p, &pwrseq_list, pwrseq_node) {
 		if (p->dev->of_node == np) {
 			if (!try_module_get(p->owner))
-				dev_err(host->parent,
+				dev_dbg(host->parent,
 					"increasing module refcount failed\n");
 			else
 				host->pwrseq = p;
@@ -47,7 +47,7 @@ int mmc_pwrseq_alloc(struct mmc_host *host)
 	if (!host->pwrseq)
 		return -EPROBE_DEFER;
 
-	dev_info(host->parent, "allocated mmc-pwrseq\n");
+	dev_dbg(host->parent, "allocated mmc-pwrseq\n");
 
 	return 0;
 }

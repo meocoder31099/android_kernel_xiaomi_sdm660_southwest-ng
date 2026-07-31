@@ -59,7 +59,7 @@ static int wcd9xxx_read_of_property_u32(struct device *dev, const char *name,
 
 	rc = of_property_read_u32(dev->of_node, name, val);
 	if (rc)
-		dev_err(dev, "%s: Looking up %s property in node %s failed",
+		dev_dbg(dev, "%s: Looking up %s property in node %s failed",
 			__func__, name, dev->of_node->full_name);
 
 	return rc;
@@ -102,7 +102,7 @@ static void wcd9xxx_dt_parse_micbias_info(struct device *dev,
 		if (!rc)
 			mb->micb1_mv = prop_val;
 	} else {
-		dev_info(dev, "%s: Micbias1 DT property not found\n",
+		dev_dbg(dev, "%s: Micbias1 DT property not found\n",
 			__func__);
 	}
 
@@ -129,7 +129,7 @@ static void wcd9xxx_dt_parse_micbias_info(struct device *dev,
 		if (!rc)
 			mb->micb2_mv = prop_val;
 	} else {
-		dev_info(dev, "%s: Micbias2 DT property not found\n",
+		dev_dbg(dev, "%s: Micbias2 DT property not found\n",
 			__func__);
 	}
 
@@ -156,7 +156,7 @@ static void wcd9xxx_dt_parse_micbias_info(struct device *dev,
 		if (!rc)
 			mb->micb3_mv = prop_val;
 	} else {
-		dev_info(dev, "%s: Micbias3 DT property not found\n",
+		dev_dbg(dev, "%s: Micbias3 DT property not found\n",
 			__func__);
 	}
 
@@ -177,7 +177,7 @@ static void wcd9xxx_dt_parse_micbias_info(struct device *dev,
 		if (!rc)
 			mb->micb4_mv = prop_val;
 	} else {
-		dev_info(dev, "%s: Micbias4 DT property not found\n",
+		dev_dbg(dev, "%s: Micbias4 DT property not found\n",
 			__func__);
 	}
 
@@ -317,7 +317,7 @@ struct wcd9xxx_pdata *wcd9xxx_populate_dt_data(struct device *dev)
 	msm_cdc_get_power_supplies(dev, &pdata->regulator,
 				   &pdata->num_supplies);
 	if (!pdata->regulator || (pdata->num_supplies <= 0)) {
-		dev_err(dev, "%s: no power supplies defined for codec\n",
+		dev_dbg(dev, "%s: no power supplies defined for codec\n",
 			__func__);
 		goto err_power_sup;
 	}
@@ -328,7 +328,7 @@ struct wcd9xxx_pdata *wcd9xxx_populate_dt_data(struct device *dev)
 	pdata->wcd_rst_np = of_parse_phandle(dev->of_node,
 					     "qcom,wcd-rst-gpio-node", 0);
 	if (!pdata->wcd_rst_np) {
-		dev_err(dev, "%s: Looking up %s property in node %s failed\n",
+		dev_dbg(dev, "%s: Looking up %s property in node %s failed\n",
 			__func__, "qcom,wcd-rst-gpio-node",
 			dev->of_node->full_name);
 		goto err_parse_dt_prop;
@@ -340,7 +340,7 @@ struct wcd9xxx_pdata *wcd9xxx_populate_dt_data(struct device *dev)
 		pdata->buck_vsel_ctl_np = of_parse_phandle(dev->of_node,
 				"qcom,buck-vsel-gpio-node", 0);
 		if (!pdata->buck_vsel_ctl_np) {
-			dev_err(dev, "%s No entry for %s property in node %s\n",
+			dev_dbg(dev, "%s No entry for %s property in node %s\n",
 				__func__, "qcom,buck-vsel-gpio-node",
 				dev->of_node->full_name);
 			goto err_parse_dt_prop;
@@ -353,7 +353,7 @@ struct wcd9xxx_pdata *wcd9xxx_populate_dt_data(struct device *dev)
 		pdata->micb_en_ctl = of_parse_phandle(dev->of_node,
 				"qcom,micbias-supply-en-gpio-node", 0);
 		if (!pdata->micb_en_ctl) {
-			dev_err(dev, "%s No entry for %s property in node %s\n",
+			dev_dbg(dev, "%s No entry for %s property in node %s\n",
 				__func__, "qcom,micbias-supply-en-gpio-node",
 				dev->of_node->full_name);
 			goto err_parse_dt_prop;
@@ -366,7 +366,7 @@ struct wcd9xxx_pdata *wcd9xxx_populate_dt_data(struct device *dev)
 
 	if (pdata->mclk_rate != WCD9XXX_MCLK_CLK_9P6HZ &&
 	    pdata->mclk_rate != WCD9XXX_MCLK_CLK_12P288MHZ) {
-		dev_err(dev, "%s: Invalid mclk_rate = %u\n", __func__,
+		dev_dbg(dev, "%s: Invalid mclk_rate = %u\n", __func__,
 			pdata->mclk_rate);
 		goto err_parse_dt_prop;
 	}
@@ -408,7 +408,7 @@ struct wcd9xxx_pdata *wcd9xxx_populate_dt_data(struct device *dev)
 
 		if (dmic_clk_drive != 2 && dmic_clk_drive != 4 &&
 		    dmic_clk_drive != 8 && dmic_clk_drive != 16)
-			dev_err(dev, "Invalid cdc-dmic-clk-drv-strength %d\n",
+			dev_dbg(dev, "Invalid cdc-dmic-clk-drv-strength %d\n",
 				dmic_clk_drive);
 	}
 
@@ -493,7 +493,7 @@ int wcd9xxx_page_write(struct wcd9xxx *wcd9xxx, unsigned short *reg)
 					wcd9xxx, PAGE_REG_ADDR, 1,
 					(void *) &pg_num, false);
 			if (ret < 0)
-				pr_err("page write error, pg_num: 0x%x\n",
+				pr_debug("page write error, pg_num: 0x%x\n",
 					pg_num);
 			else {
 				wcd9xxx->prev_pg = pg_num;
@@ -506,7 +506,7 @@ int wcd9xxx_page_write(struct wcd9xxx *wcd9xxx, unsigned short *reg)
 				wcd9xxx, PAGE_REG_ADDR, 1, (void *) &pg_num,
 				false);
 		if (ret < 0)
-			pr_err("page write error, pg_num: 0x%x\n", pg_num);
+			pr_debug("page write error, pg_num: 0x%x\n", pg_num);
 		else {
 			wcd9xxx->prev_pg = pg_num;
 			wcd9xxx->prev_pg_valid = true;
@@ -528,16 +528,16 @@ static int regmap_bus_read(void *context, const void *reg, size_t reg_size,
 	int ret, i;
 
 	if (!wcd9xxx) {
-		dev_err(dev, "%s: wcd9xxx is NULL\n", __func__);
+		dev_dbg(dev, "%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (!reg || !val) {
-		dev_err(dev, "%s: reg or val is NULL\n", __func__);
+		dev_dbg(dev, "%s: reg or val is NULL\n", __func__);
 		return -EINVAL;
 	}
 
 	if (reg_size != REG_BYTES) {
-		dev_err(dev, "%s: register size %zd bytes, not supported\n",
+		dev_dbg(dev, "%s: register size %zd bytes, not supported\n",
 			__func__, reg_size);
 		return -EINVAL;
 	}
@@ -557,7 +557,7 @@ static int regmap_bus_read(void *context, const void *reg, size_t reg_size,
 		goto err;
 	ret = wcd9xxx->read_dev(wcd9xxx, c_reg, val_size, val, false);
 	if (ret < 0)
-		dev_err(dev, "%s: Codec read failed (%d), reg: 0x%x, size:%zd\n",
+		dev_dbg(dev, "%s: Codec read failed (%d), reg: 0x%x, size:%zd\n",
 			__func__, ret, rreg, val_size);
 	else {
 		for (i = 0; i < val_size; i++)
@@ -580,15 +580,15 @@ static int regmap_bus_gather_write(void *context,
 	int ret, i;
 
 	if (!wcd9xxx) {
-		dev_err(dev, "%s: wcd9xxx is NULL\n", __func__);
+		dev_dbg(dev, "%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (!reg || !val) {
-		dev_err(dev, "%s: reg or val is NULL\n", __func__);
+		dev_dbg(dev, "%s: reg or val is NULL\n", __func__);
 		return -EINVAL;
 	}
 	if (reg_size != REG_BYTES) {
-		dev_err(dev, "%s: register size %zd bytes, not supported\n",
+		dev_dbg(dev, "%s: register size %zd bytes, not supported\n",
 			__func__, reg_size);
 		return -EINVAL;
 	}
@@ -611,7 +611,7 @@ static int regmap_bus_gather_write(void *context,
 	ret = wcd9xxx->write_dev(wcd9xxx, c_reg, val_size, (void *) val,
 				 false);
 	if (ret < 0)
-		dev_err(dev, "%s: Codec write failed (%d), reg:0x%x, size:%zd\n",
+		dev_dbg(dev, "%s: Codec write failed (%d), reg:0x%x, size:%zd\n",
 			__func__, ret, rreg, val_size);
 
 err:
@@ -638,7 +638,7 @@ static int regmap_bus_write(void *context, const void *data, size_t count)
 					       data + REG_BYTES,
 					       count - REG_BYTES);
 
-	dev_err(dev, "%s: bus multi reg write failure\n", __func__);
+	dev_dbg(dev, "%s: bus multi reg write failure\n", __func__);
 
 	return -EINVAL;
 }
@@ -690,7 +690,7 @@ int wcd9xxx_reset(struct device *dev)
 		return -EINVAL;
 
 	if (!wcd9xxx->wcd_rst_np) {
-		dev_err(dev, "%s: reset gpio device node not specified\n",
+		dev_dbg(dev, "%s: reset gpio device node not specified\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -703,7 +703,7 @@ int wcd9xxx_reset(struct device *dev)
 
 	rc = msm_cdc_pinctrl_select_sleep_state(wcd9xxx->wcd_rst_np);
 	if (rc) {
-		dev_err(dev, "%s: wcd sleep state request fail!\n",
+		dev_dbg(dev, "%s: wcd sleep state request fail!\n",
 			__func__);
 		return rc;
 	}
@@ -713,7 +713,7 @@ int wcd9xxx_reset(struct device *dev)
 
 	rc = msm_cdc_pinctrl_select_active_state(wcd9xxx->wcd_rst_np);
 	if (rc) {
-		dev_err(dev, "%s: wcd active state request fail!\n",
+		dev_dbg(dev, "%s: wcd active state request fail!\n",
 			__func__);
 		return rc;
 	}
@@ -744,7 +744,7 @@ int wcd9xxx_reset_low(struct device *dev)
 		return -EINVAL;
 
 	if (!wcd9xxx->wcd_rst_np) {
-		dev_err(dev, "%s: reset gpio device node not specified\n",
+		dev_dbg(dev, "%s: reset gpio device node not specified\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -756,7 +756,7 @@ int wcd9xxx_reset_low(struct device *dev)
 
 	rc = msm_cdc_pinctrl_select_sleep_state(wcd9xxx->wcd_rst_np);
 	if (rc)
-		dev_err(dev, "%s: wcd sleep state request fail!\n",
+		dev_dbg(dev, "%s: wcd sleep state request fail!\n",
 			__func__);
 
 	return rc;
@@ -786,13 +786,13 @@ int wcd9xxx_bringup(struct device *dev)
 
 	cdc_bup_fn = wcd9xxx_bringup_fn(wcd9xxx->type);
 	if (!cdc_bup_fn) {
-		dev_err(dev, "%s: Codec bringup fn NULL!\n",
+		dev_dbg(dev, "%s: Codec bringup fn NULL!\n",
 			__func__);
 		return -EINVAL;
 	}
 	rc = cdc_bup_fn(wcd9xxx);
 	if (rc)
-		dev_err(dev, "%s: Codec bringup error, rc: %d\n",
+		dev_dbg(dev, "%s: Codec bringup error, rc: %d\n",
 			__func__, rc);
 
 	return rc;
@@ -822,13 +822,13 @@ int wcd9xxx_bringdown(struct device *dev)
 
 	cdc_bdown_fn = wcd9xxx_bringdown_fn(wcd9xxx->type);
 	if (!cdc_bdown_fn) {
-		dev_err(dev, "%s: Codec bring down fn NULL!\n",
+		dev_dbg(dev, "%s: Codec bring down fn NULL!\n",
 			__func__);
 		return -EINVAL;
 	}
 	rc = cdc_bdown_fn(wcd9xxx);
 	if (rc)
-		dev_err(dev, "%s: Codec bring down error, rc: %d\n",
+		dev_dbg(dev, "%s: Codec bring down error, rc: %d\n",
 			__func__, rc);
 
 	return rc;
@@ -859,7 +859,7 @@ int wcd9xxx_get_codec_info(struct device *dev)
 
 	cdc_type_fn = wcd9xxx_get_codec_info_fn(wcd9xxx->type);
 	if (!cdc_type_fn) {
-		dev_err(dev, "%s: Codec fill type fn NULL!\n",
+		dev_dbg(dev, "%s: Codec fill type fn NULL!\n",
 			__func__);
 		return -EINVAL;
 	}
@@ -870,7 +870,7 @@ int wcd9xxx_get_codec_info(struct device *dev)
 
 	rc = cdc_type_fn(wcd9xxx, cinfo);
 	if (rc) {
-		dev_err(dev, "%s: Codec type fill failed, rc:%d\n",
+		dev_dbg(dev, "%s: Codec type fill failed, rc:%d\n",
 			__func__, rc);
 		return rc;
 
@@ -918,7 +918,7 @@ int wcd9xxx_core_irq_init(
 	if (wcd9xxx_core_res->irq != 1) {
 		ret = wcd9xxx_irq_init(wcd9xxx_core_res);
 		if (ret)
-			pr_err("IRQ initialization failed\n");
+			pr_debug("IRQ initialization failed\n");
 	}
 
 	return ret;
@@ -1087,7 +1087,7 @@ int wcd9xxx_core_res_suspend(
 		}
 		mutex_lock(&wcd9xxx_core_res->pm_lock);
 	} else if (wcd9xxx_core_res->pm_state == WCD9XXX_PM_ASLEEP) {
-		pr_warn("%s: system is already suspended, state %d, wlock %dn",
+		pr_debug("%s: system is already suspended, state %d, wlock %dn",
 			__func__, wcd9xxx_core_res->pm_state,
 			wcd9xxx_core_res->wlock_holders);
 	}
@@ -1118,7 +1118,7 @@ int wcd9xxx_core_res_resume(
 				wcd9xxx_core_res->wlock_holders);
 		wcd9xxx_core_res->pm_state = WCD9XXX_PM_SLEEPABLE;
 	} else {
-		pr_warn("%s: system is already awake, state %d wlock %d\n",
+		pr_debug("%s: system is already awake, state %d wlock %d\n",
 				__func__, wcd9xxx_core_res->pm_state,
 				wcd9xxx_core_res->wlock_holders);
 	}
@@ -1165,17 +1165,17 @@ int wcd9xxx_set_power_state(struct wcd9xxx *wcd9xxx,
 			    enum wcd_power_regions region)
 {
 	if (!wcd9xxx) {
-		pr_err("%s: wcd9xxx is NULL\n", __func__);
+		pr_debug("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
 
 	if ((region < 0) || (region >= WCD9XXX_MAX_PWR_REGIONS)) {
-		dev_err(wcd9xxx->dev, "%s: region index %d out of bounds\n",
+		dev_dbg(wcd9xxx->dev, "%s: region index %d out of bounds\n",
 			__func__, region);
 		return -EINVAL;
 	}
 	if (!wcd9xxx->wcd9xxx_pwr[region]) {
-		dev_err(wcd9xxx->dev, "%s: memory not created for region: %d\n",
+		dev_dbg(wcd9xxx->dev, "%s: memory not created for region: %d\n",
 			__func__, region);
 		return -EINVAL;
 	}
@@ -1200,17 +1200,17 @@ int wcd9xxx_get_current_power_state(struct wcd9xxx *wcd9xxx,
 	int state;
 
 	if (!wcd9xxx) {
-		pr_err("%s: wcd9xxx is NULL\n", __func__);
+		pr_debug("%s: wcd9xxx is NULL\n", __func__);
 		return -EINVAL;
 	}
 
 	if ((region < 0) || (region >= WCD9XXX_MAX_PWR_REGIONS)) {
-		dev_err(wcd9xxx->dev, "%s: region index %d out of bounds\n",
+		dev_dbg(wcd9xxx->dev, "%s: region index %d out of bounds\n",
 			__func__, region);
 		return -EINVAL;
 	}
 	if (!wcd9xxx->wcd9xxx_pwr[region]) {
-		dev_err(wcd9xxx->dev, "%s: memory not created for region: %d\n",
+		dev_dbg(wcd9xxx->dev, "%s: memory not created for region: %d\n",
 			__func__, region);
 		return -EINVAL;
 	}

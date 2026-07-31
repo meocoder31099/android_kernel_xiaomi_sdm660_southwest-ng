@@ -3045,7 +3045,7 @@ static int __net_init igmp_net_init(struct net *net)
 	err = inet_ctl_sock_create(&net->ipv4.mc_autojoin_sk, AF_INET,
 				   SOCK_DGRAM, 0, net);
 	if (err < 0) {
-		pr_err("Failed to initialize the IGMP autojoin socket (err %d)\n",
+		pr_debug("Failed to initialize the IGMP autojoin socket (err %d)\n",
 		       err);
 		goto out_sock;
 	}

@@ -187,7 +187,7 @@ static bool wcd_is_special_headset(struct wcd_mbhc *mbhc)
 		rc = mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic(component,
 							MIC_BIAS_2, true);
 		if (rc) {
-			pr_err("%s: Micbias control for thr mic failed, rc: %d\n",
+			pr_debug("%s: Micbias control for thr mic failed, rc: %d\n",
 				__func__, rc);
 			return false;
 		}
@@ -351,7 +351,7 @@ static bool wcd_mbhc_check_for_spl_headset(struct wcd_mbhc *mbhc,
 		goto done;
 
 	if (!spl_hs_cnt) {
-		pr_err("%s: spl_hs_cnt is NULL\n", __func__);
+		pr_debug("%s: spl_hs_cnt is NULL\n", __func__);
 		goto done;
 	}
 	/* Read back hs_comp_res @ 1.8v Micbias */
@@ -1095,7 +1095,7 @@ static struct wcd_mbhc_fn mbhc_fn = {
 void wcd_mbhc_legacy_init(struct wcd_mbhc *mbhc)
 {
 	if (!mbhc) {
-		pr_err("%s: mbhc is NULL\n", __func__);
+		pr_debug("%s: mbhc is NULL\n", __func__);
 		return;
 	}
 	mbhc->mbhc_fn = &mbhc_fn;

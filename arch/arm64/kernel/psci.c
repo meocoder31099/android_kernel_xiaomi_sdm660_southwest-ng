@@ -37,7 +37,7 @@ static int __init cpu_psci_cpu_init(unsigned int cpu)
 static int __init cpu_psci_cpu_prepare(unsigned int cpu)
 {
 	if (!psci_ops.cpu_on) {
-		pr_err("no cpu_on method, not booting CPU%d\n", cpu);
+		pr_debug("no cpu_on method, not booting CPU%d\n", cpu);
 		return -ENODEV;
 	}
 
@@ -49,7 +49,7 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
 	int err = psci_ops.cpu_on(cpu_logical_map(cpu),
 				  __pa_function(secondary_entry));
 	if (err)
-		pr_err("failed to boot CPU%d (%d)\n", cpu, err);
+		pr_debug("failed to boot CPU%d (%d)\n", cpu, err);
 
 	return err;
 }
@@ -106,7 +106,7 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
 		usleep_range(100, 1000);
 	} while (time_before(jiffies, end));
 
-	pr_warn("CPU%d may not have shut down cleanly (AFFINITY_INFO reports %d)\n",
+	pr_debug("CPU%d may not have shut down cleanly (AFFINITY_INFO reports %d)\n",
 			cpu, err);
 	return -ETIMEDOUT;
 }

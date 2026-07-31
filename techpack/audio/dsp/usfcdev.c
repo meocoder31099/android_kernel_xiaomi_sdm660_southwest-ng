@@ -165,14 +165,14 @@ static int usfcdev_connect(struct input_handler *handler, struct input_dev *dev,
 		ind,
 		usfc_handle->dev);
 	if (ret)
-		pr_err("%s: input_register_handle[%d] failed: ret=%d\n",
+		pr_debug("%s: input_register_handle[%d] failed: ret=%d\n",
 			__func__,
 			ind,
 			ret);
 	else {
 		ret = input_open_device(usfc_handle);
 		if (ret) {
-			pr_err("%s: input_open_device[%d] failed: ret=%d\n",
+			pr_debug("%s: input_open_device[%d] failed: ret=%d\n",
 				__func__,
 				ind,
 				ret);
@@ -249,7 +249,7 @@ bool usfcdev_register(
 	bool rc = false;
 
 	if ((event_type_ind >= MAX_EVENT_TYPE_NUM) || !match_cb) {
-		pr_err("%s: wrong input: event_type_ind=%d; match_cb=0x%pK\n",
+		pr_debug("%s: wrong input: event_type_ind=%d; match_cb=0x%pK\n",
 			__func__,
 			event_type_ind,
 			match_cb);
@@ -257,7 +257,7 @@ bool usfcdev_register(
 	}
 
 	if (s_usfcdev_events[event_type_ind].registered_event) {
-		pr_info("%s: handler[%d] was already registered\n",
+		pr_debug("%s: handler[%d] was already registered\n",
 			__func__,
 			event_type_ind);
 		return true;
@@ -275,7 +275,7 @@ bool usfcdev_register(
 	} else {
 		s_usfcdev_events[event_type_ind].registered_event = false;
 		s_usfcdev_events[event_type_ind].match_cb = NULL;
-		pr_err("%s: handler[%d] registration failed: ret=%d\n",
+		pr_debug("%s: handler[%d] registration failed: ret=%d\n",
 			__func__,
 			event_type_ind,
 			ret);
@@ -287,7 +287,7 @@ bool usfcdev_register(
 void usfcdev_unregister(uint16_t event_type_ind)
 {
 	if (event_type_ind >= MAX_EVENT_TYPE_NUM) {
-		pr_err("%s: wrong input: event_type_ind=%d\n",
+		pr_debug("%s: wrong input: event_type_ind=%d\n",
 			__func__,
 			event_type_ind);
 		return;
@@ -320,7 +320,7 @@ static void usfcdev_clean_dev(uint16_t event_type_ind)
 	int retries = 0;
 
 	if (event_type_ind >= MAX_EVENT_TYPE_NUM) {
-		pr_err("%s: wrong input: event_type_ind=%d\n",
+		pr_debug("%s: wrong input: event_type_ind=%d\n",
 			__func__,
 			event_type_ind);
 		return;
@@ -328,7 +328,7 @@ static void usfcdev_clean_dev(uint16_t event_type_ind)
 	/* Only primary device must exist */
 	dev = s_usfc_primary_handles[event_type_ind].dev;
 	if (dev == NULL) {
-		pr_err("%s: NULL primary device\n",
+		pr_debug("%s: NULL primary device\n",
 		__func__);
 		return;
 	}
@@ -357,7 +357,7 @@ static void usfcdev_clean_dev(uint16_t event_type_ind)
 				--i;
 				continue;
 			}
-			pr_warn("%s: index(%d) reached max retires",
+			pr_debug("%s: index(%d) reached max retires",
 				__func__, i);
 		}
 
@@ -371,7 +371,7 @@ bool usfcdev_set_filter(uint16_t event_type_ind, bool filter)
 	bool rc = true;
 
 	if (event_type_ind >= MAX_EVENT_TYPE_NUM) {
-		pr_err("%s: wrong input: event_type_ind=%d\n",
+		pr_debug("%s: wrong input: event_type_ind=%d\n",
 			__func__,
 			event_type_ind);
 		return false;
@@ -395,7 +395,7 @@ bool usfcdev_set_filter(uint16_t event_type_ind, bool filter)
 			s_usfcdev_events[event_type_ind].event_status =
 						USFCDEV_EVENT_ENABLED;
 	} else {
-		pr_err("%s: event_type[%d] isn't registered\n",
+		pr_debug("%s: event_type[%d] isn't registered\n",
 			__func__,
 			event_type_ind);
 		rc = false;

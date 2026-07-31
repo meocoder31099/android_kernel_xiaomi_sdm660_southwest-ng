@@ -49,12 +49,12 @@ static int cdsp_loader_do(struct platform_device *pdev)
 	const char *img_name;
 
 	if (!pdev) {
-		pr_err("%s: Platform device null\n", __func__);
+		pr_debug("%s: Platform device null\n", __func__);
 		goto fail;
 	}
 
 	if (!pdev->dev.of_node) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: Device tree information missing\n", __func__);
 
 		goto fail;
@@ -71,7 +71,7 @@ static int cdsp_loader_do(struct platform_device *pdev)
 		if (cdsp_state == CDSP_SUBSYS_DOWN) {
 			priv = platform_get_drvdata(pdev);
 			if (!priv) {
-				dev_err(&pdev->dev,
+				dev_dbg(&pdev->dev,
 				"%s: Private data get failed\n", __func__);
 				goto fail;
 			}
@@ -80,7 +80,7 @@ static int cdsp_loader_do(struct platform_device *pdev)
 					__func__, img_name);
 			priv->pil_h = subsystem_get("cdsp");
 			if (IS_ERR(priv->pil_h)) {
-				dev_err(&pdev->dev, "%s: subsystem_get failed with error %d\n",
+				dev_dbg(&pdev->dev, "%s: subsystem_get failed with error %d\n",
 					__func__, (int)(PTR_ERR(priv->pil_h)));
 				goto fail;
 			}
@@ -98,10 +98,10 @@ static int cdsp_loader_do(struct platform_device *pdev)
 
 fail:
 	if (pdev)
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: CDSP image loading failed\n", __func__);
 	else
-		pr_err("%s: CDSP image loading failed\n", __func__);
+		pr_debug("%s: CDSP image loading failed\n", __func__);
 	return rc;
 }
 
@@ -165,7 +165,7 @@ static int cdsp_loader_init_sysfs(struct platform_device *pdev)
 				sizeof(*(priv->attr_group)),
 				GFP_KERNEL);
 	if (!priv->attr_group) {
-		dev_err(&pdev->dev, "%s: malloc attr_group failed\n",
+		dev_dbg(&pdev->dev, "%s: malloc attr_group failed\n",
 						__func__);
 		ret = -ENOMEM;
 		goto error_return;
@@ -175,7 +175,7 @@ static int cdsp_loader_init_sysfs(struct platform_device *pdev)
 
 	priv->boot_cdsp_obj = kobject_create_and_add("boot_cdsp", kernel_kobj);
 	if (!priv->boot_cdsp_obj) {
-		dev_err(&pdev->dev, "%s: sysfs create and add failed\n",
+		dev_dbg(&pdev->dev, "%s: sysfs create and add failed\n",
 						__func__);
 		ret = -ENOMEM;
 		goto error_return;
@@ -183,7 +183,7 @@ static int cdsp_loader_init_sysfs(struct platform_device *pdev)
 
 	ret = sysfs_create_group(priv->boot_cdsp_obj, priv->attr_group);
 	if (ret) {
-		dev_err(&pdev->dev, "%s: sysfs create group failed %d\n",
+		dev_dbg(&pdev->dev, "%s: sysfs create group failed %d\n",
 							__func__, ret);
 		goto error_return;
 	}
@@ -230,7 +230,7 @@ static int cdsp_loader_probe(struct platform_device *pdev)
 	int ret = cdsp_loader_init_sysfs(pdev);
 
 	if (ret != 0) {
-		dev_err(&pdev->dev, "%s: Error in initing sysfs\n", __func__);
+		dev_dbg(&pdev->dev, "%s: Error in initing sysfs\n", __func__);
 		return ret;
 	}
 

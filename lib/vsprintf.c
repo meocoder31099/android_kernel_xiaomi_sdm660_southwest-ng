@@ -1683,7 +1683,7 @@ static int debug_boot_weak_hash __ro_after_init;
 static int __init debug_boot_weak_hash_enable(char *str)
 {
 	debug_boot_weak_hash = 1;
-	pr_info("debug_boot_weak_hash enabled\n");
+	pr_debug("debug_boot_weak_hash enabled\n");
 	return 0;
 }
 early_param("debug_boot_weak_hash", debug_boot_weak_hash_enable);
@@ -1793,19 +1793,19 @@ static int __init no_hash_pointers_enable(char *str)
 {
 	no_hash_pointers = true;
 
-	pr_warn("**********************************************************\n");
-	pr_warn("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** This system shows unhashed kernel memory addresses   **\n");
-	pr_warn("** via the console, logs, and other interfaces. This    **\n");
-	pr_warn("** might reduce the security of your system.            **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("** If you see this message and you are not debugging    **\n");
-	pr_warn("** the kernel, report this immediately to your system   **\n");
-	pr_warn("** administrator!                                       **\n");
-	pr_warn("**                                                      **\n");
-	pr_warn("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
-	pr_warn("**********************************************************\n");
+	pr_debug("**********************************************************\n");
+	pr_debug("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** This system shows unhashed kernel memory addresses   **\n");
+	pr_debug("** via the console, logs, and other interfaces. This    **\n");
+	pr_debug("** might reduce the security of your system.            **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("** If you see this message and you are not debugging    **\n");
+	pr_debug("** the kernel, report this immediately to your system   **\n");
+	pr_debug("** administrator!                                       **\n");
+	pr_debug("**                                                      **\n");
+	pr_debug("**   NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE   **\n");
+	pr_debug("**********************************************************\n");
 
 	return 0;
 }

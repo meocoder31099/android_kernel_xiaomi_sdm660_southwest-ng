@@ -99,7 +99,7 @@ static void hdmi_audio_get_acr_param(u32 pclk, u32 fs,
 	u32 div, mul;
 
 	if (!acr) {
-		pr_err("invalid audio acr data\n");
+		pr_debug("invalid audio acr data\n");
 		return;
 	}
 
@@ -139,7 +139,7 @@ static void hdmi_audio_acr_enable(struct hdmi_audio *audio)
 	u32 acr_pkt_ctl, aud_pkt_ctl2, acr_reg_cts, acr_reg_n;
 
 	if (!audio) {
-		pr_err("invalid audio data\n");
+		pr_debug("invalid audio data\n");
 		return;
 	}
 
@@ -256,13 +256,13 @@ static void hdmi_audio_infoframe_setup(struct hdmi_audio *audio, bool enabled)
 	u32 check_sum, sample_present;
 
 	if (!audio) {
-		pr_err("invalid audio data\n");
+		pr_debug("invalid audio data\n");
 		return;
 	}
 
 	io = audio->io;
 	if (!io->base) {
-		pr_err("core io not inititalized\n");
+		pr_debug("core io not inititalized\n");
 		return;
 	}
 
@@ -323,7 +323,7 @@ static int hdmi_audio_on(void *ctx, u32 pclk,
 	int rc = 0;
 
 	if (!audio) {
-		pr_err("invalid audio data\n");
+		pr_debug("invalid audio data\n");
 		rc = -EINVAL;
 		goto end;
 	}
@@ -349,7 +349,7 @@ static void hdmi_audio_off(void *ctx)
 	struct hdmi_audio *audio = ctx;
 
 	if (!audio) {
-		pr_err("invalid audio data\n");
+		pr_debug("invalid audio data\n");
 		return;
 	}
 
@@ -364,7 +364,7 @@ static void hdmi_audio_reset(void *ctx)
 	struct hdmi_audio *audio = ctx;
 
 	if (!audio) {
-		pr_err("invalid audio data\n");
+		pr_debug("invalid audio data\n");
 		return;
 	}
 

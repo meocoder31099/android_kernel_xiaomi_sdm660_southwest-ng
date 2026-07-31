@@ -79,7 +79,7 @@ static void *ipa_rndis_logbuf;
 
 #define RNDIS_IPA_ERROR(fmt, args...) \
 	do { \
-		pr_err(DRV_NAME "@%s@%d@ctx:%s: "\
+		pr_debug(DRV_NAME "@%s@%d@ctx:%s: "\
 			fmt, __func__, __LINE__, current->comm, ## args);\
 		if (ipa_rndis_logbuf) { \
 			IPA_RNDIS_IPC_LOGGING(ipa_rndis_logbuf, \
@@ -655,7 +655,7 @@ int rndis_ipa_init(struct ipa_usb_init_params *params)
 	params->skip_ep_cfg = false;
 	rndis_ipa_ctx->state = RNDIS_IPA_INITIALIZED;
 	RNDIS_IPA_STATE_DEBUG(rndis_ipa_ctx);
-	pr_info("RNDIS_IPA NetDev was initialized\n");
+	pr_debug("RNDIS_IPA NetDev was initialized\n");
 
 	RNDIS_IPA_LOG_EXIT();
 
@@ -841,7 +841,7 @@ int rndis_ipa_pipe_connect_notify(
 	else
 		RNDIS_IPA_DEBUG("queue shall be started after open()\n");
 
-	pr_info("RNDIS_IPA NetDev pipes were connected\n");
+	pr_debug("RNDIS_IPA NetDev pipes were connected\n");
 
 	RNDIS_IPA_LOG_EXIT();
 
@@ -899,7 +899,7 @@ static int rndis_ipa_open(struct net_device *net)
 	else
 		RNDIS_IPA_DEBUG("queue shall be started after connect()\n");
 
-	pr_info("RNDIS_IPA NetDev was opened\n");
+	pr_debug("RNDIS_IPA NetDev was opened\n");
 
 	RNDIS_IPA_LOG_EXIT();
 
@@ -1263,7 +1263,7 @@ static int rndis_ipa_stop(struct net_device *net)
 	spin_unlock_irqrestore(&rndis_ipa_ctx->state_lock, flags);
 
 	netif_stop_queue(net);
-	pr_info("RNDIS_IPA NetDev queue is stopped\n");
+	pr_debug("RNDIS_IPA NetDev queue is stopped\n");
 
 	RNDIS_IPA_STATE_DEBUG(rndis_ipa_ctx);
 
@@ -1378,7 +1378,7 @@ int rndis_ipa_pipe_disconnect_notify(void *private)
 
 	RNDIS_IPA_STATE_DEBUG(rndis_ipa_ctx);
 
-	pr_info("RNDIS_IPA NetDev pipes disconnected (%d outstanding clr)\n",
+	pr_debug("RNDIS_IPA NetDev pipes disconnected (%d outstanding clr)\n",
 		outstanding_dropped_pkts);
 
 	RNDIS_IPA_LOG_EXIT();
@@ -1470,7 +1470,7 @@ void rndis_ipa_cleanup(void *private)
 	rndis_ipa_ctx->state = next_state;
 	spin_unlock_irqrestore(&rndis_ipa_ctx->state_lock, flags);
 	free_netdev(rndis_ipa_ctx->net);
-	pr_info("RNDIS_IPA NetDev was cleaned\n");
+	pr_debug("RNDIS_IPA NetDev was cleaned\n");
 
 	RNDIS_IPA_LOG_EXIT();
 }
@@ -2233,7 +2233,7 @@ static int rndis_ipa_ep_registers_cfg(
 	usb_to_ipa_ep_cfg->deaggr.max_packet_len = max_xfer_size_bytes_to_dev;
 	result = ipa_cfg_ep(usb_to_ipa_hdl, usb_to_ipa_ep_cfg);
 	if (result) {
-		pr_err("failed to configure USB to IPA point\n");
+		pr_debug("failed to configure USB to IPA point\n");
 		return result;
 	}
 	RNDIS_IPA_DEBUG("IPA<-USB end-point configured\n");
@@ -2263,7 +2263,7 @@ static int rndis_ipa_ep_registers_cfg(
 
 	result = ipa_cfg_ep(ipa_to_usb_hdl, &ipa_to_usb_ep_cfg);
 	if (result) {
-		pr_err("failed to configure IPA to USB end-point\n");
+		pr_debug("failed to configure IPA to USB end-point\n");
 		return result;
 	}
 	RNDIS_IPA_DEBUG("IPA->USB end-point configured\n");
@@ -2662,10 +2662,10 @@ static ssize_t rndis_ipa_debugfs_aggr_write
 
 	result = ipa_cfg_ep(rndis_ipa_ctx->usb_to_ipa_hdl, &ipa_to_usb_ep_cfg);
 	if (result) {
-		pr_err("failed to re-configure USB to IPA point\n");
+		pr_debug("failed to re-configure USB to IPA point\n");
 		return result;
 	}
-	pr_info("IPA<-USB end-point re-configured\n");
+	pr_debug("IPA<-USB end-point re-configured\n");
 
 	return count;
 }
@@ -2708,7 +2708,7 @@ static int rndis_ipa_init_module(void)
 	if (ipa_rndis_logbuf == NULL)
 		RNDIS_IPA_DEBUG("failed to create IPC log, continue...\n");
 
-	pr_info("RNDIS_IPA module is loaded.\n");
+	pr_debug("RNDIS_IPA module is loaded.\n");
 	return 0;
 }
 
@@ -2718,7 +2718,7 @@ static void rndis_ipa_cleanup_module(void)
 		ipc_log_context_destroy(ipa_rndis_logbuf);
 	ipa_rndis_logbuf = NULL;
 
-	pr_info("RNDIS_IPA module is unloaded.\n");
+	pr_debug("RNDIS_IPA module is unloaded.\n");
 }
 
 MODULE_LICENSE("GPL v2");

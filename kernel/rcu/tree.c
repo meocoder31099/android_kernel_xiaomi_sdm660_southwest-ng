@@ -645,12 +645,12 @@ void show_rcu_gp_kthreads(void)
 	struct rcu_state *rsp;
 
 	for_each_rcu_flavor(rsp) {
-		pr_info("%s: wait state: %d ->state: %#lx\n",
+		pr_debug("%s: wait state: %d ->state: %#lx\n",
 			rsp->name, rsp->gp_state, rsp->gp_kthread->state);
 		rcu_for_each_node_breadth_first(rsp, rnp) {
 			if (ULONG_CMP_GE(rsp->gp_seq, rnp->gp_seq_needed))
 				continue;
-			pr_info("\trcu_node %d:%d ->gp_seq %lu ->gp_seq_needed %lu\n",
+			pr_debug("\trcu_node %d:%d ->gp_seq %lu ->gp_seq_needed %lu\n",
 				rnp->grplo, rnp->grphi, rnp->gp_seq,
 				rnp->gp_seq_needed);
 			if (!rcu_is_leaf_node(rnp))
@@ -661,7 +661,7 @@ void show_rcu_gp_kthreads(void)
 				    ULONG_CMP_GE(rsp->gp_seq,
 						 rdp->gp_seq_needed))
 					continue;
-				pr_info("\tcpu %d ->gp_seq_needed %lu\n",
+				pr_debug("\tcpu %d ->gp_seq_needed %lu\n",
 					cpu, rdp->gp_seq_needed);
 			}
 		}
@@ -1219,14 +1219,14 @@ static int rcu_implicit_dynticks_qs(struct rcu_data *rdp)
 		struct rcu_node *rnp1;
 
 		WARN_ON(1);  /* Offline CPUs are supposed to report QS! */
-		pr_info("%s: grp: %d-%d level: %d ->gp_seq %ld ->completedqs %ld\n",
+		pr_debug("%s: grp: %d-%d level: %d ->gp_seq %ld ->completedqs %ld\n",
 			__func__, rnp->grplo, rnp->grphi, rnp->level,
 			(long)rnp->gp_seq, (long)rnp->completedqs);
 		for (rnp1 = rnp; rnp1; rnp1 = rnp1->parent)
-			pr_info("%s: %d:%d ->qsmask %#lx ->qsmaskinit %#lx ->qsmaskinitnext %#lx ->rcu_gp_init_mask %#lx\n",
+			pr_debug("%s: %d:%d ->qsmask %#lx ->qsmaskinit %#lx ->qsmaskinitnext %#lx ->rcu_gp_init_mask %#lx\n",
 				__func__, rnp1->grplo, rnp1->grphi, rnp1->qsmask, rnp1->qsmaskinit, rnp1->qsmaskinitnext, rnp1->rcu_gp_init_mask);
 		onl = !!(rdp->grpmask & rcu_rnp_online_cpus(rnp));
-		pr_info("%s %d: %c online: %ld(%d) offline: %ld(%d)\n",
+		pr_debug("%s %d: %c online: %ld(%d) offline: %ld(%d)\n",
 			__func__, rdp->cpu, ".o"[onl],
 			(long)rdp->rcu_onl_gp_seq, rdp->rcu_onl_gp_flags,
 			(long)rdp->rcu_ofl_gp_seq, rdp->rcu_ofl_gp_flags);
@@ -1316,7 +1316,7 @@ static void rcu_check_gp_kthread_starvation(struct rcu_state *rsp)
 	j = jiffies;
 	gpa = READ_ONCE(rsp->gp_activity);
 	if (j - gpa > 2 * HZ) {
-		pr_err("%s kthread starved for %ld jiffies! g%ld f%#x %s(%d) ->state=%#lx ->cpu=%d\n",
+		pr_debug("%s kthread starved for %ld jiffies! g%ld f%#x %s(%d) ->state=%#lx ->cpu=%d\n",
 		       rsp->name, j - gpa,
 		       (long)rcu_seq_current(&rsp->gp_seq),
 		       rsp->gp_flags,
@@ -1324,7 +1324,7 @@ static void rcu_check_gp_kthread_starvation(struct rcu_state *rsp)
 		       rsp->gp_kthread ? rsp->gp_kthread->state : ~0,
 		       rsp->gp_kthread ? task_cpu(rsp->gp_kthread) : -1);
 		if (rsp->gp_kthread) {
-			pr_err("RCU grace-period kthread stack dump:\n");
+			pr_debug("RCU grace-period kthread stack dump:\n");
 			sched_show_task(rsp->gp_kthread);
 			wake_up_process(rsp->gp_kthread);
 		}
@@ -1399,7 +1399,7 @@ static void print_other_cpu_stall(struct rcu_state *rsp, unsigned long gp_seq)
 	 * See Documentation/RCU/stallwarn.txt for info on how to debug
 	 * RCU CPU stall warnings.
 	 */
-	pr_err("INFO: %s detected stalls on CPUs/tasks:", rsp->name);
+	pr_debug("INFO: %s detected stalls on CPUs/tasks:", rsp->name);
 	print_cpu_stall_info_begin();
 	rcu_for_each_leaf_node(rsp, rnp) {
 		raw_spin_lock_irqsave_rcu_node(rnp, flags);
@@ -1418,7 +1418,7 @@ static void print_other_cpu_stall(struct rcu_state *rsp, unsigned long gp_seq)
 	for_each_possible_cpu(cpu)
 		totqlen += rcu_segcblist_n_cbs(&per_cpu_ptr(rsp->rda,
 							    cpu)->cblist);
-	pr_cont("(detected by %d, t=%ld jiffies, g=%ld, q=%lu)\n",
+	pr_debug("(detected by %d, t=%ld jiffies, g=%ld, q=%lu)\n",
 	       smp_processor_id(), (long)(jiffies - rsp->gp_start),
 	       (long)rcu_seq_current(&rsp->gp_seq), totqlen);
 	if (ndetected) {
@@ -1428,11 +1428,11 @@ static void print_other_cpu_stall(struct rcu_state *rsp, unsigned long gp_seq)
 		rcu_print_detail_task_stall(rsp);
 	} else {
 		if (rcu_seq_current(&rsp->gp_seq) != gp_seq) {
-			pr_err("INFO: Stall ended before state dump start\n");
+			pr_debug("INFO: Stall ended before state dump start\n");
 		} else {
 			j = jiffies;
 			gpa = READ_ONCE(rsp->gp_activity);
-			pr_err("All QSes seen, last %s kthread activity %ld (%ld-%ld), jiffies_till_next_fqs=%ld, root ->qsmask %#lx\n",
+			pr_debug("All QSes seen, last %s kthread activity %ld (%ld-%ld), jiffies_till_next_fqs=%ld, root ->qsmask %#lx\n",
 			       rsp->name, j - gpa, j, gpa,
 			       jiffies_till_next_fqs,
 			       rcu_get_root(rsp)->qsmask);
@@ -1470,7 +1470,7 @@ static void print_cpu_stall(struct rcu_state *rsp)
 	 * See Documentation/RCU/stallwarn.txt for info on how to debug
 	 * RCU CPU stall warnings.
 	 */
-	pr_err("INFO: %s self-detected stall on CPU", rsp->name);
+	pr_debug("INFO: %s self-detected stall on CPU", rsp->name);
 	print_cpu_stall_info_begin();
 	raw_spin_lock_irqsave_rcu_node(rdp->mynode, flags);
 	print_cpu_stall_info(rsp, smp_processor_id());
@@ -1479,7 +1479,7 @@ static void print_cpu_stall(struct rcu_state *rsp)
 	for_each_possible_cpu(cpu)
 		totqlen += rcu_segcblist_n_cbs(&per_cpu_ptr(rsp->rda,
 							    cpu)->cblist);
-	pr_cont(" (t=%lu jiffies g=%ld q=%lu)\n",
+	pr_debug(" (t=%lu jiffies g=%ld q=%lu)\n",
 		jiffies - rsp->gp_start,
 		(long)rcu_seq_current(&rsp->gp_seq), totqlen);
 
@@ -2829,7 +2829,7 @@ rcu_check_gp_start_stall(struct rcu_state *rsp, struct rcu_node *rnp,
 		raw_spin_unlock_irqrestore_rcu_node(rnp, flags);
 		return;
 	}
-	pr_alert("%s: g%ld->%ld gar:%lu ga:%lu f%#x gs:%d %s->state:%#lx\n",
+	pr_debug("%s: g%ld->%ld gar:%lu ga:%lu f%#x gs:%d %s->state:%#lx\n",
 		 __func__, (long)READ_ONCE(rsp->gp_seq),
 		 (long)READ_ONCE(rnp_root->gp_seq_needed),
 		 j - rsp->gp_req_activity, j - rsp->gp_activity,
@@ -3938,7 +3938,7 @@ static int __init rcu_spawn_gp_kthread(void)
 		kthread_prio = 99;
 
 	if (kthread_prio != kthread_prio_in)
-		pr_alert("rcu_spawn_gp_kthread(): Limited prio to %d from %d\n",
+		pr_debug("rcu_spawn_gp_kthread(): Limited prio to %d from %d\n",
 			 kthread_prio, kthread_prio_in);
 
 	rcu_scheduler_fully_active = 1;
@@ -4090,7 +4090,7 @@ static void __init rcu_init_geometry(void)
 	if (rcu_fanout_leaf == RCU_FANOUT_LEAF &&
 	    nr_cpu_ids == NR_CPUS)
 		return;
-	pr_info("Adjusting geometry for rcu_fanout_leaf=%d, nr_cpu_ids=%u\n",
+	pr_debug("Adjusting geometry for rcu_fanout_leaf=%d, nr_cpu_ids=%u\n",
 		rcu_fanout_leaf, nr_cpu_ids);
 
 	/*
@@ -4150,17 +4150,17 @@ static void __init rcu_dump_rcu_node_tree(struct rcu_state *rsp)
 	int level = 0;
 	struct rcu_node *rnp;
 
-	pr_info("rcu_node tree layout dump\n");
-	pr_info(" ");
+	pr_debug("rcu_node tree layout dump\n");
+	pr_debug(" ");
 	rcu_for_each_node_breadth_first(rsp, rnp) {
 		if (rnp->level != level) {
-			pr_cont("\n");
-			pr_info(" ");
+			pr_debug("\n");
+			pr_debug(" ");
 			level = rnp->level;
 		}
-		pr_cont("%d:%d ^%d  ", rnp->grplo, rnp->grphi, rnp->grpnum);
+		pr_debug("%d:%d ^%d  ", rnp->grplo, rnp->grphi, rnp->grpnum);
 	}
-	pr_cont("\n");
+	pr_debug("\n");
 }
 
 struct workqueue_struct *rcu_gp_wq;

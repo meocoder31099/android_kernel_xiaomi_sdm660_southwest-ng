@@ -288,7 +288,7 @@ int cqhci_host_init_crypto_spec(struct cqhci_host *host,
 	host->caps &= ~CQHCI_CAP_CRYPTO_SUPPORT;
 
 	if (!(cqhci_readl(host, CQHCI_CAP) & CQHCI_CAP_CS)) {
-		pr_err("%s no crypto capability\n", __func__);
+		pr_debug("%s no crypto capability\n", __func__);
 		err = -ENODEV;
 		goto out;
 	}
@@ -307,7 +307,7 @@ int cqhci_host_init_crypto_spec(struct cqhci_host *host,
 				sizeof(host->crypto_cap_array[0]), GFP_KERNEL);
 	if (!host->crypto_cap_array) {
 		err = -ENOMEM;
-		pr_err("%s no memory cap\n", __func__);
+		pr_debug("%s no memory cap\n", __func__);
 		goto out;
 	}
 

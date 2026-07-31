@@ -96,7 +96,7 @@ static int ehset_probe(struct usb_interface *intf,
 		 * hub_control callback function.
 		 */
 		if (hub_udev != dev->bus->root_hub) {
-			dev_err(&intf->dev, "SINGLE_STEP_SET_FEATURE test only supported on root hub\n");
+			dev_dbg(&intf->dev, "SINGLE_STEP_SET_FEATURE test only supported on root hub\n");
 			break;
 		}
 
@@ -108,7 +108,7 @@ static int ehset_probe(struct usb_interface *intf,
 
 		break;
 	default:
-		dev_err(&intf->dev, "%s: unsupported PID: 0x%x\n",
+		dev_dbg(&intf->dev, "%s: unsupported PID: 0x%x\n",
 			__func__, test_pid);
 	}
 

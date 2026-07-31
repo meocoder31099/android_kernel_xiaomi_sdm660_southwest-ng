@@ -220,12 +220,12 @@ int elevator_init(struct request_queue *q)
 	if (*chosen_elevator) {
 		e = elevator_get(q, chosen_elevator, false);
 		if (!e)
-			printk(KERN_ERR "I/O scheduler %s not found\n",
+			no_printk(KERN_ERR "I/O scheduler %s not found\n",
 							chosen_elevator);
 	}
 
 	if (!e) {
-		printk(KERN_ERR
+		no_printk(KERN_ERR
 			"Default I/O scheduler not found. Using noop.\n");
 		e = elevator_get(q, "noop", false);
 	}
@@ -553,7 +553,7 @@ void elv_drain_elevator(struct request_queue *q)
 	while (e->type->ops.sq.elevator_dispatch_fn(q, 1))
 		;
 	if (q->nr_sorted && !blk_queue_is_zoned(q) && printed++ < 10 ) {
-		printk(KERN_ERR "%s: forced dispatching is broken "
+		no_printk(KERN_ERR "%s: forced dispatching is broken "
 		       "(nr_sorted=%u), please report this\n",
 		       q->elevator->type->elevator_name, q->nr_sorted);
 	}
@@ -634,7 +634,7 @@ void __elv_add_request(struct request_queue *q, struct request *rq, int where)
 		blk_insert_flush(rq);
 		break;
 	default:
-		printk(KERN_ERR "%s: bad insertion point %d\n",
+		no_printk(KERN_ERR "%s: bad insertion point %d\n",
 		       __func__, where);
 		BUG();
 	}
@@ -844,7 +844,7 @@ int elv_register(struct elevator_type *e)
 	list_add_tail(&e->list, &elv_list);
 	spin_unlock(&elv_list_lock);
 
-	printk(KERN_INFO "io scheduler %s registered%s\n", e->elevator_name,
+	no_printk(KERN_INFO "io scheduler %s registered%s\n", e->elevator_name,
 								def);
 	return 0;
 }

@@ -41,7 +41,7 @@ static int msm_dai_stub_add_route(struct snd_soc_dai *dai)
 	struct snd_soc_dapm_context *dapm;
 
 	if (!dai || !dai->driver) {
-		pr_err("%s Invalid params\n", __func__);
+		pr_debug("%s Invalid params\n", __func__);
 		return -EINVAL;
 	}
 	dapm = snd_soc_component_get_dapm(dai->component);
@@ -230,7 +230,7 @@ static int msm_dai_stub_dev_probe(struct platform_device *pdev)
 
 	rc = of_property_read_u32(pdev->dev.of_node, stub_dev_id, &id);
 	if (rc) {
-		dev_err(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: missing %s in dt node\n", __func__, stub_dev_id);
 		return rc;
 	}
@@ -314,7 +314,7 @@ static int msm_dai_stub_probe(struct platform_device *pdev)
 
 	rc = of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
 	if (rc) {
-		dev_err(&pdev->dev, "%s: failed to add child nodes, rc=%d\n",
+		dev_dbg(&pdev->dev, "%s: failed to add child nodes, rc=%d\n",
 			__func__, rc);
 	} else
 		dev_dbg(&pdev->dev, "%s: added child node\n", __func__);
@@ -356,13 +356,13 @@ int __init msm_dai_stub_init(void)
 
 	rc = platform_driver_register(&msm_dai_stub_driver);
 	if (rc) {
-		pr_err("%s: fail to register dai q6 driver", __func__);
+		pr_debug("%s: fail to register dai q6 driver", __func__);
 		goto fail;
 	}
 
 	rc = platform_driver_register(&msm_dai_stub_dev);
 	if (rc) {
-		pr_err("%s: fail to register dai q6 dev driver", __func__);
+		pr_debug("%s: fail to register dai q6 dev driver", __func__);
 		goto dai_stub_dev_fail;
 	}
 	return rc;

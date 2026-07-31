@@ -48,7 +48,7 @@ static inline void __pm_clk_enable(struct device *dev, struct pm_clock_entry *ce
 		if (!ret)
 			ce->status = PCE_STATUS_ENABLED;
 		else
-			dev_err(dev, "%s: failed to enable clk %p, error %d\n",
+			dev_dbg(dev, "%s: failed to enable clk %p, error %d\n",
 				__func__, ce->clk, ret);
 	}
 }
@@ -88,7 +88,7 @@ static int __pm_clk_add(struct device *dev, const char *con_id,
 	if (con_id) {
 		ce->con_id = kstrdup(con_id, GFP_KERNEL);
 		if (!ce->con_id) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"Not enough memory for clock connection ID.\n");
 			kfree(ce);
 			return -ENOMEM;
@@ -509,13 +509,13 @@ int pm_clk_runtime_suspend(struct device *dev)
 
 	ret = pm_generic_runtime_suspend(dev);
 	if (ret) {
-		dev_err(dev, "failed to suspend device\n");
+		dev_dbg(dev, "failed to suspend device\n");
 		return ret;
 	}
 
 	ret = pm_clk_suspend(dev);
 	if (ret) {
-		dev_err(dev, "failed to suspend clock\n");
+		dev_dbg(dev, "failed to suspend clock\n");
 		pm_generic_runtime_resume(dev);
 		return ret;
 	}
@@ -532,7 +532,7 @@ int pm_clk_runtime_resume(struct device *dev)
 
 	ret = pm_clk_resume(dev);
 	if (ret) {
-		dev_err(dev, "failed to resume clock\n");
+		dev_dbg(dev, "failed to resume clock\n");
 		return ret;
 	}
 
@@ -555,7 +555,7 @@ static void enable_clock(struct device *dev, const char *con_id)
 	if (!IS_ERR(clk)) {
 		clk_prepare_enable(clk);
 		clk_put(clk);
-		dev_info(dev, "Runtime PM disabled, clock forced on.\n");
+		dev_dbg(dev, "Runtime PM disabled, clock forced on.\n");
 	}
 }
 
@@ -572,7 +572,7 @@ static void disable_clock(struct device *dev, const char *con_id)
 	if (!IS_ERR(clk)) {
 		clk_disable_unprepare(clk);
 		clk_put(clk);
-		dev_info(dev, "Runtime PM disabled, clock forced off.\n");
+		dev_dbg(dev, "Runtime PM disabled, clock forced off.\n");
 	}
 }
 

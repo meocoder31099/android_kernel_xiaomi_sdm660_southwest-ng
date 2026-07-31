@@ -474,7 +474,7 @@ static void qos_cores_init(struct device *dev)
 					sizeof(u32), GFP_KERNEL);
 
 		if (cpucores == NULL) {
-			dev_err(dev,
+			dev_dbg(dev,
 					"kcalloc failed for cpucores\n");
 			gcdsprm.b_silver_en = false;
 		} else {
@@ -482,7 +482,7 @@ static void qos_cores_init(struct device *dev)
 				err = of_property_read_u32_index(dev->of_node,
 					"qcom,qos-cores", i, &cpucores[i]);
 				if (err) {
-					dev_err(dev,
+					dev_dbg(dev,
 						"%s: failed to read QOS coree for core:%d\n",
 							__func__, i);
 					gcdsprm.b_silver_en = false;
@@ -495,7 +495,7 @@ static void qos_cores_init(struct device *dev)
 				sizeof(struct dev_pm_qos_request), GFP_KERNEL);
 
 			if (gcdsprm.dev_pm_qos_req == NULL) {
-				dev_err(dev,
+				dev_dbg(dev,
 						"kcalloc failed for dev_pm_qos_req\n");
 				gcdsprm.b_silver_en = false;
 			}
@@ -527,7 +527,7 @@ static void set_qos_latency(int latency)
 			}
 
 			if (err < 0) {
-				pr_err("%s: %s: PM voting cpu:%d fail,err %d,QoS update %d\n",
+				pr_debug("%s: %s: PM voting cpu:%d fail,err %d,QoS update %d\n",
 					current->comm, __func__, cpu,
 					err, gcdsprm.qos_request);
 				break;
@@ -597,7 +597,7 @@ static void process_rm_request(struct sysmon_msg *msg)
 		}
 		mutex_unlock(&gcdsprm.rm_lock);
 	} else {
-		pr_err("Received incorrect msg on rm queue: %d\n",
+		pr_debug("Received incorrect msg on rm queue: %d\n",
 				msg->feature_id);
 	}
 }
@@ -792,7 +792,7 @@ static int process_cdsp_request_thread(void *data)
 				sizeof(rpmsg_msg_tx));
 
 			if (result)
-				pr_err("rpmsg send failed %d\n", result);
+				pr_debug("rpmsg send failed %d\n", result);
 			else
 				pr_debug("NPU limit ack sent\n");
 		} else if (msg && (msg->feature_id ==
@@ -848,7 +848,7 @@ static int cdsprm_rpmsg_callback(struct rpmsg_device *dev, void *data,
 	unsigned long flags;
 
 	if (!data || (len < sizeof(*msg))) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 		"Invalid message in rpmsg callback, length: %d, expected: %lu\n",
 				len, sizeof(*msg));
 		return -EINVAL;
@@ -889,7 +889,7 @@ static int cdsprm_rpmsg_callback(struct rpmsg_device *dev, void *data,
 		dev_dbg(&dev->dev, "Received CDSP version 0x%x\n",
 			gcdsprm.cdsp_version);
 	} else {
-		dev_err(&dev->dev, "Received incorrect msg feature %d\n",
+		dev_dbg(&dev->dev, "Received incorrect msg feature %d\n",
 		msg->feature_id);
 	}
 
@@ -1045,7 +1045,7 @@ static int cdsp_rm_driver_probe(struct platform_device *pdev)
 		gcdsprm.debugfs_dir = debugfs_create_dir("compute", NULL);
 
 		if (!gcdsprm.debugfs_dir) {
-			dev_err(dev,
+			dev_dbg(dev,
 			"Failed to create debugfs directory for cdsprm\n");
 		} else {
 			gcdsprm.debugfs_file = debugfs_create_file("priority",
@@ -1053,7 +1053,7 @@ static int cdsp_rm_driver_probe(struct platform_device *pdev)
 						NULL, &cdsprm_debugfs_fops);
 			if (!gcdsprm.debugfs_file) {
 				debugfs_remove_recursive(gcdsprm.debugfs_dir);
-				dev_err(dev,
+				dev_dbg(dev,
 					"Failed to create debugfs file\n");
 			}
 		}
@@ -1068,7 +1068,7 @@ static int cdsp_rm_driver_probe(struct platform_device *pdev)
 							"cdsp", NULL,
 							&cdsp_cooling_ops);
 		if (IS_ERR(tcdev)) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"CDSP thermal driver reg failed\n");
 		}
 		gcdsprm.cdsp_tcdev = tcdev;
@@ -1096,7 +1096,7 @@ static int hvx_rm_driver_probe(struct platform_device *pdev)
 							"hvx", NULL,
 							&hvx_cooling_ops);
 		if (IS_ERR(tcdev)) {
-			dev_err(dev,
+			dev_dbg(dev,
 				"HVX thermal driver reg failed\n");
 		}
 		gcdsprm.hvx_tcdev = tcdev;
@@ -1174,7 +1174,7 @@ static int __init cdsprm_init(void)
 					NULL, "cdsprm-wq");
 
 	if (!gcdsprm.cdsprm_wq_task) {
-		pr_err("Failed to create kernel thread\n");
+		pr_debug("Failed to create kernel thread\n");
 		return -ENOMEM;
 	}
 
@@ -1183,7 +1183,7 @@ static int __init cdsprm_init(void)
 
 	if (!gcdsprm.delay_work_queue) {
 		err = -ENOMEM;
-		pr_err("Failed to create rm delay work queue\n");
+		pr_debug("Failed to create rm delay work queue\n");
 		goto err_wq;
 	}
 
@@ -1191,7 +1191,7 @@ static int __init cdsprm_init(void)
 	err = platform_driver_register(&cdsp_rm);
 
 	if (err) {
-		pr_err("Failed to register cdsprm platform driver: %d\n",
+		pr_debug("Failed to register cdsprm platform driver: %d\n",
 				err);
 		goto bail;
 	}
@@ -1200,7 +1200,7 @@ static int __init cdsprm_init(void)
 	err = platform_driver_register(&hvx_rm);
 
 	if (err) {
-		pr_err("Failed to register hvxrm platform driver: %d\n",
+		pr_debug("Failed to register hvxrm platform driver: %d\n",
 				err);
 		goto bail;
 	}
@@ -1208,7 +1208,7 @@ static int __init cdsprm_init(void)
 	err = register_rpmsg_driver(&cdsprm_rpmsg_client);
 
 	if (err) {
-		pr_err("Failed registering rpmsg driver with return %d\n",
+		pr_debug("Failed registering rpmsg driver with return %d\n",
 				err);
 		goto bail;
 	}

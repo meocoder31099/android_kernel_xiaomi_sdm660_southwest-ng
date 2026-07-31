@@ -73,7 +73,7 @@ static int nf_conntrack_helper_init_sysctl(struct net *net)
 		register_net_sysctl(net, "net/netfilter", table);
 
 	if (!net->ct.helper_sysctl_header) {
-		pr_err("nf_conntrack_helper: can't register to sysctl.\n");
+		pr_debug("nf_conntrack_helper: can't register to sysctl.\n");
 		goto out_register;
 	}
 	return 0;
@@ -213,7 +213,7 @@ nf_ct_lookup_helper(struct nf_conn *ct, struct net *net)
 			return NULL;
 		if (!__nf_ct_helper_find(&ct->tuplehash[IP_CT_DIR_REPLY].tuple))
 			return NULL;
-		pr_info("nf_conntrack: default automatic helper assignment "
+		pr_debug("nf_conntrack: default automatic helper assignment "
 			"has been turned off for security reasons and CT-based "
 			" firewall rule not found. Use the iptables CT target "
 			"to attach helpers instead.\n");
@@ -559,7 +559,7 @@ int nf_conntrack_helper_init(void)
 
 	ret = nf_ct_extend_register(&helper_extend);
 	if (ret < 0) {
-		pr_err("nf_ct_helper: Unable to register helper extension.\n");
+		pr_debug("nf_ct_helper: Unable to register helper extension.\n");
 		goto out_extend;
 	}
 

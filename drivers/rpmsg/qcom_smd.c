@@ -99,9 +99,9 @@ static const struct {
 ipc_log_string(log_ctx, x); \
 if (print) { \
 	if (dev) \
-		dev_err((dev), x); \
+		dev_dbg((dev), x); \
 	else \
-		pr_err(x); \
+		pr_debug(x); \
 } \
 } while (0)
 
@@ -985,7 +985,7 @@ static int qcom_smd_channel_open(struct qcom_smd_channel *channel,
 			channel->remote_state == SMD_CHANNEL_OPENED,
 			HZ);
 	if (!ret) {
-		dev_err(&edge->dev, "remote side did not enter opening state\n");
+		dev_dbg(&edge->dev, "remote side did not enter opening state\n");
 		goto out_close_timeout;
 	}
 
@@ -996,7 +996,7 @@ static int qcom_smd_channel_open(struct qcom_smd_channel *channel,
 			channel->remote_state == SMD_CHANNEL_OPENED,
 			HZ);
 	if (!ret) {
-		dev_err(&edge->dev, "remote side did not enter open state\n");
+		dev_dbg(&edge->dev, "remote side did not enter open state\n");
 		goto out_close_timeout;
 	}
 
@@ -1067,7 +1067,7 @@ static struct rpmsg_endpoint *qcom_smd_create_ept(struct rpmsg_device *rpdev,
 		return NULL;
 
 	if (channel->state != SMD_CHANNEL_CLOSED) {
-		dev_err(&rpdev->dev, "channel %s is busy\n", channel->name);
+		dev_dbg(&rpdev->dev, "channel %s is busy\n", channel->name);
 		return NULL;
 	}
 
@@ -1335,7 +1335,7 @@ static struct qcom_smd_channel *qcom_smd_create_channel(struct qcom_smd_edge *ed
 	} else if (info_size == 2 * sizeof(struct smd_channel_info)) {
 		channel->info = info;
 	} else {
-		dev_err(&edge->dev,
+		dev_dbg(&edge->dev,
 			"channel info of size %zu not supported\n", info_size);
 		ret = -EINVAL;
 		goto free_name_and_channel;
@@ -1531,7 +1531,7 @@ static int qcom_smd_parse_edge(struct device *dev,
 	key = "qcom,smd-edge";
 	ret = of_property_read_u32(node, key, &edge->edge_id);
 	if (ret) {
-		dev_err(dev, "edge missing %s property\n", key);
+		dev_dbg(dev, "edge missing %s property\n", key);
 		goto put_node;
 	}
 
@@ -1552,7 +1552,7 @@ static int qcom_smd_parse_edge(struct device *dev,
 
 		syscon_np = of_parse_phandle(node, "qcom,ipc", 0);
 		if (!syscon_np) {
-			dev_err(dev, "no qcom,ipc node\n");
+			dev_dbg(dev, "no qcom,ipc node\n");
 			ret = -ENODEV;
 			goto put_node;
 		}
@@ -1567,13 +1567,13 @@ static int qcom_smd_parse_edge(struct device *dev,
 		key = "qcom,ipc";
 		ret = of_property_read_u32_index(node, key, 1, &edge->ipc_offset);
 		if (ret < 0) {
-			dev_err(dev, "no offset in %s\n", key);
+			dev_dbg(dev, "no offset in %s\n", key);
 			goto put_node;
 		}
 
 		ret = of_property_read_u32_index(node, key, 2, &edge->ipc_bit);
 		if (ret < 0) {
-			dev_err(dev, "no bit in %s\n", key);
+			dev_dbg(dev, "no bit in %s\n", key);
 			goto put_node;
 		}
 	}
@@ -1584,7 +1584,7 @@ static int qcom_smd_parse_edge(struct device *dev,
 
 	irq = irq_of_parse_and_map(node, 0);
 	if (!irq) {
-		dev_err(dev, "required smd interrupt missing\n");
+		dev_dbg(dev, "required smd interrupt missing\n");
 		ret = -EINVAL;
 		goto put_node;
 	}
@@ -1594,7 +1594,7 @@ static int qcom_smd_parse_edge(struct device *dev,
 				| IRQF_NO_SUSPEND, node->name, edge);
 
 	if (ret) {
-		dev_err(dev, "failed to request smd irq\n");
+		dev_dbg(dev, "failed to request smd irq\n");
 		goto put_node;
 	}
 
@@ -1670,25 +1670,25 @@ struct qcom_smd_edge *qcom_smd_register_edge(struct device *parent,
 	/* ipc logging handler */
 	edge->ipc = ipc_log_context_create(4, dev_name(&edge->dev), 0);
 	if (!edge->ipc)
-		dev_info(&edge->dev, "%s: failed to create ipc log cntxt\n",
+		dev_dbg(&edge->dev, "%s: failed to create ipc log cntxt\n",
 							__func__);
 
 	ret = device_register(&edge->dev);
 	if (ret) {
-		pr_err("failed to register smd edge\n");
+		pr_debug("failed to register smd edge\n");
 		put_device(&edge->dev);
 		return ERR_PTR(ret);
 	}
 
 	ret = qcom_smd_parse_edge(&edge->dev, node, edge);
 	if (ret) {
-		dev_err(&edge->dev, "failed to parse smd edge\n");
+		dev_dbg(&edge->dev, "failed to parse smd edge\n");
 		goto unregister_dev;
 	}
 
 	ret = qcom_smd_create_chrdev(edge);
 	if (ret) {
-		dev_err(&edge->dev, "failed to register chrdev for edge\n");
+		dev_dbg(&edge->dev, "failed to register chrdev for edge\n");
 		goto unregister_dev;
 	}
 
@@ -1728,7 +1728,7 @@ int qcom_smd_unregister_edge(struct qcom_smd_edge *edge)
 
 	ret = device_for_each_child(&edge->dev, NULL, qcom_smd_remove_device);
 	if (ret)
-		dev_warn(&edge->dev, "can't remove smd device: %d\n", ret);
+		dev_dbg(&edge->dev, "can't remove smd device: %d\n", ret);
 
 	mbox_free_channel(edge->mbox_chan);
 	device_unregister(&edge->dev);
@@ -1772,7 +1772,7 @@ static int qcom_smd_remove(struct platform_device *pdev)
 
 	ret = device_for_each_child(&pdev->dev, NULL, qcom_smd_remove_edge);
 	if (ret)
-		dev_warn(&pdev->dev, "can't remove smd device: %d\n", ret);
+		dev_dbg(&pdev->dev, "can't remove smd device: %d\n", ret);
 
 	return ret;
 }

@@ -396,7 +396,7 @@ static int gport_rmnet_connect(struct f_rmnet *dev)
 	ret = gqti_ctrl_connect(&dev->port, dev->qti_port_type, dev->ifc_id,
 							dev->xport_type);
 	if (ret) {
-		pr_err("%s: gqti_ctrl_connect failed: err:%d\n",
+		pr_debug("%s: gqti_ctrl_connect failed: err:%d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -406,7 +406,7 @@ static int gport_rmnet_connect(struct f_rmnet *dev)
 	if (dev->xport_type == BAM_DMUX) {
 		ret = gbam_connect(&dev->bam_port, dev->bam_dmux_func_type);
 		if (ret)
-			pr_err("%s: gbam_connect failed: err:%d\n",
+			pr_debug("%s: gbam_connect failed: err:%d\n",
 				__func__, ret);
 	} else {
 		ipa_data_port_select(dev->ipa_func_type);
@@ -425,7 +425,7 @@ static int gport_rmnet_connect(struct f_rmnet *dev)
 						USB_BAM_DEVICE);
 		}
 		if (dst_connection_idx < 0 || src_connection_idx < 0) {
-			pr_err("%s: usb_bam_get_connection_idx failed\n",
+			pr_debug("%s: usb_bam_get_connection_idx failed\n",
 				__func__);
 			gqti_ctrl_disconnect(&dev->port, dev->qti_port_type);
 			return -EINVAL;
@@ -433,7 +433,7 @@ static int gport_rmnet_connect(struct f_rmnet *dev)
 		ret = ipa_data_connect(&dev->bam_port, dev->ipa_func_type,
 				src_connection_idx, dst_connection_idx);
 		if (ret)
-			pr_err("%s: ipa_data_connect failed: err:%d\n",
+			pr_debug("%s: ipa_data_connect failed: err:%d\n",
 				__func__, ret);
 	}
 
@@ -585,7 +585,7 @@ frmnet_set_alt(struct usb_function *f, unsigned int intf, unsigned int alt)
 
 		ret = usb_ep_enable(dev->notify);
 		if (ret) {
-			pr_err("%s: usb ep#%s enable failed, err#%d\n",
+			pr_debug("%s: usb ep#%s enable failed, err#%d\n",
 				__func__, dev->notify->name, ret);
 			dev->notify->desc = NULL;
 			return ret;
@@ -596,7 +596,7 @@ frmnet_set_alt(struct usb_function *f, unsigned int intf, unsigned int alt)
 
 	if (dev->bam_port.in && !dev->bam_port.in->desc
 		&& config_ep_by_speed(cdev->gadget, f, dev->bam_port.in)) {
-		pr_err("%s(): config_ep_by_speed failed.\n",
+		pr_debug("%s(): config_ep_by_speed failed.\n",
 				__func__);
 		dev->bam_port.in->desc = NULL;
 		ret = -EINVAL;
@@ -605,7 +605,7 @@ frmnet_set_alt(struct usb_function *f, unsigned int intf, unsigned int alt)
 
 	if (dev->bam_port.out && !dev->bam_port.out->desc
 		&& config_ep_by_speed(cdev->gadget, f, dev->bam_port.out)) {
-		pr_err("%s(): config_ep_by_speed failed.\n",
+		pr_debug("%s(): config_ep_by_speed failed.\n",
 				__func__);
 		dev->bam_port.out->desc = NULL;
 		ret = -EINVAL;
@@ -614,7 +614,7 @@ frmnet_set_alt(struct usb_function *f, unsigned int intf, unsigned int alt)
 
 	ret = gport_rmnet_connect(dev);
 	if (ret) {
-		pr_err("%s(): gport_rmnet_connect fail with err:%d\n",
+		pr_debug("%s(): gport_rmnet_connect fail with err:%d\n",
 				__func__, ret);
 		goto err_disable_ep;
 	}
@@ -696,7 +696,7 @@ static void frmnet_connect(struct grmnet *gr)
 	struct f_rmnet			*dev;
 
 	if (!gr) {
-		pr_err("%s: Invalid grmnet:%pK\n", __func__, gr);
+		pr_debug("%s: Invalid grmnet:%pK\n", __func__, gr);
 		return;
 	}
 
@@ -712,7 +712,7 @@ static void frmnet_disconnect(struct grmnet *gr)
 	int				status;
 
 	if (!gr) {
-		pr_err("%s: Invalid grmnet:%pK\n", __func__, gr);
+		pr_debug("%s: Invalid grmnet:%pK\n", __func__, gr);
 		return;
 	}
 
@@ -739,7 +739,7 @@ static void frmnet_disconnect(struct grmnet *gr)
 	if (status < 0) {
 		if (!atomic_read(&dev->online))
 			return;
-		pr_err("%s: rmnet notify ep enqueue error %d\n",
+		pr_debug("%s: rmnet notify ep enqueue error %d\n",
 				__func__, status);
 	}
 
@@ -754,13 +754,13 @@ frmnet_send_cpkt_response(void *gr, void *buf, size_t len)
 	unsigned long		flags;
 
 	if (!gr || !buf) {
-		pr_err("%s: Invalid grmnet/buf, grmnet:%pK buf:%pK\n",
+		pr_debug("%s: Invalid grmnet/buf, grmnet:%pK buf:%pK\n",
 				__func__, gr, buf);
 		return -ENODEV;
 	}
 	cpkt = rmnet_alloc_ctrl_pkt(len, GFP_ATOMIC);
 	if (IS_ERR(cpkt)) {
-		pr_err("%s: Unable to allocate ctrl pkt\n", __func__);
+		pr_debug("%s: Unable to allocate ctrl pkt\n", __func__);
 		return -ENOMEM;
 	}
 	memcpy(cpkt->buf, buf, len);
@@ -790,7 +790,7 @@ frmnet_cmd_complete(struct usb_ep *ep, struct usb_request *req)
 	struct usb_composite_dev	*cdev;
 
 	if (!dev) {
-		pr_err("%s: rmnet dev is null\n", __func__);
+		pr_debug("%s: rmnet dev is null\n", __func__);
 		return;
 	}
 	pr_debug("%s: dev: %pK\n", __func__, dev);
@@ -817,7 +817,7 @@ static void frmnet_notify_complete(struct usb_ep *ep, struct usb_request *req)
 		spin_unlock_irqrestore(&dev->lock, flags);
 		break;
 	default:
-		pr_err("rmnet notify ep error %d\n", status);
+		pr_debug("rmnet notify ep error %d\n", status);
 		/* FALLTHROUGH */
 	case 0:
 		if (!atomic_read(&dev->ctrl_online))
@@ -845,7 +845,7 @@ static void frmnet_notify_complete(struct usb_ep *ep, struct usb_request *req)
 				if (dev->notify_count > 0)
 					dev->notify_count--;
 				else {
-					pr_err("%s: Invalid notify_count=%lu to decrement\n",
+					pr_debug("%s: Invalid notify_count=%lu to decrement\n",
 						__func__, dev->notify_count);
 					spin_unlock_irqrestore(&dev->lock,
 								flags);
@@ -876,7 +876,7 @@ frmnet_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 
 	pr_debug("%s: dev: %pK\n", __func__, dev);
 	if (!atomic_read(&dev->online)) {
-		pr_warn("%s: usb cable is not connected\n", __func__);
+		pr_debug("%s: usb cable is not connected\n", __func__);
 		return -ENOTCONN;
 	}
 
@@ -896,7 +896,7 @@ frmnet_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			| USB_CDC_GET_ENCAPSULATED_RESPONSE:
 		pr_debug("%s: USB_CDC_GET_ENCAPSULATED_RESPONSE\n", __func__);
 		if (w_value) {
-			pr_err("%s: invalid w_value = %04x\n",
+			pr_debug("%s: invalid w_value = %04x\n",
 				   __func__, w_value);
 			goto invalid;
 		} else {
@@ -905,8 +905,8 @@ frmnet_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 
 			spin_lock(&dev->lock);
 			if (list_empty(&dev->cpkt_resp_q)) {
-				pr_err("ctrl resp queue empty:\n");
-				pr_err("req%02x.%02x v%04x i%04x l%d\n",
+				pr_debug("ctrl resp queue empty:\n");
+				pr_debug("req%02x.%02x v%04x i%04x l%d\n",
 					ctrl->bRequestType, ctrl->bRequest,
 					w_value, w_index, w_length);
 				ret = 0;
@@ -987,7 +987,7 @@ skip_string_id_alloc:
 	if (info->fs_in_desc) {
 		ep = usb_ep_autoconfig(cdev->gadget, info->fs_in_desc);
 		if (!ep) {
-			pr_err("%s: usb epin autoconfig failed\n",
+			pr_debug("%s: usb epin autoconfig failed\n",
 					__func__);
 			return -ENODEV;
 		}
@@ -998,7 +998,7 @@ skip_string_id_alloc:
 	if (info->fs_out_desc) {
 		ep = usb_ep_autoconfig(cdev->gadget, info->fs_out_desc);
 		if (!ep) {
-			pr_err("%s: usb epout autoconfig failed\n",
+			pr_debug("%s: usb epout autoconfig failed\n",
 					__func__);
 			status = -ENODEV;
 			goto ep_auto_out_fail;
@@ -1010,7 +1010,7 @@ skip_string_id_alloc:
 	if (info->fs_notify_desc) {
 		ep = usb_ep_autoconfig(cdev->gadget, info->fs_notify_desc);
 		if (!ep) {
-			pr_err("%s: usb epnotify autoconfig failed\n",
+			pr_debug("%s: usb epnotify autoconfig failed\n",
 					__func__);
 			status = -ENODEV;
 			goto ep_auto_notify_fail;
@@ -1022,7 +1022,7 @@ skip_string_id_alloc:
 				cdev->gadget->extra_buf_alloc,
 				GFP_KERNEL);
 		if (IS_ERR(dev->notify_req)) {
-			pr_err("%s: unable to allocate memory for notify req\n",
+			pr_debug("%s: unable to allocate memory for notify req\n",
 				__func__);
 			status = -ENOMEM;
 			goto ep_notify_alloc_fail;
@@ -1035,7 +1035,7 @@ skip_string_id_alloc:
 	status = -ENOMEM;
 	f->fs_descriptors = usb_copy_descriptors(info->fs_desc_hdr);
 	if (!f->fs_descriptors) {
-		pr_err("%s: no descriptors, usb_copy descriptors(fs)failed\n",
+		pr_debug("%s: no descriptors, usb_copy descriptors(fs)failed\n",
 			__func__);
 		goto fail;
 	}
@@ -1054,7 +1054,7 @@ skip_string_id_alloc:
 		/* copy descriptors, and track endpoint copies */
 		f->hs_descriptors = usb_copy_descriptors(info->hs_desc_hdr);
 		if (!f->hs_descriptors) {
-			pr_err("%s: no hs_descriptors, usb_copy descriptors(hs)failed\n",
+			pr_debug("%s: no hs_descriptors, usb_copy descriptors(hs)failed\n",
 				__func__);
 			goto fail;
 		}
@@ -1075,7 +1075,7 @@ skip_string_id_alloc:
 		/* copy descriptors, and track endpoint copies */
 		f->ss_descriptors = usb_copy_descriptors(info->ss_desc_hdr);
 		if (!f->ss_descriptors) {
-			pr_err("%s: no ss_descriptors,usb_copy descriptors(ss)failed\n",
+			pr_debug("%s: no ss_descriptors,usb_copy descriptors(ss)failed\n",
 			__func__);
 			goto fail;
 		}
@@ -1115,7 +1115,7 @@ static int frmnet_bind(struct usb_configuration *c, struct usb_function *f)
 	pr_debug("%s: start binding\n", __func__);
 	dev->ifc_id = usb_interface_id(c, f);
 	if (dev->ifc_id < 0) {
-		pr_err("%s: unable to allocate ifc id, err:%d\n",
+		pr_debug("%s: unable to allocate ifc id, err:%d\n",
 			__func__, dev->ifc_id);
 		return dev->ifc_id;
 	}
@@ -1233,7 +1233,7 @@ static int rmnet_set_inst_name(struct usb_function_instance *fi,
 	/* Update qti->qti_port_type */
 	ret = name_to_prot(dev, name);
 	if (ret < 0) {
-		pr_err("%s: failed to find prot for %s instance\n",
+		pr_debug("%s: failed to find prot for %s instance\n",
 		__func__, name);
 		goto fail;
 	}
@@ -1242,7 +1242,7 @@ static int rmnet_set_inst_name(struct usb_function_instance *fi,
 		dev->xport_type >= NR_XPORT_TYPES ||
 		dev->ipa_func_type >= USB_IPA_NUM_FUNCS ||
 		dev->bam_dmux_func_type >= BAM_DMUX_NUM_FUNCS) {
-		pr_err("%s: invalid prot\n", __func__);
+		pr_debug("%s: invalid prot\n", __func__);
 		ret = -EINVAL;
 		goto fail;
 	}
@@ -1317,7 +1317,7 @@ static int __init usb_rmnet_init(void)
 	if (!ret) {
 		ret = usb_function_register(&rmnet_bamusb_func);
 		if (ret) {
-			pr_err("%s: failed to register rmnet %d\n",
+			pr_debug("%s: failed to register rmnet %d\n",
 					__func__, ret);
 			return ret;
 		}

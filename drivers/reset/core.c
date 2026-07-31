@@ -167,7 +167,7 @@ void reset_controller_add_lookup(struct reset_control_lookup *lookup,
 		entry = &lookup[i];
 
 		if (!entry->dev_id || !entry->provider) {
-			pr_warn("%s(): reset lookup entry badly specified, skipping\n",
+			pr_debug("%s(): reset lookup entry badly specified, skipping\n",
 				__func__);
 			continue;
 		}

@@ -225,7 +225,7 @@ static int async_set_registers(rtl8150_t *dev, u16 indx, u16 size, u16 reg)
 	if (res) {
 		if (res == -ENODEV)
 			netif_device_detach(dev->netdev);
-		dev_err(&dev->udev->dev, "%s failed with %d\n", __func__, res);
+		dev_dbg(&dev->udev->dev, "%s failed with %d\n", __func__, res);
 		kfree(req);
 		usb_free_urb(async_urb);
 	}
@@ -419,11 +419,11 @@ static void read_bulk_callback(struct urb *urb)
 		return;	/* the urb is in unlink state */
 	case -ETIME:
 		if (printk_ratelimit())
-			dev_warn(&urb->dev->dev, "may be reset is needed?..\n");
+			dev_dbg(&urb->dev->dev, "may be reset is needed?..\n");
 		goto goon;
 	default:
 		if (printk_ratelimit())
-			dev_warn(&urb->dev->dev, "Rx status %d\n", status);
+			dev_dbg(&urb->dev->dev, "Rx status %d\n", status);
 		goto goon;
 	}
 
@@ -480,7 +480,7 @@ static void write_bulk_callback(struct urb *urb)
 	if (!netif_device_present(dev->netdev))
 		return;
 	if (status)
-		dev_info(&urb->dev->dev, "%s: Tx status %d\n",
+		dev_dbg(&urb->dev->dev, "%s: Tx status %d\n",
 			 dev->netdev->name, status);
 	netif_trans_update(dev->netdev);
 	netif_wake_queue(dev->netdev);
@@ -505,7 +505,7 @@ static void intr_callback(struct urb *urb)
 		return;
 	/* -EPIPE:  should clear the halt */
 	default:
-		dev_info(&urb->dev->dev, "%s: intr status %d\n",
+		dev_dbg(&urb->dev->dev, "%s: intr status %d\n",
 			 dev->netdev->name, status);
 		goto resubmit;
 	}
@@ -538,7 +538,7 @@ resubmit:
 	if (res == -ENODEV)
 		netif_device_detach(dev->netdev);
 	else if (res)
-		dev_err(&dev->udev->dev,
+		dev_dbg(&dev->udev->dev,
 			"can't resubmit intr, %s-%s/input0, status %d\n",
 			dev->udev->bus->bus_name, dev->udev->devpath, res);
 }
@@ -646,7 +646,7 @@ static int enable_net_traffic(rtl8150_t * dev)
 	u8 cr, tcr, rcr, msr;
 
 	if (!rtl8150_reset(dev)) {
-		dev_warn(&dev->udev->dev, "device reset failed\n");
+		dev_dbg(&dev->udev->dev, "device reset failed\n");
 	}
 	/* RCR bit7=1 attach Rx info at the end;  =0 HW CRC (which is broken) */
 	rcr = 0x9e;
@@ -674,7 +674,7 @@ static void disable_net_traffic(rtl8150_t * dev)
 static void rtl8150_tx_timeout(struct net_device *netdev)
 {
 	rtl8150_t *dev = netdev_priv(netdev);
-	dev_warn(&netdev->dev, "Tx timeout.\n");
+	dev_dbg(&netdev->dev, "Tx timeout.\n");
 	usb_unlink_urb(dev->tx_urb);
 	netdev->stats.tx_errors++;
 }
@@ -686,7 +686,7 @@ static void rtl8150_set_multicast(struct net_device *netdev)
 
 	if (netdev->flags & IFF_PROMISC) {
 		rx_creg |= 0x0001;
-		dev_info(&netdev->dev, "%s: promiscuous mode\n", netdev->name);
+		dev_dbg(&netdev->dev, "%s: promiscuous mode\n", netdev->name);
 	} else if (!netdev_mc_empty(netdev) ||
 		   (netdev->flags & IFF_ALLMULTI)) {
 		rx_creg &= 0xfffe;
@@ -727,7 +727,7 @@ static netdev_tx_t rtl8150_start_xmit(struct sk_buff *skb,
 		if (res == -ENODEV)
 			netif_device_detach(dev->netdev);
 		else {
-			dev_warn(&netdev->dev, "failed tx_urb %d\n", res);
+			dev_dbg(&netdev->dev, "failed tx_urb %d\n", res);
 			netdev->stats.tx_errors++;
 			netif_start_queue(netdev);
 		}
@@ -777,7 +777,7 @@ static int rtl8150_open(struct net_device *netdev)
 	if ((res = usb_submit_urb(dev->rx_urb, GFP_KERNEL))) {
 		if (res == -ENODEV)
 			netif_device_detach(dev->netdev);
-		dev_warn(&netdev->dev, "rx_urb submit failed: %d\n", res);
+		dev_dbg(&netdev->dev, "rx_urb submit failed: %d\n", res);
 		return res;
 	}
 	usb_fill_int_urb(dev->intr_urb, dev->udev, usb_rcvintpipe(dev->udev, 3),
@@ -786,7 +786,7 @@ static int rtl8150_open(struct net_device *netdev)
 	if ((res = usb_submit_urb(dev->intr_urb, GFP_KERNEL))) {
 		if (res == -ENODEV)
 			netif_device_detach(dev->netdev);
-		dev_warn(&netdev->dev, "intr_urb submit failed: %d\n", res);
+		dev_dbg(&netdev->dev, "intr_urb submit failed: %d\n", res);
 		usb_kill_urb(dev->rx_urb);
 		return res;
 	}
@@ -933,11 +933,11 @@ static int rtl8150_probe(struct usb_interface *intf,
 	dev->intr_interval = 100;	/* 100ms */
 
 	if (!alloc_all_urbs(dev)) {
-		dev_err(&intf->dev, "out of memory\n");
+		dev_dbg(&intf->dev, "out of memory\n");
 		goto out;
 	}
 	if (!rtl8150_reset(dev)) {
-		dev_err(&intf->dev, "couldn't reset the device\n");
+		dev_dbg(&intf->dev, "couldn't reset the device\n");
 		goto out1;
 	}
 	fill_skb_pool(dev);
@@ -946,11 +946,11 @@ static int rtl8150_probe(struct usb_interface *intf,
 	usb_set_intfdata(intf, dev);
 	SET_NETDEV_DEV(netdev, &intf->dev);
 	if (register_netdev(netdev) != 0) {
-		dev_err(&intf->dev, "couldn't register the device\n");
+		dev_dbg(&intf->dev, "couldn't register the device\n");
 		goto out2;
 	}
 
-	dev_info(&intf->dev, "%s: rtl8150 is detected\n", netdev->name);
+	dev_dbg(&intf->dev, "%s: rtl8150 is detected\n", netdev->name);
 
 	return 0;
 

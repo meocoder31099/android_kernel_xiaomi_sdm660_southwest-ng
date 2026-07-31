@@ -285,7 +285,7 @@ static ssize_t firmware_loading_store(struct device *dev,
 			 * */
 			rc = map_fw_priv_pages(fw_priv);
 			if (rc)
-				dev_err(dev, "%s: map pages failed\n",
+				dev_dbg(dev, "%s: map pages failed\n",
 					__func__);
 			else
 				rc = security_kernel_post_read_file(NULL,
@@ -306,7 +306,7 @@ static ssize_t firmware_loading_store(struct device *dev,
 		}
 		/* fallthrough */
 	default:
-		dev_err(dev, "%s: unexpected value (%d)\n", __func__, loading);
+		dev_dbg(dev, "%s: unexpected value (%d)\n", __func__, loading);
 		/* fallthrough */
 	case -1:
 		fw_load_abort(fw_sysfs);
@@ -552,7 +552,7 @@ static int fw_load_sysfs_fallback(struct fw_sysfs *fw_sysfs,
 
 	retval = device_add(f_dev);
 	if (retval) {
-		dev_err(f_dev, "%s: device_register failed\n", __func__);
+		dev_dbg(f_dev, "%s: device_register failed\n", __func__);
 		goto err_put_dev;
 	}
 
@@ -613,7 +613,7 @@ static int fw_load_from_user_helper(struct firmware *firmware,
 	} else {
 		ret = usermodehelper_read_trylock();
 		if (WARN_ON(ret)) {
-			dev_err(device, "firmware: %s will not be loaded\n",
+			dev_dbg(device, "firmware: %s will not be loaded\n",
 				name);
 			return ret;
 		}
@@ -695,7 +695,7 @@ int firmware_fallback_sysfs(struct firmware *fw, const char *name,
 		return ret;
 
 	if (!(opt_flags & FW_OPT_NO_WARN))
-		dev_warn(device, "Falling back to syfs fallback for: %s\n",
+		dev_dbg(device, "Falling back to syfs fallback for: %s\n",
 				 name);
 	else
 		dev_dbg(device, "Falling back to sysfs fallback for: %s\n",

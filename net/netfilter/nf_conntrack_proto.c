@@ -362,7 +362,7 @@ nf_ct_l4proto_register(const struct nf_conntrack_l4proto * const l4proto[],
 	}
 	if (i != num_proto) {
 		ver = l4proto[i]->l3proto == PF_INET6 ? 6 : 4;
-		pr_err("nf_conntrack_ipv%d: can't register l4 %d proto.\n",
+		pr_debug("nf_conntrack_ipv%d: can't register l4 %d proto.\n",
 		       ver, l4proto[i]->l4proto);
 		nf_ct_l4proto_unregister(l4proto, i);
 	}
@@ -382,7 +382,7 @@ int nf_ct_l4proto_pernet_register(struct net *net,
 			break;
 	}
 	if (i != num_proto) {
-		pr_err("nf_conntrack_proto_%d %d: pernet registration failed\n",
+		pr_debug("nf_conntrack_proto_%d %d: pernet registration failed\n",
 		       l4proto[i]->l4proto,
 		       l4proto[i]->l3proto == PF_INET6 ? 6 : 4);
 		nf_ct_l4proto_pernet_unregister(net, l4proto, i);

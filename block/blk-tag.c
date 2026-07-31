@@ -95,7 +95,7 @@ init_tag_map(struct request_queue *q, struct blk_queue_tag *tags, int depth)
 
 	if (q && depth > q->nr_requests * 2) {
 		depth = q->nr_requests * 2;
-		printk(KERN_ERR "%s: adjusted depth to %d\n",
+		no_printk(KERN_ERR "%s: adjusted depth to %d\n",
 		       __func__, depth);
 	}
 
@@ -274,13 +274,13 @@ void blk_queue_end_tag(struct request_queue *q, struct request *rq)
 	rq->internal_tag = -1;
 
 	if (unlikely(bqt->tag_index[tag] == NULL))
-		printk(KERN_ERR "%s: tag %d is missing\n",
+		no_printk(KERN_ERR "%s: tag %d is missing\n",
 		       __func__, tag);
 
 	bqt->tag_index[tag] = NULL;
 
 	if (unlikely(!test_bit(tag, bqt->tag_map))) {
-		printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
+		no_printk(KERN_ERR "%s: attempt to clear non-busy tag (%d)\n",
 		       __func__, tag);
 		return;
 	}
@@ -315,7 +315,7 @@ int blk_queue_start_tag(struct request_queue *q, struct request *rq)
 	lockdep_assert_held(q->queue_lock);
 
 	if (unlikely((rq->rq_flags & RQF_QUEUED))) {
-		printk(KERN_ERR
+		no_printk(KERN_ERR
 		       "%s: request %p for device [%s] already tagged %d",
 		       __func__, rq,
 		       rq->rq_disk ? rq->rq_disk->disk_name : "?", rq->tag);

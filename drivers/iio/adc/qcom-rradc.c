@@ -267,7 +267,7 @@ static int rradc_masked_write(struct rradc_chip *rr_adc, u16 offset, u8 mask,
 	rc = regmap_update_bits(rr_adc->regmap, rr_adc->base + offset,
 								mask, val);
 	if (rc) {
-		pr_err("spmi write failed: addr=%03X, rc=%d\n", offset, rc);
+		pr_debug("spmi write failed: addr=%03X, rc=%d\n", offset, rc);
 		return rc;
 	}
 
@@ -281,7 +281,7 @@ static int rradc_read(struct rradc_chip *rr_adc, u16 offset, u8 *data, int len)
 	bool coherent_err = false;
 
 	if (len > FG_RR_ADC_MAX_CONTINUOUS_BUFFER_LEN) {
-		pr_err("Increase the buffer length\n");
+		pr_debug("Increase the buffer length\n");
 		return -EINVAL;
 	}
 
@@ -289,14 +289,14 @@ static int rradc_read(struct rradc_chip *rr_adc, u16 offset, u8 *data, int len)
 		rc = regmap_bulk_read(rr_adc->regmap, rr_adc->base + offset,
 							data, len);
 		if (rc < 0) {
-			pr_err("rr_adc reg 0x%x failed :%d\n", offset, rc);
+			pr_debug("rr_adc reg 0x%x failed :%d\n", offset, rc);
 			return rc;
 		}
 
 		rc = regmap_bulk_read(rr_adc->regmap, rr_adc->base + offset,
 							data_check, len);
 		if (rc < 0) {
-			pr_err("rr_adc reg 0x%x failed :%d\n", offset, rc);
+			pr_debug("rr_adc reg 0x%x failed :%d\n", offset, rc);
 			return rc;
 		}
 
@@ -315,7 +315,7 @@ static int rradc_read(struct rradc_chip *rr_adc, u16 offset, u8 *data, int len)
 	}
 
 	if (retry_cnt == FG_RR_ADC_COHERENT_CHECK_RETRY)
-		pr_err("Retry exceeded for coherrency check\n");
+		pr_debug("Retry exceeded for coherrency check\n");
 
 	return rc;
 }
@@ -395,7 +395,7 @@ static int rradc_post_process_usbin_curr(struct rradc_chip *chip,
 			scale = FG_ADC_RR_CURR_USBIN_INPUT_FACTOR_MIL;
 			break;
 		default:
-			pr_err("No PMIC subtype found\n");
+			pr_debug("No PMIC subtype found\n");
 			return -EINVAL;
 		}
 	}
@@ -495,23 +495,23 @@ static int rradc_post_process_chg_temp_hot(struct rradc_chip *chip,
 		case PM660_SUBTYPE:
 			rc = rradc_get_660_fab_coeff(chip, &offset, &slope);
 			if (rc < 0) {
-				pr_err("Unable to get fab id coefficients\n");
+				pr_debug("Unable to get fab id coefficients\n");
 				return -EINVAL;
 			}
 			break;
 		case PMI8998_SUBTYPE:
 			rc = rradc_get_8998_fab_coeff(chip, &offset, &slope);
 			if (rc < 0) {
-				pr_err("Unable to get fab id coefficients\n");
+				pr_debug("Unable to get fab id coefficients\n");
 				return -EINVAL;
 			}
 			break;
 		default:
-			pr_err("No PMIC subtype found\n");
+			pr_debug("No PMIC subtype found\n");
 			return -EINVAL;
 		}
 	} else {
-		pr_err("No temperature scaling coefficients\n");
+		pr_debug("No temperature scaling coefficients\n");
 		return -EINVAL;
 	}
 
@@ -554,23 +554,23 @@ static int rradc_post_process_chg_temp(struct rradc_chip *chip,
 		case PM660_SUBTYPE:
 			rc = rradc_get_660_fab_coeff(chip, &offset, &slope);
 			if (rc < 0) {
-				pr_err("Unable to get fab id coefficients\n");
+				pr_debug("Unable to get fab id coefficients\n");
 				return -EINVAL;
 			}
 			break;
 		case PMI8998_SUBTYPE:
 			rc = rradc_get_8998_fab_coeff(chip, &offset, &slope);
 			if (rc < 0) {
-				pr_err("Unable to get fab id coefficients\n");
+				pr_debug("Unable to get fab id coefficients\n");
 				return -EINVAL;
 			}
 			break;
 		default:
-			pr_err("No PMIC subtype found\n");
+			pr_debug("No PMIC subtype found\n");
 			return -EINVAL;
 		}
 	} else {
-		pr_err("No temperature scaling coefficients\n");
+		pr_debug("No temperature scaling coefficients\n");
 		return -EINVAL;
 	}
 
@@ -714,14 +714,14 @@ static int rradc_enable_continuous_mode(struct rradc_chip *chip)
 			FG_ADC_RR_ADC_LOG_CLR_CTRL,
 			FG_ADC_RR_ADC_LOG_CLR_CTRL);
 	if (rc < 0) {
-		pr_err("log ctrl update to clear failed:%d\n", rc);
+		pr_debug("log ctrl update to clear failed:%d\n", rc);
 		return rc;
 	}
 
 	rc = rradc_masked_write(chip, FG_ADC_RR_ADC_LOG,
 		FG_ADC_RR_ADC_LOG_CLR_CTRL, 0);
 	if (rc < 0) {
-		pr_err("log ctrl update to not clear failed:%d\n", rc);
+		pr_debug("log ctrl update to not clear failed:%d\n", rc);
 		return rc;
 	}
 
@@ -730,7 +730,7 @@ static int rradc_enable_continuous_mode(struct rradc_chip *chip)
 		FG_ADC_RR_ADC_CTL_CONTINUOUS_SEL_MASK,
 		FG_ADC_RR_ADC_CTL_CONTINUOUS_SEL);
 	if (rc < 0) {
-		pr_err("Update to continuous mode failed:%d\n", rc);
+		pr_debug("Update to continuous mode failed:%d\n", rc);
 		return rc;
 	}
 
@@ -745,7 +745,7 @@ static int rradc_disable_continuous_mode(struct rradc_chip *chip)
 	rc = rradc_masked_write(chip, FG_ADC_RR_RR_ADC_CTL,
 			FG_ADC_RR_ADC_CTL_CONTINUOUS_SEL_MASK, 0);
 	if (rc < 0) {
-		pr_err("Update to non-continuous mode failed:%d\n", rc);
+		pr_debug("Update to non-continuous mode failed:%d\n", rc);
 		return rc;
 	}
 
@@ -808,7 +808,7 @@ static int rradc_check_status_ready_with_retry(struct rradc_chip *chip,
 		retry_cnt++;
 		rc = rradc_read(chip, status, buf, 1);
 		if (rc < 0) {
-			pr_err("status read failed:%d\n", rc);
+			pr_debug("status read failed:%d\n", rc);
 			return rc;
 		}
 	}
@@ -817,17 +817,17 @@ static int rradc_check_status_ready_with_retry(struct rradc_chip *chip,
 		((prop->channel != RR_ADC_DCIN_V) ||
 		(prop->channel != RR_ADC_DCIN_I)) &&
 		chip->rradc_fg_reset_wa) {
-		pr_err("rradc is hung, Proceed to recovery\n");
+		pr_debug("rradc is hung, Proceed to recovery\n");
 		if (rradc_is_bms_psy_available(chip)) {
 			rc = power_supply_set_property(chip->bms_psy,
 					POWER_SUPPLY_PROP_FG_RESET_CLOCK,
 					&pval);
 			if (rc < 0) {
-				pr_err("Couldn't reset FG clock rc=%d\n", rc);
+				pr_debug("Couldn't reset FG clock rc=%d\n", rc);
 				return rc;
 			}
 		} else {
-			pr_err("Error obtaining bms power supply\n");
+			pr_debug("Error obtaining bms power supply\n");
 			rc = -EINVAL;
 		}
 	} else {
@@ -846,14 +846,14 @@ static int rradc_read_channel_with_continuous_mode(struct rradc_chip *chip,
 
 	rc = rradc_enable_continuous_mode(chip);
 	if (rc < 0) {
-		pr_err("Failed to switch to continuous mode\n");
+		pr_debug("Failed to switch to continuous mode\n");
 		return rc;
 	}
 
 	status = rradc_chans[prop->channel].sts;
 	rc = rradc_read(chip, status, buf, 1);
 	if (rc < 0) {
-		pr_err("status read failed:%d\n", rc);
+		pr_debug("status read failed:%d\n", rc);
 		ret = rc;
 		goto disable;
 	}
@@ -861,14 +861,14 @@ static int rradc_read_channel_with_continuous_mode(struct rradc_chip *chip,
 	rc = rradc_check_status_ready_with_retry(chip, prop,
 						buf, status);
 	if (rc < 0) {
-		pr_err("Status read failed:%d\n", rc);
+		pr_debug("Status read failed:%d\n", rc);
 		ret = rc;
 	}
 
 disable:
 	rc = rradc_disable_continuous_mode(chip);
 	if (rc < 0) {
-		pr_err("Failed to switch to non continuous mode\n");
+		pr_debug("Failed to switch to non continuous mode\n");
 		ret = rc;
 	}
 
@@ -884,14 +884,14 @@ static int rradc_enable_batt_id_channel(struct rradc_chip *chip, bool enable)
 				FG_ADC_RR_BATT_ID_CTRL_CHANNEL_CONV,
 				FG_ADC_RR_BATT_ID_CTRL_CHANNEL_CONV);
 		if (rc < 0) {
-			pr_err("Enabling BATT ID channel failed:%d\n", rc);
+			pr_debug("Enabling BATT ID channel failed:%d\n", rc);
 			return rc;
 		}
 	} else {
 		rc = rradc_masked_write(chip, FG_ADC_RR_BATT_ID_CTRL,
 				FG_ADC_RR_BATT_ID_CTRL_CHANNEL_CONV, 0);
 		if (rc < 0) {
-			pr_err("Disabling BATT ID channel failed:%d\n", rc);
+			pr_debug("Disabling BATT ID channel failed:%d\n", rc);
 			return rc;
 		}
 	}
@@ -906,7 +906,7 @@ static int rradc_do_batt_id_conversion(struct rradc_chip *chip,
 
 	rc = rradc_enable_batt_id_channel(chip, true);
 	if (rc < 0) {
-		pr_err("Enabling BATT ID channel failed:%d\n", rc);
+		pr_debug("Enabling BATT ID channel failed:%d\n", rc);
 		return rc;
 	}
 
@@ -914,30 +914,30 @@ static int rradc_do_batt_id_conversion(struct rradc_chip *chip,
 				FG_ADC_RR_BATT_ID_TRIGGER_CTL,
 				FG_ADC_RR_BATT_ID_TRIGGER_CTL);
 	if (rc < 0) {
-		pr_err("BATT_ID trigger set failed:%d\n", rc);
+		pr_debug("BATT_ID trigger set failed:%d\n", rc);
 		ret = rc;
 		rc = rradc_enable_batt_id_channel(chip, false);
 		if (rc < 0)
-			pr_err("Disabling BATT ID channel failed:%d\n", rc);
+			pr_debug("Disabling BATT ID channel failed:%d\n", rc);
 		return ret;
 	}
 
 	rc = rradc_read_channel_with_continuous_mode(chip, prop, buf);
 	if (rc < 0) {
-		pr_err("Error reading in continuous mode:%d\n", rc);
+		pr_debug("Error reading in continuous mode:%d\n", rc);
 		ret = rc;
 	}
 
 	rc = rradc_masked_write(chip, FG_ADC_RR_BATT_ID_TRIGGER,
 			FG_ADC_RR_BATT_ID_TRIGGER_CTL, 0);
 	if (rc < 0) {
-		pr_err("BATT_ID trigger re-set failed:%d\n", rc);
+		pr_debug("BATT_ID trigger re-set failed:%d\n", rc);
 		ret = rc;
 	}
 
 	rc = rradc_enable_batt_id_channel(chip, false);
 	if (rc < 0) {
-		pr_err("Disabling BATT ID channel failed:%d\n", rc);
+		pr_debug("Disabling BATT ID channel failed:%d\n", rc);
 		ret = rc;
 	}
 
@@ -958,7 +958,7 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 	case RR_ADC_BATT_ID:
 		rc = rradc_do_batt_id_conversion(chip, prop, data, buf);
 		if (rc < 0) {
-			pr_err("Battery ID conversion failed:%d\n", rc);
+			pr_debug("Battery ID conversion failed:%d\n", rc);
 			goto fail;
 		}
 		break;
@@ -968,13 +968,13 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 				FG_ADC_RR_USB_IN_V_EVERY_CYCLE_MASK,
 				FG_ADC_RR_USB_IN_V_EVERY_CYCLE);
 		if (rc < 0) {
-			pr_err("Force every cycle update failed:%d\n", rc);
+			pr_debug("Force every cycle update failed:%d\n", rc);
 			goto fail;
 		}
 
 		rc = rradc_read_channel_with_continuous_mode(chip, prop, buf);
 		if (rc < 0) {
-			pr_err("Error reading in continuous mode:%d\n", rc);
+			pr_debug("Error reading in continuous mode:%d\n", rc);
 			goto fail;
 		}
 
@@ -982,7 +982,7 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 		rc = rradc_masked_write(chip, FG_ADC_RR_USB_IN_V_TRIGGER,
 				FG_ADC_RR_USB_IN_V_EVERY_CYCLE_MASK, 0);
 		if (rc < 0) {
-			pr_err("Restore every cycle update failed:%d\n", rc);
+			pr_debug("Restore every cycle update failed:%d\n", rc);
 			goto fail;
 		}
 		break;
@@ -992,13 +992,13 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 				FG_ADC_RR_USB_IN_V_EVERY_CYCLE_MASK,
 				FG_ADC_RR_USB_IN_V_EVERY_CYCLE);
 		if (rc < 0) {
-			pr_err("Force every cycle update failed:%d\n", rc);
+			pr_debug("Force every cycle update failed:%d\n", rc);
 			goto fail;
 		}
 
 		rc = rradc_read_channel_with_continuous_mode(chip, prop, buf);
 		if (rc < 0) {
-			pr_err("Error reading in continuous mode:%d\n", rc);
+			pr_debug("Error reading in continuous mode:%d\n", rc);
 			goto fail;
 		}
 
@@ -1006,7 +1006,7 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 		rc = rradc_masked_write(chip, FG_ADC_RR_PMI_DIE_TEMP_TRIGGER,
 				FG_ADC_RR_USB_IN_V_EVERY_CYCLE_MASK, 0);
 		if (rc < 0) {
-			pr_err("Restore every cycle update failed:%d\n", rc);
+			pr_debug("Restore every cycle update failed:%d\n", rc);
 			goto fail;
 		}
 		break;
@@ -1020,7 +1020,7 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 		status = rradc_chans[prop->channel].sts;
 		rc = rradc_read(chip, status, buf, 1);
 		if (rc < 0) {
-			pr_err("status read failed:%d\n", rc);
+			pr_debug("status read failed:%d\n", rc);
 			goto fail;
 		}
 
@@ -1048,7 +1048,7 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 	buf[0] = 0;
 	rc = rradc_read(chip, offset, buf, bytes_to_read);
 	if (rc) {
-		pr_err("read data failed\n");
+		pr_debug("read data failed\n");
 		goto fail;
 	}
 
@@ -1057,7 +1057,7 @@ static int rradc_do_conversion(struct rradc_chip *chip,
 		batt_id_15 = (buf[3] << 8) | buf[2];
 		batt_id_5 = (buf[1] << 8) | buf[0];
 		if ((!batt_id_150) && (!batt_id_15) && (!batt_id_5)) {
-			pr_err("Invalid batt_id values with all zeros\n");
+			pr_debug("Invalid batt_id values with all zeros\n");
 			rc = -EINVAL;
 			goto fail;
 		}
@@ -1099,7 +1099,7 @@ static int rradc_read_raw(struct iio_dev *indio_dev,
 	int rc = 0;
 
 	if (chan->address >= RR_ADC_MAX) {
-		pr_err("Invalid channel index:%ld\n", chan->address);
+		pr_debug("Invalid channel index:%ld\n", chan->address);
 		return -EINVAL;
 	}
 
@@ -1159,34 +1159,34 @@ static void psy_notify_work(struct work_struct *work)
 		rc = power_supply_get_property(chip->batt_psy,
 			POWER_SUPPLY_PROP_STATUS, &pval);
 		if (rc < 0)
-			pr_err("Error obtaining battery status, rc=%d\n", rc);
+			pr_debug("Error obtaining battery status, rc=%d\n", rc);
 
 		if (pval.intval == POWER_SUPPLY_STATUS_CHARGING) {
 			chip->conv_cbk = true;
 			prop = &chip->chan_props[RR_ADC_USBIN_V];
 			rc = rradc_do_conversion(chip, prop, &adc_code);
 			if (rc == -ENODATA) {
-				pr_err("rradc is hung, Proceed to recovery\n");
+				pr_debug("rradc is hung, Proceed to recovery\n");
 				if (rradc_is_bms_psy_available(chip)) {
 					rc = power_supply_set_property
 						(chip->bms_psy,
 						POWER_SUPPLY_PROP_FG_RESET_CLOCK,
 						&pval);
 					if (rc < 0)
-						pr_err("Couldn't reset FG clock rc=%d\n",
+						pr_debug("Couldn't reset FG clock rc=%d\n",
 								rc);
 					prop = &chip->chan_props[RR_ADC_BATT_ID];
 					rc = rradc_do_conversion(chip, prop,
 							&adc_code);
 					if (rc == -ENODATA)
-						pr_err("RRADC read failed after reset\n");
+						pr_debug("RRADC read failed after reset\n");
 				} else {
-					pr_err("Error obtaining bms power supply\n");
+					pr_debug("Error obtaining bms power supply\n");
 				}
 			}
 		}
 	} else {
-		pr_err("Error obtaining battery power supply\n");
+		pr_debug("Error obtaining battery power supply\n");
 	}
 	chip->conv_cbk = false;
 	pm_relax(chip->dev);
@@ -1232,7 +1232,7 @@ static int rradc_get_dt_data(struct rradc_chip *chip, struct device_node *node)
 	/* Get the peripheral address */
 	rc = of_property_read_u32(node, "reg", &base);
 	if (rc < 0) {
-		dev_err(chip->dev,
+		dev_dbg(chip->dev,
 			"Couldn't find reg in node = %s rc = %d\n",
 			node->name, rc);
 		return rc;
@@ -1245,7 +1245,7 @@ static int rradc_get_dt_data(struct rradc_chip *chip, struct device_node *node)
 		if (IS_ERR(chip->pmic_fab_id)) {
 			rc = PTR_ERR(chip->pmic_fab_id);
 			if (rc != -EPROBE_DEFER)
-				pr_err("Unable to get pmic_revid rc=%d\n", rc);
+				pr_debug("Unable to get pmic_revid rc=%d\n", rc);
 			return rc;
 		}
 
@@ -1299,7 +1299,7 @@ static int rradc_probe(struct platform_device *pdev)
 	chip = iio_priv(indio_dev);
 	chip->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!chip->regmap) {
-		dev_err(&pdev->dev, "Couldn't get parent's regmap\n");
+		dev_dbg(&pdev->dev, "Couldn't get parent's regmap\n");
 		return -EINVAL;
 	}
 
@@ -1330,7 +1330,7 @@ static int rradc_probe(struct platform_device *pdev)
 	chip->nb.notifier_call = rradc_psy_notifier_cb;
 	rc = power_supply_reg_notifier(&chip->nb);
 	if (rc < 0)
-		pr_err("Error registering psy notifier rc = %d\n", rc);
+		pr_debug("Error registering psy notifier rc = %d\n", rc);
 	INIT_WORK(&chip->psy_notify_work, psy_notify_work);
 #endif
 	chip->usb_trig = power_supply_get_by_name("usb");
@@ -1341,7 +1341,7 @@ static int rradc_probe(struct platform_device *pdev)
 		chip->nb.notifier_call = rradc_psy_notifier_cb;
 		rc = power_supply_reg_notifier(&chip->nb);
 		if (rc < 0)
-			pr_err("Error registering psy notifier rc = %d\n", rc);
+			pr_debug("Error registering psy notifier rc = %d\n", rc);
 
 		INIT_WORK(&chip->psy_notify_work, psy_notify_work);
 	}

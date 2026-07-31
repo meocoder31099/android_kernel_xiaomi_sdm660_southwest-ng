@@ -188,7 +188,7 @@ static int scm_pas_enable_bw(void)
 	return ret;
 
 err_bus:
-	pr_err("scm-pas; Bandwidth request failed (%d)\n", ret);
+	pr_debug("scm-pas; Bandwidth request failed (%d)\n", ret);
 	msm_bus_scale_client_update_request(scm_perf_client, 0);
 
 	mutex_unlock(&scm_pas_bw_mutex);
@@ -215,7 +215,7 @@ static void scm_pas_init(int id)
 
 	scm_perf_client = msm_bus_scale_register_client(&scm_pas_bus_pdata);
 	if (!scm_perf_client)
-		pr_warn("scm-pas: Unable to register bus client\n");
+		pr_debug("scm-pas: Unable to register bus client\n");
 
 	is_inited = 1;
 }
@@ -232,7 +232,7 @@ static int of_read_clocks(struct device *dev, struct clk ***clks_ref,
 
 	clk_count = of_property_count_strings(dev->of_node, propname);
 	if (IS_ERR_VALUE(clk_count)) {
-		dev_err(dev, "Failed to get clock names\n");
+		dev_dbg(dev, "Failed to get clock names\n");
 		return -EINVAL;
 	}
 
@@ -254,7 +254,7 @@ static int of_read_clocks(struct device *dev, struct clk ***clks_ref,
 		if (of_find_property(dev->of_node, clock_freq_name, &len))
 			if (of_property_read_u32(dev->of_node, clock_freq_name,
 								&clock_rate)) {
-				dev_err(dev, "Failed to read %s clock's freq\n",
+				dev_dbg(dev, "Failed to read %s clock's freq\n",
 							clock_freq_name);
 				return -EINVAL;
 			}
@@ -264,7 +264,7 @@ static int of_read_clocks(struct device *dev, struct clk ***clks_ref,
 			int rc = PTR_ERR(clks[i]);
 
 			if (rc != -EPROBE_DEFER)
-				dev_err(dev, "Failed to get %s clock\n",
+				dev_dbg(dev, "Failed to get %s clock\n",
 								clock_name);
 			return rc;
 		}
@@ -291,7 +291,7 @@ static int of_read_regs(struct device *dev, struct reg_info **regs_ref,
 
 	reg_count = of_property_count_strings(dev->of_node, propname);
 	if (IS_ERR_VALUE(reg_count)) {
-		dev_err(dev, "Failed to get regulator names\n");
+		dev_dbg(dev, "Failed to get regulator names\n");
 		return -EINVAL;
 	}
 
@@ -314,7 +314,7 @@ static int of_read_regs(struct device *dev, struct reg_info **regs_ref,
 			int rc = PTR_ERR(regs[i].reg);
 
 			if (rc != -EPROBE_DEFER)
-				dev_err(dev, "Failed to get %s\n regulator",
+				dev_dbg(dev, "Failed to get %s\n regulator",
 								reg_name);
 			return rc;
 		}
@@ -327,7 +327,7 @@ static int of_read_regs(struct device *dev, struct reg_info **regs_ref,
 		rc = snprintf(reg_uV_uA_name, ARRAY_SIZE(reg_uV_uA_name),
 			 "qcom,%s-uV-uA", reg_name);
 		if (rc < strlen(reg_name) + 6) {
-			dev_err(dev, "Failed to hold reg_uV_uA_name\n");
+			dev_dbg(dev, "Failed to hold reg_uV_uA_name\n");
 			return -EINVAL;
 		}
 
@@ -338,14 +338,14 @@ static int of_read_regs(struct device *dev, struct reg_info **regs_ref,
 
 		/* There should be two entries: one for uV and one for uA */
 		if (len != 2) {
-			dev_err(dev, "Missing uV/uA value\n");
+			dev_dbg(dev, "Missing uV/uA value\n");
 			return -EINVAL;
 		}
 
 		rc = of_property_read_u32_array(dev->of_node, reg_uV_uA_name,
 					vdd_uV_uA, len);
 		if (rc) {
-			dev_err(dev, "Failed to read uV/uA values(rc:%d)\n",
+			dev_dbg(dev, "Failed to read uV/uA values(rc:%d)\n",
 									rc);
 			return rc;
 		}
@@ -371,7 +371,7 @@ static int of_read_bus_pdata(struct platform_device *pdev,
 
 	d->bus_client = msm_bus_scale_register_client(pdata);
 	if (!d->bus_client)
-		pr_warn("%s: Unable to register bus client\n", __func__);
+		pr_debug("%s: Unable to register bus client\n", __func__);
 
 	return 0;
 }
@@ -383,7 +383,7 @@ static int do_bus_scaling_request(struct pil_desc *pil, int enable)
 	if (d->bus_client) {
 		rc = msm_bus_scale_client_update_request(d->bus_client, enable);
 		if (rc) {
-			dev_err(pil->dev, "bandwidth request failed(rc:%d)\n",
+			dev_dbg(pil->dev, "bandwidth request failed(rc:%d)\n",
 									rc);
 			return rc;
 		}
@@ -411,28 +411,28 @@ static int piltz_resc_init(struct platform_device *pdev, struct pil_tz_data *d)
 
 	count = of_read_clocks(dev, &d->clks, "qcom,active-clock-names");
 	if (count < 0) {
-		dev_err(dev, "Failed to setup clocks(rc:%d).\n", count);
+		dev_dbg(dev, "Failed to setup clocks(rc:%d).\n", count);
 		return count;
 	}
 	d->clk_count = count;
 
 	count = of_read_clocks(dev, &d->proxy_clks, "qcom,proxy-clock-names");
 	if (count < 0) {
-		dev_err(dev, "Failed to setup proxy clocks(rc:%d).\n", count);
+		dev_dbg(dev, "Failed to setup proxy clocks(rc:%d).\n", count);
 		return count;
 	}
 	d->proxy_clk_count = count;
 
 	count = of_read_regs(dev, &d->regs, "qcom,active-reg-names");
 	if (count < 0) {
-		dev_err(dev, "Failed to setup regulators(rc:%d).\n", count);
+		dev_dbg(dev, "Failed to setup regulators(rc:%d).\n", count);
 		return count;
 	}
 	d->reg_count = count;
 
 	count = of_read_regs(dev, &d->proxy_regs, "qcom,proxy-reg-names");
 	if (count < 0) {
-		dev_err(dev, "Failed to setup proxy regulators(rc:%d).\n",
+		dev_dbg(dev, "Failed to setup proxy regulators(rc:%d).\n",
 				count);
 		return count;
 	}
@@ -442,7 +442,7 @@ static int piltz_resc_init(struct platform_device *pdev, struct pil_tz_data *d)
 		d->enable_bus_scaling = true;
 		rc = of_read_bus_pdata(pdev, d);
 		if (rc) {
-			dev_err(dev, "Failed to setup bus scaling client(rc:%d).\n",
+			dev_dbg(dev, "Failed to setup bus scaling client(rc:%d).\n",
 				rc);
 			return rc;
 		}
@@ -462,7 +462,7 @@ static int enable_regulators(struct pil_tz_data *d, struct device *dev,
 			rc = regulator_set_voltage(regs[i].reg,
 					regs[i].uV, INT_MAX);
 			if (rc) {
-				dev_err(dev, "Failed to request voltage(rc:%d)\n",
+				dev_dbg(dev, "Failed to request voltage(rc:%d)\n",
 									rc);
 				goto err_voltage;
 			}
@@ -472,7 +472,7 @@ static int enable_regulators(struct pil_tz_data *d, struct device *dev,
 			rc = regulator_set_load(regs[i].reg,
 						regs[i].uA);
 			if (rc < 0) {
-				dev_err(dev, "Failed to set regulator mode(rc:%d)\n",
+				dev_dbg(dev, "Failed to set regulator mode(rc:%d)\n",
 									rc);
 				goto err_mode;
 			}
@@ -483,7 +483,7 @@ static int enable_regulators(struct pil_tz_data *d, struct device *dev,
 
 		rc = regulator_enable(regs[i].reg);
 		if (rc) {
-			dev_err(dev, "Regulator enable failed(rc:%d)\n", rc);
+			dev_dbg(dev, "Regulator enable failed(rc:%d)\n", rc);
 			goto err_enable;
 		}
 	}
@@ -540,7 +540,7 @@ static int prepare_enable_clocks(struct device *dev, struct clk **clks,
 	for (i = 0; i < clk_count; i++) {
 		rc = clk_prepare_enable(clks[i]);
 		if (rc) {
-			dev_err(dev, "Clock enable failed(rc:%d)\n", rc);
+			dev_dbg(dev, "Clock enable failed(rc:%d)\n", rc);
 			goto err;
 		}
 	}
@@ -631,7 +631,7 @@ static int pil_init_image_trusted(struct pil_desc *pil,
 
 	mdata_buf = pil->map_fw_mem(mdata_phys, size, map_data);
 	if (!mdata_buf) {
-		dev_err(pil->dev, "Failed to map memory for metadata.\n");
+		dev_dbg(pil->dev, "Failed to map memory for metadata.\n");
 		scm_pas_disable_bw();
 		return -ENOMEM;
 	}
@@ -813,17 +813,17 @@ static void log_failure_reason(const struct pil_tz_data *d)
 
 	smem_reason = qcom_smem_get(QCOM_SMEM_HOST_ANY, d->smem_id, &size);
 	if (IS_ERR(smem_reason) || !size) {
-		pr_err("%s SFR: (unknown, qcom_smem_get failed).\n",
+		pr_debug("%s SFR: (unknown, qcom_smem_get failed).\n",
 									name);
 		return;
 	}
 	if (!smem_reason[0]) {
-		pr_err("%s SFR: (unknown, empty string found).\n", name);
+		pr_debug("%s SFR: (unknown, empty string found).\n", name);
 		return;
 	}
 
 	strlcpy(reason, smem_reason, min(size, (size_t)MAX_SSR_REASON_LEN));
-	pr_err("%s subsystem failure reason: %s.\n", name, reason);
+	pr_debug("%s subsystem failure reason: %s.\n", name, reason);
 }
 
 static int subsys_shutdown(const struct subsys_desc *subsys, bool force_stop)
@@ -839,7 +839,7 @@ static int subsys_shutdown(const struct subsys_desc *subsys, bool force_stop)
 		ret = wait_for_completion_timeout(&d->stop_ack,
 				msecs_to_jiffies(STOP_ACK_TIMEOUT_MS));
 		if (!ret)
-			pr_warn("Timed out on stop ack from %s.\n",
+			pr_debug("Timed out on stop ack from %s.\n",
 							subsys->name);
 		qcom_smem_state_update_bits(subsys->state,
 				BIT(subsys->force_stop_bit), 0);
@@ -896,9 +896,9 @@ static irqreturn_t subsys_err_fatal_intr_handler (int irq, void *dev_id)
 {
 	struct pil_tz_data *d = subsys_to_data(dev_id);
 
-	pr_err("Fatal error on %s!\n", d->subsys_desc.name);
+	pr_debug("Fatal error on %s!\n", d->subsys_desc.name);
 	if (subsys_get_crash_status(d->subsys)) {
-		pr_err("%s: Ignoring error fatal, restart in progress\n",
+		pr_debug("%s: Ignoring error fatal, restart in progress\n",
 							d->subsys_desc.name);
 		return IRQ_HANDLED;
 	}
@@ -915,7 +915,7 @@ static irqreturn_t subsys_wdog_bite_irq_handler(int irq, void *dev_id)
 
 	if (subsys_get_crash_status(d->subsys))
 		return IRQ_HANDLED;
-	pr_err("Watchdog bite received from %s!\n", d->subsys_desc.name);
+	pr_debug("Watchdog bite received from %s!\n", d->subsys_desc.name);
 
 	if (d->subsys_desc.system_debug)
 		panic("%s: System ramdump requested. Triggering device restart!\n",
@@ -931,7 +931,7 @@ static irqreturn_t subsys_stop_ack_intr_handler(int irq, void *dev_id)
 {
 	struct pil_tz_data *d = subsys_to_data(dev_id);
 
-	pr_info("Received stop ack interrupt from %s\n", d->subsys_desc.name);
+	pr_debug("Received stop ack interrupt from %s\n", d->subsys_desc.name);
 	complete(&d->stop_ack);
 	return IRQ_HANDLED;
 }
@@ -940,7 +940,7 @@ static irqreturn_t subsys_shutdown_ack_intr_handler(int irq, void *dev_id)
 {
 	struct pil_tz_data *d = subsys_to_data(dev_id);
 
-	pr_info("Received stop shutdown interrupt from %s\n",
+	pr_debug("Received stop shutdown interrupt from %s\n",
 			d->subsys_desc.name);
 	complete_shutdown_ack(d->subsys);
 	return IRQ_HANDLED;
@@ -950,7 +950,7 @@ static irqreturn_t subsys_ramdump_disable_intr_handler(int irq, void *dev_id)
 {
 	struct pil_tz_data *d = subsys_to_data(dev_id);
 
-	pr_info("Received ramdump disable interrupt from %s\n",
+	pr_debug("Received ramdump disable interrupt from %s\n",
 			d->subsys_desc.name);
 	d->subsys_desc.ramdump_disable = 1;
 	return IRQ_HANDLED;
@@ -973,16 +973,16 @@ static void clear_pbl_done(struct pil_tz_data *d)
 		rmb_err_spare1 =  __raw_readl(d->err_status_spare-4);
 		rmb_err_spare0 =  __raw_readl(d->err_status_spare-8);
 
-		pr_err("PBL error status register: 0x%08x\n", err_value);
+		pr_debug("PBL error status register: 0x%08x\n", err_value);
 
-		pr_err("PBL error status spare0 register: 0x%08x\n",
+		pr_debug("PBL error status spare0 register: 0x%08x\n",
 			rmb_err_spare0);
-		pr_err("PBL error status spare1 register: 0x%08x\n",
+		pr_debug("PBL error status spare1 register: 0x%08x\n",
 			rmb_err_spare1);
-		pr_err("PBL error status spare2 register: 0x%08x\n",
+		pr_debug("PBL error status spare2 register: 0x%08x\n",
 			rmb_err_spare2);
 	} else {
-		pr_info("PBL_DONE - 1st phase loading [%s] completed ok\n",
+		pr_debug("PBL_DONE - 1st phase loading [%s] completed ok\n",
 			d->subsys_desc.name);
 	}
 	__raw_writel(BIT(d->bits_arr[PBL_DONE]), d->irq_clear);
@@ -993,7 +993,7 @@ static void clear_err_ready(struct pil_tz_data *d)
 	pr_debug("Subsystem error services up received from %s\n",
 							d->subsys_desc.name);
 
-	pr_info("SW_INIT_DONE - 2nd phase loading [%s] completed ok\n",
+	pr_debug("SW_INIT_DONE - 2nd phase loading [%s] completed ok\n",
 		d->subsys_desc.name);
 
 	__raw_writel(BIT(d->bits_arr[ERR_READY]), d->irq_clear);
@@ -1006,16 +1006,16 @@ static void clear_sw_init_done_error(struct pil_tz_data *d, int err)
 	uint32_t rmb_err_spare1;
 	uint32_t rmb_err_spare2;
 
-	pr_info("SW_INIT_DONE - ERROR [%s] [0x%x].\n",
+	pr_debug("SW_INIT_DONE - ERROR [%s] [0x%x].\n",
 		d->subsys_desc.name, err);
 
 	rmb_err_spare2 =  __raw_readl(d->err_status_spare);
 	rmb_err_spare1 =  __raw_readl(d->err_status_spare-4);
 	rmb_err_spare0 =  __raw_readl(d->err_status_spare-8);
 
-	pr_err("spare0 register: 0x%08x\n", rmb_err_spare0);
-	pr_err("spare1 register: 0x%08x\n", rmb_err_spare1);
-	pr_err("spare2 register: 0x%08x\n", rmb_err_spare2);
+	pr_debug("spare0 register: 0x%08x\n", rmb_err_spare0);
+	pr_debug("spare1 register: 0x%08x\n", rmb_err_spare1);
+	pr_debug("spare2 register: 0x%08x\n", rmb_err_spare2);
 
 	/* Clear the interrupt source */
 	__raw_writel(BIT(d->bits_arr[ERR_READY]), d->irq_clear);
@@ -1027,7 +1027,7 @@ static void clear_wdog(struct pil_tz_data *d)
 {
 	/* Check crash status to know if device is restarting*/
 	if (!subsys_get_crash_status(d->subsys)) {
-		pr_err("wdog bite received from %s!\n", d->subsys_desc.name);
+		pr_debug("wdog bite received from %s!\n", d->subsys_desc.name);
 		__raw_writel(BIT(d->bits_arr[ERR_READY]), d->irq_clear);
 		subsys_set_crash_status(d->subsys, CRASH_STATUS_WDOG_BITE);
 		log_failure_reason(d);
@@ -1099,7 +1099,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 		rc = of_property_read_u32(pdev->dev.of_node, "qcom,smem-id",
 						&d->smem_id);
 		if (rc) {
-			dev_err(&pdev->dev, "Failed to get the smem_id(rc:%d)\n",
+			dev_dbg(&pdev->dev, "Failed to get the smem_id(rc:%d)\n",
 									rc);
 			return rc;
 		}
@@ -1125,7 +1125,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 		rc = of_property_read_u32(pdev->dev.of_node, "qcom,pas-id",
 								&d->pas_id);
 		if (rc) {
-			dev_err(&pdev->dev, "Failed to find the pas_id(rc:%d)\n",
+			dev_dbg(&pdev->dev, "Failed to find the pas_id(rc:%d)\n",
 									rc);
 			goto err_deregister_bus;
 		}
@@ -1162,7 +1162,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 						"sp2soc_irq_status");
 		d->irq_status = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(d->irq_status)) {
-			dev_err(&pdev->dev, "Invalid resource for sp2soc_irq_status\n");
+			dev_dbg(&pdev->dev, "Invalid resource for sp2soc_irq_status\n");
 			rc = PTR_ERR(d->irq_status);
 			goto err_ramdump;
 		}
@@ -1171,7 +1171,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 						"sp2soc_irq_clr");
 		d->irq_clear = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(d->irq_clear)) {
-			dev_err(&pdev->dev, "Invalid resource for sp2soc_irq_clr\n");
+			dev_dbg(&pdev->dev, "Invalid resource for sp2soc_irq_clr\n");
 			rc = PTR_ERR(d->irq_clear);
 			goto err_ramdump;
 		}
@@ -1180,7 +1180,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 						"sp2soc_irq_mask");
 		d->irq_mask = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(d->irq_mask)) {
-			dev_err(&pdev->dev, "Invalid resource for sp2soc_irq_mask\n");
+			dev_dbg(&pdev->dev, "Invalid resource for sp2soc_irq_mask\n");
 			rc = PTR_ERR(d->irq_mask);
 			goto err_ramdump;
 		}
@@ -1189,7 +1189,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 						"rmb_err");
 		d->err_status = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(d->err_status)) {
-			dev_err(&pdev->dev, "Invalid resource for rmb_err\n");
+			dev_dbg(&pdev->dev, "Invalid resource for rmb_err\n");
 			rc = PTR_ERR(d->err_status);
 			goto err_ramdump;
 		}
@@ -1198,7 +1198,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 						"rmb_err_spare2");
 		d->err_status_spare = devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(d->err_status_spare)) {
-			dev_err(&pdev->dev, "Invalid resource for rmb_err_spare2\n");
+			dev_dbg(&pdev->dev, "Invalid resource for rmb_err_spare2\n");
 			rc = PTR_ERR(d->err_status_spare);
 			goto err_ramdump;
 		}
@@ -1207,7 +1207,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 		       "qcom,spss-scsr-bits", d->bits_arr, sizeof(d->bits_arr)/
 							sizeof(d->bits_arr[0]));
 		if (rc) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"Failed to read qcom,spss-scsr-bits(rc:%d)",
 				rc);
 			goto err_ramdump;
@@ -1238,7 +1238,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 		d->desc.mbox = mbox_request_channel(&d->desc.cl, 0);
 		if (IS_ERR(d->desc.mbox)) {
 			rc = PTR_ERR(d->desc.mbox);
-			dev_err(&pdev->dev, "Failed to get mailbox channel %pK %d\n",
+			dev_dbg(&pdev->dev, "Failed to get mailbox channel %pK %d\n",
 				d->desc.mbox, rc);
 			goto err_ramdump;
 		}
@@ -1258,7 +1258,7 @@ static int pil_tz_driver_probe(struct platform_device *pdev)
 
 	d->minidump_dev = create_ramdump_device(md_node, &pdev->dev);
 	if (!d->minidump_dev) {
-		pr_err("%s: Unable to create a %s minidump device.\n",
+		pr_debug("%s: Unable to create a %s minidump device.\n",
 				__func__, d->subsys_desc.name);
 		rc = -ENOMEM;
 		goto err_minidump;

@@ -855,17 +855,17 @@ int usb_gadget_map_request_by_dev(struct device *dev,
 		mapped = dma_map_sg(dev, req->sg, req->num_sgs,
 				is_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
 		if (mapped == 0) {
-			dev_err(dev, "failed to map SGs\n");
+			dev_dbg(dev, "failed to map SGs\n");
 			return -EFAULT;
 		}
 
 		req->num_mapped_sgs = mapped;
 	} else {
 		if (is_vmalloc_addr(req->buf)) {
-			dev_err(dev, "buffer is not dma capable\n");
+			dev_dbg(dev, "buffer is not dma capable\n");
 			return -EFAULT;
 		} else if (object_is_on_stack(req->buf)) {
-			dev_err(dev, "buffer is on stack\n");
+			dev_dbg(dev, "buffer is on stack\n");
 			return -EFAULT;
 		}
 
@@ -873,7 +873,7 @@ int usb_gadget_map_request_by_dev(struct device *dev,
 				is_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
 
 		if (dma_mapping_error(dev, req->dma)) {
-			dev_err(dev, "failed to map buffer\n");
+			dev_dbg(dev, "failed to map buffer\n");
 			return -EFAULT;
 		}
 
@@ -1419,7 +1419,7 @@ static int udc_bind_to_driver(struct usb_udc *udc, struct usb_gadget_driver *dri
 	return 0;
 err1:
 	if (ret != -EISNAM)
-		dev_err(&udc->dev, "failed to start %s: %d\n",
+		dev_dbg(&udc->dev, "failed to start %s: %d\n",
 			udc->driver->function, ret);
 	udc->driver = NULL;
 	udc->gadget->dev.driver = NULL;
@@ -1457,7 +1457,7 @@ int usb_gadget_probe_driver(struct usb_gadget_driver *driver)
 
 	if (!driver->match_existing_only) {
 		list_add_tail(&driver->pending, &gadget_driver_pending_list);
-		pr_info("udc-core: couldn't find an available UDC - added [%s] to list of pending drivers\n",
+		pr_debug("udc-core: couldn't find an available UDC - added [%s] to list of pending drivers\n",
 			driver->function);
 		ret = 0;
 	}
@@ -1528,7 +1528,7 @@ static ssize_t soft_connect_store(struct device *dev,
 
 	mutex_lock(&udc_lock);
 	if (!udc->driver) {
-		dev_err(dev, "soft-connect without a gadget driver\n");
+		dev_dbg(dev, "soft-connect without a gadget driver\n");
 		ret = -EOPNOTSUPP;
 		goto out;
 	}
@@ -1541,7 +1541,7 @@ static ssize_t soft_connect_store(struct device *dev,
 		udc->driver->disconnect(udc->gadget);
 		usb_gadget_udc_stop(udc);
 	} else {
-		dev_err(dev, "unsupported command '%s'\n", buf);
+		dev_dbg(dev, "unsupported command '%s'\n", buf);
 		ret = -EINVAL;
 		goto out;
 	}
@@ -1639,7 +1639,7 @@ static int usb_udc_uevent(struct device *dev, struct kobj_uevent_env *env)
 
 	ret = add_uevent_var(env, "USB_UDC_NAME=%s", udc->gadget->name);
 	if (ret) {
-		dev_err(dev, "failed to add uevent USB_UDC_NAME\n");
+		dev_dbg(dev, "failed to add uevent USB_UDC_NAME\n");
 		return ret;
 	}
 
@@ -1647,7 +1647,7 @@ static int usb_udc_uevent(struct device *dev, struct kobj_uevent_env *env)
 		ret = add_uevent_var(env, "USB_UDC_DRIVER=%s",
 				udc->driver->function);
 		if (ret) {
-			dev_err(dev, "failed to add uevent USB_UDC_DRIVER\n");
+			dev_dbg(dev, "failed to add uevent USB_UDC_DRIVER\n");
 			return ret;
 		}
 	}
@@ -1659,7 +1659,7 @@ static int __init usb_udc_init(void)
 {
 	udc_class = class_create(THIS_MODULE, "udc");
 	if (IS_ERR(udc_class)) {
-		pr_err("failed to create udc class --> %ld\n",
+		pr_debug("failed to create udc class --> %ld\n",
 				PTR_ERR(udc_class));
 		return PTR_ERR(udc_class);
 	}

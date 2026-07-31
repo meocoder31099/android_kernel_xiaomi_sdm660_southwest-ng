@@ -63,7 +63,7 @@ static int hfi_queue_read(struct gmu_device *gmu, uint32_t queue_idx,
 	size = MSG_HDR_GET_SIZE(msg_hdr);
 
 	if (size > (max_size >> 2)) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 		"HFI message too big: hdr:0x%x rd idx=%d\n",
 			msg_hdr, hdr->read_index);
 		result = -EMSGSIZE;
@@ -80,7 +80,7 @@ static int hfi_queue_read(struct gmu_device *gmu, uint32_t queue_idx,
 		result = size;
 	} else {
 		/* In case FW messed up */
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"Read index %d greater than queue size %d\n",
 			hdr->read_index, hdr->queue_size);
 		result = -ENODATA;
@@ -111,7 +111,7 @@ static int hfi_queue_write(struct gmu_device *gmu, uint32_t queue_idx,
 		return -EINVAL;
 
 	if (size > HFI_MAX_MSG_SIZE) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"Message too big to send: sz=%d, id=%d\n",
 			size, id);
 		return -EINVAL;
@@ -128,7 +128,7 @@ static int hfi_queue_write(struct gmu_device *gmu, uint32_t queue_idx,
 			: (hdr->read_index - hdr->write_index);
 
 	if (empty_space < size) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"Insufficient bufsize %d for msg id=%d of size %d\n",
 			empty_space, id, size);
 
@@ -286,7 +286,7 @@ static int poll_adreno_gmu_reg(struct adreno_device *adreno_dev,
 	if ((val & mask) == expected_val)
 		return 0;
 
-	dev_err(&gmu->pdev->dev,
+	dev_dbg(&gmu->pdev->dev,
 			"Timed out waiting for HFI response. Wait start=%llx end=%llx\n",
 			ts1, ts2);
 
@@ -316,7 +316,7 @@ static int hfi_send_cmd(struct gmu_device *gmu, uint32_t queue_idx,
 		HFI_IRQ_MSGQ_MASK, HFI_IRQ_MSGQ_MASK, HFI_RSP_TIMEOUT);
 
 	if (rc) {
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 		"Timed out waiting on ack for 0x%8.8x (id %d, sequence %d)\n",
 		cmd[0], MSG_HDR_GET_ID(*cmd), MSG_HDR_GET_SEQNUM(*cmd));
 		return rc;
@@ -344,7 +344,7 @@ static int hfi_send_generic_req(struct gmu_device *gmu, uint32_t queue,
 	rc = hfi_send_cmd(gmu, queue, cmd, &ret_cmd);
 
 	if (!rc && ret_cmd.results[2] == HFI_ACK_ERROR) {
-		dev_err(&gmu->pdev->dev, "HFI ACK failure: Req 0x%8.8X\n",
+		dev_dbg(&gmu->pdev->dev, "HFI ACK failure: Req 0x%8.8X\n",
 						ret_cmd.results[1]);
 		return -EINVAL;
 	}
@@ -385,7 +385,7 @@ static int hfi_get_fw_version(struct gmu_device *gmu,
 	if (!rc)
 		*ver = ret_cmd.results[3];
 	else
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 			"gmu get fw ver failed with error=%d\n", rc);
 
 	return rc;
@@ -428,7 +428,7 @@ static int hfi_send_feature_ctrl(struct gmu_device *gmu,
 
 	ret = hfi_send_generic_req(gmu, HFI_CMD_ID, &cmd);
 	if (ret)
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"Unable to %s feature %s (%d)\n",
 				enable ? "enable" : "disable",
 				feature_to_string(feature),
@@ -536,7 +536,7 @@ static void receive_err_req(struct gmu_device *gmu, void *rcvd)
 {
 	struct hfi_err_cmd *cmd = rcvd;
 
-	dev_err(&gmu->pdev->dev, "HFI Error Received: %d %d %s\n",
+	dev_dbg(&gmu->pdev->dev, "HFI Error Received: %d %d %s\n",
 			((cmd->error_code >> 16) & 0xFFFF),
 			(cmd->error_code & 0xFFFF),
 			(char *) cmd->data);
@@ -568,7 +568,7 @@ static void hfi_v1_receiver(struct gmu_device *gmu, uint32_t *rcvd,
 		receive_debug_req(gmu, rcvd);
 		break;
 	default: /* No Reply */
-		dev_err(&gmu->pdev->dev,
+		dev_dbg(&gmu->pdev->dev,
 				"HFI V1 request %d not supported\n",
 				MSG_HDR_GET_ID(rcvd[0]));
 		break;
@@ -602,7 +602,7 @@ static void hfi_process_queue(struct gmu_device *gmu, uint32_t queue_idx,
 			receive_debug_req(gmu, rcvd);
 			break;
 		default: /* No Reply */
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"HFI request %d not supported\n",
 				MSG_HDR_GET_ID(rcvd[0]));
 			break;
@@ -711,7 +711,7 @@ int hfi_start(struct kgsl_device *device,
 			continue;
 
 		if (hdr->read_index != hdr->write_index) {
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 				"HFI Q[%d] Index Error: read:0x%X write:0x%X\n",
 				i, hdr->read_index, hdr->write_index);
 			hdr->read_index = hdr->write_index;
@@ -795,7 +795,7 @@ void hfi_stop(struct gmu_device *gmu)
 			continue;
 
 		if (hdr->read_index != hdr->write_index)
-			dev_err(&gmu->pdev->dev,
+			dev_dbg(&gmu->pdev->dev,
 			"HFI queue[%d] is not empty before close: rd=%d,wt=%d\n",
 				i, hdr->read_index, hdr->write_index);
 	}

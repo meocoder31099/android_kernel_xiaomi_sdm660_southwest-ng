@@ -1104,13 +1104,13 @@ static struct swap_info_struct *__swap_info_get(swp_entry_t entry)
 	return p;
 
 bad_offset:
-	pr_err("swap_info_get: %s%08lx\n", Bad_offset, entry.val);
+	pr_debug("swap_info_get: %s%08lx\n", Bad_offset, entry.val);
 	goto out;
 bad_device:
-	pr_err("swap_info_get: %s%08lx\n", Unused_file, entry.val);
+	pr_debug("swap_info_get: %s%08lx\n", Unused_file, entry.val);
 	goto out;
 bad_nofile:
-	pr_err("swap_info_get: %s%08lx\n", Bad_file, entry.val);
+	pr_debug("swap_info_get: %s%08lx\n", Bad_file, entry.val);
 out:
 	return NULL;
 }
@@ -1127,7 +1127,7 @@ static struct swap_info_struct *_swap_info_get(swp_entry_t entry)
 	return p;
 
 bad_free:
-	pr_err("swap_info_get: %s%08lx\n", Unused_offset, entry.val);
+	pr_debug("swap_info_get: %s%08lx\n", Unused_offset, entry.val);
 	goto out;
 out:
 	return NULL;
@@ -2965,7 +2965,7 @@ static unsigned long read_swap_header(struct swap_info_struct *p,
 	unsigned long last_page;
 
 	if (memcmp("SWAPSPACE2", swap_header->magic.magic, 10)) {
-		pr_err("Unable to find swap-space signature\n");
+		pr_debug("Unable to find swap-space signature\n");
 		return 0;
 	}
 
@@ -2981,7 +2981,7 @@ static unsigned long read_swap_header(struct swap_info_struct *p,
 	}
 	/* Check the swap header's sub-version */
 	if (swap_header->info.version != 1) {
-		pr_warn("Unable to handle swap header version %d\n",
+		pr_debug("Unable to handle swap header version %d\n",
 			swap_header->info.version);
 		return 0;
 	}
@@ -2993,11 +2993,11 @@ static unsigned long read_swap_header(struct swap_info_struct *p,
 	maxpages = max_swapfile_size();
 	last_page = swap_header->info.last_page;
 	if (!last_page) {
-		pr_warn("Empty swap-file\n");
+		pr_debug("Empty swap-file\n");
 		return 0;
 	}
 	if (last_page > maxpages) {
-		pr_warn("Truncating oversized swap area, only using %luk out of %luk\n",
+		pr_debug("Truncating oversized swap area, only using %luk out of %luk\n",
 			maxpages << (PAGE_SHIFT - 10),
 			last_page << (PAGE_SHIFT - 10));
 	}
@@ -3013,7 +3013,7 @@ static unsigned long read_swap_header(struct swap_info_struct *p,
 		return 0;
 	swapfilepages = i_size_read(inode) >> PAGE_SHIFT;
 	if (swapfilepages && maxpages > swapfilepages) {
-		pr_warn("Swap area shorter than signature indicates\n");
+		pr_debug("Swap area shorter than signature indicates\n");
 		return 0;
 	}
 	if (swap_header->info.nr_badpages && S_ISREG(inode->i_mode))
@@ -3084,7 +3084,7 @@ static int setup_swap_map_and_extents(struct swap_info_struct *p,
 		nr_good_pages = p->pages;
 	}
 	if (!nr_good_pages) {
-		pr_warn("Empty swap-file\n");
+		pr_debug("Empty swap-file\n");
 		return -EINVAL;
 	}
 
@@ -3297,7 +3297,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 		if (p->flags & SWP_AREA_DISCARD) {
 			int err = discard_swap(p);
 			if (unlikely(err))
-				pr_err("swapon: discard_swap(%p): %d\n",
+				pr_debug("swapon: discard_swap(%p): %d\n",
 					p, err);
 		}
 	}
@@ -3326,7 +3326,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 	}
 	enable_swap_info(p, prio, swap_map, cluster_info, frontswap_map);
 
-	pr_info("Adding %uk swap on %s.  Priority:%d extents:%d across:%lluk %s%s%s%s%s\n",
+	pr_debug("Adding %uk swap on %s.  Priority:%d extents:%d across:%lluk %s%s%s%s%s\n",
 		p->pages<<(PAGE_SHIFT-10), name->name, p->prio,
 		nr_extents, (unsigned long long)span<<(PAGE_SHIFT-10),
 		(p->flags & SWP_SOLIDSTATE) ? "SS" : "",
@@ -3474,7 +3474,7 @@ out:
 	return err;
 
 bad_file:
-	pr_err("swap_dup: %s%08lx\n", Bad_file, entry.val);
+	pr_debug("swap_dup: %s%08lx\n", Bad_file, entry.val);
 	goto out;
 }
 
@@ -3813,7 +3813,7 @@ static int __init swapfile_init(void)
 	swap_avail_heads = kmalloc_array(nr_node_ids, sizeof(struct plist_head),
 					 GFP_KERNEL);
 	if (!swap_avail_heads) {
-		pr_emerg("Not enough memory for swap heads, swap is disabled\n");
+		pr_debug("Not enough memory for swap heads, swap is disabled\n");
 		return -ENOMEM;
 	}
 

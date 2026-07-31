@@ -1042,25 +1042,25 @@ skip_format_initialization:
 
 		/* Sanity check */
 		if (range_cfg->range_max < range_cfg->range_min) {
-			dev_err(map->dev, "Invalid range %d: %u < %u\n", i,
+			dev_dbg(map->dev, "Invalid range %d: %u < %u\n", i,
 				range_cfg->range_max, range_cfg->range_min);
 			goto err_range;
 		}
 
 		if (range_cfg->range_max > map->max_register) {
-			dev_err(map->dev, "Invalid range %d: %u > %u\n", i,
+			dev_dbg(map->dev, "Invalid range %d: %u > %u\n", i,
 				range_cfg->range_max, map->max_register);
 			goto err_range;
 		}
 
 		if (range_cfg->selector_reg > map->max_register) {
-			dev_err(map->dev,
+			dev_dbg(map->dev,
 				"Invalid range %d: selector out of map\n", i);
 			goto err_range;
 		}
 
 		if (range_cfg->window_len == 0) {
-			dev_err(map->dev, "Invalid range %d: window_len 0\n",
+			dev_dbg(map->dev, "Invalid range %d: window_len 0\n",
 				i);
 			goto err_range;
 		}
@@ -1079,7 +1079,7 @@ skip_format_initialization:
 
 			if (range_cfg->range_min <= sel_reg &&
 			    sel_reg <= range_cfg->range_max) {
-				dev_err(map->dev,
+				dev_dbg(map->dev,
 					"Range %d: selector for %d in window\n",
 					i, j);
 				goto err_range;
@@ -1087,7 +1087,7 @@ skip_format_initialization:
 
 			if (!(win_max < range_cfg->range_min ||
 			      win_min > range_cfg->range_max)) {
-				dev_err(map->dev,
+				dev_dbg(map->dev,
 					"Range %d: window for %d in window\n",
 					i, j);
 				goto err_range;
@@ -1111,7 +1111,7 @@ skip_format_initialization:
 		new->window_len = range_cfg->window_len;
 
 		if (!_regmap_range_add(map, new)) {
-			dev_err(map->dev, "Failed to add range %d\n", i);
+			dev_dbg(map->dev, "Failed to add range %d\n", i);
 			kfree(new);
 			goto err_range;
 		}
@@ -1491,7 +1491,7 @@ static int _regmap_raw_write_impl(struct regmap *map, unsigned int reg,
 					     reg + regmap_get_offset(map, i),
 					     ival);
 			if (ret) {
-				dev_err(map->dev,
+				dev_dbg(map->dev,
 					"Error in caching of register: %x ret: %d\n",
 					reg + regmap_get_offset(map, i), ret);
 				return ret;
@@ -1598,7 +1598,7 @@ static int _regmap_raw_write_impl(struct regmap *map, unsigned int reg,
 						    val_len, NULL, 0, async);
 
 		if (ret != 0) {
-			dev_err(map->dev, "Failed to schedule write: %d\n",
+			dev_dbg(map->dev, "Failed to schedule write: %d\n",
 				ret);
 
 			spin_lock_irqsave(&map->async_lock, flags);
@@ -1766,7 +1766,7 @@ int _regmap_write(struct regmap *map, unsigned int reg,
 
 #ifdef LOG_DEVICE
 	if (map->dev && strcmp(dev_name(map->dev), LOG_DEVICE) == 0)
-		dev_info(map->dev, "%x <= %x\n", reg, val);
+		dev_dbg(map->dev, "%x <= %x\n", reg, val);
 #endif
 
 	trace_regmap_reg_write(map, reg, val);
@@ -2224,7 +2224,7 @@ static int _regmap_multi_reg_write(struct regmap *map,
 			unsigned int reg = regs[i].reg;
 			ret = regcache_write(map, reg, val);
 			if (ret) {
-				dev_err(map->dev,
+				dev_dbg(map->dev,
 				"Error in caching of register: %x ret: %d\n",
 								reg, ret);
 				return ret;
@@ -2463,7 +2463,7 @@ static int _regmap_read(struct regmap *map, unsigned int reg,
 	if (ret == 0) {
 #ifdef LOG_DEVICE
 		if (map->dev && strcmp(dev_name(map->dev), LOG_DEVICE) == 0)
-			dev_info(map->dev, "%x => %x\n", reg, *val);
+			dev_dbg(map->dev, "%x => %x\n", reg, *val);
 #endif
 
 		trace_regmap_reg_read(map, reg, *val);

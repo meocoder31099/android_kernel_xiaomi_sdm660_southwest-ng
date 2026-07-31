@@ -138,20 +138,20 @@ static ssize_t sps_set_info(struct file *file, const char __user *buf,
 	for (i = 0; i < sizeof(str) && (str[i] >= '0') && (str[i] <= '9'); ++i)
 		buf_size_kb = (buf_size_kb * 10) + (str[i] - '0');
 
-	pr_info("sps:debugfs: input buffer size is %dKB\n", buf_size_kb);
+	pr_debug("sps:debugfs: input buffer size is %dKB\n", buf_size_kb);
 
 	if ((logging_option == 0) || (logging_option == 2)) {
-		pr_info("sps:debugfs: need to first turn on recording.\n");
+		pr_debug("sps:debugfs: need to first turn on recording.\n");
 		return -EFAULT;
 	}
 
 	if (buf_size_kb < 1) {
-		pr_info("sps:debugfs:buffer size should be no less than 1KB\n");
+		pr_debug("sps:debugfs:buffer size should be no less than 1KB\n");
 		return -EFAULT;
 	}
 
 	if (buf_size_kb > (INT_MAX/SZ_1K)) {
-		pr_err("sps:debugfs: buffer size is too large\n");
+		pr_debug("sps:debugfs: buffer size is too large\n");
 		return -EFAULT;
 	}
 
@@ -161,7 +161,7 @@ static ssize_t sps_set_info(struct file *file, const char __user *buf,
 	if (debugfs_record_enabled) {
 		if (debugfs_buf_size == new_buf_size) {
 			/* need do nothing */
-			pr_info(
+			pr_debug(
 				"sps:debugfs: input buffer size is the same as before.\n"
 				);
 			mutex_unlock(&sps_debugfs_lock);
@@ -181,7 +181,7 @@ static ssize_t sps_set_info(struct file *file, const char __user *buf,
 	debugfs_buf = kzalloc(debugfs_buf_size,	GFP_KERNEL);
 	if (!debugfs_buf) {
 		debugfs_buf_size = 0;
-		pr_err("sps:fail to allocate memory for debug_fs.\n");
+		pr_debug("sps:fail to allocate memory for debug_fs.\n");
 		mutex_unlock(&sps_debugfs_lock);
 		return -ENOMEM;
 	}
@@ -231,10 +231,10 @@ static ssize_t sps_set_logging_option(struct file *file, const char __user *buf,
 	for (i = 0; i < sizeof(str) && (str[i] >= '0') && (str[i] <= '9'); ++i)
 		option = (option * 10) + (str[i] - '0');
 
-	pr_info("sps:debugfs: try to change logging option to %d\n", option);
+	pr_debug("sps:debugfs: try to change logging option to %d\n", option);
 
 	if (option > 3) {
-		pr_err("sps:debugfs: invalid logging option:%d\n", option);
+		pr_debug("sps:debugfs: invalid logging option:%d\n", option);
 		return count;
 	}
 
@@ -283,12 +283,12 @@ static ssize_t sps_set_bam_addr(struct file *file, const char __user *buf,
 	for (i = 0; i < sizeof(str) && (str[i] >= '0') && (str[i] <= '9'); ++i)
 		bam_addr = (bam_addr * 10) + (str[i] - '0');
 
-	pr_info("sps:debugfs:input BAM physical address:0x%x\n", bam_addr);
+	pr_debug("sps:debugfs:input BAM physical address:0x%x\n", bam_addr);
 
 	bam = phy2bam(bam_addr);
 
 	if (bam == NULL) {
-		pr_err("sps:debugfs:BAM 0x%x is not registered.", bam_addr);
+		pr_debug("sps:debugfs:BAM 0x%x is not registered.", bam_addr);
 		return count;
 	}
 	vir_addr = &bam->base;
@@ -357,7 +357,7 @@ static ssize_t sps_set_bam_addr(struct file *file, const char __user *buf,
 		if (testbus_sel)
 			print_bam_test_bus_reg(vir_addr, testbus_sel);
 		else {
-			pr_info("sps:output TEST_BUS_REG for all TEST_BUS_SEL");
+			pr_debug("sps:output TEST_BUS_REG for all TEST_BUS_SEL");
 			print_bam_test_bus_reg(vir_addr, testbus_sel);
 		}
 		break;
@@ -497,7 +497,7 @@ static ssize_t sps_set_bam_addr(struct file *file, const char __user *buf,
 			print_bam_pipe_desc_fifo(vir_addr, i, 100);
 		break;
 	default:
-		pr_info("sps:no dump option is chosen yet.");
+		pr_debug("sps:no dump option is chosen yet.");
 	}
 
 	return count;
@@ -524,77 +524,77 @@ static void sps_debugfs_init(void)
 
 	dent = debugfs_create_dir("sps", 0);
 	if (IS_ERR(dent)) {
-		pr_err("sps:fail to create the folder for debug_fs.\n");
+		pr_debug("sps:fail to create the folder for debug_fs.\n");
 		return;
 	}
 
 	dfile_info = debugfs_create_file("info", 0664, dent, 0,
 			&sps_info_ops);
 	if (!dfile_info || IS_ERR(dfile_info)) {
-		pr_err("sps:fail to create the file for debug_fs info.\n");
+		pr_debug("sps:fail to create the file for debug_fs info.\n");
 		goto info_err;
 	}
 
 	dfile_logging_option = debugfs_create_file("logging_option", 0664,
 			dent, 0, &sps_logging_option_ops);
 	if (!dfile_logging_option || IS_ERR(dfile_logging_option)) {
-		pr_err("sps:fail to create debug_fs for logging_option.\n");
+		pr_debug("sps:fail to create debug_fs for logging_option.\n");
 		goto logging_option_err;
 	}
 
 	dfile_debug_level_option = debugfs_create_u8("debug_level_option",
 					0664, dent, &debug_level_option);
 	if (!dfile_debug_level_option || IS_ERR(dfile_debug_level_option)) {
-		pr_err("sps:fail to create debug_fs for debug_level_option.\n");
+		pr_debug("sps:fail to create debug_fs for debug_level_option.\n");
 		goto debug_level_option_err;
 	}
 
 	dfile_print_limit_option = debugfs_create_u8("print_limit_option",
 					0664, dent, &print_limit_option);
 	if (!dfile_print_limit_option || IS_ERR(dfile_print_limit_option)) {
-		pr_err("sps:fail to create debug_fs for print_limit_option.\n");
+		pr_debug("sps:fail to create debug_fs for print_limit_option.\n");
 		goto print_limit_option_err;
 	}
 
 	dfile_reg_dump_option = debugfs_create_u8("reg_dump_option", 0664,
 						dent, &reg_dump_option);
 	if (!dfile_reg_dump_option || IS_ERR(dfile_reg_dump_option)) {
-		pr_err("sps:fail to create debug_fs for reg_dump_option.\n");
+		pr_debug("sps:fail to create debug_fs for reg_dump_option.\n");
 		goto reg_dump_option_err;
 	}
 
 	dfile_testbus_sel = debugfs_create_u32("testbus_sel", 0664,
 						dent, &testbus_sel);
 	if (!dfile_testbus_sel || IS_ERR(dfile_testbus_sel)) {
-		pr_err("sps:fail to create debug_fs file for testbus_sel.\n");
+		pr_debug("sps:fail to create debug_fs file for testbus_sel.\n");
 		goto testbus_sel_err;
 	}
 
 	dfile_bam_pipe_sel = debugfs_create_u32("bam_pipe_sel", 0664,
 						dent, &bam_pipe_sel);
 	if (!dfile_bam_pipe_sel || IS_ERR(dfile_bam_pipe_sel)) {
-		pr_err("sps:fail to create debug_fs file for bam_pipe_sel.\n");
+		pr_debug("sps:fail to create debug_fs file for bam_pipe_sel.\n");
 		goto bam_pipe_sel_err;
 	}
 
 	dfile_desc_option = debugfs_create_u32("desc_option", 0664,
 						dent, &desc_option);
 	if (!dfile_desc_option || IS_ERR(dfile_desc_option)) {
-		pr_err("sps:fail to create debug_fs file for desc_option.\n");
+		pr_debug("sps:fail to create debug_fs file for desc_option.\n");
 		goto desc_option_err;
 	}
 
 	dfile_bam_addr = debugfs_create_file("bam_addr", 0664,
 			dent, 0, &sps_bam_addr_ops);
 	if (!dfile_bam_addr || IS_ERR(dfile_bam_addr)) {
-		pr_err("sps:fail to create the file for debug_fs bam_addr.\n");
+		pr_debug("sps:fail to create the file for debug_fs bam_addr.\n");
 		goto bam_addr_err;
 	}
 
 	dfile_log_level_sel = debugfs_create_u32("log_level_sel", 0664,
 						dent, &log_level_sel);
 	if (!dfile_log_level_sel || IS_ERR(dfile_log_level_sel)) {
-		pr_err("sps:fail to create debug_fs file for log_level_sel.\n");
+		pr_debug("sps:fail to create debug_fs file for log_level_sel.\n");
 		goto bam_log_level_err;
 	}
 
@@ -667,7 +667,7 @@ int sps_get_bam_debug_info(unsigned long dev, u32 option, u32 para,
 	/* Search for the target BAM device */
 	bam = sps_h2bam(dev);
 	if (bam == NULL) {
-		pr_err("sps:Can't find any BAM with handle 0x%pK.\n",
+		pr_debug("sps:Can't find any BAM with handle 0x%pK.\n",
 					(void *)dev);
 		mutex_unlock(&sps->lock);
 		return SPS_ERROR;
@@ -740,7 +740,7 @@ int sps_get_bam_debug_info(unsigned long dev, u32 option, u32 para,
 		if (tb_sel)
 			print_bam_test_bus_reg(vir_addr, tb_sel);
 		else
-			pr_info("sps:TEST_BUS_SEL should NOT be zero.");
+			pr_debug("sps:TEST_BUS_SEL should NOT be zero.");
 		break;
 	case 14: /* output partial desc FIFO of selected pipes */
 		if (desc_sel == 0)
@@ -878,7 +878,7 @@ int sps_get_bam_debug_info(unsigned long dev, u32 option, u32 para,
 			print_bam_pipe_desc_fifo(vir_addr, i, 100);
 		break;
 	default:
-		pr_info("sps:no option is chosen yet.");
+		pr_debug("sps:no option is chosen yet.");
 	}
 
 	return res;
@@ -2112,7 +2112,7 @@ int sps_register_bam_device(const struct sps_bam_props *bam_props,
 	}
 
 	if (sps == NULL) {
-		pr_err("sps:%s:sps driver is not ready.\n", __func__);
+		pr_debug("sps:%s:sps driver is not ready.\n", __func__);
 		return -EPROBE_DEFER;
 	}
 
@@ -3031,23 +3031,23 @@ static int __init sps_init(void)
 	sps->ipc_log0 = ipc_log_context_create(SPS_IPC_LOGPAGES,
 							"sps_ipc_log0", 0);
 	if (!sps->ipc_log0)
-		pr_err("Failed to create IPC log0\n");
+		pr_debug("Failed to create IPC log0\n");
 	sps->ipc_log1 = ipc_log_context_create(SPS_IPC_LOGPAGES,
 							"sps_ipc_log1", 0);
 	if (!sps->ipc_log1)
-		pr_err("Failed to create IPC log1\n");
+		pr_debug("Failed to create IPC log1\n");
 	sps->ipc_log2 = ipc_log_context_create(SPS_IPC_LOGPAGES,
 							"sps_ipc_log2", 0);
 	if (!sps->ipc_log2)
-		pr_err("Failed to create IPC log2\n");
+		pr_debug("Failed to create IPC log2\n");
 	sps->ipc_log3 = ipc_log_context_create(SPS_IPC_LOGPAGES,
 							"sps_ipc_log3", 0);
 	if (!sps->ipc_log3)
-		pr_err("Failed to create IPC log3\n");
+		pr_debug("Failed to create IPC log3\n");
 	sps->ipc_log4 = ipc_log_context_create(SPS_IPC_LOGPAGES *
 				SPS_IPC_REG_DUMP_FACTOR, "sps_ipc_log4", 0);
 	if (!sps->ipc_log4)
-		pr_err("Failed to create IPC log4\n");
+		pr_debug("Failed to create IPC log4\n");
 #endif
 
 	ret = platform_driver_register(&msm_sps_driver);

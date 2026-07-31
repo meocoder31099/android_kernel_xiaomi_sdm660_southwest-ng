@@ -233,7 +233,7 @@ static void pack_rsp_and_send(unsigned char *buf, int len,
 		return;
 
 	if (len > DIAG_MAX_RSP_SIZE || len < 0) {
-		pr_err("diag: In %s, invalid len %d, permissible len %d\n",
+		pr_debug("diag: In %s, invalid len %d, permissible len %d\n",
 		       __func__, len, DIAG_MAX_RSP_SIZE);
 		return;
 	}
@@ -289,7 +289,7 @@ static void pack_rsp_and_send(unsigned char *buf, int len,
 		}
 	}
 	if (driver->rsp_buf_busy) {
-		pr_err("diag: unable to get hold of response buffer\n");
+		pr_debug("diag: unable to get hold of response buffer\n");
 		return;
 	}
 
@@ -306,7 +306,7 @@ static void pack_rsp_and_send(unsigned char *buf, int len,
 
 	err = diag_mux_write(DIAG_LOCAL_PROC, rsp_ptr, write_len, rsp_ctxt);
 	if (err) {
-		pr_err("diag: In %s, unable to write to mux, err: %d\n",
+		pr_debug("diag: In %s, unable to write to mux, err: %d\n",
 		       __func__, err);
 		spin_lock_irqsave(&driver->rsp_buf_busy_lock, flags);
 		driver->rsp_buf_busy = 0;
@@ -328,7 +328,7 @@ static void encode_rsp_and_send(unsigned char *buf, int len,
 		return;
 
 	if (len > DIAG_MAX_RSP_SIZE || len < 0) {
-		pr_err("diag: In %s, invalid len %d, permissible len %d\n",
+		pr_debug("diag: In %s, invalid len %d, permissible len %d\n",
 		       __func__, len, DIAG_MAX_RSP_SIZE);
 		return;
 	}
@@ -384,7 +384,7 @@ static void encode_rsp_and_send(unsigned char *buf, int len,
 	}
 
 	if (driver->rsp_buf_busy) {
-		pr_err("diag: unable to get hold of response buffer\n");
+		pr_debug("diag: unable to get hold of response buffer\n");
 		return;
 	}
 
@@ -402,7 +402,7 @@ static void encode_rsp_and_send(unsigned char *buf, int len,
 	err = diag_mux_write(DIAG_LOCAL_PROC, rsp_ptr, driver->encoded_rsp_len,
 			     rsp_ctxt);
 	if (err) {
-		pr_err("diag: In %s, Unable to write to device, err: %d\n",
+		pr_debug("diag: In %s, Unable to write to device, err: %d\n",
 			__func__, err);
 		spin_lock_irqsave(&driver->rsp_buf_busy_lock, flags);
 		driver->rsp_buf_busy = 0;
@@ -443,7 +443,7 @@ void diag_update_pkt_buffer(unsigned char *buf, uint32_t len, int type)
 	uint32_t max_len = 0;
 
 	if (!buf || len == 0) {
-		pr_err("diag: In %s, Invalid ptr %pK and length %d\n",
+		pr_debug("diag: In %s, Invalid ptr %pK and length %d\n",
 		       __func__, buf, len);
 		return;
 	}
@@ -462,7 +462,7 @@ void diag_update_pkt_buffer(unsigned char *buf, uint32_t len, int type)
 		in_busy = &driver->in_busy_dcipktdata;
 		break;
 	default:
-		pr_err("diag: Invalid type %d in %s\n", type, __func__);
+		pr_debug("diag: Invalid type %d in %s\n", type, __func__);
 		return;
 	}
 
@@ -472,7 +472,7 @@ void diag_update_pkt_buffer(unsigned char *buf, uint32_t len, int type)
 		*length = len;
 		*in_busy = 1;
 	} else {
-		pr_alert("diag: In %s, no space for response packet, len: %d, type: %d\n",
+		pr_debug("diag: In %s, no space for response packet, len: %d, type: %d\n",
 			 __func__, len, type);
 	}
 	mutex_unlock(&driver->diagchar_mutex);
@@ -667,7 +667,7 @@ int diag_process_stm_cmd(unsigned char *buf, unsigned char *dest_buf)
 	int i;
 
 	if (!buf || !dest_buf) {
-		pr_err("diag: Invalid pointers buf: %pK, dest_buf %pK in %s\n",
+		pr_debug("diag: Invalid pointers buf: %pK, dest_buf %pK in %s\n",
 		       buf, dest_buf, __func__);
 		return -EIO;
 	}
@@ -715,7 +715,7 @@ int diag_process_time_sync_query_cmd(unsigned char *src_buf, int src_len,
 
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0 ||
 		src_len < sizeof(struct diag_cmd_time_sync_query_req_t)) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 			__func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -746,7 +746,7 @@ int diag_process_diag_id_query_cmd(unsigned char *src_buf, int src_len,
 
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0 ||
 		src_len < sizeof(struct diag_cmd_diag_id_query_req_t)) {
-		pr_err("diag: Invalid input in %s, src_buf:%pK, src_len:%d, dest_buf:%pK, dest_len:%d\n",
+		pr_debug("diag: Invalid input in %s, src_buf:%pK, src_len:%d, dest_buf:%pK, dest_len:%d\n",
 			__func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -793,7 +793,7 @@ int diag_process_time_sync_switch_cmd(unsigned char *src_buf, int src_len,
 
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0 ||
 		src_len < sizeof(struct diag_cmd_time_sync_switch_req_t)) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 			__func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -824,7 +824,7 @@ int diag_process_time_sync_switch_cmd(unsigned char *src_buf, int src_len,
 		err = diagfwd_write(peripheral, TYPE_CNTL, &time_sync_msg,
 					msg_size);
 		if (err && err != -ENODEV) {
-			pr_err("diag: In %s, unable to write to peripheral: %d, type: %d, len: %d, err: %d\n",
+			pr_debug("diag: In %s, unable to write to peripheral: %d, type: %d, len: %d, err: %d\n",
 				__func__, peripheral, TYPE_CNTL,
 				msg_size, err);
 			status |= (1 << peripheral);
@@ -865,7 +865,7 @@ int diag_cmd_log_on_demand(unsigned char *src_buf, int src_len,
 		return 0;
 
 	if (!src_buf || !dest_buf || src_len <= 0 || dest_len <= 0) {
-		pr_err("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Invalid input in %s, src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 		       __func__, src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -1017,7 +1017,7 @@ int diag_cmd_feature_query(unsigned char *src_buf, int src_len,
 
 	if (!src_buf || !dest_buf || src_len <= sizeof(struct diag_pkt_header_t)
 			|| dest_len <= 0 || dest_len > DIAG_MAX_RSP_SIZE) {
-		pr_err("diag: Feature query, invalid input src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
+		pr_debug("diag: Feature query, invalid input src_buf: %pK, src_len: %d, dest_buf: %pK, dest_len: %d\n",
 			src_buf, src_len, dest_buf, dest_len);
 		return -EINVAL;
 	}
@@ -1052,7 +1052,7 @@ void diag_send_error_rsp(unsigned char *buf, int len,
 {
 	/* -1 to accommodate the first byte 0x13 */
 	if (len > (DIAG_MAX_RSP_SIZE - 1)) {
-		pr_err("diag: cannot send err rsp, huge length: %d\n", len);
+		pr_debug("diag: cannot send err rsp, huge length: %d\n", len);
 		return;
 	}
 
@@ -1285,7 +1285,7 @@ int diag_process_apps_pkt(unsigned char *buf, int len, int pid)
 		msleep(5000);
 		/* call download API */
 		msm_set_restart_mode(RESTART_DLOAD);
-		pr_crit("diag: download mode set, Rebooting SoC..\n");
+		pr_debug("diag: download mode set, Rebooting SoC..\n");
 		kernel_restart(NULL);
 		/* Not required, represents that command isn't sent to modem */
 		return 0;
@@ -1397,7 +1397,7 @@ void diag_process_hdlc_pkt(void *data, unsigned int len, int pid)
 	int ret = 0;
 
 	if (len > DIAG_MAX_HDLC_BUF_SIZE) {
-		pr_err("diag: In %s, invalid length: %d\n", __func__, len);
+		pr_debug("diag: In %s, invalid length: %d\n", __func__, len);
 		return;
 	}
 
@@ -1406,7 +1406,7 @@ void diag_process_hdlc_pkt(void *data, unsigned int len, int pid)
 		 __func__, len, driver->hdlc_buf_len);
 
 	if (driver->hdlc_buf_len >= DIAG_MAX_REQ_SIZE) {
-		pr_err("diag: In %s, request length is more than supported len. Dropping packet.\n",
+		pr_debug("diag: In %s, request length is more than supported len. Dropping packet.\n",
 		       __func__);
 		goto fail;
 	}
@@ -1722,7 +1722,7 @@ static void diag_hdlc_start_recovery(unsigned char *buf, int len,
 		if (bad_byte_counter > (DIAG_MAX_REQ_SIZE +
 				sizeof(struct diag_pkt_frame_t) + 1)) {
 			bad_byte_counter = 0;
-			pr_err("diag: In %s, re-enabling HDLC encoding\n",
+			pr_debug("diag: In %s, re-enabling HDLC encoding\n",
 					__func__);
 			mutex_lock(&driver->hdlc_disable_mutex);
 			mutex_lock(&driver->md_session_lock);
@@ -1794,7 +1794,7 @@ void diag_process_non_hdlc_pkt(unsigned char *buf, int len, int pid)
 
 	if (partial_pkt->remaining > len) {
 		if ((partial_pkt->read_len + len) > partial_pkt->capacity) {
-			pr_err("diag: Invalid length %d, %d received in %s\n",
+			pr_debug("diag: Invalid length %d, %d received in %s\n",
 			       partial_pkt->read_len, len, __func__);
 			mutex_unlock(&driver->hdlc_recovery_mutex);
 			goto end;
@@ -1807,7 +1807,7 @@ void diag_process_non_hdlc_pkt(unsigned char *buf, int len, int pid)
 	} else {
 		if ((partial_pkt->read_len + partial_pkt->remaining) >
 						partial_pkt->capacity) {
-			pr_err("diag: Invalid length during partial read %d, %d received in %s\n",
+			pr_debug("diag: Invalid length during partial read %d, %d received in %s\n",
 			       partial_pkt->read_len,
 			       partial_pkt->remaining, __func__);
 			mutex_unlock(&driver->hdlc_recovery_mutex);
@@ -1839,7 +1839,7 @@ void diag_process_non_hdlc_pkt(unsigned char *buf, int len, int pid)
 		err = diag_process_apps_pkt(data_ptr,
 					    actual_pkt->length, pid);
 		if (err) {
-			pr_err("diag: In %s, unable to process incoming data packet, err: %d\n",
+			pr_debug("diag: In %s, unable to process incoming data packet, err: %d\n",
 			       __func__, err);
 			mutex_unlock(&driver->hdlc_recovery_mutex);
 			goto end;
@@ -1865,7 +1865,7 @@ start:
 		}
 		mutex_lock(&driver->hdlc_recovery_mutex);
 		if (pkt_len + header_len > partial_pkt->capacity) {
-			pr_err("diag: In %s, incoming data is too large for the request buffer %d\n",
+			pr_debug("diag: In %s, incoming data is too large for the request buffer %d\n",
 			       __func__, pkt_len);
 			mutex_unlock(&driver->hdlc_recovery_mutex);
 			diag_hdlc_start_recovery(buf, len, pid);
@@ -2139,13 +2139,13 @@ int diagfwd_init(void)
 	ret = diag_mux_register(DIAG_LOCAL_PROC, DIAG_LOCAL_PROC,
 				&diagfwd_mux_ops);
 	if (ret) {
-		pr_err("diag: Unable to register with USB, err: %d\n", ret);
+		pr_debug("diag: Unable to register with USB, err: %d\n", ret);
 		goto err;
 	}
 
 	return 0;
 err:
-	pr_err("diag: In %s, couldn't initialize diag\n", __func__);
+	pr_debug("diag: In %s, couldn't initialize diag\n", __func__);
 
 	diag_usb_exit(DIAG_USB_LOCAL);
 	kfree(driver->encoded_rsp_buf);

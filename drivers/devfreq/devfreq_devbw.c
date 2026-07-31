@@ -63,7 +63,7 @@ static int set_bw(struct device *dev, int new_ib, int new_ab)
 
 	ret = msm_bus_scale_client_update_request(d->bus_client, i);
 	if (ret) {
-		dev_err(dev, "bandwidth request failed (%d)\n", ret);
+		dev_dbg(dev, "bandwidth request failed (%d)\n", ret);
 	} else {
 		d->cur_idx = i;
 		d->cur_ib = new_ib;
@@ -115,7 +115,7 @@ int devfreq_add_devbw(struct device *dev)
 	if (of_find_property(dev->of_node, PROP_PORTS, &len)) {
 		len /= sizeof(ports[0]);
 		if (len % 2 || len > ARRAY_SIZE(ports)) {
-			dev_err(dev, "Unexpected number of ports\n");
+			dev_dbg(dev, "Unexpected number of ports\n");
 			return -EINVAL;
 		}
 
@@ -156,18 +156,18 @@ int devfreq_add_devbw(struct device *dev)
 		version = (1 << of_fdt_get_ddrtype());
 		opp_table = dev_pm_opp_set_supported_hw(dev, &version, 1);
 		if (IS_ERR(opp_table)) {
-			dev_err(dev, "Failed to set supported hardware\n");
+			dev_dbg(dev, "Failed to set supported hardware\n");
 			return PTR_ERR(opp_table);
 		}
 	}
 
 	ret = dev_pm_opp_of_add_table(dev);
 	if (ret)
-		dev_err(dev, "Couldn't parse OPP table:%d\n", ret);
+		dev_dbg(dev, "Couldn't parse OPP table:%d\n", ret);
 
 	d->bus_client = msm_bus_scale_register_client(&d->bw_data);
 	if (!d->bus_client) {
-		dev_err(dev, "Unable to register bus client\n");
+		dev_dbg(dev, "Unable to register bus client\n");
 		return -ENODEV;
 	}
 
@@ -242,7 +242,7 @@ static int __init devfreq_devbw_init(void)
 
 	ret = platform_driver_register(&devbw_driver);
 	if (ret)
-		pr_err("devfreq_devbw register failed %d\n", ret);
+		pr_debug("devfreq_devbw register failed %d\n", ret);
 	return ret;
 }
 late_initcall(devfreq_devbw_init);

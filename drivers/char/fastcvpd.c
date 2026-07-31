@@ -84,7 +84,7 @@ static int fastcvpd_rpmsg_probe(struct rpmsg_device *rpdev)
 	int destVMperm[SRC_VM_NUM] = { PERM_READ | PERM_WRITE | PERM_EXEC };
 
 	if (strcmp(rpdev->dev.parent->of_node->name, "cdsp")) {
-		pr_err("%s: Failed to probe rpmsg device.Node name:%s\n",
+		pr_debug("%s: Failed to probe rpmsg device.Node name:%s\n",
 			__func__, rpdev->dev.parent->of_node->name);
 		err = -EINVAL;
 		goto bail;
@@ -102,14 +102,14 @@ static int fastcvpd_rpmsg_probe(struct rpmsg_device *rpdev)
 			msg_ptr_len, srcVM, DEST_VM_NUM, destVM,
 			destVMperm, SRC_VM_NUM);
 		if (err) {
-			pr_err("%s: Failed to hyp_assign. err=%d\n",
+			pr_debug("%s: Failed to hyp_assign. err=%d\n",
 				__func__, err);
 			return err;
 		}
 		err = fastcvpd_video_send_cmd_hfi_queue(
 			(phys_addr_t *)msg_ptr, msg_ptr_len);
 		if (err) {
-			pr_err("%s: Failed to send HFI Queue address. err=%d\n",
+			pr_debug("%s: Failed to send HFI Queue address. err=%d\n",
 			__func__, err);
 			goto bail;
 		}
@@ -118,7 +118,7 @@ static int fastcvpd_rpmsg_probe(struct rpmsg_device *rpdev)
 		mutex_unlock(&me->smd_mutex);
 	}
 
-	pr_info("%s: Successfully probed. cdsp_state=%d video_shutdown=%d\n",
+	pr_debug("%s: Successfully probed. cdsp_state=%d video_shutdown=%d\n",
 		__func__, cdsp_state, video_shutdown);
 bail:
 	return err;
@@ -132,7 +132,7 @@ static void fastcvpd_rpmsg_remove(struct rpmsg_device *rpdev)
 	me->chan = NULL;
 	me->cdsp_state = STATUS_SSR;
 	mutex_unlock(&me->smd_mutex);
-	pr_info("%s: CDSP SSR triggered\n", __func__);
+	pr_debug("%s: CDSP SSR triggered\n", __func__);
 }
 
 static int fastcvpd_rpmsg_callback(struct rpmsg_device *rpdev,
@@ -172,7 +172,7 @@ int fastcvpd_video_send_cmd_hfi_queue(phys_addr_t *phys_addr,
 		local_cmd_msg.msg_ptr_len, srcVM, SRC_VM_NUM, destVM,
 		destVMperm, DEST_VM_NUM);
 	if (err) {
-		pr_err("%s: Failed in hyp_assign. err=%d\n",
+		pr_debug("%s: Failed in hyp_assign. err=%d\n",
 			__func__, err);
 		return err;
 	}
@@ -180,7 +180,7 @@ int fastcvpd_video_send_cmd_hfi_queue(phys_addr_t *phys_addr,
 	err = fastcvpd_send_cmd
 			 (&local_cmd_msg, sizeof(struct fastcvpd_cmd_msg));
 	if (err != 0)
-		pr_err("%s: fastcvpd_send_cmd failed with err=%d\n",
+		pr_debug("%s: fastcvpd_send_cmd failed with err=%d\n",
 			__func__, err);
 	else {
 		mutex_lock(&me->smd_mutex);
@@ -211,7 +211,7 @@ int fastcvpd_video_suspend(uint32_t session_flag)
 	err = fastcvpd_send_cmd
 			 (&local_cmd_msg, sizeof(struct fastcvpd_cmd_msg));
 	if (err != 0)
-		pr_err("%s: fastcvpd_send_cmd failed with err=%d\n",
+		pr_debug("%s: fastcvpd_send_cmd failed with err=%d\n",
 			__func__, err);
 
 	return err;
@@ -236,7 +236,7 @@ int fastcvpd_video_resume(uint32_t session_flag)
 	err = fastcvpd_send_cmd
 			 (&local_cmd_msg, sizeof(struct fastcvpd_cmd_msg));
 	if (err != 0)
-		pr_err("%s: fastcvpd_send_cmd failed with err=%d\n",
+		pr_debug("%s: fastcvpd_send_cmd failed with err=%d\n",
 			__func__, err);
 
 	return err;
@@ -256,7 +256,7 @@ int fastcvpd_video_shutdown(uint32_t session_flag)
 	err = fastcvpd_send_cmd
 			 (&local_cmd_msg, sizeof(struct fastcvpd_cmd_msg));
 	if (err != 0)
-		pr_err("%s: fastcvpd_send_cmd failed with err=%d\n",
+		pr_debug("%s: fastcvpd_send_cmd failed with err=%d\n",
 			__func__, err);
 
 	wait_for_completion(&work);
@@ -272,12 +272,12 @@ int fastcvpd_video_shutdown(uint32_t session_flag)
 			local_cmd_msg.msg_ptr_len, srcVM, DEST_VM_NUM, destVM,
 			destVMperm, SRC_VM_NUM);
 		if (err) {
-			pr_err("%s: Failed to hyp_assign. err=%d\n",
+			pr_debug("%s: Failed to hyp_assign. err=%d\n",
 				__func__, err);
 			return err;
 		}
 	} else {
-		pr_err("%s: Skipping hyp_assign as CDSP sent invalid response=%d\n",
+		pr_debug("%s: Skipping hyp_assign as CDSP sent invalid response=%d\n",
 			__func__, local_cmd_msg_rsp);
 	}
 
@@ -311,7 +311,7 @@ static int __init fastcvpd_device_init(void)
 	me->cdsp_state = STATUS_INIT;
 	err = register_rpmsg_driver(&fastcvpd_rpmsg_client);
 	if (err) {
-		pr_err("%s : register_rpmsg_driver failed with err %d\n",
+		pr_debug("%s : register_rpmsg_driver failed with err %d\n",
 			__func__, err);
 		goto register_bail;
 	}

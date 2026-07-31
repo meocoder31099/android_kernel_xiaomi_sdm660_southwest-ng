@@ -216,7 +216,7 @@ static int get_compatible_type(struct ff_device *ff, int effect_type)
 	if (effect_type == FF_PERIODIC && test_bit(FF_RUMBLE, ff->ffbit))
 		return FF_RUMBLE;
 
-	pr_err("invalid type in get_compatible_type()\n");
+	pr_debug("invalid type in get_compatible_type()\n");
 
 	return 0;
 }
@@ -324,7 +324,7 @@ static void ml_combine_effects(struct ff_effect *effect,
 		break;
 
 	default:
-		pr_err("invalid type in ml_combine_effects()\n");
+		pr_debug("invalid type in ml_combine_effects()\n");
 		break;
 	}
 

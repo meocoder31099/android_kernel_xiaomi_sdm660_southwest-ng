@@ -34,14 +34,14 @@ int rtc_hctosys(void)
 	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
 
 	if (rtc == NULL) {
-		pr_info("unable to open rtc device (%s)\n",
+		pr_debug("unable to open rtc device (%s)\n",
 			CONFIG_RTC_HCTOSYS_DEVICE);
 		goto err_open;
 	}
 
 	err = rtc_read_time(rtc, &tm);
 	if (err) {
-		dev_err(rtc->dev.parent,
+		dev_dbg(rtc->dev.parent,
 			"hctosys: unable to read the hardware clock\n");
 		goto err_read;
 
@@ -58,7 +58,7 @@ int rtc_hctosys(void)
 
 	err = do_settimeofday64(&tv64);
 
-	dev_info(rtc->dev.parent,
+	dev_dbg(rtc->dev.parent,
 		"setting system clock to "
 		"%d-%02d-%02d %02d:%02d:%02d UTC (%lld)\n",
 		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,

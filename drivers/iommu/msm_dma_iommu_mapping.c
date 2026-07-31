@@ -69,7 +69,7 @@ static void msm_iommu_meta_add(struct msm_iommu_meta *meta)
 		else if (meta->buffer > entry->buffer)
 			p = &(*p)->rb_right;
 		else
-			pr_err("%s: dma_buf %p already exists\n", __func__,
+			pr_debug("%s: dma_buf %p already exists\n", __func__,
 			       entry->buffer);
 	}
 
@@ -261,7 +261,7 @@ static inline int __msm_dma_map_sg(struct device *dev, struct scatterlist *sg,
 			bool start_diff = (sg_phys(sg) !=
 					   iommu_map->buf_start_addr);
 
-			dev_err(dev, "lazy map request differs:\n"
+			dev_dbg(dev, "lazy map request differs:\n"
 				"req dir:%d, original dir:%d\n"
 				"req nents:%d, original nents:%d\n"
 				"req map attrs:%lu, original map attrs:%lu\n"
@@ -299,17 +299,17 @@ int msm_dma_map_sg_attrs(struct device *dev, struct scatterlist *sg, int nents,
 	int ret;
 
 	if (IS_ERR_OR_NULL(dev)) {
-		pr_err("%s: dev pointer is invalid\n", __func__);
+		pr_debug("%s: dev pointer is invalid\n", __func__);
 		return -EINVAL;
 	}
 
 	if (IS_ERR_OR_NULL(sg)) {
-		pr_err("%s: sg table pointer is invalid\n", __func__);
+		pr_debug("%s: sg table pointer is invalid\n", __func__);
 		return -EINVAL;
 	}
 
 	if (IS_ERR_OR_NULL(dma_buf)) {
-		pr_err("%s: dma_buf pointer is invalid\n", __func__);
+		pr_debug("%s: dma_buf pointer is invalid\n", __func__);
 		return -EINVAL;
 	}
 

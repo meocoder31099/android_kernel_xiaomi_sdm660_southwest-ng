@@ -1141,7 +1141,7 @@ static int update_context(uint32_t cl, bool active_only,
 	msm_bus_dbg_client_data(client->pdata, ctx_idx, cl);
 	ret = update_client_paths(client, false, ctx_idx);
 	if (ret) {
-		pr_err("%s: Err updating path\n", __func__);
+		pr_debug("%s: Err updating path\n", __func__);
 		goto exit_update_context;
 	}
 
@@ -1202,7 +1202,7 @@ static int update_request_adhoc(uint32_t cl, unsigned int index)
 	msm_bus_dbg_client_data(client->pdata, index, cl);
 	ret = update_client_paths(client, log_transaction, index);
 	if (ret) {
-		pr_err("%s: Err updating path\n", __func__);
+		pr_debug("%s: Err updating path\n", __func__);
 		goto exit_update_request;
 	}
 
@@ -1350,7 +1350,7 @@ register_adhoc(uint32_t mas, uint32_t slv, char *name, bool active_only)
 	rt_mutex_lock(&msm_bus_adhoc_lock);
 
 	if (!(mas && slv && name)) {
-		pr_err("%s: Error: src dst name num_paths are required\n",
+		pr_debug("%s: Error: src dst name num_paths are required\n",
 								 __func__);
 		goto exit_register;
 	}

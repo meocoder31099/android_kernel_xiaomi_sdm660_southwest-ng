@@ -504,7 +504,7 @@ void input_alloc_absinfo(struct input_dev *dev)
 
 	dev->absinfo = kcalloc(ABS_CNT, sizeof(*dev->absinfo), GFP_KERNEL);
 	if (!dev->absinfo) {
-		dev_err(dev->dev.parent ?: &dev->dev,
+		dev_dbg(dev->dev.parent ?: &dev->dev,
 			"%s: unable to allocate memory\n", __func__);
 		/*
 		 * We will handle this allocation failure in
@@ -945,7 +945,7 @@ int input_set_keycode(struct input_dev *dev,
 	 * in the keymap anymore
 	 */
 	if (old_keycode > KEY_MAX) {
-		dev_warn(dev->dev.parent ?: &dev->dev,
+		dev_dbg(dev->dev.parent ?: &dev->dev,
 			 "%s: got too big old keycode %#x\n",
 			 __func__, old_keycode);
 	} else if (test_bit(EV_KEY, dev->evbit) &&
@@ -1028,7 +1028,7 @@ static int input_attach_handler(struct input_dev *dev, struct input_handler *han
 
 	error = handler->connect(handler, dev, id);
 	if (error && error != -ENODEV)
-		pr_err("failed to attach handler %s to device %s, error: %d\n",
+		pr_debug("failed to attach handler %s to device %s, error: %d\n",
 		       handler->name, kobject_name(&dev->dev.kobj), error);
 
 	return error;
@@ -2051,7 +2051,7 @@ void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int
 {
 	if (type < EV_CNT && input_max_code[type] &&
 	    code > input_max_code[type]) {
-		pr_err("%s: invalid code %u for type %u\n", __func__, code,
+		pr_debug("%s: invalid code %u for type %u\n", __func__, code,
 		       type);
 		dump_stack();
 		return;
@@ -2099,7 +2099,7 @@ void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int
 		break;
 
 	default:
-		pr_err("%s: unknown type %u (code %u)\n", __func__, type, code);
+		pr_debug("%s: unknown type %u (code %u)\n", __func__, type, code);
 		dump_stack();
 		return;
 	}
@@ -2240,7 +2240,7 @@ int input_register_device(struct input_dev *dev)
 	int error;
 
 	if (test_bit(EV_ABS, dev->evbit) && !dev->absinfo) {
-		dev_err(&dev->dev,
+		dev_dbg(&dev->dev,
 			"Absolute device without dev->absinfo, refusing to register\n");
 		return -EINVAL;
 	}
@@ -2292,7 +2292,7 @@ int input_register_device(struct input_dev *dev)
 		goto err_free_vals;
 
 	path = kobject_get_path(&dev->dev.kobj, GFP_KERNEL);
-	pr_info("%s as %s\n",
+	pr_debug("%s as %s\n",
 		dev->name ? dev->name : "Unspecified device",
 		path ? path : "N/A");
 	kfree(path);
@@ -2573,7 +2573,7 @@ static int __init input_init(void)
 
 	err = class_register(&input_class);
 	if (err) {
-		pr_err("unable to register input_dev class\n");
+		pr_debug("unable to register input_dev class\n");
 		return err;
 	}
 
@@ -2584,7 +2584,7 @@ static int __init input_init(void)
 	err = register_chrdev_region(MKDEV(INPUT_MAJOR, 0),
 				     INPUT_MAX_CHAR_DEVICES, "input");
 	if (err) {
-		pr_err("unable to register char major %d", INPUT_MAJOR);
+		pr_debug("unable to register char major %d", INPUT_MAJOR);
 		goto fail2;
 	}
 

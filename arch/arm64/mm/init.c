@@ -111,30 +111,30 @@ static void __init reserve_crashkernel(void)
 		crash_base = memblock_find_in_range(0, ARCH_LOW_ADDRESS_LIMIT,
 				crash_size, SZ_2M);
 		if (crash_base == 0) {
-			pr_warn("cannot allocate crashkernel (size:0x%llx)\n",
+			pr_debug("cannot allocate crashkernel (size:0x%llx)\n",
 				crash_size);
 			return;
 		}
 	} else {
 		/* User specifies base address explicitly. */
 		if (!memblock_is_region_memory(crash_base, crash_size)) {
-			pr_warn("cannot reserve crashkernel: region is not memory\n");
+			pr_debug("cannot reserve crashkernel: region is not memory\n");
 			return;
 		}
 
 		if (memblock_is_region_reserved(crash_base, crash_size)) {
-			pr_warn("cannot reserve crashkernel: region overlaps reserved memory\n");
+			pr_debug("cannot reserve crashkernel: region overlaps reserved memory\n");
 			return;
 		}
 
 		if (!IS_ALIGNED(crash_base, SZ_2M)) {
-			pr_warn("cannot reserve crashkernel: base address is not 2MB aligned\n");
+			pr_debug("cannot reserve crashkernel: base address is not 2MB aligned\n");
 			return;
 		}
 	}
 	memblock_reserve(crash_base, crash_size);
 
-	pr_info("crashkernel reserved: 0x%016llx - 0x%016llx (%lld MB)\n",
+	pr_debug("crashkernel reserved: 0x%016llx - 0x%016llx (%lld MB)\n",
 		crash_base, crash_base + crash_size, crash_size >> 20);
 
 	crashk_res.start = crash_base;
@@ -207,13 +207,13 @@ static void __init reserve_elfcorehdr(void)
 		return;
 
 	if (memblock_is_region_reserved(elfcorehdr_addr, elfcorehdr_size)) {
-		pr_warn("elfcorehdr is overlapped\n");
+		pr_debug("elfcorehdr is overlapped\n");
 		return;
 	}
 
 	memblock_reserve(elfcorehdr_addr, elfcorehdr_size);
 
-	pr_info("Reserving %lldKB of memory at 0x%llx for elfcorehdr\n",
+	pr_debug("Reserving %lldKB of memory at 0x%llx for elfcorehdr\n",
 		elfcorehdr_size >> 10, elfcorehdr_addr);
 }
 #else
@@ -348,20 +348,20 @@ static void __init update_memory_limit(void)
 
 	node = of_get_flat_dt_subnode_by_name(dt_root, "mem-offline");
 	if (node == -FDT_ERR_NOTFOUND) {
-		pr_err("mem-offine node not found in FDT\n");
+		pr_debug("mem-offine node not found in FDT\n");
 		return;
 	}
 
 	status = (char *)fdt_getprop(initial_boot_params, node, "status", NULL);
 	if (status && !strcmp(status, "disabled")) {
-		pr_info("mem-offline device is disabled\n");
+		pr_debug("mem-offline device is disabled\n");
 		return;
 	}
 
 	prop = of_get_flat_dt_prop(node, "offline-sizes", &len);
 	if (prop) {
 		if (len % t_len != 0) {
-			pr_err("mem-offline: invalid offline-sizes property\n");
+			pr_debug("mem-offline: invalid offline-sizes property\n");
 			return;
 		}
 
@@ -379,19 +379,19 @@ static void __init update_memory_limit(void)
 					min_ddr_sz = tmp_min_ddr_sz;
 					offline_sz = tmp_offline_sz;
 				} else {
-					pr_info("mem-offline: invalid offline size:%pa\n",
+					pr_debug("mem-offline: invalid offline size:%pa\n",
 						 &tmp_offline_sz);
 				}
 			}
 			len -= t_len;
 		}
 	} else {
-		pr_err("mem-offine: offline-sizes property not found in DT\n");
+		pr_debug("mem-offine: offline-sizes property not found in DT\n");
 		return;
 	}
 
 	if (offline_sz == 0) {
-		pr_info("mem-offline: no memory to offline for DDR size:%llu\n",
+		pr_debug("mem-offline: no memory to offline for DDR size:%llu\n",
 			ram_sz);
 		return;
 	}
@@ -410,7 +410,7 @@ static void __init update_memory_limit(void)
 		memory_limit += offset;
 	}
 
-	pr_notice("Memory limit set/overridden to %lldMB\n",
+	pr_debug("Memory limit set/overridden to %lldMB\n",
 							memory_limit >> 20);
 }
 #else
@@ -429,7 +429,7 @@ static int __init early_mem(char *p)
 		return 1;
 
 	memory_limit = memparse(p, &p) & PAGE_MASK;
-	pr_notice("Memory limited to %lldMB\n", memory_limit >> 20);
+	pr_debug("Memory limited to %lldMB\n", memory_limit >> 20);
 
 	return 0;
 }
@@ -787,9 +787,9 @@ __setup("keepinitrd", keepinitrd_setup);
 static int dump_mem_limit(struct notifier_block *self, unsigned long v, void *p)
 {
 	if (memory_limit != PHYS_ADDR_MAX) {
-		pr_emerg("Memory Limit: %llu MB\n", memory_limit >> 20);
+		pr_debug("Memory Limit: %llu MB\n", memory_limit >> 20);
 	} else {
-		pr_emerg("Memory Limit: none\n");
+		pr_debug("Memory Limit: none\n");
 	}
 	return 0;
 }
@@ -818,7 +818,7 @@ int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
 	int ret;
 
 	if (end_pfn > max_sparsemem_pfn) {
-		pr_err("end_pfn too big");
+		pr_debug("end_pfn too big");
 		return -1;
 	}
 	hotplug_paging(start, size);
@@ -880,7 +880,7 @@ int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
 	SetPageReserved(pfn_to_page(start_pfn));
 
 	if (ret)
-		pr_warn("%s: Problem encountered in __add_pages() ret=%d\n",
+		pr_debug("%s: Problem encountered in __add_pages() ret=%d\n",
 			__func__, ret);
 
 	return ret;

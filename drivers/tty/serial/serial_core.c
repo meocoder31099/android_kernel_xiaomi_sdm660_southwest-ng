@@ -307,7 +307,7 @@ static void uart_shutdown(struct tty_struct *tty, struct uart_state *state)
 	 * Do not free() the transmit buffer page under the port lock since
 	 * this can create various circular locking scenarios. For instance,
 	 * console driver may need to allocate/free a debug object, which
-	 * can endup in printk() recursion.
+	 * can endup in no_printk() recursion.
 	 */
 	uart_port_lock(state, flags);
 	xmit_buf = state->xmit.buf;
@@ -2167,7 +2167,7 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *uport)
 		for (tries = 3; !ops->tx_empty(uport) && tries; tries--)
 			msleep(10);
 		if (!tries)
-			dev_err(uport->dev, "%s: Unable to drain transmitter\n",
+			dev_dbg(uport->dev, "%s: Unable to drain transmitter\n",
 				uport->name);
 
 		ops->shutdown(uport);
@@ -2295,7 +2295,7 @@ uart_report_port(struct uart_driver *drv, struct uart_port *port)
 		break;
 	}
 
-	pr_info("%s%s%s at %s (irq = %d, base_baud = %d) is a %s\n",
+	pr_debug("%s%s%s at %s (irq = %d, base_baud = %d) is a %s\n",
 	       port->dev ? dev_name(port->dev) : "",
 	       port->dev ? ": " : "",
 	       port->name,
@@ -2839,7 +2839,7 @@ int uart_add_one_port(struct uart_driver *drv, struct uart_port *uport)
 	if (likely(!IS_ERR(tty_dev))) {
 		device_set_wakeup_capable(tty_dev, 1);
 	} else {
-		dev_err(uport->dev, "Cannot register tty device on line %d\n",
+		dev_dbg(uport->dev, "Cannot register tty device on line %d\n",
 		       uport->line);
 	}
 
@@ -2883,7 +2883,7 @@ int uart_remove_one_port(struct uart_driver *drv, struct uart_port *uport)
 	mutex_lock(&port->mutex);
 	uart_port = uart_port_check(state);
 	if (uart_port != uport)
-		dev_alert(uport->dev, "Removing wrong port: %p != %p\n",
+		dev_dbg(uport->dev, "Removing wrong port: %p != %p\n",
 			  uart_port, uport);
 
 	if (!uart_port) {
